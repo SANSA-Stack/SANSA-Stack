@@ -6,9 +6,9 @@ import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMod
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{StopWordsRemover, StringIndexer, Tokenizer, Word2Vec, Word2VecModel}
+import org.apache.spark.ml.feature.{StopWordsRemover, StringIndexer, Tokenizer, VectorAssembler, Word2Vec, Word2VecModel}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, collect_list, collect_set, concat_ws, count, explode, max, min, size, split}
+import org.apache.spark.sql.functions.{avg, col, collect_list, collect_set, concat_ws, count, explode, explode_outer, max, mean, min, size, split, stddev}
 import org.apache.spark.sql.types.{DataType, DoubleType, StringType}
 
 import scala.collection.mutable
@@ -40,7 +40,9 @@ object FeatureTypeIdentifier {
       inputFilePath,
       stopOnBadTerm = ErrorParseMode.SKIP,
       stopOnWarnings = WarningParseMode.IGNORE
-    ).toDS() // .cache()
+    )
+      .toDS()
+      // .cache()
 
     /*
     CREATE FEATURE EXTRACTING SPARQL
@@ -145,6 +147,7 @@ object FeatureTypeIdentifier {
     also column names will encode feature type
      */
 
+    println("\nCOLLAPS COLUMNS & IDENTIFY FEATURE CHARACTERISTICS")
     println(queryResultDf.schema)
 
     // specify column names
@@ -234,12 +237,19 @@ object FeatureTypeIdentifier {
           .join(joinableDf.withColumnRenamed(currentFeatureColumnNameString, f"${currentFeatureColumnNameString}(${featureType})"), keyColumnNameString)
       }
     )
-    collapsedDataframe.show(false)
-    featureDescriptions.foreach(println(_))
 
-    println(s"check if collapsed dataframe has still needed number of rows: $numberRows , $collapsedDfSize")
+    println("\nCOLLAPSED DATAFRAME")
+    collapsedDataframe.show(false)
+
+    println("\nFEATURE CHARACTERISTICS")
+    featureDescriptions.foreach(println(_))
     val collapsedDfSize = collapsedDataframe.count()
+
+
+    // println(s"check if collapsed dataframe has still needed number of rows: $numberRows , $collapsedDfSize")
     assert(collapsedDfSize == numberRows)
+
+    println("\nDIGITIZE FEATURES")
 
     val collectedFeatureColumns: Seq[String] = List(collapsedDataframe.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
 
@@ -258,6 +268,10 @@ object FeatureTypeIdentifier {
       .select(keyColumnNameString)
       // .cache()
 
+    val fullDigitizedDfSize = fullDigitizedDf.count()
+
+    println(s"intitial fullDigitizedDf has $fullDigitizedDfSize")
+
     for (featureColumn <- collectedFeatureColumns) {
 
       // println(featureColumn)
@@ -275,7 +289,7 @@ object FeatureTypeIdentifier {
       if (featureType == "Single_NonCategorical_String") {
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
-          .na.fill("")
+          .na.fill("")   // TODO NA FILL setable
 
         val tokenizer = new Tokenizer()
           .setInputCol(featureColumn)
@@ -294,7 +308,7 @@ object FeatureTypeIdentifier {
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setVectorSize(2)
+          .setVectorSize(2)   // TODO Vector SIze setable
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
@@ -307,7 +321,7 @@ object FeatureTypeIdentifier {
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
           .withColumn("sentences", concat_ws(". ", col(featureColumn)))
-          .na.fill("")
+          .na.fill("")   // TODO NA FILL setable
 
         val tokenizer = new Tokenizer()
           .setInputCol("sentences")
@@ -326,7 +340,7 @@ object FeatureTypeIdentifier {
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setVectorSize(2)
+          .setVectorSize(2)  // TODO Vector SIze setable
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
@@ -337,7 +351,7 @@ object FeatureTypeIdentifier {
       }
       else if (featureType == "Single_Categorical_String") {
 
-        val inputDf = dfCollapsedTwoColumns
+        val inputDf = dfCollapsedTwoColumns.na.fill("")  // TODO NA FILL setable
 
         val indexer = new StringIndexer()
           .setInputCol(featureColumn)
@@ -349,7 +363,8 @@ object FeatureTypeIdentifier {
       else if (featureType == "ListOf_Categorical_String") {
 
         val inputDf = dfCollapsedTwoColumns
-          .select(col(keyColumnNameString), explode(col(featureColumn)))
+          .select(col(keyColumnNameString), explode_outer(col(featureColumn)))
+          .na.fill("")  // TODO NA FILL setable
 
         val indexer = new StringIndexer()
           .setInputCol("col")
@@ -362,12 +377,27 @@ object FeatureTypeIdentifier {
           .agg(collect_set("outputTmp") as "output")
           .select(keyColumnNameString, "output")
           // .join(dfCollapsedTwoColumns, keyColumnNameString) // TODO this is optional if we are interested in the pair of original and digitized feature representation
-        newFeatureColumnName += "(IndexedString)"
+        newFeatureColumnName += "(ListOfIndexedString)"
 
       }
       else if (featureType.endsWith("Double")) {
         digitizedDf = dfCollapsedTwoColumns
           .withColumnRenamed(featureColumn, "output")
+          .na.fill(-1.0) // TODO NA FILL setable
+        newFeatureColumnName += s"(${featureType})"
+      }
+      else if (featureType.endsWith("Integer")) {
+        digitizedDf = dfCollapsedTwoColumns
+          .withColumn("output", col(featureColumn).cast(DoubleType))
+          // .withColumnRenamed(featureColumn, "output")
+          .na.fill(-1.0) // TODO NA FILL setable
+        newFeatureColumnName += s"(${featureType})"
+      }
+      else if (featureType.endsWith("Boolean")) {
+        digitizedDf = dfCollapsedTwoColumns
+          .withColumn("output", col(featureColumn).cast(DoubleType))
+          // .withColumnRenamed(featureColumn, "output")
+          .na.fill(-1.0) // TODO NA FILL setable
         newFeatureColumnName += s"(${featureType})"
       }
       else {
@@ -382,6 +412,7 @@ object FeatureTypeIdentifier {
         .select(keyColumnNameString, newFeatureColumnName)
 
       // joinableDf.show()
+      // assert(joinableDf.count() == numberRows)
 
       fullDigitizedDf = fullDigitizedDf.join(
         joinableDf,
@@ -406,5 +437,53 @@ object FeatureTypeIdentifier {
     val reducedDfSize = onlyDigitizedDf.count()
     println(s"resulting dataframe has size ${reducedDfSize}")
     onlyDigitizedDf.show()
+
+    println("FIX FEATURE LENGTH")
+
+    // important to bring each feature to fixed length
+    // they are idenitidyiable over starts with ListOf
+    val columnsNameWithVariableFeatureColumnLength: Array[String] = onlyDigitizedDf.columns.filter(_.contains("ListOf"))
+    println(s"Columns we need to fix in length cause they are lists. following columns to be edited:\n${columnsNameWithVariableFeatureColumnLength.mkString(",\n")}")
+
+    var fixedLengthFeatureDf: DataFrame = onlyDigitizedDf.select(
+      (onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*
+    )
+    println("Start Agg")
+    columnsNameWithVariableFeatureColumnLength.foreach(
+      columnName => {
+
+        println(columnName)
+
+        val newColumnName: String = columnName.split("\\(")(0)
+
+        val twoColumnDf = onlyDigitizedDf.select(keyColumnNameString, columnName)
+        val fixedLengthDf = twoColumnDf
+          .select(col(keyColumnNameString), explode_outer(col(columnName)))
+          .groupBy(keyColumnNameString)
+          .agg(
+            mean("col").alias(s"${newColumnName}_mean"),
+            min("col").alias(s"${newColumnName}_min"),
+            max("col").alias(s"${newColumnName}_max"),
+            stddev("col").alias(s"${newColumnName}_stddev"),
+          ).na.fill(-1)
+        fixedLengthDf.show(false)
+        fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, keyColumnNameString)
+      }
+    )
+    fixedLengthFeatureDf.columns.foreach(println(_))
+    println(fixedLengthFeatureDf.count())
+    fixedLengthFeatureDf.show()
+
+    println("ASSEMBLE VECTOR")
+
+    val columnsToAssemble: Array[String] = fixedLengthFeatureDf.columns.filterNot(_ == keyColumnNameString)
+    println(s"columns to assemble:\n${columnsToAssemble.mkString("\n,")}")
+
+    val assembler = new VectorAssembler()
+      .setInputCols(columnsToAssemble)
+      .setOutputCol("features")
+    val output = assembler.transform(dataset)
+    output.select(keyColumnNameString, "features").show()
+
   }
 }
