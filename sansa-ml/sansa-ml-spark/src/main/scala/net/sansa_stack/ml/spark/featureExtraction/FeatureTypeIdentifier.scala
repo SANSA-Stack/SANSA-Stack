@@ -166,7 +166,7 @@ object FeatureTypeIdentifier {
     queryResultDf.unpersist()
 
     val numberRows: Long = collapsedDataframe.count()
-    // println(s"number rows of distinct ids is: $numberRows")
+    println(s"Number distinct ids is: $numberRows")
 
     /**
      * In this Map we collect all gained inforamtion for every feature like type and so on
@@ -228,9 +228,6 @@ object FeatureTypeIdentifier {
         )
 
         featureDescriptions(currentFeatureColumnNameString) = featureSummary
-
-        // debug stuff
-        // collapsedTwoColumnDfwithSize.filter(col("size") > 1).show()
 
         val joinableDf = {
           if (isListOfEntries) {
@@ -418,21 +415,15 @@ object FeatureTypeIdentifier {
         .withColumnRenamed("output", newFeatureColumnName)
         .select(keyColumnNameString, newFeatureColumnName)
 
-      // joinableDf.show()
-      // assert(joinableDf.count() == numberRows)
-
       fullDigitizedDf = fullDigitizedDf.join(
         joinableDf,
         keyColumnNameString
       )
     }
 
-    // println("dataframe only with digitized columns")
-
     val allColumns: Array[String] = fullDigitizedDf.columns
     val nonDigitizedCoulumns: Array[String] = allColumns.filter(_.contains("(notDigitizedYet)"))
     val digitzedColumns: Array[String] = allColumns diff nonDigitizedCoulumns
-    // println(s"digitized columns are: ${digitzedColumns.mkString(", ")}")
 
     if (nonDigitizedCoulumns.size > 0) println(s"we drop following non digitized columns:\n${nonDigitizedCoulumns.mkString("\n")}")
     // println("So simple digitized Dataframe looks like this:")
@@ -448,21 +439,14 @@ object FeatureTypeIdentifier {
 
     println("FIX FEATURE LENGTH")
 
-    // important to bring each feature to fixed length
-    // they are idenitidyiable over starts with ListOf
     val columnsNameWithVariableFeatureColumnLength: Array[String] = onlyDigitizedDf.columns.filter(_.contains("ListOf"))
 
     var fixedLengthFeatureDf: DataFrame = onlyDigitizedDf
       .select((onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*)
       .persist()
-    // println("Dataframe with features of fixed length")
-    // fixedLengthFeatureDf.show(false)
+
     val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
-    // println(s"this dataframe has size: $fixedLengthFeatureDfSize")
 
-    // println(s"Columns we need to fix in length cause they are lists. following columns to be edited:\n${columnsNameWithVariableFeatureColumnLength.mkString(",\n")}")
-
-    // println("Start fixing Length of Feature Columns")
     for (columnName <- columnsNameWithVariableFeatureColumnLength) {
       println(s"Fix number of features in column: $columnName")
 
@@ -483,11 +467,7 @@ object FeatureTypeIdentifier {
       fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, keyColumnNameString)
     }
 
-
-    // println("column Names")
-    // fixedLengthFeatureDf.columns.foreach(println(_))
     val sizeOffixedLengthFeatureDf = fixedLengthFeatureDf.count()
-    // println(sizeOffixedLengthFeatureDf)
     assert(sizeOffixedLengthFeatureDf == fixedLengthFeatureDfSize)
     fixedLengthFeatureDf.show(false)
 
