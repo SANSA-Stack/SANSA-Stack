@@ -67,8 +67,8 @@ object FeatureTypeIdentifier {
         |WHERE {
         |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
-        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
+        | # ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        | # ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
         |
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
@@ -121,8 +121,9 @@ object FeatureTypeIdentifier {
       .setSparqlQuery(queryString)
     val queryResultDf = sparqlFrame
       .transform(dataset)
-      // .cache()
-    queryResultDf.show(false)
+      .persist()
+    queryResultDf
+      .show(false)
     println(f"queryResultDf size ${queryResultDf.count()}")
 
     /*
@@ -148,21 +149,28 @@ object FeatureTypeIdentifier {
      */
 
     println("\nCOLLAPS COLUMNS & IDENTIFY FEATURE CHARACTERISTICS")
-    println(queryResultDf.schema)
+    // println(queryResultDf.schema)
 
     // specify column names
-    val keyColumnNameString: String = "movie"
+    val keyColumnNameString: String = "movie" // TODO setable
     val featureColumns: Seq[String] = List(queryResultDf.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
 
+    /**
+     * This dataframe is a temporary df where we join to always a collapsed column for each feature
+     */
     var collapsedDataframe: DataFrame = queryResultDf
       .select(keyColumnNameString)
       .dropDuplicates()
       .persist()
-      // .cache()
+
+    queryResultDf.unpersist()
 
     val numberRows: Long = collapsedDataframe.count()
-    println(s"number rows of distinct ids is: $numberRows")
+    // println(s"number rows of distinct ids is: $numberRows")
 
+    /**
+     * In this Map we collect all gained inforamtion for every feature like type and so on
+     */
     var featureDescriptions: mutable.Map[String, Map[String, Any]] = mutable.Map()
 
     featureColumns.foreach(
@@ -246,8 +254,6 @@ object FeatureTypeIdentifier {
     featureDescriptions.foreach(println(_))
     val collapsedDfSize = collapsedDataframe.count()
 
-
-    // println(s"check if collapsed dataframe has still needed number of rows: $numberRows , $collapsedDfSize")
     assert(collapsedDfSize == numberRows)
 
     println("\nDIGITIZE FEATURES")
@@ -273,15 +279,13 @@ object FeatureTypeIdentifier {
 
     val fullDigitizedDfSize = fullDigitizedDf.count()
 
-    println(s"intitial fullDigitizedDf has $fullDigitizedDfSize")
-
     for (featureColumn <- collectedFeatureColumns) {
 
       // println(featureColumn)
       val featureType = featureColumn.split("\\(")(1).split("\\)")(0)
       val featureName = featureColumn.split("\\(")(0)
-      println(featureName)
-      println(featureType)
+      // println(featureName)
+      // println(featureType)
 
       val dfCollapsedTwoColumns = collapsedDataframe
         .select(keyColumnNameString, featureColumn)
@@ -422,28 +426,24 @@ object FeatureTypeIdentifier {
         keyColumnNameString
       )
     }
-    println("Resulting Dataframe:")
-    fullDigitizedDf.show(false)
-    val resDFSize = fullDigitizedDf.count()
-    println(s"resulting dataframe has size ${resDFSize}")
 
-    println("dataframe only with digitized columns")
+    // println("dataframe only with digitized columns")
 
     val allColumns: Array[String] = fullDigitizedDf.columns
     val nonDigitizedCoulumns: Array[String] = allColumns.filter(_.contains("(notDigitizedYet)"))
     val digitzedColumns: Array[String] = allColumns diff nonDigitizedCoulumns
-    println(s"digitized columns are: ${digitzedColumns.mkString(", ")}")
+    // println(s"digitized columns are: ${digitzedColumns.mkString(", ")}")
 
-    println(s"we drop following non digitized columns:\n${nonDigitizedCoulumns.mkString("\n")}")
-    println("So simple digitized Dataframe looks like this:")
+    if (nonDigitizedCoulumns.size > 0) println(s"we drop following non digitized columns:\n${nonDigitizedCoulumns.mkString("\n")}")
+    // println("So simple digitized Dataframe looks like this:")
     val onlyDigitizedDf = fullDigitizedDf
       .select(digitzedColumns.map(col(_)): _*)
-      // .limit(1502) // TODO only for debug and memory issue
 
     fullDigitizedDf.unpersist()
 
     val reducedDfSize = onlyDigitizedDf.count()
     println(s"resulting dataframe has size ${reducedDfSize}")
+    assert(reducedDfSize == fullDigitizedDfSize)
     onlyDigitizedDf.show()
 
     println("FIX FEATURE LENGTH")
@@ -455,16 +455,16 @@ object FeatureTypeIdentifier {
     var fixedLengthFeatureDf: DataFrame = onlyDigitizedDf
       .select((onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*)
       .persist()
-    println("Dataframe with features of fixed length")
-    fixedLengthFeatureDf.show(false)
+    // println("Dataframe with features of fixed length")
+    // fixedLengthFeatureDf.show(false)
     val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
-    println(s"this dataframe has size: $fixedLengthFeatureDfSize")
+    // println(s"this dataframe has size: $fixedLengthFeatureDfSize")
 
-    println(s"Columns we need to fix in length cause they are lists. following columns to be edited:\n${columnsNameWithVariableFeatureColumnLength.mkString(",\n")}")
+    // println(s"Columns we need to fix in length cause they are lists. following columns to be edited:\n${columnsNameWithVariableFeatureColumnLength.mkString(",\n")}")
 
-    println("Start Agg")
+    // println("Start fixing Length of Feature Columns")
     for (columnName <- columnsNameWithVariableFeatureColumnLength) {
-      println(columnName)
+      println(s"Fix number of features in column: $columnName")
 
       val newColumnName: String = columnName.split("\\(")(0)
 
@@ -480,33 +480,21 @@ object FeatureTypeIdentifier {
         )
         .na.fill(-1)
 
-
-      fixedLengthDf.show(false)
-
-      val fixedLengthDfSize = fixedLengthDf.count()
-      println(s"An is has a size of $fixedLengthDfSize")
-
       fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, keyColumnNameString)
-
-      assert(fixedLengthDfSize == reducedDfSize)
-
-      println("Intermediate joined DF")
-      fixedLengthFeatureDf.show(false)
-      val fixedLengthFeatureDfCount = fixedLengthFeatureDf.count()
-      println(s"fixedLengthFeatureDf has a size of $fixedLengthFeatureDfCount")
     }
 
 
-    println("column Names")
-    fixedLengthFeatureDf.columns.foreach(println(_))
+    // println("column Names")
+    // fixedLengthFeatureDf.columns.foreach(println(_))
     val sizeOffixedLengthFeatureDf = fixedLengthFeatureDf.count()
-    println(sizeOffixedLengthFeatureDf)
-    fixedLengthFeatureDf.show()
+    // println(sizeOffixedLengthFeatureDf)
+    assert(sizeOffixedLengthFeatureDf == fixedLengthFeatureDfSize)
+    fixedLengthFeatureDf.show(false)
 
     println("ASSEMBLE VECTOR")
 
     val columnsToAssemble: Array[String] = fixedLengthFeatureDf.columns.filterNot(_ == keyColumnNameString)
-    println(s"columns to assemble:\n${columnsToAssemble.mkString("\n")}")
+    println(s"columns to assemble:\n${columnsToAssemble.mkString(", ")}")
 
     val assembler = new VectorAssembler()
       .setInputCols(columnsToAssemble)
