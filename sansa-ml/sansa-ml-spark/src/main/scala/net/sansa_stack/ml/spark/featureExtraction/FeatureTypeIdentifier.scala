@@ -65,11 +65,14 @@ object FeatureTypeIdentifier {
         | ?movie__down_country__down_country_areaInSqKm
         |
         |WHERE {
-        |	?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        |	# this fixes the entities, in this sample to be a movie
+        | ?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
-        | # ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        | # ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
+        | # this is a optional block to gain only a smaller subset of entities, like Superhero-movies
+        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
         |
+        | # From here on we collect our Features
         |	OPTIONAL {
         |		?movie <http://purl.org/dc/terms/date> ?movie__down_date .
         |	}
@@ -124,7 +127,8 @@ object FeatureTypeIdentifier {
       .persist()
     queryResultDf
       .show(false)
-    println(f"queryResultDf size ${queryResultDf.count()}")
+    /* val queryResultDfSize = queryResultDf.count()
+    println(f"queryResultDf size ${}") */
 
     /*
     Classify Column Type
@@ -249,9 +253,9 @@ object FeatureTypeIdentifier {
 
     println("\nFEATURE CHARACTERISTICS")
     featureDescriptions.foreach(println(_))
-    val collapsedDfSize = collapsedDataframe.count()
 
-    assert(collapsedDfSize == numberRows)
+    /* val collapsedDfSize = collapsedDataframe.count()
+    assert(collapsedDfSize == numberRows) TODO move to unit tests */
 
     println("\nDIGITIZE FEATURES")
 
@@ -274,7 +278,7 @@ object FeatureTypeIdentifier {
 
     collapsedDataframe.unpersist()
 
-    val fullDigitizedDfSize = fullDigitizedDf.count()
+    // val fullDigitizedDfSize = fullDigitizedDf.count()
 
     for (featureColumn <- collectedFeatureColumns) {
 
@@ -432,9 +436,9 @@ object FeatureTypeIdentifier {
 
     fullDigitizedDf.unpersist()
 
-    val reducedDfSize = onlyDigitizedDf.count()
+    /* val reducedDfSize = onlyDigitizedDf.count()
     println(s"resulting dataframe has size ${reducedDfSize}")
-    assert(reducedDfSize == fullDigitizedDfSize)
+    assert(reducedDfSize == fullDigitizedDfSize) TODO move to unit tests */
     onlyDigitizedDf.show()
 
     println("FIX FEATURE LENGTH")
@@ -445,7 +449,7 @@ object FeatureTypeIdentifier {
       .select((onlyDigitizedDf.columns diff columnsNameWithVariableFeatureColumnLength).map(col(_)): _*)
       .persist()
 
-    val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
+    // val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
 
     for (columnName <- columnsNameWithVariableFeatureColumnLength) {
       println(s"Fix number of features in column: $columnName")
@@ -467,8 +471,8 @@ object FeatureTypeIdentifier {
       fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, keyColumnNameString)
     }
 
-    val sizeOffixedLengthFeatureDf = fixedLengthFeatureDf.count()
-    assert(sizeOffixedLengthFeatureDf == fixedLengthFeatureDfSize)
+    /* val sizeOffixedLengthFeatureDf = fixedLengthFeatureDf.count()
+    assert(sizeOffixedLengthFeatureDf == fixedLengthFeatureDfSize) TODO Move to unit tests */
     fixedLengthFeatureDf.show(false)
 
     println("ASSEMBLE VECTOR")
@@ -479,11 +483,16 @@ object FeatureTypeIdentifier {
     val assembler = new VectorAssembler()
       .setInputCols(columnsToAssemble)
       .setOutputCol("features")
-    val output = assembler.transform(fixedLengthFeatureDf)
+    val output = assembler
+      .transform(fixedLengthFeatureDf)
+      .persist()
 
     fixedLengthFeatureDf.unpersist()
 
     output.select(keyColumnNameString, "features").show(false)
+
+    val outputSize = output.count()
+    println(s"assembled vector has number of samples: $outputSize")
 
   }
 }
