@@ -179,6 +179,7 @@ object FeatureTypeIdentifier {
 
     featureColumns.foreach(
       currentFeatureColumnNameString => {
+        println(currentFeatureColumnNameString)
         val twoColumnDf = queryResultDf
           .select(keyColumnNameString, currentFeatureColumnNameString)
           .dropDuplicates()
@@ -285,8 +286,8 @@ object FeatureTypeIdentifier {
       // println(featureColumn)
       val featureType = featureColumn.split("\\(")(1).split("\\)")(0)
       val featureName = featureColumn.split("\\(")(0)
-      // println(featureName)
-      // println(featureType)
+      println(featureName)
+      println(featureType)
 
       val dfCollapsedTwoColumns = collapsedDataframe
         .select(keyColumnNameString, featureColumn)
