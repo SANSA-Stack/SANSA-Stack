@@ -42,7 +42,7 @@ object FeatureTypeIdentifier {
       stopOnWarnings = WarningParseMode.IGNORE
     )
       .toDS()
-      // .cache()
+      .persist()
 
     /*
     CREATE FEATURE EXTRACTING SPARQL
@@ -69,8 +69,8 @@ object FeatureTypeIdentifier {
         | ?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
         |
         | # this is a optional block to gain only a smaller subset of entities, like Superhero-movies
-        | ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
-        | ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
+        | # ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre .
+        | # ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> "Superhero"
         |
         | # From here on we collect our Features
         |	OPTIONAL {
