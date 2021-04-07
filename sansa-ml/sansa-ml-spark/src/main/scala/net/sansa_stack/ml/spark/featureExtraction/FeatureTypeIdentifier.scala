@@ -51,7 +51,7 @@ object FeatureTypeIdentifier {
      */
 
     println("\nCREATE FEATURE EXTRACTING SPARQL")
-    val queryString =
+    val manualQueryString =
       """
         | SELECT
         | ?movie
@@ -111,6 +111,8 @@ object FeatureTypeIdentifier {
         |	}
         |}
     """.stripMargin
+
+    val queryString = if (args(1) == "" ) manualQueryString else args(1)
 
     println(queryString)
 
@@ -477,6 +479,8 @@ object FeatureTypeIdentifier {
     fixedLengthFeatureDf.show(false)
 
     println("ASSEMBLE VECTOR")
+
+    // TODO keep information about source for each vector entry s.t. it is explainable
 
     val columnsToAssemble: Array[String] = fixedLengthFeatureDf.columns.filterNot(_ == keyColumnNameString)
     println(s"columns to assemble:\n${columnsToAssemble.mkString(", ")}")
