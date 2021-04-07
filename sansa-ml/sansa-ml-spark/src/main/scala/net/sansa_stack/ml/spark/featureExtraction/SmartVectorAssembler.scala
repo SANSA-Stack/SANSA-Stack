@@ -156,19 +156,6 @@ class SmartVectorAssembler extends Transformer{
       collectedFeatureColumns = collectedFeatureColumns.filterNot(_ == _labelColumn)
     }
 
-    // println(_entityColumn)
-
-    /*
-    Strategies
-    Boolean -> Double
-    BooleanList -> DoubleList
-    Double -> Double
-    DoubleList -> DoubleList
-    CategoricalString -> IndexedString
-    CategoricalStringList -> IndexedStringList
-    NlpString -> Word2VecDoubleVector
-    NlpStringList -> Word2VecDoubleVectorList
-     */
     var fullDigitizedDf: DataFrame = if (_labelColumn != null) {
       collapsedDataframe
         .select(_entityColumn, _labelColumn)
@@ -348,11 +335,6 @@ class SmartVectorAssembler extends Transformer{
 
     fullDigitizedDf.unpersist()
 
-    /* val reducedDfSize = onlyDigitizedDf.count()
-    println(s"resulting dataframe has size ${reducedDfSize}")
-    assert(reducedDfSize == fullDigitizedDfSize) TODO move to unit tests */
-    // onlyDigitizedDf.show()
-
     // println("FIX FEATURE LENGTH")
 
     val columnsNameWithVariableFeatureColumnLength: Array[String] = onlyDigitizedDf.columns.filter(_.contains("ListOf"))
@@ -382,10 +364,6 @@ class SmartVectorAssembler extends Transformer{
 
       fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, _entityColumn)
     }
-
-    /* val sizeOffixedLengthFeatureDf = fixedLengthFeatureDf.count()
-    assert(sizeOffixedLengthFeatureDf == fixedLengthFeatureDfSize) TODO Move to unit tests */
-    // fixedLengthFeatureDf.show(false)
 
     // println("ASSEMBLE VECTOR")
 
