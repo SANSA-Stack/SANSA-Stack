@@ -110,8 +110,9 @@ class SparqlFrame extends Transformer{
     println("SparqlFrame: The collapsByKey is set to true so we collaps the collumns by id column and als collect feature type information which are available in property .getFeatureTypes")
 
     // specify column names
-    val keyColumnNameString: String = if (keyColumnNameString == null) _query.toLowerCase.split("\\?")(1) else keyColumnNameString
+    val keyColumnNameString: String = if (_keyColumnNameString == null) _query.toLowerCase.split("\\?")(1).stripSuffix(" ") else _keyColumnNameString
     assert(df.columns.contains(keyColumnNameString))
+
     val featureColumns: Seq[String] = List(df.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
 
     /**
@@ -134,7 +135,6 @@ class SparqlFrame extends Transformer{
 
     featureColumns.foreach(
       currentFeatureColumnNameString => {
-        println(currentFeatureColumnNameString)
         val twoColumnDf = df
           .select(keyColumnNameString, currentFeatureColumnNameString)
           .dropDuplicates()
@@ -225,7 +225,6 @@ class SparqlFrame extends Transformer{
    */
   def transform(dataset: Dataset[_]): DataFrame = {
     val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
-    // graphRdd.foreach(println(_))
 
     val qef = _queryExcecutionEngine match {
       case SPARQLEngine.Sparqlify =>
