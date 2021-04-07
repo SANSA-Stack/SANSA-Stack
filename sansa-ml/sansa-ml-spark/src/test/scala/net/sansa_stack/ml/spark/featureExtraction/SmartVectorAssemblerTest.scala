@@ -69,8 +69,9 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .setCollapsByKey(true)
     val collapsedDf = sparqlFrame
       .transform(dataset)
+      .cache()
 
-    collapsedDf.show(false)
+    val inputDfSize = collapsedDf.count()
 
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("seed")
@@ -78,6 +79,9 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
 
     val mlReadyDf = smartVectorAssembler
       .transform(collapsedDf)
+      .cache()
+
+    assert(inputDfSize == mlReadyDf.count())
 
     mlReadyDf.show(false)
     mlReadyDf.schema.foreach(println(_))
