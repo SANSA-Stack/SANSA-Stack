@@ -9,10 +9,13 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{BooleanType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.spark.sql.functions.{col, collect_list, max, min, size}
+
+import scala.collection.mutable
 
 /**
  * This SparqlFrame Transformer creates a dataframe based on a SPARQL query
@@ -21,6 +24,9 @@ import org.apache.jena.graph.{Node, NodeFactory, Triple}
 class SparqlFrame extends Transformer{
   var _query: String = _
   var _queryExcecutionEngine: SPARQLEngine.Value = SPARQLEngine.Sparqlify
+  var _collapsByKey: Boolean = false
+  var _featureDescriptions: mutable.Map[String, Map[String, Any]] = null
+  var _keyColumnNameString: String = null
 
   private var _experimentId: org.apache.jena.graph.Node = null
 
@@ -29,6 +35,16 @@ class SparqlFrame extends Transformer{
   protected val spark = SparkSession.builder().getOrCreate()
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
+
+  def setCollapsByKey(keyColumnNameString: String): this.type = {
+    _keyColumnNameString = keyColumnNameString
+    this
+  }
+
+  def setCollapsByKey(collapsByKey: Boolean): this.type = {
+    _collapsByKey = collapsByKey
+    this
+  }
 
   /**
    * setter for query as string
@@ -83,6 +99,123 @@ class SparqlFrame extends Transformer{
     throw new NotImplementedError()
 
   /**
+   * SparqlFrame: The collapsByKey is set to true so we collaps the collumns by id column and als collect
+   * feature type information which are available in property .getFeatureTypes
+   *
+   * @param df the input noncollapsed dataframe
+   * @return the collapsed dataframe
+   */
+  def collapsByKey(df: DataFrame): DataFrame = {
+
+    println("SparqlFrame: The collapsByKey is set to true so we collaps the collumns by id column and als collect feature type information which are available in property .getFeatureTypes")
+
+    // specify column names
+    val keyColumnNameString: String = if (keyColumnNameString == null) _query.toLowerCase.split("\\?")(1) else keyColumnNameString
+    assert(df.columns.contains(keyColumnNameString))
+    val featureColumns: Seq[String] = List(df.columns: _*).filter(!Set(keyColumnNameString).contains(_)).toSeq
+
+    /**
+     * This dataframe is a temporary df where we join to always a collapsed column for each feature
+     * we start with one column df where we only keep the key column
+     */
+    var collapsedDataframe: DataFrame = df
+      .select(keyColumnNameString)
+      .dropDuplicates()
+      .persist()
+
+    df.unpersist()
+
+    val numberRows: Long = collapsedDataframe.count()
+
+    /**
+     * In this Map we collect all gained inforamtion for every feature like type and so on
+     */
+    var featureDescriptions: mutable.Map[String, Map[String, Any]] = mutable.Map()
+
+    featureColumns.foreach(
+      currentFeatureColumnNameString => {
+        println(currentFeatureColumnNameString)
+        val twoColumnDf = df
+          .select(keyColumnNameString, currentFeatureColumnNameString)
+          .dropDuplicates()
+
+        val groupedTwoColumnDf = twoColumnDf
+          .groupBy(keyColumnNameString)
+
+        val collapsedTwoColumnDfwithSize = groupedTwoColumnDf
+          .agg(collect_list(currentFeatureColumnNameString) as currentFeatureColumnNameString)
+          .withColumn("size", size(col(currentFeatureColumnNameString)))
+
+        val minNumberOfElements = collapsedTwoColumnDfwithSize
+          .select("size")
+          .agg(min("size"))
+          .head()
+          .getInt(0)
+
+        val maxNumberOfElements = collapsedTwoColumnDfwithSize
+          .select("size")
+          .agg(max("size"))
+          .head()
+          .getInt(0)
+
+        val nullable: Boolean = if (minNumberOfElements == 0) true else false
+        val datatype: DataType = twoColumnDf.select(currentFeatureColumnNameString).schema(0).dataType
+        val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct.count.toInt
+        val isListOfEntries: Boolean = if (maxNumberOfElements > 1) true else false
+        val availability: Double = collapsedTwoColumnDfwithSize.select("size").filter(col("size") > 0).count().toDouble / numberRows.toDouble
+        /* val medianAlphaRatio: Double = datatype match {
+          case StringType => twoColumnDf.
+          case _ => 0
+        }
+        TODO nlp identification
+         */
+
+        val isCategorical: Boolean = if ((numberDistinctValues.toDouble / numberRows.toDouble) < 0.1) true else false
+
+        var featureType: String = ""
+        if (isListOfEntries) featureType += "ListOf_" else featureType += "Single_"
+        if (isCategorical) featureType += "Categorical_" else featureType += "NonCategorical_"
+        featureType += datatype.toString.split("Type")(0)
+
+        val featureSummary: Map[String, Any] = Map(
+          "featureType" -> featureType,
+          "name" -> currentFeatureColumnNameString,
+          "nullable" -> nullable,
+          "datatype" -> datatype,
+          "numberDistinctValues" -> numberDistinctValues,
+          "isListOfEntries" -> isListOfEntries,
+          "avalability" -> availability,
+        )
+
+        featureDescriptions(currentFeatureColumnNameString) = featureSummary
+
+        val joinableDf = {
+          if (isListOfEntries) {
+            collapsedTwoColumnDfwithSize
+              .select(keyColumnNameString, currentFeatureColumnNameString)
+          }
+          else {
+            twoColumnDf
+              .select(keyColumnNameString, currentFeatureColumnNameString)
+          }
+        }
+        collapsedDataframe = collapsedDataframe
+          .join(joinableDf.withColumnRenamed(currentFeatureColumnNameString, f"${currentFeatureColumnNameString}(${featureType})"), keyColumnNameString)
+      }
+    )
+
+    _featureDescriptions = featureDescriptions
+
+    collapsedDataframe
+  }
+
+
+  def getFeatureDescriptions(): mutable.Map[String, Map[String, Any]] = {
+    assert(_featureDescriptions != null)
+    _featureDescriptions
+  }
+
+  /**
    * creates a native spark Mllib DataFrame with columns corresponding to the projection variables
    *
    * columns are implicitly casted to string or if specified in literals to respective integer ect
@@ -114,102 +247,8 @@ class SparqlFrame extends Transformer{
       .createSchemaMapping()
     val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
-    df
+    val resultDf = if (_collapsByKey) collapsByKey(df) else df
+
+    resultDf
   }
-
-    /* if (_queryExcecutionEngine == "sparqlify") {
-      val graphRdd: RDD[org.apache.jena.graph.Triple] = dataset.rdd.asInstanceOf[RDD[org.apache.jena.graph.Triple]]
-      val qef = dataset.rdd.verticalPartition(RdfPartitionerDefault).sparqlify
-      val resultSet = qef.createQueryExcecution(_query)
-      val schemaMapping = RddOfBindingToDataFrameMapper.createSchemaMapping(resultSet)
-      val df = RddOfBindingToDataFrameMapper.applySchemaMapping(spark, resultSet.getBindings, schemaMapping)
-      df
-    } */
-/*
-    val parser = new ParserSPARQL11()
-    val projectionVars: Seq[Var] = parser.parse(new Query(), _query).getProjectVars.asScala
-    val bindings: RDD[Binding] = getResultBindings(dataset)
-
-    val features: RDD[Seq[Node]] = bindings.map(binding => {
-      projectionVars.map(projectionVar => binding.get(projectionVar))
-    })
-
-    val columns: Seq[String] = projectionVars.map(_.toString().replace("?", ""))
-
-
-    // the next block is for the edge case that no elements are in result
-    if (features.count() == 0) {
-      println(f"[WARNING] the resulting DataFrame is empty!")
-      val emptyDf = spark.createDataFrame(
-        spark.sparkContext.emptyRDD[Row],
-        StructType(columns.map(colName => StructField(colName, StringType, nullable = true)))
-      )
-      return emptyDf
-    }
-
-    val types = features.map(seq => {
-      seq.map(node => {
-        if (node == null) {
-          NullType
-        }
-        else if (node.isLiteral) {
-          // TODO also include possiblity like Datetime and others
-          if (node.getLiteralValue.isInstanceOf[Float]) FloatType
-          else if (node.getLiteralValue.isInstanceOf[Double]) DoubleType
-          else if (node.getLiteralValue.isInstanceOf[Boolean]) BooleanType
-          else if (node.getLiteralValue.isInstanceOf[String]) StringType
-          else if (node.getLiteralValue.isInstanceOf[Int]) IntegerType
-          else StringType
-        }
-        else StringType
-      })
-    })
-
-    var columnTypes = ListBuffer.empty[org.apache.spark.sql.types.DataType]
-    val firstRow = types.take(1).toSeq
-    val numberColumns = firstRow(0).toSeq.size
-    // println(f"We have $numberColumns columns")
-    for (i <- 0 to numberColumns - 1) {
-      val allTypesOfColumn = types.map(_ (i)).filter(_ != NullType)
-      if (allTypesOfColumn.distinct.collect().toSeq.size == 1) {
-        val elements = allTypesOfColumn.take(1).toSeq
-        val element = elements(0).asInstanceOf[org.apache.spark.sql.types.DataType] // .toString
-        columnTypes.append(element)
-      }
-      else {
-        val typeDistribution = allTypesOfColumn.groupBy(identity).mapValues(_.size).collect().toSeq
-        println(
-          f"""
-            |[WARNING] the column type is not clear because different or only null types occured.
-            |\t type distribution is:
-            |\t ${typeDistribution.mkString(" ")}
-            |\t this is why we fallback to StringType
-            |\t """.stripMargin)
-        val element = StringType.asInstanceOf[org.apache.spark.sql.types.DataType] // .toString
-        columnTypes.append(element)
-      }
-    }
-
-    val structTypesList = ListBuffer.empty[StructField]
-    for (i <- 0 to numberColumns - 1) {
-      structTypesList.append(
-        StructField(columns(i), columnTypes(i), nullable = true)
-      )
-    }
-    val schema = StructType(structTypesList.toSeq)
-
-    val featuresNativeScalaDataTypes = features.map(seq => {
-      seq.map(node => {
-        if (node == null) null
-        else {
-          node.isLiteral match {
-            case true => node.getLiteralValue
-            case false => node.toString()
-          }
-        }
-      })
-    })
-
-    spark.createDataFrame(featuresNativeScalaDataTypes.map(Row.fromSeq(_)), schema)
-  } */
 }
