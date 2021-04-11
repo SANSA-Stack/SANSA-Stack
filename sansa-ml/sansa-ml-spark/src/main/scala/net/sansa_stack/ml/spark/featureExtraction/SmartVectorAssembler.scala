@@ -5,8 +5,10 @@ import org.apache.spark.ml.feature.{StopWordsRemover, StringIndexer, Tokenizer, 
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.apache.spark.sql.types.{DoubleType, StringType, StructType}
+import org.apache.spark.sql.types.{Decimal, DoubleType, StringType, StructType}
 import org.apache.spark.sql.functions.{udf, _}
+
+import scala.collection.mutable
 
 /**
  * This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
@@ -30,7 +32,11 @@ class SmartVectorAssembler extends Transformer{
   var _stringCollapsingStrategy: String = "concat"
 
   // null replacement
-  var _nullReplacement: Int = -1
+  var _nullDigitReplacement: Int = -666
+  var _nullStringReplacement: String = "nullString"
+
+  var _word2VecSize = 2
+  var _word2VecMinCount = 1
 
   protected val spark = SparkSession.builder().getOrCreate()
 
@@ -73,11 +79,44 @@ class SmartVectorAssembler extends Transformer{
     this
   }
 
-  /*
-  TODO needed setters setDropNull
-  setNumericCollapsingStrategy
-  setStringCollapsingStrategy
+  /**
+   * Set replacemnet for string or digit
+   * @param datatype
+   * @param value
+   * @return
    */
+  def setNullReplacement(datatype: String, value: Any): this.type = {
+    if (datatype.toLowerCase() == "string") {
+      _nullStringReplacement = value.toString
+    }
+    else if (datatype.toLowerCase == "digit") _nullDigitReplacement = {
+      value.asInstanceOf[Int]
+    }
+    else {
+      println("only digit and string are supported")
+    }
+    this
+  }
+
+  /**
+   * setter for feature non categorical strings which are replaced by a word to vec
+   * @param word2vecSize size of vector
+   * @return transformer
+   */
+  def setWord2VecSize(word2vecSize: Int): this.type = {
+    _word2VecSize = word2vecSize
+    this
+  }
+
+  /**
+   * setter for feature non categorical strings which are replaced by a word to vec
+   * @param word2VecMinCount min number of min word occurencs
+   * @return transformer
+   */
+  def setWord2VecMinCount(word2VecMinCount: Int): this.type = {
+    _word2VecMinCount = word2VecMinCount
+    this
+  }
 
   /**
    * Validate set column to check if we need fallback to first column if not set
@@ -186,7 +225,7 @@ class SmartVectorAssembler extends Transformer{
       if (featureType == "Single_NonCategorical_String") {
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
-          .na.fill("")   // TODO NA FILL setable
+          .na.fill(_nullStringReplacement)
 
         val tokenizer = new Tokenizer()
           .setInputCol(featureColumn)
@@ -205,8 +244,8 @@ class SmartVectorAssembler extends Transformer{
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setMinCount(1)
-          .setVectorSize(2)   // TODO Vector SIze setable
+          .setMinCount(_word2VecMinCount)
+          .setVectorSize(_word2VecSize)
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
@@ -217,8 +256,9 @@ class SmartVectorAssembler extends Transformer{
       else if (featureType == "ListOf_NonCategorical_String") {
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
+          .na.fill(_nullStringReplacement)
           .withColumn("sentences", concat_ws(". ", col(featureColumn)))
-          .na.fill("")   // TODO NA FILL setable
+          .select(_entityColumn, "sentences")
 
         val tokenizer = new Tokenizer()
           .setInputCol("sentences")
@@ -237,8 +277,8 @@ class SmartVectorAssembler extends Transformer{
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
-          .setMinCount(1)
-          .setVectorSize(2)  // TODO Vector SIze setable
+          .setMinCount(_word2VecMinCount)
+          .setVectorSize(_word2VecSize)
         val model = word2vec
           .fit(inputDf)
         digitizedDf = model
@@ -248,7 +288,8 @@ class SmartVectorAssembler extends Transformer{
       }
       else if (featureType == "Single_Categorical_String") {
 
-        val inputDf = dfCollapsedTwoColumns.na.fill("")  // TODO NA FILL setable
+        val inputDf = dfCollapsedTwoColumns
+          .na.fill(_nullStringReplacement)
 
         val indexer = new StringIndexer()
           .setInputCol(featureColumn)
@@ -261,7 +302,7 @@ class SmartVectorAssembler extends Transformer{
 
         val inputDf = dfCollapsedTwoColumns
           .select(col(_entityColumn), explode_outer(col(featureColumn)))
-          .na.fill("")  // TODO NA FILL setable
+          .na.fill(_nullStringReplacement)
 
         val indexer = new StringIndexer()
           .setInputCol("col")
@@ -276,10 +317,25 @@ class SmartVectorAssembler extends Transformer{
         newFeatureColumnName += "(ListOfIndexedString)"
 
       }
+      else if (
+        featureType.startsWith("ListOf") &&
+          (featureType.endsWith("Double") || featureType.endsWith("Decimal") || featureType.endsWith("Int")  || featureType.endsWith("Integer"))
+      ) {
+        digitizedDf = dfCollapsedTwoColumns
+          .select(col(_entityColumn), explode_outer(col(featureColumn)))
+          .withColumnRenamed("col", "output")
+          .na.fill(_nullDigitReplacement)
+          .groupBy(_entityColumn)
+          .agg(collect_list("output") as "output")
+          .select(_entityColumn, "output")
+
+
+        newFeatureColumnName += s"(${featureType})"
+      }
       else if (featureType.endsWith("Double")) {
         digitizedDf = dfCollapsedTwoColumns
           .withColumnRenamed(featureColumn, "output")
-          .na.fill(-1.0) // TODO NA FILL setable
+          .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
         newFeatureColumnName += s"(${featureType})"
       }
@@ -287,7 +343,7 @@ class SmartVectorAssembler extends Transformer{
         digitizedDf = dfCollapsedTwoColumns
           .withColumn("output", col(featureColumn).cast(DoubleType))
           // .withColumnRenamed(featureColumn, "output")
-          .na.fill(-1.0) // TODO NA FILL setable
+          .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
         newFeatureColumnName += s"(${featureType})"
       }
@@ -295,7 +351,7 @@ class SmartVectorAssembler extends Transformer{
         digitizedDf = dfCollapsedTwoColumns
           .withColumn("output", col(featureColumn).cast(DoubleType))
           // .withColumnRenamed(featureColumn, "output")
-          .na.fill(-1.0) // TODO NA FILL setable
+          .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
         newFeatureColumnName += s"(${featureType})"
       }
@@ -303,7 +359,7 @@ class SmartVectorAssembler extends Transformer{
         digitizedDf = dfCollapsedTwoColumns
           // .withColumn("output", col(featureColumn).cast(DoubleType))
           .withColumnRenamed(featureColumn, "output")
-          .na.fill(-1.0) // TODO NA FILL setable
+          .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
         newFeatureColumnName += s"(${featureType})"
       }
@@ -351,6 +407,7 @@ class SmartVectorAssembler extends Transformer{
       val newColumnName: String = columnName.split("\\(")(0)
 
       val twoColumnDf = onlyDigitizedDf.select(_entityColumn, columnName)
+
       val fixedLengthDf = twoColumnDf
         .select(col(_entityColumn), explode_outer(col(columnName)))
         .groupBy(_entityColumn)
@@ -360,7 +417,7 @@ class SmartVectorAssembler extends Transformer{
           max("col").alias(s"${newColumnName}_max"),
           stddev("col").alias(s"${newColumnName}_stddev"),
         )
-        .na.fill(-1)
+        .na.fill(_nullDigitReplacement) // this is needed cause stddev would result in Nan for empty list
 
       fixedLengthFeatureDf = fixedLengthFeatureDf.join(fixedLengthDf, _entityColumn)
     }
