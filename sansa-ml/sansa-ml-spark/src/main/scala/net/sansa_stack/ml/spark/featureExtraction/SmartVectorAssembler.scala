@@ -21,22 +21,22 @@ class SmartVectorAssembler extends Transformer{
   // column specifications
 
   // column name where entity is
-  var _entityColumn: String = null
+  protected var _entityColumn: String = null
   // optional column name if some column should be seperately interpreted as label
-  var _labelColumn: String = null
+  protected var _labelColumn: String = null
   // list of columns which should be used as features
-  var _featureColumns: List[String] = null
+  protected var _featureColumns: List[String] = null
 
   // working process onfiguration
-  var _numericCollapsingStrategy: String = "median"
-  var _stringCollapsingStrategy: String = "concat"
+  protected var _numericCollapsingStrategy: String = "median"
+  protected var _stringCollapsingStrategy: String = "concat"
 
   // null replacement
-  var _nullDigitReplacement: Int = -666
-  var _nullStringReplacement: String = "nullString"
+  protected var _nullDigitReplacement: Int = -1
+  protected var _nullStringReplacement: String = "nullString"
 
-  var _word2VecSize = 2
-  var _word2VecMinCount = 1
+  protected var _word2VecSize = 2
+  protected var _word2VecMinCount = 1
 
   protected val spark = SparkSession.builder().getOrCreate()
 
