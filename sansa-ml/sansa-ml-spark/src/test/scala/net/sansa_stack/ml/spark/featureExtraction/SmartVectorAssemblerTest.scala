@@ -44,7 +44,7 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
     val dataset = getData()
 
     val queryString = """
-        |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasParent__down_name ?seed__down_hasParent__down_age
+        |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasParent__down_name ?seed__down_hasParent__down_age ?seed__down_hasSpouse__down_name ?seed__down_hasSpouse__down_age
         |
         |WHERE {
         |	?seed a <http://dig.isi.edu/Person> .
@@ -63,6 +63,16 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
         |		?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .
         |		?seed__down_hasParent <http://dig.isi.edu/age> ?seed__down_hasParent__down_age .
         |	}
+        |  OPTIONAL {
+        |		?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .
+        |		?seed__down_hasSpouse <http://dig.isi.edu/name> ?seed__down_hasSpouse__down_name .
+        |	}
+        |
+        | OPTIONAL {
+        |		?seed <http://dig.isi.edu/hasSpouse> ?seed__down_hasSpouse .
+        |		?seed__down_hasSpouse <http://dig.isi.edu/age> ?seed__down_hasSpouse__down_age .
+        |	}
+        |
         |}""".stripMargin
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
@@ -71,11 +81,19 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .transform(dataset)
       .cache()
 
+    collapsedDf.show(false)
+
     val inputDfSize = collapsedDf.count()
 
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("seed")
       .setLabelColumn("seed__down_age(Single_NonCategorical_Decimal)")
+      .setNullReplacement("string", "Hallo")
+      .setNullReplacement("digit", -1000)
+      .setWord2VecSize(3)
+      .setWord2VecMinCount(1)
+
+
 
     val mlReadyDf = smartVectorAssembler
       .transform(collapsedDf)
