@@ -35,24 +35,11 @@ object DistRDF2ML {
     // datetime
     val datetime: String = Calendar.getInstance().getTime().toString
 
+    // further comments
+    val comments: String = args(3)
+
     // write
     val writeFolderPath: String = args(2)
-    val writePath: String = writeFolderPath + "DistRDF2ML_" +
-      datetime
-        .replace(":", "")
-        .replace(" ", "") +
-      ".txt"
-
-    // write part
-    val writer = new PrintWriter(new File(writePath))
-    writer.write(s"datetime: $datetime \n")
-    writer.write(s"inputPath: $inputPath \n")
-    writer.write(s"sparqlString: $sparqlString \n")
-    writer.write(s"sparqlFrameCollapse: $sparqlFrameCollapse \n")
-    writer.write(s"svaEntityColumn: $svaEntityColumn \n")
-    writer.write(s"svaLabelColumn: $svaLabelColumn \n")
-    writer.write(s"svaWord2VecSize: $svaWord2VecSize \n")
-    writer.write(s"svaWord2VecMinCount: $svaWord2VecMinCount \n")
 
     println("\nSETUP SPARK SESSION")
     var currentTime: Long = System.nanoTime
@@ -69,8 +56,9 @@ object DistRDF2ML {
     JenaSystem.init()
     val timeSparkSetup = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${timeSparkSetup}")
-    writer.write(s"timeSparkSetup: $timeSparkSetup \n")
-    println(spark.sparkContext.getConf)
+    println("spark information")
+    println(spark.sparkContext.getExecutorMemoryStatus)
+    spark.sparkContext.getConf.getAll.foreach(println)
 
     println("\nREAD IN DATA")
     currentTime = System.nanoTime
@@ -86,7 +74,6 @@ object DistRDF2ML {
     dataset.take(n = 10).foreach(println(_))
     val timeReadIn = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${timeReadIn}")
-    writer.write(s"timeSparkSetup: $timeSparkSetup \n")
 
     println("\nFEATURE EXTRACTION OVER SPARQL")
     currentTime = System.nanoTime
@@ -97,7 +84,6 @@ object DistRDF2ML {
     extractedFeaturesDf.show(false)
     val sparqlFrameTime = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${sparqlFrameTime}")
-    writer.write(s"sparqlFrameTime: $sparqlFrameTime \n")
 
     println("\nSMART VECTOR ASSEMBLER")
     currentTime = System.nanoTime
@@ -108,15 +94,14 @@ object DistRDF2ML {
       .setNullReplacement("digit", -1)
       .setWord2VecSize(svaWord2VecSize)
       .setWord2VecMinCount(svaWord2VecMinCount)
-
      val assembledDf: DataFrame = smartVectorAssembler
        .transform(extractedFeaturesDf)
        .cache()
     assembledDf.show(false)
-    println(f"assembled df has ${assembledDf.count()} rows")
+    val assembledDfSize = assembledDf.count()
+    println(f"assembled df has ${assembledDfSize} rows")
     val timeSmartVectorAssembler = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${timeSmartVectorAssembler}")
-    writer.write(s"timeSmartVectorAssembler: $timeSmartVectorAssembler \n")
 
     println("\nAPPLY Common SPARK MLlib Example Algorithm")
     currentTime = System.nanoTime
@@ -128,7 +113,6 @@ object DistRDF2ML {
       .setOutputCol("indexedLabel")
       .fit(assembledDf).setHandleInvalid("skip")
     val assembledDflabeledIndex = labelIndexer.transform(assembledDf)
-    // assembledDflabeledIndex.show(false)
 
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
@@ -145,9 +129,11 @@ object DistRDF2ML {
       .setOutputCol("predictedLabel")
       .setLabels(labelIndexer.labelsArray(0))
 
-    labelConverter
+    val predictedLabelsDf = labelConverter
       .transform(predictions)
       .select("entityID", "label", "predictedLabel")
+
+    predictedLabelsDf
       .show(false)
 
     // Select (prediction, true label) and compute test error.
@@ -160,12 +146,33 @@ object DistRDF2ML {
 
     val timeSparkMLlib = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${timeSparkMLlib}")
-    writer.write(s"timeSparkMLlib: $timeSparkMLlib \n")
 
     spark.stop()
 
+    // write part
+    val writePath: String = writeFolderPath + "DistRDF2ML_" +
+      datetime
+        .replace(":", "")
+        .replace(" ", "") +
+      ".txt"
+    val writer = new PrintWriter(new File(writePath))
+    writer.write(s"datetime: $datetime \n")
+    writer.write(s"inputPath: $inputPath \n")
+    writer.write(s"sparqlString: $sparqlString \n")
+    writer.write(s"sparqlFrameCollapse: $sparqlFrameCollapse \n")
+    writer.write(s"assembledDfSize: $assembledDfSize \n")
+    writer.write(s"svaEntityColumn: $svaEntityColumn \n")
+    writer.write(s"svaLabelColumn: $svaLabelColumn \n")
+    writer.write(s"svaWord2VecSize: $svaWord2VecSize \n")
+    writer.write(s"svaWord2VecMinCount: $svaWord2VecMinCount \n")
+    writer.write(s"comments: $comments \n")
+    writer.write(s"timeSparkSetup: $timeSparkSetup \n")
+    writer.write(s"timeSparkSetup: $timeSparkSetup \n")
+    writer.write(s"sparqlFrameTime: $sparqlFrameTime \n")
+    writer.write(s"timeSmartVectorAssembler: $timeSmartVectorAssembler \n")
+    writer.write(s"timeSparkMLlib: $timeSparkMLlib \n")
+
     writer.close()
     Source.fromFile(writePath).foreach { x => print(x) }
-
   }
 }
