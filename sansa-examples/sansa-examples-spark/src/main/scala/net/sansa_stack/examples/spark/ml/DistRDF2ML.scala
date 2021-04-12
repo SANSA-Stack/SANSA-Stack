@@ -27,8 +27,8 @@ object DistRDF2ML {
     val sparqlFrameCollapse: Boolean = true
 
     // smartVector assembler
-    val svaEntityColumn: String = "movie"
-    val svaLabelColumn: String = "movie__down_genre__down_film_genre_name(Single_Categorical_String)"
+    val svaEntityColumn: String = sparqlString.split("\\?")(1).stripSuffix(" ").stripPrefix(" ")
+    val svaLabelColumn: String = sparqlString.split("\\?")(2).stripSuffix(" ").stripPrefix(" ")
     val svaWord2VecSize: Int = 5
     val svaWord2VecMinCount: Int = 1
 
@@ -87,9 +87,11 @@ object DistRDF2ML {
 
     println("\nSMART VECTOR ASSEMBLER")
     currentTime = System.nanoTime
+    val labelColumnName = extractedFeaturesDf.columns.filter(_.contains(svaLabelColumn))(0)
+    println(s"svaEntityColumn $svaEntityColumn svaLabelColumn $svaLabelColumn labelColumnName $labelColumnName")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn(svaEntityColumn)
-      .setLabelColumn(svaLabelColumn)
+      .setLabelColumn(labelColumnName)
       .setNullReplacement("string", "null")
       .setNullReplacement("digit", -1)
       .setWord2VecSize(svaWord2VecSize)
