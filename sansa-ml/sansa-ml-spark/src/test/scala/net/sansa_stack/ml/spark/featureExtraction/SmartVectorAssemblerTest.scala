@@ -101,6 +101,8 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
 
     assert(inputDfSize == mlReadyDf.count())
 
+    assert(mlReadyDf.columns.toSet == Set("entityID", "label", "features"))
+
     mlReadyDf.show(false)
     mlReadyDf.schema.foreach(println(_))
   }
