@@ -36,11 +36,21 @@ class SparqlFrame extends Transformer{
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 
+  /**
+   * by which column to collapse if it shouldnt be first column
+   * @param keyColumnNameString column name to collapse
+   * @return transformer itself
+   */
   def setCollapsByKey(keyColumnNameString: String): this.type = {
     _keyColumnNameString = keyColumnNameString
     this
   }
 
+  /**
+   * Decide if we want to collaps the dataframe by an idea and collapse the samples so df consists of one row per entity
+   * @param collapsByKey if yes, it will be collapsed, default is false
+   * @return transformer itself
+   */
   def setCollapsByKey(collapsByKey: Boolean): this.type = {
     _collapsByKey = collapsByKey
     this
@@ -209,7 +219,10 @@ class SparqlFrame extends Transformer{
     collapsedDataframe
   }
 
-
+  /**
+   * get the description of features after sparql extraction to decide over upcoming preprocessing strategies
+   * @return map representeing for each column some feature descriptions
+   */
   def getFeatureDescriptions(): mutable.Map[String, Map[String, Any]] = {
     assert(_featureDescriptions != null)
     _featureDescriptions
