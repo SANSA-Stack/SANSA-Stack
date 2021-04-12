@@ -198,6 +198,7 @@ class SmartVectorAssembler extends Transformer{
     var fullDigitizedDf: DataFrame = if (_labelColumn != null) {
       collapsedDataframe
         .select(_entityColumn, _labelColumn)
+        .withColumnRenamed(_labelColumn, "label")
         .persist()
     }
     else {
@@ -206,7 +207,9 @@ class SmartVectorAssembler extends Transformer{
       .persist()
     }
 
+
     collapsedDataframe.unpersist()
+
 
     for (featureColumn <- collectedFeatureColumns) {
 
@@ -312,7 +315,7 @@ class SmartVectorAssembler extends Transformer{
           .fit(inputDf)
           .transform(inputDf)
           .groupBy(_entityColumn)
-          .agg(collect_set("outputTmp") as "output")
+          .agg(collect_list("outputTmp") as "output")
           .select(_entityColumn, "output")
         newFeatureColumnName += "(ListOfIndexedString)"
 
@@ -381,11 +384,11 @@ class SmartVectorAssembler extends Transformer{
     }
 
     val allColumns: Array[String] = fullDigitizedDf.columns
-    val nonDigitizedCoulumns: Array[String] = allColumns.filter(_.contains("(notDigitizedYet)"))
-    val digitzedColumns: Array[String] = allColumns diff nonDigitizedCoulumns
+    val nonDigitizedCoulumns: Array[String] = allColumns
+      .filter(_.contains("(notDigitizedYet)"))
+    val digitzedColumns: Array[String] = (allColumns diff nonDigitizedCoulumns)
 
     if (nonDigitizedCoulumns.size > 0) println(s"we drop following non digitized columns:\n${nonDigitizedCoulumns.mkString("\n")}")
-    // println("So simple digitized Dataframe looks like this:")
     val onlyDigitizedDf = fullDigitizedDf
       .select(digitzedColumns.map(col(_)): _*)
 
@@ -428,7 +431,7 @@ class SmartVectorAssembler extends Transformer{
 
     var columnsToAssemble: Array[String] = fixedLengthFeatureDf.columns.filterNot(_ == _entityColumn)
     if (_labelColumn != null) {
-      columnsToAssemble = columnsToAssemble.filterNot(_ == _labelColumn)
+      columnsToAssemble = columnsToAssemble.filterNot(_ == "label")
     }
     // println(s"columns to assemble:\n${columnsToAssemble.mkString(", ")}")
 
@@ -443,9 +446,8 @@ class SmartVectorAssembler extends Transformer{
 
     val output = if (_labelColumn != null) {
       assembledDf
-        .select(_entityColumn, _labelColumn, "features")
+        .select(_entityColumn, "label", "features")
         .withColumnRenamed(_entityColumn, "entityID")
-        .withColumnRenamed(_labelColumn, "label")
     }
     else {
       assembledDf
