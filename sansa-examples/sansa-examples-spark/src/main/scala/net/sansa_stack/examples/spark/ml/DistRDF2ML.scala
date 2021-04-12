@@ -12,6 +12,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
+import org.apache.spark.sql.functions.{col, explode}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.io.Source
@@ -106,6 +107,10 @@ object DistRDF2ML {
     println(f"\ntime needed: ${timeSmartVectorAssembler}")
 
     println("\nAPPLY Common SPARK MLlib Example Algorithm")
+    val mlDf = assembledDf
+      .select(col("entityID"), explode(col("label")), col("features"))
+      .withColumnRenamed("col", "label")
+    mlDf.show()
     currentTime = System.nanoTime
     /*
     Indoex Labels
@@ -113,17 +118,18 @@ object DistRDF2ML {
     val labelIndexer = new StringIndexer()
       .setInputCol("label")
       .setOutputCol("indexedLabel")
-      .fit(assembledDf).setHandleInvalid("skip")
-    val assembledDflabeledIndex = labelIndexer.transform(assembledDf)
+      .fit(mlDf)
+      .setHandleInvalid("skip")
+    val mlDflabeledIndex = labelIndexer.transform(mlDf)
 
     val rf = new RandomForestClassifier()
       .setLabelCol("indexedLabel")
       .setFeaturesCol("features")
       .setNumTrees(10)
-    val model = rf.fit(assembledDflabeledIndex.distinct())
+    val model = rf.fit(mlDflabeledIndex.distinct())
 
     // Make predictions
-    val predictions = model.transform(assembledDflabeledIndex)
+    val predictions = model.transform(mlDflabeledIndex)
     // predictions.show(false)
 
     val labelConverter = new IndexToString()
