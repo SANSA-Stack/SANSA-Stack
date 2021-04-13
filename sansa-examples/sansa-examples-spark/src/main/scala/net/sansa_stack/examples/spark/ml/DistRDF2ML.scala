@@ -12,7 +12,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
-import org.apache.spark.sql.functions.{col, explode}
+import org.apache.spark.sql.functions.{asc, col, count, countDistinct, desc, explode}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.io.Source
@@ -81,8 +81,12 @@ object DistRDF2ML {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(sparqlString)
       .setCollapsByKey(sparqlFrameCollapse)
-    val extractedFeaturesDf = sparqlFrame.transform(dataset)
+    val extractedFeaturesDf = sparqlFrame
+      .transform(dataset)
+      .cache()
+    val extractedFeaturesDfSize = extractedFeaturesDf.count()
     extractedFeaturesDf.show(false)
+    println(s"extractedFeaturesDfSize: $extractedFeaturesDfSize")
     val sparqlFrameTime = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${sparqlFrameTime}")
 
