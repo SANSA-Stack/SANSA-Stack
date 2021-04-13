@@ -179,7 +179,7 @@ object DistRDF2ML {
     writer.write(s"svaWord2VecMinCount: $svaWord2VecMinCount \n")
     writer.write(s"comments: $comments \n")
     writer.write(s"timeSparkSetup: $timeSparkSetup \n")
-    writer.write(s"timeSparkSetup: $timeSparkSetup \n")
+    writer.write(s"timeReadIn: $timeReadIn \n")
     writer.write(s"sparqlFrameTime: $sparqlFrameTime \n")
     writer.write(s"timeSmartVectorAssembler: $timeSmartVectorAssembler \n")
     writer.write(s"timeSparkMLlib: $timeSparkMLlib \n")
