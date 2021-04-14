@@ -33,10 +33,12 @@ class SmartVectorAssembler extends Transformer{
 
   // null replacement
   protected var _nullDigitReplacement: Int = -1
-  protected var _nullStringReplacement: String = "nullString"
+  protected var _nullStringReplacement: String = ""
 
   protected var _word2VecSize = 2
   protected var _word2VecMinCount = 1
+  protected var _word2vecTrainingDfSizeRatio: Double = 1
+
 
   protected val spark = SparkSession.builder().getOrCreate()
 
@@ -115,6 +117,16 @@ class SmartVectorAssembler extends Transformer{
    */
   def setWord2VecMinCount(word2VecMinCount: Int): this.type = {
     _word2VecMinCount = word2VecMinCount
+    this
+  }
+
+  /**
+   * setter for ratio of training data in traing word 2 vec model
+   * @param word2vecTrainingDfSizeRatio fraction in sampling of training data df
+   * @return transformer
+   */
+  def setWord2vecTrainingDfSizeRatio(word2vecTrainingDfSizeRatio: Double): this.type = {
+    _word2vecTrainingDfSizeRatio = word2vecTrainingDfSizeRatio
     this
   }
 
@@ -213,7 +225,7 @@ class SmartVectorAssembler extends Transformer{
 
     for (featureColumn <- collectedFeatureColumns) {
 
-      println(featureColumn)
+      // println(featureColumn)
       val featureType = featureColumn
         .split("\\(")(1)
         .split("\\)")(0)
@@ -247,7 +259,7 @@ class SmartVectorAssembler extends Transformer{
         val inputDf = remover
           .transform(tokenizedDf)
           .select(_entityColumn, "filtered")
-          .cache()
+          .persist()
 
         // println(inputDf.count())
         // inputDf.show(false)
@@ -258,8 +270,21 @@ class SmartVectorAssembler extends Transformer{
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
 
+        inputDf.unpersist()
+
+        val word2vecTrainingDf = if (_word2vecTrainingDfSizeRatio == 1) {
+          inputDf
+            .persist()
+        } else {
+          inputDf
+            .sample(withReplacement = false, fraction = _word2vecTrainingDfSizeRatio).toDF()
+            .persist()
+        }
+
         val word2vecModel = word2vec
-          .fit(inputDf)
+          .fit(word2vecTrainingDf)
+
+        word2vecTrainingDf.unpersist()
 
         word2vecModel
           .transform(inputDf)
@@ -289,7 +314,7 @@ class SmartVectorAssembler extends Transformer{
         val inputDf = remover
           .transform(tokenizedDf)
           .select(_entityColumn, "filtered")
-          .cache()
+          .persist()
 
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
@@ -297,8 +322,19 @@ class SmartVectorAssembler extends Transformer{
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
 
+        val word2vecTrainingDf = if (_word2vecTrainingDfSizeRatio == 1) {
+          inputDf
+            .persist()
+        } else {
+          inputDf
+            .sample(withReplacement = false, fraction = _word2vecTrainingDfSizeRatio).toDF()
+            .persist()
+        }
+
         val word2vecModel = word2vec
-          .fit(inputDf)
+          .fit(word2vecTrainingDf)
+
+        word2vecTrainingDf.unpersist()
 
         word2vecModel
           .transform(inputDf)
