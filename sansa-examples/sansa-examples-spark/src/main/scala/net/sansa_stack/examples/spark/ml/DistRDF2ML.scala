@@ -69,7 +69,9 @@ object DistRDF2ML {
         inputPath,
         stopOnBadTerm = ErrorParseMode.SKIP,
         stopOnWarnings = WarningParseMode.IGNORE
-      ).toDS().cache()
+      )
+        .toDS()
+        .persist()
     }
     println(f"\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
@@ -83,12 +85,13 @@ object DistRDF2ML {
       .setCollapsByKey(sparqlFrameCollapse)
     val extractedFeaturesDf = sparqlFrame
       .transform(dataset)
-      .cache()
+      .persist()
     val extractedFeaturesDfSize = extractedFeaturesDf.count()
     extractedFeaturesDf.show(false)
     println(s"extractedFeaturesDfSize: $extractedFeaturesDfSize")
     val sparqlFrameTime = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${sparqlFrameTime}")
+    dataset.unpersist()
 
     println("\nSMART VECTOR ASSEMBLER")
     currentTime = System.nanoTime
@@ -97,18 +100,19 @@ object DistRDF2ML {
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn(svaEntityColumn)
       .setLabelColumn(labelColumnName)
-      .setNullReplacement("string", "null")
+      .setNullReplacement("string", "")
       .setNullReplacement("digit", -1)
       .setWord2VecSize(svaWord2VecSize)
       .setWord2VecMinCount(svaWord2VecMinCount)
      val assembledDf: DataFrame = smartVectorAssembler
        .transform(extractedFeaturesDf)
-       .cache()
+       .persist()
     assembledDf.show(false)
     val assembledDfSize = assembledDf.count()
     println(f"assembled df has ${assembledDfSize} rows")
     val timeSmartVectorAssembler = (System.nanoTime - currentTime) / 1e9d
     println(f"\ntime needed: ${timeSmartVectorAssembler}")
+    extractedFeaturesDf.unpersist()
 
     println("\nAPPLY Common SPARK MLlib Example Algorithm")
     val mlDf = assembledDf
