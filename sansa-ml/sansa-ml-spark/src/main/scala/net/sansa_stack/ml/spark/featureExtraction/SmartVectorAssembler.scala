@@ -249,16 +249,19 @@ class SmartVectorAssembler extends Transformer{
           .select(_entityColumn, "filtered")
           .cache()
 
-        println(inputDf.count())
-        inputDf.show(false)
+        // println(inputDf.count())
+        // inputDf.show(false)
 
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
-        word2vec
+
+        val word2vecModel = word2vec
           .fit(inputDf)
+
+        word2vecModel
           .transform(inputDf)
           .withColumnRenamed("output", newFeatureColumnName)
           .select(_entityColumn, newFeatureColumnName)
@@ -277,6 +280,7 @@ class SmartVectorAssembler extends Transformer{
 
         val tokenizedDf = tokenizer
           .transform(dfCollapsedTwoColumnsNullsReplaced)
+          .select(_entityColumn, "words")
 
         val remover = new StopWordsRemover()
           .setInputCol("words")
@@ -284,14 +288,19 @@ class SmartVectorAssembler extends Transformer{
 
         val inputDf = remover
           .transform(tokenizedDf)
+          .select(_entityColumn, "filtered")
+          .cache()
 
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
-        word2vec
+
+        val word2vecModel = word2vec
           .fit(inputDf)
+
+        word2vecModel
           .transform(inputDf)
           .withColumnRenamed("output", newFeatureColumnName)
           .select(_entityColumn, newFeatureColumnName)
