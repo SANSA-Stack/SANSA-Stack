@@ -213,19 +213,21 @@ class SmartVectorAssembler extends Transformer{
 
     for (featureColumn <- collectedFeatureColumns) {
 
-      // println(featureColumn)
-      val featureType = featureColumn.split("\\(")(1).split("\\)")(0)
-      val featureName = featureColumn.split("\\(")(0)
+      println(featureColumn)
+      val featureType = featureColumn
+        .split("\\(")(1)
+        .split("\\)")(0)
+      val featureName = featureColumn
+        .split("\\(")(0)
       // println(featureName)
       // println(featureType)
 
       val dfCollapsedTwoColumns = collapsedDataframe
         .select(_entityColumn, featureColumn)
 
-      var digitizedDf: DataFrame = fullDigitizedDf
       var newFeatureColumnName: String = featureName
-
-      if (featureType == "Single_NonCategorical_String") {
+      val digitizedDf: DataFrame = if (featureType == "Single_NonCategorical_String") {
+        newFeatureColumnName += "(Word2Vec)"
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
           .na.fill(_nullStringReplacement)
@@ -236,6 +238,7 @@ class SmartVectorAssembler extends Transformer{
 
         val tokenizedDf = tokenizer
           .transform(dfCollapsedTwoColumnsNullsReplaced)
+          .select(_entityColumn, "words")
 
         val remover = new StopWordsRemover()
           .setInputCol("words")
@@ -243,20 +246,25 @@ class SmartVectorAssembler extends Transformer{
 
         val inputDf = remover
           .transform(tokenizedDf)
+          .select(_entityColumn, "filtered")
+          .cache()
+
+        println(inputDf.count())
+        inputDf.show(false)
 
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
-        val model = word2vec
+        word2vec
           .fit(inputDf)
-        digitizedDf = model
           .transform(inputDf)
-
-        newFeatureColumnName += "(Word2Vec)"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType == "ListOf_NonCategorical_String") {
+        newFeatureColumnName += "(Word2Vec)"
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
           .na.fill(_nullStringReplacement)
@@ -282,14 +290,14 @@ class SmartVectorAssembler extends Transformer{
           .setOutputCol("output")
           .setMinCount(_word2VecMinCount)
           .setVectorSize(_word2VecSize)
-        val model = word2vec
+        word2vec
           .fit(inputDf)
-        digitizedDf = model
           .transform(inputDf)
-
-        newFeatureColumnName += "(Word2Vec)"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType == "Single_Categorical_String") {
+        newFeatureColumnName += "(IndexedString)"
 
         val inputDf = dfCollapsedTwoColumns
           .na.fill(_nullStringReplacement)
@@ -298,10 +306,14 @@ class SmartVectorAssembler extends Transformer{
           .setInputCol(featureColumn)
           .setOutputCol("output")
 
-        digitizedDf = indexer.fit(inputDf).transform(inputDf)
-        newFeatureColumnName += "(IndexedString)"
+        indexer
+          .fit(inputDf)
+          .transform(inputDf)
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType == "ListOf_Categorical_String") {
+        newFeatureColumnName += "(ListOfIndexedString)"
 
         val inputDf = dfCollapsedTwoColumns
           .select(col(_entityColumn), explode_outer(col(featureColumn)))
@@ -311,74 +323,93 @@ class SmartVectorAssembler extends Transformer{
           .setInputCol("col")
           .setOutputCol("outputTmp")
 
-        digitizedDf = indexer
+        indexer
           .fit(inputDf)
           .transform(inputDf)
           .groupBy(_entityColumn)
           .agg(collect_list("outputTmp") as "output")
           .select(_entityColumn, "output")
-        newFeatureColumnName += "(ListOfIndexedString)"
-
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (
         featureType.startsWith("ListOf") &&
           (featureType.endsWith("Double") || featureType.endsWith("Decimal") || featureType.endsWith("Int")  || featureType.endsWith("Integer"))
       ) {
-        digitizedDf = dfCollapsedTwoColumns
+        newFeatureColumnName += s"(${featureType})"
+
+        dfCollapsedTwoColumns
           .select(col(_entityColumn), explode_outer(col(featureColumn)))
           .withColumnRenamed("col", "output")
           .na.fill(_nullDigitReplacement)
           .groupBy(_entityColumn)
           .agg(collect_list("output") as "output")
           .select(_entityColumn, "output")
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
 
 
-        newFeatureColumnName += s"(${featureType})"
       }
       else if (featureType.endsWith("Double")) {
-        digitizedDf = dfCollapsedTwoColumns
+        newFeatureColumnName += s"(${featureType})"
+
+        dfCollapsedTwoColumns
           .withColumnRenamed(featureColumn, "output")
           .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
-        newFeatureColumnName += s"(${featureType})"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType.endsWith("Integer")) {
-        digitizedDf = dfCollapsedTwoColumns
+        newFeatureColumnName += s"(${featureType})"
+
+        dfCollapsedTwoColumns
           .withColumn("output", col(featureColumn).cast(DoubleType))
           // .withColumnRenamed(featureColumn, "output")
           .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
-        newFeatureColumnName += s"(${featureType})"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType.endsWith("Boolean")) {
-        digitizedDf = dfCollapsedTwoColumns
+        newFeatureColumnName += s"(${featureType})"
+
+        dfCollapsedTwoColumns
           .withColumn("output", col(featureColumn).cast(DoubleType))
           // .withColumnRenamed(featureColumn, "output")
           .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
-        newFeatureColumnName += s"(${featureType})"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else if (featureType.endsWith("Decimal")) {
-        digitizedDf = dfCollapsedTwoColumns
+        newFeatureColumnName += s"(${featureType})"
+
+        dfCollapsedTwoColumns
           // .withColumn("output", col(featureColumn).cast(DoubleType))
           .withColumnRenamed(featureColumn, "output")
           .na.fill(_nullDigitReplacement)
           .select(_entityColumn, "output")
-        newFeatureColumnName += s"(${featureType})"
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
       else {
-        println("transformation not possible yet")
-        digitizedDf = dfCollapsedTwoColumns
-          .withColumnRenamed(featureColumn, "output")
         newFeatureColumnName += ("(notDigitizedYet)")
+
+        println("transformation not possible yet")
+        dfCollapsedTwoColumns
+          .withColumnRenamed(featureColumn, "output")
+          .withColumnRenamed("output", newFeatureColumnName)
+          .select(_entityColumn, newFeatureColumnName)
       }
 
-      val joinableDf: DataFrame = digitizedDf
+      /* val joinableDf: DataFrame = digitizedDf
         .withColumnRenamed("output", newFeatureColumnName)
         .select(_entityColumn, newFeatureColumnName)
+       */
 
       fullDigitizedDf = fullDigitizedDf.join(
-        joinableDf,
+        digitizedDf,
         _entityColumn
       )
     }
