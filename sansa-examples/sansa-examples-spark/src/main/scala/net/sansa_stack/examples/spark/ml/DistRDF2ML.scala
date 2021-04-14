@@ -30,8 +30,9 @@ object DistRDF2ML {
     // smartVector assembler
     val svaEntityColumn: String = sparqlString.split("\\?")(1).stripSuffix(" ").stripPrefix(" ")
     val svaLabelColumn: String = sparqlString.split("\\?")(2).stripSuffix(" ").stripPrefix(" ")
-    val svaWord2VecSize: Int = 5
+    val svaWord2VecSize: Int = 2
     val svaWord2VecMinCount: Int = 1
+    val svaWord2vecTrainingDfSizeRatio: Double = 1
 
     // datetime
     val datetime: String = Calendar.getInstance().getTime().toString
@@ -104,6 +105,7 @@ object DistRDF2ML {
       .setNullReplacement("digit", -1)
       .setWord2VecSize(svaWord2VecSize)
       .setWord2VecMinCount(svaWord2VecMinCount)
+      // .setWord2vecTrainingDfSizeRatio(svaWord2vecTrainingDfSizeRatio)
      val assembledDf: DataFrame = smartVectorAssembler
        .transform(extractedFeaturesDf)
        .persist()
