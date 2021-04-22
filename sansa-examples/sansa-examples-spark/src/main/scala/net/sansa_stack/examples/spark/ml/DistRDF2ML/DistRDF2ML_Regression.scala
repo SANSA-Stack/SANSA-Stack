@@ -24,7 +24,7 @@ object DistRDF2ML_Regression {
   def main(args: Array[String]): Unit = {
 
     // readIn
-    val inputPath: String = args(0)
+    val inputPath: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
 
     println("\nSETUP SPARK SESSION")
     val spark = {
@@ -160,7 +160,7 @@ object DistRDF2ML_Regression {
     val model = rf.fit(trainingData)
 
     // Make predictions.
-    val predictions = model.transform(trainingData)// testData)
+    val predictions = model.transform(testData)
 
     // Select example rows to display.
     predictions.select("prediction", "label", "features").show(10)
