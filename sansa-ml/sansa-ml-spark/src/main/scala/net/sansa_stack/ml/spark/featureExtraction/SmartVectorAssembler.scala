@@ -405,7 +405,7 @@ class SmartVectorAssembler extends Transformer{
           .withColumnRenamed("output", newFeatureColumnName)
           .select(_entityColumn, newFeatureColumnName)
       }
-      else if (featureType.endsWith("Integer")) {
+      else if (featureType.endsWith("Integer") || featureType.endsWith("Int")) {
         newFeatureColumnName += s"(${featureType})"
 
         dfCollapsedTwoColumns
