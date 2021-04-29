@@ -41,7 +41,7 @@ class SparqlFrame extends Transformer{
    * @param keyColumnNameString column name to collapse
    * @return transformer itself
    */
-  def setCollapsByKey(keyColumnNameString: String): this.type = {
+  def setCollapsColumnName(keyColumnNameString: String): this.type = {
     _keyColumnNameString = keyColumnNameString
     this
   }
