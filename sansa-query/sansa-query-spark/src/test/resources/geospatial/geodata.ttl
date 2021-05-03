@@ -1,0 +1,384 @@
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix sf:    <http://www.opengis.net/ont/sf#> .
+@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix my:    <http://example.org/ApplicationSchema#> .
+
+sf:Polygon  rdf:type     rdfs:Class ;
+        rdfs:subClassOf  sf:Surface .
+
+sf:LineString  rdf:type  rdfs:Class ;
+        rdfs:subClassOf  sf:Curve .
+
+my:PlaceOfInterest  rdf:type  rdfs:Class ;
+        rdfs:subClassOf  geo:Feature .
+
+<http://www.opengis.net/ont/gml#Polygon>
+        rdf:type         rdfs:Class ;
+        rdfs:subClassOf  <http://www.opengis.net/ont/gml#Surface> .
+
+my:hasExactGeometry  rdf:type  rdf:Property ;
+        rdfs:subPropertyOf  geo:hasGeometry ;
+        rdfs:subPropertyOf  geo:hasDefaultGeometry .
+
+my:hasPointGeometry  rdf:type  rdf:Property ;
+        rdfs:subPropertyOf  geo:hasGeometry .
+
+my:A    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:AExactGeom ;
+        my:hasPointGeometry     my:APointGeom ;
+        geo:hasDefaultGeometry  my:AExactGeom ;
+        geo:hasGeometry         my:AExactGeom ;
+        geo:sfEquals            my:A ;
+        geo:ehEquals            my:A ;
+        geo:rcc8eq              my:A ;
+        geo:sfIntersects        my:D ;
+        geo:sfTouches           my:C ;
+        geo:ehMeet              my:C ;
+        geo:rcc8ec              my:C ;
+        geo:sfContains          my:B ;
+        geo:ehContains          my:B ;
+        geo:sfOverlaps          my:D ;
+        geo:ehOverlap           my:D ;
+        geo:rcc8po              my:D ;
+        geo:ehCovers            my:B ;
+        geo:rcc8tppi            my:B ;
+        geo:rcc8ntppi           my:G .
+
+my:AExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:hasSerialization     "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.6 34.1, -83.2 34.1, -83.2 34.5, -83.6 34.5, -83.6 34.1))\n        \n    "^^geo:wktLiteral ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.6 34.1, -83.2 34.1, -83.2 34.5, -83.6 34.5, -83.6 34.1))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-83.6 34.1 -83.2 34.1 -83.2 34.5 -83.6 34.5 -83.6 34.1</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:APointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.4 34.3)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.4 34.3</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:B    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:BExactGeom ;
+        my:hasPointGeometry     my:BPointGeom ;
+        geo:hasDefaultGeometry  my:BExactGeom ;
+        geo:hasGeometry         my:BExactGeom ;
+        geo:sfEquals            my:B ;
+        geo:ehEquals            my:B ;
+        geo:rcc8eq              my:B ;
+        geo:sfDisjoint          my:C ;
+        geo:ehDisjoint          my:C ;
+        geo:rcc8dc              my:C ;
+        geo:sfWithin            my:A ;
+        geo:ehCoveredBy         my:A ;
+        geo:rcc8tpp             my:A .
+
+my:BExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.6 34.1, -83.4 34.1, -83.4 34.3, -83.6 34.3, -83.6 34.1))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-83.6 34.1 -83.4 34.1 -83.4 34.3 -83.6 34.3 -83.6 34.1</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:BPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.5 34.2)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.5 34.2</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:C    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:CExactGeom ;
+        my:hasPointGeometry     my:CPointGeom ;
+        geo:hasDefaultGeometry  my:CExactGeom ;
+        geo:hasGeometry         my:CExactGeom ;
+        geo:sfEquals            my:C ;
+        geo:ehEquals            my:C ;
+        geo:rcc8eq              my:C ;
+        geo:sfDisjoint          my:B ;
+        geo:ehDisjoint          my:B ;
+        geo:rcc8dc              my:B .
+
+my:CExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.2 34.3, -83.0 34.3, -83.0 34.5, -83.2 34.5, -83.2 34.3))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-83.2 34.3 -83.0 34.3 -83.0 34.5 -83.2 34.5 -83.2 34.3</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:CPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.1 34.4)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.1 34.4</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:D    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:DExactGeom ;
+        my:hasPointGeometry     my:DPointGeom ;
+        geo:hasDefaultGeometry  my:DExactGeom ;
+        geo:hasGeometry         my:DExactGeom ;
+        geo:sfEquals            my:D ;
+        geo:ehEquals            my:D ;
+        geo:rcc8eq              my:D ;
+        geo:sfIntersects        my:A .
+
+my:DExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.3 34.0, -83.1 34.0, -83.1 34.2, -83.3 34.2, -83.3 34.0))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-83.3 34.0 -83.1 34.0 -83.1 34.2 -83.3 34.2 -83.3 34.0</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:DPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.2 34.1)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.2 34.1</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:E    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:EExactGeom ;
+        geo:hasDefaultGeometry  my:EExactGeom ;
+        geo:hasGeometry         my:EExactGeom ;
+        geo:sfEquals            my:E ;
+        geo:ehEquals            my:E ;
+        geo:rcc8eq              my:E ;
+        geo:sfCrosses           my:A .
+
+my:EExactGeom  rdf:type          sf:LineString ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#LineString> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> LineString(-83.4 34.0, -83.3 34.3)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:LineString srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\" xmlns:gml=\"http://www.opengis.net/ont/gml\"><gml:posList>-83.4 34.0 -83.3 34.3</gml:posList></gml:LineString>\n    "^^geo:gmlLiteral .
+
+my:F    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:FExactGeom ;
+        geo:hasDefaultGeometry  my:FExactGeom ;
+        geo:hasGeometry         my:FExactGeom ;
+        geo:sfEquals            my:F ;
+        geo:ehEquals            my:F ;
+        geo:rcc8eq              my:F ;
+        geo:ehInside            my:A .
+
+my:FExactGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.4 34.4)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.4 34.4</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:G    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:GExactGeom ;
+        my:hasPointGeometry     my:GPointGeom ;
+        geo:hasDefaultGeometry  my:GExactGeom ;
+        geo:hasGeometry         my:GExactGeom ;
+        geo:rcc8ntpp            my:A .
+
+my:GExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-83.5 34.2, -83.3 34.2, -83.3 34.4, -83.5 34.4, -83.5 34.2))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        \n            <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-83.5 34.2 -83.3 34.2 -83.3 34.4 -83.5 34.4 -83.5 34.2</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n        \n    "^^geo:gmlLiteral .
+
+my:GPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-83.4 34.3)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-83.4 34.3</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:H    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:HExactGeom ;
+        my:hasPointGeometry     my:HPointGeom ;
+        geo:hasDefaultGeometry  my:HExactGeom ;
+        geo:hasGeometry         my:HExactGeom .
+
+my:HExactGeom  rdf:type          sf:LineString ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#LineString> ;
+        geo:isEmpty              true ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                ""^^geo:wktLiteral ;
+        geo:asGML                ""^^geo:gmlLiteral .
+
+my:HPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              true ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                ""^^geo:wktLiteral ;
+        geo:asGML                ""^^geo:gmlLiteral .
+
+my:I    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:IExactGeom ;
+        my:hasPointGeometry     my:IPointGeom ;
+        geo:hasDefaultGeometry  my:IExactGeom ;
+        geo:hasGeometry         my:IExactGeom .
+
+my:IExactGeom  rdf:type          sf:LineString ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#LineString> ;
+        geo:isEmpty              true ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "LINESTRING EMPTY"^^geo:wktLiteral ;
+        geo:asGML                "\n        \n            <LineString xmlns=\"https://www.opengis.net/gml\"><posList></posList></LineString>\n        \n    "^^geo:gmlLiteral .
+
+my:IPointGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              true ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "POINT EMPTY"^^geo:wktLiteral ;
+        geo:asGML                "\n        \n            <Point xmlns=\"https://www.opengis.net/gml\"><posList></posList></Point>\n        \n    "^^geo:gmlLiteral .
+
+my:J    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:JExactGeom ;
+        geo:hasDefaultGeometry  my:JExactGeom ;
+        geo:hasGeometry         my:JExactGeom .
+
+my:JExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            Polygon((-77.089005 38.913574,-77.029953 38.913574,-77.029953 38.886321,-77.089005 38.886321,-77.089005 38.913574))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-77.089005 38.913574 -77.029953 38.913574 -77.029953 38.886321 -77.089005 38.886321 -77.089005 38.913574</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:K    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:KExactGeom ;
+        geo:hasDefaultGeometry  my:KExactGeom ;
+        geo:hasGeometry         my:KExactGeom .
+
+my:KExactGeom  rdf:type          sf:Polygon ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Polygon> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Polygon((-77.089005 38.913574,-77.029953 38.913574,-77.029953 38.886321,-77.089005 38.886321,-77.089005 38.913574))\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Polygon xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:exterior><gml:LinearRing><gml:posList>-77.089005 38.913574 -77.029953 38.913574 -77.029953 38.886321 -77.089005 38.886321 -77.089005 38.913574</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>\n    "^^geo:gmlLiteral .
+
+my:L    rdf:type                my:PlaceOfInterest ;
+        rdf:type                geo:Feature ;
+        rdf:type                geo:SpatialObject ;
+        my:hasExactGeometry     my:LExactGeom ;
+        geo:hasDefaultGeometry  my:LExactGeom ;
+        geo:hasGeometry         my:LExactGeom .
+
+my:LExactGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/OGC/1.3/CRS84> Point(-88.38 31.95)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\"><gml:pos>-88.38 31.95</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
+
+my:M    rdf:type             my:PlaceOfInterest ;
+        rdf:type             geo:SpatialObject ;
+        my:hasExactGeometry  my:MExactGeom .
+
+my:MExactGeom  rdf:type          sf:Point ;
+        rdf:type                 geo:Geometry ;
+        rdf:type                 <http://www.opengis.net/ont/gml#Point> ;
+        geo:isEmpty              false ;
+        geo:isSimple             true ;
+        geo:dimension            2 ;
+        geo:spatialDimension     2 ;
+        geo:coordinateDimension  2 ;
+        geo:asWKT                "\n        \n            <http://www.opengis.net/def/crs/EPSG/0/4326> Point(31.95 -88.38)\n        \n    "^^geo:wktLiteral ;
+        geo:asGML                "\n        <gml:Point xmlns:gml=\"http://www.opengis.net/ont/gml\" srsName=\"http://www.opengis.net/def/crs/EPSG/0/4326\"><gml:pos>31.95 -88.38</gml:pos></gml:Point>\n    "^^geo:gmlLiteral .
