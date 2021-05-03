@@ -80,7 +80,7 @@ object DistRDF2ML_Classification {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(sparqlString)
       .setCollapsByKey(true)
-      .setCollapsByKey("movie")
+      .setCollapsColumnName("movie")
 
     /**
      * dataframe with resulting features

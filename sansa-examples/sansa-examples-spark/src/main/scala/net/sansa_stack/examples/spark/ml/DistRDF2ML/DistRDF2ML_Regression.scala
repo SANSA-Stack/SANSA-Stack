@@ -87,7 +87,7 @@ object DistRDF2ML_Regression {
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(sparqlString)
       .setCollapsByKey(true)
-      .setCollapsByKey("movie")
+      .setCollapsColumnName("movie")
 
     /**
      * dataframe with resulting features
