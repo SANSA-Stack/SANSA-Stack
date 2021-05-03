@@ -57,6 +57,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-geosparql</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.aksw.sparqlify</groupId>
 			<artifactId>sparqlify-core</artifactId>
 		</dependency>

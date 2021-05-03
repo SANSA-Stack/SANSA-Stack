@@ -55,6 +55,9 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
 
 
     qef = new QueryEngineFactoryOntop(spark).create(triples)
+
+    val t = spark.catalog.listTables().filter(_.name.endsWith("aswkt_geosparqlp23wktliteral")).head()
+    spark.table(s"${t.name}").show(false)
   }
 
   /**
@@ -111,8 +114,6 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test(s"Test Ontop with spatial range query as filter") {
-    val t = spark.catalog.listTables().filter(_.name.endsWith("aswkt_geosparqlp23wktliteral")).head()
-    spark.table(s"${t.name}").show(false)
     val query =
       """
         |PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
@@ -129,8 +130,6 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
   }
 
   test(s"Test Ontop with spatial range query as predicate") {
-    val t = spark.catalog.listTables().filter(_.name.endsWith("aswkt_geosparqlp23wktliteral")).head()
-    spark.table(s"${t.name}").show(false)
     val query =
       """
         |PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
@@ -141,6 +140,23 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
         |WHERE {
         |	?s1Geo geo:asWKT ?geo1 .
         | ?geo1 geof:sfIntersects "POLYGON((-87.43839246372724 38.212152318808016,-87.83390027622724 30.873791964989213,-82.16495496372724 30.911502789997847,-80.75870496372724 38.315665464524635,-87.43839246372724 38.212152318808016))"^^geo:wktLiteral
+        |}
+        |""".stripMargin
+    runQuery(query)
+  }
+
+  test(s"Test Ontop with spatial range join") {
+    val query =
+      """
+        |PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+        |PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        |PREFIX geo-sf: <http://www.opengis.net/ont/sf#>
+        |
+        |SELECT ?s1Geo
+        |WHERE {
+        |	?s1Geo geo:asWKT ?geo1 .
+        | ?s2Geo geo:asWKT ?geo2 .
+        |	FILTER(geof:sfIntersects(?geo1, ?geo2))
         |}
         |""".stripMargin
     runQuery(query)
