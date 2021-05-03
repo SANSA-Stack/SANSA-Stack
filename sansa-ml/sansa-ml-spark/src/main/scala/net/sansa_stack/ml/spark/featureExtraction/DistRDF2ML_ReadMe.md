@@ -3,9 +3,12 @@ Within this ReadMe we introduce the usage of the DistRDF2ML framework as part of
 
 ## SANSA DistRDF2ML Examples
 We offer pipelines for:
-- [Regressions]()
-- [Classification]()
-- [Clustering]()
+- [Regressions](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/MmDistSIm/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/DistRDF2ML/DistRDF2ML_Regression.scala)
+- [Classification](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/MmDistSIm/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/DistRDF2ML/DistRDF2ML_Classification.scala)
+- [Clustering](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/MmDistSIm/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/DistRDF2ML/DistRDF2ML_Clustering.scala)
+
+## DistRDF2ML Evaluation
+The processing times of modules across different cluster configurations, Sparql Complexities, and other hyperparameter adjustements are evaluated with this [class](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/MmDistSIm/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/DistRDF2ML/DistRDF2ML_Evaluation.scala). 
 
 ## SANSA-Databricks
 In this repository we collect valuable content to bring the SANSA stack to Databricks platform
