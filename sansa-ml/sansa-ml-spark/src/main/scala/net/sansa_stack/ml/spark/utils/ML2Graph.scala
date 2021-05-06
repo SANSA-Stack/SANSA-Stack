@@ -7,10 +7,11 @@ import net.sansa_stack.rdf.spark.model.ds.TripleOps.spark
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{DoubleType, IntegerType, StringType}
+import org.apache.spark.sql.types.{DecimalType, DoubleType, IntegerType, StringType}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 
 class ML2Graph {
@@ -56,6 +57,8 @@ class ML2Graph {
       case StringType => XSDDatatype.XSDstring
       case DoubleType => XSDDatatype.XSDdouble
       case IntegerType => XSDDatatype.XSDint
+      case DecimalType => XSDDatatype.XSDdouble
+      case _ => XSDDatatype.XSDstring
     }
     println(valueDatatype)
 
@@ -88,14 +91,14 @@ class ML2Graph {
         val experimentTypePropertyNode: Node = NodeFactory.createURI(experimentTypePropertyURIasString)
 
         // entity nodes to prediction blank node
-        val triples: mutable.ArrayBuffer[Triple] = mutable.ArrayBuffer(entityNodes.map(
+        val triples: mutable.ListBuffer[Triple] = entityNodes.map(
           en =>
           Triple.create(
             predictionNode,
             elementPropertyNode,
             en
           )
-        ))
+        ).to[ListBuffer]
 
         // prediction blank node to overall experiment
         triples.append(
