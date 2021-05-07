@@ -3,12 +3,12 @@ package net.sansa_stack.ml.spark.utils
 import java.util.{Calendar, Date}
 
 import net.sansa_stack.rdf.spark.model.TripleOperations
-import net.sansa_stack.rdf.spark.model.ds.TripleOps.spark
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DecimalType, DoubleType, IntegerType, StringType}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -16,51 +16,64 @@ import scala.collection.mutable.ListBuffer
 
 class ML2Graph {
 
-  protected var entityColumns: Array[String] = null
-  protected var valueColumn: String = null
+  protected var _entityColumns: Array[String] = null
+  protected var _valueColumn: String = null
 
-  protected var elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
-  protected var valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
-  protected var predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
-  protected var experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-
-  protected var experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
-
-  val comment: String = null
+  val _comment: String = null
 
   def setValueColumn(valueColumnName: String): this.type = {
-    valueColumn = valueColumnName
+    _valueColumn = valueColumnName
     this
   }
 
   def setEntityColumns(entityColumnNames: Array[String]): this.type = {
-    entityColumns = entityColumnNames
+    _entityColumns = entityColumnNames
     this
   }
 
   def setEntityColumn(entityColumnName: String): this.type = {
-    entityColumns = Array(entityColumnName)
+    _entityColumns = Array(entityColumnName)
     this
   }
 
-  def transform(dataset: DataFrame): RDD[Triple] = {
-    // create experiment node
-    val metagraphDatetime: Date = Calendar.getInstance().getTime()
-    val experimentHash = metagraphDatetime.toString.hashCode.toString
-    val experimentNode = NodeFactory.createBlankNode(experimentHash)
+  def transform(df: Dataset[_]): RDD[Triple] = {
 
-    val experimentTypePropertyNode = NodeFactory.createURI(experimentTypePropertyURIasString)
-    val experimentTypeNode = NodeFactory.createURI(experimentTypeURIasString)
+    val spark = SparkSession.builder.getOrCreate()
+    implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
+
+    val b_valueColumn: Broadcast[String] = spark.sparkContext.broadcast(_valueColumn)
+    val b_entityColumns: Broadcast[Array[String]] = spark.sparkContext.broadcast(_entityColumns)
 
     // get value datatype
-    val valueDatatype = dataset.schema(valueColumn).dataType match {
+    val valueDatatype = df.schema(b_valueColumn.value).dataType match {
       case StringType => XSDDatatype.XSDstring
       case DoubleType => XSDDatatype.XSDdouble
       case IntegerType => XSDDatatype.XSDint
-      case DecimalType => XSDDatatype.XSDdouble
+      // case DecimalType => XSDDatatype.XSDdouble
       case _ => XSDDatatype.XSDstring
     }
-    println(valueDatatype)
+
+    val b_valueDatatype = spark.sparkContext.broadcast(valueDatatype)
+
+
+
+    // strings for URIs
+    var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
+    var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
+    var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+    var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+    var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+
+    // create experiment node
+    val metagraphDatetime: Date = Calendar.getInstance().getTime()
+    val experimentHash: String = metagraphDatetime.toString.hashCode.toString
+    val experimentNode: Node = NodeFactory.createBlankNode(experimentHash)
+
+    val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
+
+
 
     // overall annotation
     // Create all inforamtion for this central node
@@ -74,55 +87,54 @@ class ML2Graph {
 
     // transform dataframe to metagraph
     // now for the small triples:
-    val metagraph: RDD[Triple] = dataset
+    val metagraph: RDD[Triple] = df
       .rdd
-      .flatMap(r => {
-        val row = r.asInstanceOf[Row]
-        val entityNames: Array[String] = entityColumns.map(row.getAs[String](_))
+      .flatMap(row => {
+        val entityNames: Array[String] = b_entityColumns.value.map(row.asInstanceOf[Row].getAs[String](_)) /* if (b_entityColumns.value.size == 2) {
+          Array(row.asInstanceOf[Row].getAs[String](0), row.asInstanceOf[Row].getAs[String](1))
+        } else {
+          Array(row.asInstanceOf[Row].getAs[String](0))
+        } */
+
         val entityNodes: Array[Node] = entityNames.map(NodeFactory.createURI(_))
-        val value: String = row.getAs[String](valueColumn)
-        val valueNode = NodeFactory.createLiteralByValue(value, valueDatatype)
+        val value: String = row.asInstanceOf[Row].getAs[Any](b_valueColumn.value).toString
+        val valueNode = NodeFactory.createLiteralByValue(value, b_valueDatatype.value)
 
         val predictionNode: Node = NodeFactory.createBlankNode(experimentHash + entityNames.mkString("").hashCode)
 
-        val predictionPropertyNode: Node = NodeFactory.createURI(predictionPropertyURIasString)
-        val elementPropertyNode: Node = NodeFactory.createURI(elementPropertyURIasString)
-        val valuePropertyURINode: Node = NodeFactory.createURI(valuePropertyURIasString)
-        val experimentTypePropertyNode: Node = NodeFactory.createURI(experimentTypePropertyURIasString)
+        val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
+        val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
+        val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
+        // val experimentTypePropertyNode: Node = NodeFactory.createURI(experimentTypePropertyURIasString)
 
         // entity nodes to prediction blank node
-        val triples: mutable.ListBuffer[Triple] = entityNodes.map(
-          en =>
+        val entityNodeTriples: Array[Triple] = entityNodes.map(
+          entityNode =>
           Triple.create(
             predictionNode,
             elementPropertyNode,
-            en
+            entityNode
           )
-        ).to[ListBuffer]
+        )
 
         // prediction blank node to overall experiment
-        triples.append(
+        val valueExperimentTriples: Array[Triple] = Array(
           Triple.create(
             experimentNode,
             predictionPropertyNode,
             predictionNode
-          )
-        )
-
-        // prediction blank node to predicted value
-        triples.append(
+          ),
           Triple.create(
-            experimentNode,
+            predictionNode,
             valuePropertyURINode,
             valueNode
           )
         )
-        triples
-
+        entityNodeTriples ++ valueExperimentTriples
       })
-      .union(centralNodeTriples)
 
-    metagraph
+
+    metagraph.union(centralNodeTriples)
 
   }
 }
