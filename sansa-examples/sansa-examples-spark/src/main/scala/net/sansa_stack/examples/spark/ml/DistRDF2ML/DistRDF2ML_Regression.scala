@@ -5,16 +5,19 @@ import java.util.Calendar
 
 import net.sansa_stack.examples.spark.ml.DistRDF2ML.DistRDF2ML_Evaluation
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
+import net.sansa_stack.ml.spark.utils.ML2Graph
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
+import org.apache.jena.graph.Triple
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
 import org.apache.spark.ml.regression.RandomForestRegressor
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, collect_list, explode}
 import org.apache.spark.sql.types.IntegerType
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -167,16 +170,14 @@ object DistRDF2ML_Regression {
     val predictions = model.transform(testData)
 
     // Select example rows to display.
-    predictions.select("prediction", "label", "features").show(10)
+    predictions.select("entityID", "prediction", "label", "features").show(10)
+    predictions.show()
 
-    // Select (prediction, true label) and compute test error.
-    val evaluator = new RegressionEvaluator()
-      .setLabelCol("label")
-      .setPredictionCol("prediction")
-      .setMetricName("rmse")
-    val rmse = evaluator.evaluate(predictions)
-    println(s"Root Mean Squared Error (RMSE) on test data = $rmse")
+    val ml2Graph = new ML2Graph()
+      .setEntityColumn("entityID")
+      .setValueColumn("prediction")
 
-    println(s"Learned regression forest model:\n ${model}")
+    val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
+    metagraph.take(10).foreach(println(_))
   }
 }
