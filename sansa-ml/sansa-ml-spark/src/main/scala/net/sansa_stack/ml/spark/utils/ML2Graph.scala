@@ -133,8 +133,6 @@ class ML2Graph {
         entityNodeTriples ++ valueExperimentTriples
       })
 
-
-    metagraph.union(centralNodeTriples)
-
+    centralNodeTriples.union(metagraph)
   }
 }
