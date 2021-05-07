@@ -1,13 +1,16 @@
 package net.sansa_stack.examples.spark.ml.DistRDF2ML
 
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
+import net.sansa_stack.ml.spark.utils.ML2Graph
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.graph.Triple
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.evaluation.{ClusteringEvaluator, RegressionEvaluator}
 import org.apache.spark.ml.regression.RandomForestRegressor
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -55,7 +58,8 @@ object DistRDF2ML_Clustering {
       SELECT
       ?movie
       ?movie__down_genre__down_film_genre_name
-      ?movie__down_title ?movie__down_runtime
+      ?movie__down_title
+      ?movie__down_runtime
       ?movie__down_actor__down_actor_name
 
       WHERE {
@@ -138,6 +142,13 @@ object DistRDF2ML_Clustering {
     predictions
       .select("entityID", "prediction")
       .show(false)
+
+    val ml2Graph = new ML2Graph()
+      .setEntityColumn("entityID")
+      .setValueColumn("prediction")
+
+    val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
+    metagraph.take(10).foreach(println(_))
 
     // Evaluate clustering by computing Silhouette score
     val evaluator = new ClusteringEvaluator()
