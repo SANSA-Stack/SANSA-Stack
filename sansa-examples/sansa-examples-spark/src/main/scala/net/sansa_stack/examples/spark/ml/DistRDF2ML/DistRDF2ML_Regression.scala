@@ -8,6 +8,7 @@ import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlF
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.graph
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
@@ -16,7 +17,7 @@ import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.sql.functions.{col, collect_list, explode}
 import org.apache.spark.sql.types.IntegerType
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.io.Source
 
@@ -43,7 +44,7 @@ object DistRDF2ML_Regression {
     /**
      * Read in dataset of Jena Triple representing the Knowledge Graph
      */
-    val dataset = {
+    val dataset: Dataset[graph.Triple] = {
       NTripleReader.load(
         spark,
         inputPath,
@@ -53,6 +54,7 @@ object DistRDF2ML_Regression {
         .toDS()
         .cache()
     }
+    // dataset.rdd.coalesce(1).saveAsNTriplesFile(args(0).replace(".", " ") + "clean.nt")
     println(f"\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
 
@@ -64,7 +66,9 @@ object DistRDF2ML_Regression {
       SELECT
       ?movie
       ?movie__down_genre__down_film_genre_name
-      ?movie__down_title ?movie__down_runtime
+      ?movie__down_title
+      (<http://www.w3.org/2001/XMLSchema#int>(?movie__down_runtime) as ?movie__down_runtime_asInt)
+      ?movie__down_runtime
       ?movie__down_actor__down_actor_name
 
       WHERE {
