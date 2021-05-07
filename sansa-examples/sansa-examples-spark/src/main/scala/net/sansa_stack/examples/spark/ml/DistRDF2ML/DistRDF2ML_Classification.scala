@@ -1,15 +1,18 @@
 package net.sansa_stack.examples.spark.ml.DistRDF2ML
 
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
+import net.sansa_stack.ml.spark.utils.ML2Graph
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.graph.Triple
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
 import org.apache.spark.ml.regression.RandomForestRegressor
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, explode}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -57,7 +60,8 @@ object DistRDF2ML_Classification {
       SELECT
       ?movie
       ?movie__down_genre__down_film_genre_name
-      ?movie__down_title ?movie__down_runtime
+      ?movie__down_title
+      (<http://www.w3.org/2001/XMLSchema#int>(?movie__down_runtime) as ?movie__down_runtime_asInt)
       ?movie__down_actor__down_actor_name
 
       WHERE {
@@ -99,21 +103,6 @@ object DistRDF2ML_Classification {
     extractedFeaturesDf.show(10, false)
     // extractedFeaturesDf.schema.foreach(println(_))
 
-    println("FEATURE EXTRACTION POSTPROCESSING")
-    /**
-     * Here we adjust things in dataframe which do not fit to our expectations like:
-     * the fact that the runtime is in rdf data not annotated to be a double
-     * but easy castable
-     */
-    val postprocessedFeaturesDf = extractedFeaturesDf
-      .withColumn("movie__down_runtime(ListOf_NonCategorical_Int)", col("movie__down_runtime(ListOf_NonCategorical_String)").cast("array<int>"))
-      .drop("movie__down_runtime(ListOf_NonCategorical_String)")
-      .withColumn("movie__down_runtime(Single_NonCategorical_Int)", col("movie__down_runtime(ListOf_NonCategorical_Int)").getItem(0))
-      .drop("movie__down_runtime(ListOf_NonCategorical_Int)")
-    postprocessedFeaturesDf.show(10, false)
-
-    // postprocessedFeaturesDf.withColumn("tmp", col("movie__down_runtime(ListOf_NonCategorical_Int)").getItem(0)).show(false)
-
     println("\nSMART VECTOR ASSEMBLER")
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("movie")
@@ -125,7 +114,7 @@ object DistRDF2ML_Classification {
       // .setWord2vecTrainingDfSizeRatio(svaWord2vecTrainingDfSizeRatio)
 
     val assembledDf: DataFrame = smartVectorAssembler
-     .transform(postprocessedFeaturesDf)
+     .transform(extractedFeaturesDf)
      .cache()
 
     assembledDf.show(10, false)
@@ -183,6 +172,13 @@ object DistRDF2ML_Classification {
 
     // Select example rows to display.
     predictions.select("predictedLabel", "label", "features").show(20)
+
+    val ml2Graph = new ML2Graph()
+      .setEntityColumn("entityID")
+      .setValueColumn("predictedLabel")
+
+    val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
+    metagraph.take(10).foreach(println(_))
 
     // Select (prediction, true label) and compute test error.
     val evaluator = new MulticlassClassificationEvaluator()
