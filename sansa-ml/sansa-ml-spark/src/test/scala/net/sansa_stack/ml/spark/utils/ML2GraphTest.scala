@@ -7,6 +7,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.jena.graph.Triple
+import org.apache.spark.sql.functions.col
 import org.scalatest.FunSuite
 
 
@@ -98,6 +99,7 @@ class ML2GraphTest extends FunSuite with SharedSparkContext{
 
     val mlReadyDf = smartVectorAssembler
       .transform(collapsedDf)
+      .withColumn("label", col("label").cast("double"))
       .cache()
 
     assert(inputDfSize == mlReadyDf.count())
@@ -111,7 +113,7 @@ class ML2GraphTest extends FunSuite with SharedSparkContext{
       .setEntityColumn("entityID")
       .setValueColumn("label")
 
-    val metagraph: RDD[Triple] = ml2Graph.transform(mlReadyDf)
+    val metagraph: RDD[Triple] = ml2Graph.transform(mlReadyDf.select("entityID", "label"))
     metagraph.foreach(println(_))
   }
 }
