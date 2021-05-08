@@ -3,7 +3,7 @@ default:
 	wget -O jars/sansa.jar https://github.com/SANSA-Stack/SANSA-Stack/releases/download/v0.8.0-RC1/sansa-stack-spark_2.12-0.8.0-RC1-jar-with-dependencies.jar		
 up:
 	docker network create spark-net
-	docker-compose up -d
+	docker-compose pull ; docker-compose up -d
 down:
 	docker-compose down
 	docker network rm spark-net
