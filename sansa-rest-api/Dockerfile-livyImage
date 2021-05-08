@@ -1,0 +1,92 @@
+# select operating system
+FROM ubuntu:16.04
+
+# install operating system packages 
+RUN apt-get update -y &&  apt-get install git curl gettext unzip wget software-properties-common python python-software-properties python-pip python3-pip dnsutils make -y 
+
+## add more packages, if necessary
+# install Java8
+RUN add-apt-repository ppa:webupd8team/java -y && apt-get update && apt-get -y install openjdk-8-jdk-headless
+
+# install boto3 library for PySpark applications to connect to S3
+RUN pip3 install boto3==1.9
+
+
+# use bpkg to handle complex bash entrypoints
+# setting this env explicitly is required to get the bpkg install script working 
+ENV USER=root
+RUN curl -Lo- "https://raw.githubusercontent.com/bpkg/bpkg/master/setup.sh" | bash
+RUN bpkg install cha87de/bashutil -g
+## add more bash dependencies, if necessary 
+
+# add config, init and source files 
+# entrypoint
+ADD init /opt/docker-init
+ADD conf /opt/docker-conf
+
+# folders
+RUN mkdir /opt/apache-livy
+RUN mkdir /var/apache-spark-binaries/
+
+
+
+# apache spark
+RUN wget https://downloads.apache.org/spark/spark-3.0.2/spark-3.0.2-bin-hadoop2.7.tgz
+RUN  tar -xvzf spark-3.0.2-bin-hadoop2.7.tgz -C /opt/
+RUN wget https://github.com/SANSA-Stack/SANSA-Stack/releases/download/v0.8.0-RC1/sansa-stack-spark_2.12-0.8.0-RC1-jar-with-dependencies.jar
+RUN mv sansa-stack-spark_2.12-0.8.0-RC1-jar-with-dependencies.jar /opt/spark-3.0.2-bin-hadoop2.7/jars
+#COPY ./jars/sansa2.jar /opt/spark-3.0.2-bin-hadoop2.7/jars
+COPY ./jars/commons-codec-1.15.jar /opt/spark-3.0.2-bin-hadoop2.7/jars
+
+# set Python3 as default
+RUN rm  /usr/bin/python
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+#mvn
+ARG MAVEN_VERSION=3.8.1
+ARG USER_HOME_DIR="/root"
+ARG SHA=0ec48eb515d93f8515d4abe465570dfded6fa13a3ceb9aab8031428442d9912ec20f066b2afbf56964ffe1ceb56f80321b50db73cf77a0e2445ad0211fb8e38d
+ARG BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
+
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && curl -fsSL -o /tmp/apache-maven.tar.gz ${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz \
+  && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
+  && tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 \
+  && rm -f /tmp/apache-maven.tar.gz \
+  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
+
+# install python libraries
+RUN wget https://bootstrap.pypa.io/pip/3.5/get-pip.py
+RUN python get-pip.py pip==19.3.1
+#RUN pip3 install --upgrade pip
+RUN pip install setuptools-rust
+RUN pip install flake8
+RUN pip install pytest-runner
+RUN pip install cloudpickle
+RUN pip install requests
+#RUN pip install requests-kerberos
+RUN pip install flaky
+RUN pip install pytest
+
+#livy
+WORKDIR /home
+RUN git clone https://github.com/apache/incubator-livy.git
+WORKDIR /home/incubator-livy/
+RUN git checkout 4d8a912699683b973eee76d4e91447d769a0cb0d
+RUN mvn clean package -DskipTests
+#COPY ./incubator-livy /home/incubator-livy/
+RUN mv /home/incubator-livy/ /opt/incubator-livy/
+#WORKDIR /
+
+# Logging dir
+RUN mkdir /opt/incubator-livy/logs
+
+# expose ports
+EXPOSE 8998
+
+# start from init folder
+WORKDIR /opt/docker-init
+ENTRYPOINT ["./entrypoint"]

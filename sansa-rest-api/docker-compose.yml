@@ -1,0 +1,138 @@
+version: '3.9'
+
+services:
+  spark:
+    container_name: spark
+    image: fmoghaddam/sansaspark:v1
+    environment:
+      - SPARK_MODE=master
+      - SPARK_DEPLOY_MODE=cluter
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes: 
+      - ./jars/sansa.jar:/opt/bitnami/spark/jars/sansa.jar
+    ports:
+      - '8080:8080'
+      - '7077:7077'
+      - '4040:4040'
+    networks: 
+      - spark-net
+  spark-worker-1:
+    container_name: spark-worker-1
+    image: fmoghaddam/sansaspark:v1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes: 
+      - ./jars/sansa.jar:/opt/bitnami/spark/jars/sansa.jar  
+    networks: 
+      - spark-net
+  spark-worker-2:
+    container_name: spark-worker-2
+    image: fmoghaddam/sansaspark:v1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes: 
+      - ./jars/sansa.jar:/opt/bitnami/spark/jars/sansa.jar
+    networks: 
+      - spark-net
+  livy:
+    container_name: livy
+    image: fmoghaddam/sansalivy:v2
+    ports:
+      - 8998:8998
+    environment: 
+      - SPARK_MASTER_ENDPOINT=spark
+      - SPARK_MASTER_PORT=7077
+    depends_on: 
+      - spark
+      - namenode
+      - datanode
+      - hue
+      - spark-worker-1
+      - spark-worker-2      
+    networks: 
+      - spark-net
+  hue:
+    container_name: hue
+    image: fmoghaddam/sansahue:v1
+    ports:
+      - 8088:8088
+    environment:
+      - NAMENODE_HOST=namenode
+      - SPARK_MASTER=spark://spark:7077
+    depends_on:      
+      - namenode
+    networks: 
+      - spark-net
+  namenode:
+    image: fmoghaddam/sansanamenode:v1
+    container_name: namenode
+    hostname: namenode
+    ports:
+     - 8020:8020
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - CORE_CONF_hadoop_http_staticuser_user=root
+      - CORE_CONF_hadoop_proxyuser_hue_hosts=*
+      - CORE_CONF_hadoop_proxyuser_hue_groups=*
+      - HDFS_CONF_dfs_webhdfs_enabled=true
+      - HDFS_CONF_dfs_permissions_enabled=false    
+    healthcheck:
+      interval: 5s
+      retries: 100
+      start_period: 10s
+    volumes:
+      - ./data/namenode:/hadoop/dfs/name
+    networks: 
+      - spark-net
+  datanode:    
+    image: fmoghaddam/sansadatanode:v1
+    container_name: datanode
+    hostname: datanode
+    volumes:
+      - ./data/datanode:/hadoop/dfs/data
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+    depends_on:
+      - namenode
+    healthcheck:
+      interval: 5s
+      retries: 100
+      start_period: 10s
+    networks: 
+      - spark-net
+  apiwrapper:
+    image: fmoghaddam/sansarest:v2
+    container_name: rest
+    environment:
+      - LIVY_URL_PORT=http://livy:8998
+      - SANSA_JAR_LOCATION=hdfs://namenode:8020/data/sansa.jar
+      - NAMENODE=namenode
+      - DATANODE=datanode
+      - NAMENODE_HOST=hdfs://namenode:8020
+    ports:
+      - 8085:8085    
+    depends_on: 
+      - livy
+    networks: 
+      - spark-net
+networks:
+  spark-net:
+    external: true
