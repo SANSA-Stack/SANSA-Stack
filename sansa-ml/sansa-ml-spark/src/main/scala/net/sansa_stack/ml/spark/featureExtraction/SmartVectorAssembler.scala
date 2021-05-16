@@ -39,6 +39,8 @@ class SmartVectorAssembler extends Transformer{
   protected var _word2VecMinCount = 1
   protected var _word2vecTrainingDfSizeRatio: Double = 1
 
+  protected var _stringIndexerTrainingDfSizeRatio: Double = 1
+
 
   protected val spark = SparkSession.builder().getOrCreate()
 
@@ -127,6 +129,16 @@ class SmartVectorAssembler extends Transformer{
    */
   def setWord2vecTrainingDfSizeRatio(word2vecTrainingDfSizeRatio: Double): this.type = {
     _word2vecTrainingDfSizeRatio = word2vecTrainingDfSizeRatio
+    this
+  }
+
+  /**
+   * setter for ratio of training data in training string indexer
+   * @param stringIndexerTrainingDfSizeRatio fraction in sampling of training data df
+   * @return transformer
+   */
+  def setStringIndexerTrainingDfSizeRatio(stringIndexerTrainingDfSizeRatio: Double): this.type = {
+    _stringIndexerTrainingDfSizeRatio = stringIndexerTrainingDfSizeRatio
     this
   }
 
@@ -346,6 +358,7 @@ class SmartVectorAssembler extends Transformer{
 
         val inputDf = dfCollapsedTwoColumns
           .na.fill(_nullStringReplacement)
+          .cache()
 
         val indexer = new StringIndexer()
           .setInputCol(featureColumn)
@@ -363,13 +376,23 @@ class SmartVectorAssembler extends Transformer{
         val inputDf = dfCollapsedTwoColumns
           .select(col(_entityColumn), explode_outer(col(featureColumn)))
           .na.fill(_nullStringReplacement)
+          .cache()
+
+        val stringIndexerTrainingDf = if (_stringIndexerTrainingDfSizeRatio == 1) {
+          inputDf
+            .persist()
+        } else {
+          inputDf
+            .sample(withReplacement = false, fraction = _stringIndexerTrainingDfSizeRatio).toDF()
+            .persist()
+        }
 
         val indexer = new StringIndexer()
           .setInputCol("col")
           .setOutputCol("outputTmp")
 
         indexer
-          .fit(inputDf)
+          .fit(stringIndexerTrainingDf)
           .transform(inputDf)
           .groupBy(_entityColumn)
           .agg(collect_list("outputTmp") as "output")
