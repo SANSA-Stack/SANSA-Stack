@@ -12,7 +12,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.dsl.expressions.StringToAttributeConversionHelper
-import org.apache.spark.sql.functions.{col, unix_timestamp}
+import org.apache.spark.sql.functions.{col, dayofmonth, dayofweek, dayofyear, hour, minute, month, second, unix_timestamp, year}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 object PLATOON_3A_Regression {
@@ -61,7 +61,7 @@ object PLATOON_3A_Regression {
 
       OPTIONAL{
       ?building <https://w3id.org/bot#containsZone> ?zone .
-      ?zone <rdfs:label> ?zoneLabel .
+      ?zone <http://www.w3.org/2000/01/rdf-schema#label> ?zoneLabel .
       }
 
       OPTIONAL {
@@ -116,14 +116,22 @@ object PLATOON_3A_Regression {
      */
     val postprocessedFeaturesDf: DataFrame = extractedFeaturesDf
       .withColumn("evalTime_asDatetime(Single_NonCategorical_String)", col("evalTime_asString(Single_NonCategorical_String)").cast("timestamp"))
-      .withColumn("unix_timestamp(Single_NonCategorical_Decimal)", unix_timestamp(col("evalTime_asDatetime(Single_NonCategorical_String)")))
-      .withColumn("evalTime_asInt(Single_NonCategorical_Int)", col("unix_timestamp(Single_NonCategorical_Decimal)").cast("int"))
+      .withColumn("unix_timestamp(Single_NonCategorical_Int)", unix_timestamp(col("evalTime_asDatetime(Single_NonCategorical_String)")).cast("int"))
+      .withColumn("dayOfWeek(Single_NonCategorical_Int)", dayofweek(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("dayOfMonth(Single_NonCategorical_Int)", dayofmonth(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("dayOfYear(Single_NonCategorical_Int)", dayofyear(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("year(Single_NonCategorical_Int)", year(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("month(Single_NonCategorical_Int)", month(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("hour(Single_NonCategorical_Int)", hour(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("minute(Single_NonCategorical_Int)", minute(col("evalTime_asDatetime(Single_NonCategorical_String)")))
+      .withColumn("second(Single_NonCategorical_Int)", second(col("evalTime_asDatetime(Single_NonCategorical_String)")))
       .drop("evalTime_asString(Single_NonCategorical_String)")
-      .select(
+      .drop("evalTime_asDatetime(Single_NonCategorical_String)")
+      /* .select(
         "building",
         "occupancyValue(Single_NonCategorical_Decimal)",
         "evalTime_asInt(Single_NonCategorical_Int)"
-      )
+      ) */
     postprocessedFeaturesDf.show(10, false)
     postprocessedFeaturesDf.schema.foreach(println(_))
 
@@ -133,7 +141,7 @@ object PLATOON_3A_Regression {
     val smartVectorAssembler = new SmartVectorAssembler()
       .setEntityColumn("building")
       .setLabelColumn("occupancyValue(Single_NonCategorical_Decimal)")
-      .setFeatureColumns(List("evalTime_asInt(Single_NonCategorical_Int)"))
+      // .setFeatureColumns(List("evalTime_asInt(Single_NonCategorical_Int)"))
       // .setNullReplacement("string", "")
       // .setNullReplacement("digit", -1)
       // .setWord2VecSize(5)
