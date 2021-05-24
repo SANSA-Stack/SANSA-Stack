@@ -273,9 +273,6 @@ class SmartVectorAssembler extends Transformer{
           .select(_entityColumn, "filtered")
           .persist()
 
-        // println(inputDf.count())
-        // inputDf.show(false)
-
         val word2vec = new Word2Vec()
           .setInputCol("filtered")
           .setOutputCol("output")
@@ -400,6 +397,53 @@ class SmartVectorAssembler extends Transformer{
           .withColumnRenamed("output", newFeatureColumnName)
           .select(_entityColumn, newFeatureColumnName)
       }
+      else if (featureType.contains("Timestamp") & featureType.contains("Single")) {
+        dfCollapsedTwoColumns
+          .withColumn(featureName + "UnixTimestamp(Single_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
+          .withColumn(featureName + "DayOfWeek(Single_NonCategorical_Int)", dayofweek(col(featureColumn)))
+          .withColumn(featureName + "DayOfMonth(Single_NonCategorical_Int)", dayofmonth(col(featureColumn)))
+          .withColumn(featureName + "DayOfYear(Single_NonCategorical_Int)", dayofyear(col(featureColumn)))
+          .withColumn(featureName + "Year(Single_NonCategorical_Int)", year(col(featureColumn)))
+          .withColumn(featureName + "Month(Single_NonCategorical_Int)", month(col(featureColumn)))
+          .withColumn(featureName + "Hour(Single_NonCategorical_Int)", hour(col(featureColumn)))
+          .withColumn(featureName + "Minute(Single_NonCategorical_Int)", minute(col(featureColumn)))
+          .withColumn(featureName + "Second(Single_NonCategorical_Int)", second(col(featureColumn)))
+          .drop(featureColumn)
+      }
+      else if (featureType.contains("Timestamp") & featureType.contains("ListOf")) {
+        val df0 = dfCollapsedTwoColumns
+        val df1 = df0
+          .select(col(_entityColumn), explode_outer(col(featureColumn)))
+          .withColumnRenamed("col", featureColumn)
+
+        val df2 = df1
+          .withColumn(featureName + "UnixTimestamp(ListOf_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
+          .withColumn(featureName + "DayOfWeek(ListOf_NonCategorical_Int)", dayofweek(col(featureColumn)))
+          .withColumn(featureName + "DayOfMonth(ListOf_NonCategorical_Int)", dayofmonth(col(featureColumn)))
+          .withColumn(featureName + "DayOfYear(ListOf_NonCategorical_Int)", dayofyear(col(featureColumn)))
+          .withColumn(featureName + "Year(ListOf_NonCategorical_Int)", year(col(featureColumn)))
+          .withColumn(featureName + "Month(ListOf_NonCategorical_Int)", month(col(featureColumn)))
+          .withColumn(featureName + "Hour(ListOf_NonCategorical_Int)", hour(col(featureColumn)))
+          .withColumn(featureName + "Minute(ListOf_NonCategorical_Int)", minute(col(featureColumn)))
+          .withColumn(featureName + "Second(ListOf_NonCategorical_Int)", second(col(featureColumn)))
+          .drop(featureColumn)
+          .persist()
+
+        val subFeatureColumns = df2.columns.filter(_ != _entityColumn)
+        var df3 = df0
+            .select(_entityColumn)
+            .persist()
+        for (subFeatureColumn <- subFeatureColumns) {
+          val df4 = df2.select(_entityColumn, subFeatureColumn)
+            .groupBy(_entityColumn)
+            .agg(collect_list(subFeatureColumn) as subFeatureColumn)
+          df3 = df3.join(df4, _entityColumn)
+        }
+
+        df2.unpersist()
+        df3
+      }
+
       else if (
         featureType.startsWith("ListOf") &&
           (featureType.endsWith("Double") || featureType.endsWith("Decimal") || featureType.endsWith("Int")  || featureType.endsWith("Integer"))
@@ -471,11 +515,6 @@ class SmartVectorAssembler extends Transformer{
           .select(_entityColumn, newFeatureColumnName)
       }
 
-      /* val joinableDf: DataFrame = digitizedDf
-        .withColumnRenamed("output", newFeatureColumnName)
-        .select(_entityColumn, newFeatureColumnName)
-       */
-
       fullDigitizedDf = fullDigitizedDf.join(
         digitizedDf,
         _entityColumn
@@ -504,7 +543,7 @@ class SmartVectorAssembler extends Transformer{
     // val fixedLengthFeatureDfSize = fixedLengthFeatureDf.count()
 
     for (columnName <- columnsNameWithVariableFeatureColumnLength) {
-      // println(s"Fix number of features in column: $columnName")
+      println(s"Fix number of features in column: $columnName")
 
       val newColumnName: String = columnName.split("\\(")(0)
 
