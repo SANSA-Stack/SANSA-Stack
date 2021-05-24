@@ -1,21 +1,27 @@
 package net.sansa_stack.query.spark.ops.rdd
 
+import java.sql.Timestamp
 import java.util
+import java.util.Calendar
 
 import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
-import org.aksw.jena_sparql_api.rdf.collections.NodeMapperFromRdfDatatype
+import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
 import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
 import org.aksw.r2rml.common.vocab.R2rmlTerms
 import org.apache.jena.datatypes.TypeMapper
+import org.apache.jena.datatypes.xsd.XSDDateTime
+import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{DataType, StructField, StructType}
+import org.apache.spark.sql.types.{DataType, DataTypes, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Mapper from SPARQL bindings to DataFrames
@@ -91,14 +97,78 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
   def considerDatatypeRemap(tgtType: String, typeMapper: TypeMapper): String = {
     var result = tgtType
     try {
-      getSparkDatatype(tgtType, typeMapper)
+      getNodeToSparkMapper(tgtType, typeMapper)
       // If as spark datatype was obtained then accept the given datatype
     } catch {
-      // Fall back to string
-      case _: Exception => result = XSD.xstring.getURI
+      case _: Exception =>
+        // Fall back to string
+        val fallbackType = XSD.xstring.getURI
+        logger.debug("No mapping for %s - falling back to ".format(tgtType, fallbackType))
+        result = fallbackType
     }
 
     result
+  }
+
+  def sqlTimestampToCalendar(timestamp: java.sql.Timestamp): Calendar = {
+    val calendar = Calendar.getInstance
+    calendar.setTimeInMillis(timestamp.getTime)
+    calendar
+  }
+
+  def sqlDateToCalendar(timestamp: java.sql.Date): Calendar = {
+    val calendar = Calendar.getInstance
+    calendar.setTimeInMillis(timestamp.getTime)
+    calendar
+  }
+
+
+  /**
+   * Function that returns a registry of custom rdf datatype to Spark mappings.
+   *
+   * FIXME Convert this method into a proper registry:
+   *   A singleton instance that wraps the map and upon initialization adds the default registrations
+   *
+   * @return
+   */
+  def getNodeToSparkMapperRegistry(): java.util.Map[String, NodeToSparkMapper] = {
+    val registry = new java.util.HashMap[String, NodeToSparkMapper]()
+
+    val typeMapper = TypeMapper.getInstance()
+
+    // Mapping of xsd:date to DataTypes.DateType
+    {
+      val datatypeIri = XSD.date.getURI
+      val dataType = DataTypes.DateType
+      val rdfDatatype = typeMapper.getSafeTypeByName(datatypeIri)
+      val nodeMapper: NodeMapper[Object] = NodeMapperDelegating.create[Object](
+        classOf[java.sql.Date],
+        x => x.isLiteral && x.getLiteralDatatype != null && classOf[XSDDateTime].equals(x.getLiteralDatatype.getJavaClass),
+        x => NodeFactory.createLiteralByValue(sqlDateToCalendar(x.asInstanceOf[java.sql.Date]), rdfDatatype),
+        x => new java.sql.Date(x.getLiteralValue.asInstanceOf[XSDDateTime].asCalendar().getTimeInMillis)
+      )
+      val nodeToSparkMapper = NodeToSparkMapperImpl(dataType, nodeMapper)
+      registry.put(datatypeIri, nodeToSparkMapper)
+    }
+
+    // Mapping of xsd:dateTime and xsd:dateTimeStamp to DataTypes.TimestampType
+    {
+      for (datatypeIri <- Seq(XSD.dateTime.getURI, XSD.dateTimeStamp.getURI)) {
+        val dataType = DataTypes.TimestampType
+        val rdfDatatype = typeMapper.getSafeTypeByName(datatypeIri)
+
+        val nodeMapper: NodeMapper[Object] = NodeMapperDelegating.create[Object](
+          classOf[Timestamp],
+          x => x.isLiteral && x.getLiteralDatatype != null && classOf[XSDDateTime].equals(x.getLiteralDatatype.getJavaClass),
+          x => NodeFactory.createLiteralByValue(sqlTimestampToCalendar(x.asInstanceOf[Timestamp]), rdfDatatype),
+          x => new Timestamp(x.getLiteralValue.asInstanceOf[XSDDateTime].asCalendar().getTimeInMillis)
+        )
+        val nodeToSparkMapper = NodeToSparkMapperImpl(dataType, nodeMapper)
+        registry.put(datatypeIri, nodeToSparkMapper)
+      }
+    }
+
+    registry
   }
 
   /**
@@ -110,14 +180,26 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
    * @param typeMapper
    * @return
    */
-  def getSparkDatatype(datatypeIri: String, typeMapper: TypeMapper): DataType = {
+  def getNodeToSparkMapper(datatypeIri: String, typeMapper: TypeMapper): NodeToSparkMapper = {
     val effectiveDatatypeIri = getEffectiveDatatype(datatypeIri)
 
-    val rdfDatatype = typeMapper.getSafeTypeByName(effectiveDatatypeIri)
-    val javaClass = rdfDatatype.getJavaClass
+    val registry = getNodeToSparkMapperRegistry()
 
-    val dataType = DataTypeUtils.getSparkType(javaClass)
-    dataType
+    var result = registry.get(effectiveDatatypeIri)
+
+    if (result == null) {
+      val rdfDatatype = typeMapper.getSafeTypeByName(effectiveDatatypeIri)
+      val javaClass = rdfDatatype.getJavaClass
+
+      if (javaClass == null) {
+        throw new IllegalStateException("SchemaMapper: Don't know how to handle: %s. Maybe consider registering a fallback to xsd:string?".format(effectiveDatatypeIri))
+      } else {
+        val dataType = DataTypeUtils.getSparkType(javaClass)
+        val nodeMapper: NodeMapper[Object] = new NodeMapperFromRdfDatatype(rdfDatatype)
+        result = NodeToSparkMapperImpl(dataType, nodeMapper)
+      }
+    }
+    result
   }
 
   /**
@@ -141,7 +223,8 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
       val datatypeIri = fieldMapping.getDatatypeIri
 
       val name = v.getVarName
-      val dataType = getSparkDatatype(datatypeIri, typeMapper)
+      val nodeToSparkMapper = getNodeToSparkMapper(datatypeIri, typeMapper)
+      val dataType = nodeToSparkMapper.getSparkDatatype
       val isNullable = fieldMapping.isNullable
 
       StructField(name, dataType, isNullable)
@@ -152,7 +235,18 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
     logger.debug("Created target schema: " + targetSchema)
     // println(targetSchema)
 
-    val rows: RDD[Row] = bindings.map(mapToRow(_, schemaMapping))
+    val rows: RDD[Row] = bindings.mapPartitions(it => {
+      // Set up the nodeToSparkMappers; setting those up here avoids
+      // serialization issues
+      val nodeToSparkMappers = schemaMapping.getDefinedVars.iterator().asScala.map(v => {
+        val fieldMapping: FieldMapping = schemaMapping.getFieldMapping.get(v)
+        val datatypeIri = fieldMapping.getDatatypeIri
+        getNodeToSparkMapper(datatypeIri, TypeMapper.getInstance())
+      }).toSeq
+
+      val rowMapper = row => mapToRow(row, schemaMapping, nodeToSparkMappers)
+      it.map(rowMapper)
+    })
     sparkSession.createDataFrame(rows, targetSchema)
   }
 
@@ -170,10 +264,13 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
     }
   }
 
-  def mapToRow(binding: Binding, schemaMapping: SchemaMapping): Row = {
-    val typeMapper = TypeMapper.getInstance
+  def mapToRow(
+                binding: Binding,
+                schemaMapping: SchemaMapping,
+                nodeToSparkMappers: Seq[NodeToSparkMapper]): Row = {
+    val seq = schemaMapping.getDefinedVars.iterator().asScala.zipWithIndex.map { case (v, i) =>
 
-    val seq = schemaMapping.getDefinedVars.iterator().asScala.map(v => {
+      val nodeToSparkMapper = nodeToSparkMappers(i)
 
       val fieldMapping = schemaMapping.getFieldMapping.get(v)
       val decisionTreeExpr = fieldMapping.getDefinition
@@ -183,15 +280,16 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
         if (node == null) null
         else if (node.isURI) node.getURI
         else if (node.isBlank) node.getBlankNodeLabel
-        else NodeMapperFromRdfDatatype.toJavaCore(node, typeMapper.getSafeTypeByName(
-          getEffectiveDatatype(fieldMapping.getDatatypeIri)))
+        else nodeToSparkMapper.getNodeMapper().toJava(node)
+/*        else NodeMapperFromRdfDatatype.toJavaCore(node, typeMapper.getSafeTypeByName(
+          getEffectiveDatatype(fieldMapping.getDatatypeIri))) */
       }
 
       // Special handling for BigInteger which needs to be converted to BigDecimal
       val effectiveJavaValue = DataTypeUtils.enforceSparkCompatibility(rawJavaValue)
 
       effectiveJavaValue
-    }).toSeq
+    }.toSeq
 
     Row.fromSeq(seq)
   }
