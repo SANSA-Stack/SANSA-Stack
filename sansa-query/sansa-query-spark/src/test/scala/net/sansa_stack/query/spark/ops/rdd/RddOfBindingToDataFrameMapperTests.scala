@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.ops.rdd
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
+import org.aksw.jena_sparql_api.schema_mapping.TypePromoterImpl
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Var
@@ -28,8 +29,11 @@ class RddOfBindingToDataFrameMapperTests
       import net.sansa_stack.rdf.spark.partition._
 
       val triplesString =
-      """<urn:s> <urn:p> "2021-02-25T16:30:12Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
-      """.stripMargin
+      """<urn:s1> <urn:p> "2021-02-25T16:30:12Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .
+        |<urn:s2> <urn:p> "2021-02-26"^^<http://www.w3.org/2001/XMLSchema#date> .
+        |<urn:s3> <urn:p> "5"^^<http://www.w3.org/2001/XMLSchema#int> .
+        |<urn:s4> <urn:p> "6"^^<http://www.w3.org/2001/XMLSchema#long> .
+        |      """.stripMargin
 
       val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
       var graphRdd: RDD[org.apache.jena.graph.Triple] = spark.sparkContext.parallelize(it)
@@ -42,6 +46,7 @@ class RddOfBindingToDataFrameMapperTests
 
       val schemaMapping = RddOfBindingToDataFrameMapper
         .configureSchemaMapper(resultSet)
+        .setTypePromotionStrategy(TypePromoterImpl.create())
         .setVarToFallbackDatatype((v: Var) => null)
         .createSchemaMapping
 
