@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>sansa-inference-parent_2.12</artifactId>
+    <artifactId>sansa-inference-parent_2.11</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.8.0-RC1</version>
+    <version>0.8.0-RC1-backport</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>sansa-inference-common_2.12</artifactId>
+  <artifactId>sansa-inference-common_2.11</artifactId>
   <name>Inference API - Common</name>
   <description>A set of common objects used in the Inference API</description>
 

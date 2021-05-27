@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC1</version>
+        <artifactId>sansa-parent_2.11</artifactId>
+        <version>0.8.0-RC1-backport</version>
     </parent>
 
-    <artifactId>sansa-spark-cli_2.12</artifactId>
+    <artifactId>sansa-spark-cli_2.11</artifactId>
     <packaging>jar</packaging>
 
 <!--

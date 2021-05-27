@@ -70,7 +70,7 @@ object LMDB_Pipeline {
       0,
       1,
       5,
-      featuresInOptionalBlocks = true,
+      featuresInOptionalBlocks = true
     )
 
     println(autoSparqlString)
@@ -194,7 +194,7 @@ object LMDB_Pipeline {
     val labelConverter = new IndexToString()
       .setInputCol("prediction")
       .setOutputCol("predictedLabel")
-      .setLabels(labelIndexer.labelsArray(0))
+      .setLabels(labelIndexer.labels)
     labelConverter.transform(predictions).select("id", "label", "predictedLabel").show(false)
 
     // Select (prediction, true label) and compute test error.

@@ -14,8 +14,7 @@ import org.apache.jena.sparql.expr._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
-
-import scala.jdk.CollectionConverters.asScalaIteratorConverter
+import collection.JavaConverters._
 
 class RddOfBindingOpsTests extends FunSuite with DataFrameSuiteBase {
 

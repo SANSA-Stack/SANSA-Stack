@@ -251,7 +251,7 @@ object FeatureExtractingSparqlGenerator {
                     ratioNumberSeeds: Double = 1.0,
                     numberRandomWalks: Int = 0,
                     sortedByLinks: Boolean = false,
-                    featuresInOptionalBlocks: Boolean = true,
+                    featuresInOptionalBlocks: Boolean = true
                   ): (String, List[String]) = {
 
     // create the sparql to reach seeds and maybe sort them by ths sparql as well

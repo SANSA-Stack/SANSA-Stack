@@ -2,6 +2,7 @@ package net.sansa_stack.query.spark.ops.rdd
 
 import java.util
 
+import com.datastax.bdp.util.ScalaJavaUtil
 import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
@@ -16,6 +17,8 @@ import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+
+import scala.compat.java8.FunctionConverters._
 
 /**
  * Mapper from SPARQL bindings to DataFrames
@@ -59,7 +62,7 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
 
     // Create a linked hash set from the list of result vars
     // The schema mapper will respect the order
-    val javaResultVars = new util.LinkedHashSet(resultSet.getResultVars.asJava)
+    val javaResultVars: util.Set[Var] = new util.LinkedHashSet(resultSet.getResultVars.asJava)
 
     // Gather result set statistics using the analytic functions
     val usedDatatypesAndNulls = resultSet.getBindings.javaCollect(
@@ -70,11 +73,11 @@ object RddOfBindingToDataFrameMapper extends LazyLogging {
     // Supply the statistics to the schema mapper
     val schemaMapper = SchemaMapperImpl.newInstance
       .setSourceVars(javaResultVars)
-      .setSourceVarToDatatypes((v: Var) => usedDatatypesAndNulls.get(v).getKey)
-      .setSourceVarToNulls((v: Var) => usedDatatypesAndNulls.get(v).getValue)
+      .setSourceVarToDatatypes( asJavaFunction { (v: Var) => usedDatatypesAndNulls.get(v).getKey })
+      .setSourceVarToNulls( asJavaFunction { (v: Var) => usedDatatypesAndNulls.get(v).getValue })
       .setTypePromotionStrategy(TypePromoterImpl.create)
       .setVarToFallbackDatatypeToString()
-      .setTypeRemap(considerDatatypeRemap(_, typeMapper))
+      .setTypeRemap( asJavaFunction {considerDatatypeRemap(_, typeMapper)})
 
     schemaMapper
   }

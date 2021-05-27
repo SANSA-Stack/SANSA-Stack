@@ -26,6 +26,8 @@ import org.semanticweb.owlapi.model.OWLOntology
 
 import java.util.Properties
 import scala.collection.JavaConverters._
+import scala.compat.java8.FunctionConverters._
+
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T
@@ -440,7 +442,7 @@ object QueryEngineOntop {
     // expand shortcuts of R2RML model
     val expandedMappingsModel = ModelFactory.createDefaultModel()
     expandedMappingsModel.add(mappingsModel)
-    R2rmlLib.streamTriplesMaps(expandedMappingsModel).forEach(tm => R2rmlLib.expandShortcuts(tm))
+    R2rmlLib.streamTriplesMaps(expandedMappingsModel).forEach( asJavaConsumer {tm => R2rmlLib.expandShortcuts(tm)})
 
     new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology)
   }

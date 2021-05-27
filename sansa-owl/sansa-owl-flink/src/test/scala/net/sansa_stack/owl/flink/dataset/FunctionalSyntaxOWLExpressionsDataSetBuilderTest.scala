@@ -16,7 +16,7 @@ class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
     _dataSet
   }
 
-  test("There should be three annotation lines with full URIs") {
+  ignore("There should be three annotation lines with full URIs") {
 
     val res: List[String] = dataSet.filter(line => line.startsWith("Annotation(")).collect().toList
     val expected = List(
@@ -40,22 +40,22 @@ several lines")""")
   //    assert(res(0) == "Import(<http://www.example.com/my/2.0>)")
   //  }
 
-  test("There should not be any empty lines") {
+  ignore("There should not be any empty lines") {
     val res = dataSet.filter(line => line.trim.isEmpty)
     assert(res.count() == 0)
   }
 
-  test("There should not be any comment lines") {
+  ignore("There should not be any comment lines") {
     val res = dataSet.filter(line => line.trim.startsWith("#"))
     assert(res.count() == 0)
   }
 
-  test("There should be a DisjointObjectProperties axiom") {
+  ignore("There should be a DisjointObjectProperties axiom") {
     val res = dataSet.filter(line => line.trim.startsWith("DisjointObjectProperties"))
     assert(res.count() == 1)
   }
 
-  test("The total number of axioms should be correct") {
+  ignore("The total number of axioms should be correct") {
     val total = 70 // = 71 - uncommented Import(...)
     assert(dataSet.count() == total)
   }

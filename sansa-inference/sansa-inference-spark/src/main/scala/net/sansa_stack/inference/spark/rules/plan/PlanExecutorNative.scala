@@ -158,7 +158,7 @@ class PlanExecutorNative(sc: SparkContext)
     // get the available child expressions
     val childExpressions = (child match {
       case logical.Filter(condition, filterChild) => expressionsFor(filterChild)
-      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
+      case logical.Join(left, right, Inner, Some(condition)) =>
         var list = new mutable.ListBuffer[Expression]()
         list ++= expressionsFor(left) ++ expressionsFor(right)
         val eCond = expressionsFor(condition, isJoin = true).map(expr => expr.simpleString(maxFields))
@@ -239,7 +239,7 @@ class PlanExecutorNative(sc: SparkContext)
 
   def executePlan[T >: Product, U <: Product](logicalPlan: LogicalPlan, triples: RDD[Product]): RDD[Product] = {
     logicalPlan match {
-      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
+      case logical.Join(left, right, Inner, Some(condition)) =>
         // process left child
         val leftRDD = executePlan(left, triples)
 
@@ -264,7 +264,7 @@ class PlanExecutorNative(sc: SparkContext)
         val childExpressions = expressionsFor(child)
         applyFilter(condition, childExpressions, childRDD)
       case default =>
-        trace(default.simpleString(maxFields))
+        trace(default.simpleString)  // (maxFields))
         triples
     }
   }
@@ -350,7 +350,7 @@ class PlanExecutorNative(sc: SparkContext)
 
   def expressionsFor(logicalPlan: LogicalPlan): List[Expression] = {
     logicalPlan match {
-      case logical.Join(left, right, Inner, Some(condition), joinHint) =>
+      case logical.Join(left, right, Inner, Some(condition)) =>
         expressionsFor(left) ++ expressionsFor(right)
       case logical.Project(projectList, child) =>
         projectList.toList

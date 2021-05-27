@@ -24,7 +24,9 @@ import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.NodeFactoryExtra
 import org.apache.spark.rdd.RDD
 
+import scala.compat.java8.FunctionConverters._
 import scala.reflect.classTag
+
 
 
 object RddOfBindingOps {
@@ -74,7 +76,7 @@ object RddOfBindingOps {
   }
 
   def filter(rdd: RDD[Binding], exprs: ExprList): RDD[Binding] = {
-    rdd.filter(binding => exprs.getList.stream().allMatch(_.eval(binding, null).getBoolean))
+    rdd.filter(binding => exprs.getList.stream().allMatch( asJavaPredicate {_.eval(binding, null).getBoolean }))
   }
 
 
@@ -120,7 +122,7 @@ object RddOfBindingOps {
 
         for (binding <- it) {
           val groupKey: Binding = VarExprListUtils.copyProject(groupVarsBc.value, binding, null)
-          val acc = groupKeyToAcc.computeIfAbsent(groupKey, k => aggBc.value.createAccumulator())
+          val acc = groupKeyToAcc.computeIfAbsent(groupKey, asJavaFunction { k => aggBc.value.createAccumulator() })
 
           acc.accumulate(binding)
         }
@@ -141,7 +143,7 @@ object RddOfBindingOps {
         r.addAll(keyAndMap._1)
 
         val map: util.Map[Var, Node] = keyAndMap._2.getValue
-        map.forEach((v, n) => r.add(v, n))
+        map.forEach( asJavaBiConsumer {(v, n) => r.add(v, n)})
 
         r.asInstanceOf[Binding]
       }))

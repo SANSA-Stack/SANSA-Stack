@@ -15,6 +15,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
 import scala.collection.JavaConverters._
+import scala.compat.java8.FunctionConverters._
 
 /** Deprecated; use: net.sansa_stack.examples.spark.query.SPARQLEngineExample */
 @deprecated
@@ -84,7 +85,7 @@ object MainSansaSparqlServer {
 
     val schemaMapping = RddOfBindingToDataFrameMapper
       .configureSchemaMapper(resultSet)
-      .setVarToFallbackDatatype((v: Var) => null)
+      .setVarToFallbackDatatype( asJavaFunction[Var, String] {(v: Var) => null })
       .createSchemaMapping
 
     println(schemaMapping)

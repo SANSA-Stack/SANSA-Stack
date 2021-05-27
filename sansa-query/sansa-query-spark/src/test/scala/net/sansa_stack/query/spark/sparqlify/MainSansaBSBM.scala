@@ -13,6 +13,7 @@ import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.jena.query.{Query, QueryFactory}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
 import org.apache.spark.sql.{Row, SparkSession}
+import scala.compat.java8.FunctionConverters._
 
 
 object MainSansaBSBM {
@@ -74,8 +75,8 @@ object MainSansaBSBM {
     val conn = new SparqlQueryConnectionJsa(FluentQueryExecutionFactory
         .from(qef)
         .config()
-          .withQueryTransform(q => { q.setOffset(Query.NOLIMIT); q })
-          .withParser(q => QueryFactory.create(q))
+          .withQueryTransform(asJavaFunction[Query, Query] {q => { q.setOffset(Query.NOLIMIT); q }})
+          .withParser(asJavaFunction {q => QueryFactory.create(q)})
         .end()
         .create())
 

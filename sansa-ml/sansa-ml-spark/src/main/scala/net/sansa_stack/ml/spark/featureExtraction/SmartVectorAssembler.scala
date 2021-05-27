@@ -178,7 +178,7 @@ class SmartVectorAssembler extends Transformer{
             .transform(digitizedDf)
           digitizedDf = digitizedDf.drop(columnName)
 
-          val indexOfUnknown = indexer.labelsArray(0).size
+          val indexOfUnknown = indexer.labels(0).size
 
           digitizedDf = digitizedDf.withColumn("string2indexed_" + columnName,
               when(col("string2indexed_" + columnName) === indexOfUnknown.toDouble, null)

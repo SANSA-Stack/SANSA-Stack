@@ -4,11 +4,11 @@
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-examples-parent_2.12</artifactId>
-		<version>0.8.0-RC1</version>
+		<artifactId>sansa-examples-parent_2.11</artifactId>
+		<version>0.8.0-RC1-backport</version>
 	</parent>
 
-	<artifactId>sansa-examples-spark_2.12</artifactId>
+	<artifactId>sansa-examples-spark_2.11</artifactId>
 	<name>SANSA Examples - Apache Spark</name>
 	<description>SANSA Examples for Apache Spark</description>
 

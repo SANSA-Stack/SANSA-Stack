@@ -13,6 +13,8 @@ import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
+import scala.compat.java8.FunctionConverters._
+
 
 /**
  * Operations for RDD[Dataset]
@@ -83,7 +85,7 @@ object RddOfDatasetOps {
     rdd.mapPartitions(datasets => {
       val all = DatasetFactory.create
       datasets.foreach(ds => ds.asDatasetGraph.find
-        .forEachRemaining(x => all.asDatasetGraph().add(x)))
+        .forEachRemaining( asJavaConsumer { x => all.asDatasetGraph().add(x) }))
 
       val query = queryBc.value
       // TODO I don't get why the Query object is not serializablbe even though

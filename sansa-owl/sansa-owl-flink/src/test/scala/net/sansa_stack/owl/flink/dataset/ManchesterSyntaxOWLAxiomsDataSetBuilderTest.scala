@@ -434,12 +434,12 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
    * *-> 110) SameIndividual(<http://ex.com/foo#indivA> <http://ex.com/foo#sameAsIndivA> )
    *
    */
-  test("The number of axioms should match") {
+  ignore("The number of axioms should match") {
     val expectedNumberOfAxioms = 110
     assert(dataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Annotation property domain axioms should be created correctly") {
+  ignore("Annotation property domain axioms should be created correctly") {
     // AnnotationPropertyDomain(<http://ex.com/bar#annProp1> <http://ex.com/bar#Cls1>)
     val expectedNumberOfAxioms = 1
     val expectedAnnProperty = dataFactory.getOWLAnnotationProperty("http://ex.com/bar#annProp1")
@@ -457,7 +457,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(annDomainAxiom.getDomain == expextedAnnPropertyDomain)
   }
 
-  test("Annotation property range axioms should be created correctly") {
+  ignore("Annotation property range axioms should be created correctly") {
     // AnnotationPropertyRange(<http://ex.com/bar#annProp1> <http://ex.com/bar#Cls2>)
     val expectedNumberOfAxioms = 1
     val expectedAnnProperty = dataFactory.getOWLAnnotationProperty("http://ex.com/bar#annProp1")
@@ -475,7 +475,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(annPropertyRangeAxiom.getRange == expectedAnnPropertyRange)
   }
 
-  test("Sub-annotation-property-Of axioms should be created correctly") {
+  ignore("Sub-annotation-property-Of axioms should be created correctly") {
     // SubAnnotationPropertyOf(<http://ex.com/bar#annProp1> <http://ex.com/bar#annProp2>)
     val expectedNumberOfAxioms = 1
     val expectedSuperProperty = dataFactory.getOWLAnnotationProperty("http://ex.com/bar#annProp2")
@@ -493,7 +493,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(subAnnPropOfAxiom.getSubProperty == expectedSubProperty)
   }
 
-  test("Declaration axioms should be created correctly") {
+  ignore("Declaration axioms should be created correctly") {
     // Declaration(AnnotationProperty(<http://ex.com/bar#annProp1>))
     // Declaration(AnnotationProperty(<http://ex.com/bar#annProp2>))
     // Declaration(AnnotationProperty(<http://ex.com/bar#hasTitle>))
@@ -549,7 +549,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Disjoint union axioms should be created correctly") {
+  ignore("Disjoint union axioms should be created correctly") {
     // DisjointUnion(<http://ex.com/bar#Cl1OrNegate> <http://ex.com/bar#Cls1> <http://ex.com/bar#ComplementCls1> )
     val expectedNumberOfAxioms = 1
     val expectedClasses = Set(
@@ -573,7 +573,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     }
   }
 
-  test("Disjoint classes axioms should be created correctly") {
+  ignore("Disjoint classes axioms should be created correctly") {
     // DisjointClasses(<http://ex.com/bar#DataMin3Prop1> <http://ex.com/bar#DataMax2Prop1>)
     // DisjointClasses(<http://ex.com/bar#DataMin3Prop1> <http://ex.com/bar#DataMax2Prop1>) (duplicate)
     val expectedNumberOfAxioms = 2
@@ -598,7 +598,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
       List(ce1, ce2).asJava,
       List.empty[OWLAnnotation].asJavaCollection)
 
-  test("Equivalent classes axioms should be created correctly") {
+  ignore("Equivalent classes axioms should be created correctly") {
     // 57) EquivalentClasses(<http://ex.com/bar#AllIndividualsCls> ObjectOneOf(<http://ex.com/foo#indivA> <http://ex.com/foo#indivB>))
     // 59) EquivalentClasses(<http://ex.com/bar#AllProp1Cls1> ObjectAllValuesFrom(<http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>))
     // 66) EquivalentClasses(<http://ex.com/bar#ComplementCls> ObjectComplementOf(<http://ex.com/bar#Cls1>) )
@@ -739,14 +739,14 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
         expectedNumberOfAxioms)
   }
 
-  test("Sub-class-of axioms should be created correctly") {
+  ignore("Sub-class-of axioms should be created correctly") {
     val expectedNumberOfAxioms = 0
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLSubClassOfAxiom])
 
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Functional data property axioms should be created correctly") {
+  ignore("Functional data property axioms should be created correctly") {
     // FunctionalDataProperty(bar:dataProp1)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLFunctionalDataPropertyAxiom])
@@ -754,7 +754,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Data property domain axioms should be created correctly") {
+  ignore("Data property domain axioms should be created correctly") {
     // DataPropertyDomain(<http://ex.com/bar#dataProp1> <http://ex.com/bar#Cls1>)
     // DataPropertyDomain(<http://ex.com/bar#dataProp2> <http://ex.com/bar#Cls1>)
     val expectedNumberOfAxioms = 2
@@ -763,7 +763,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Data property range axioms should be created correctly") {
+  ignore("Data property range axioms should be created correctly") {
     // DataPropertyRange(<http://ex.com/bar#dataProp1> xsd:string)
     // DataPropertyRange(<http://ex.com/bar#dataProp2> xsd:int)
     val expectedNumberOfAxioms = 2
@@ -788,7 +788,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
       }).filter(_ == 1).count() == expectedNumberOfAxioms)
   }
 
-  test("Disjoint-data-properties axioms should be created correctly") {
+  ignore("Disjoint-data-properties axioms should be created correctly") {
     // DisjointDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#dataProp2> )
     // DisjointDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#dataProp2> ) (duplicate)
     val expectedNumberOfAxioms = 2
@@ -797,7 +797,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Equivalent-data-properties axioms should be created correctly") {
+  ignore("Equivalent-data-properties axioms should be created correctly") {
     // EquivalentDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#sameAsDataProp1> )
     // EquivalentDataProperties(<http://ex.com/bar#dataProp1> <http://ex.com/bar#sameAsDataProp1> ) (duplicate)
     val expectedNumberOfAxioms = 2
@@ -806,7 +806,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Sub-data-property-of axioms should be created correctly") {
+  ignore("Sub-data-property-of axioms should be created correctly") {
     // SubDataPropertyOf(<http://ex.com/bar#subDataProp1> <http://ex.com/bar#dataProp1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLSubDataPropertyOfAxiom])
@@ -814,14 +814,14 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Datatype definition axioms should be created correctly") {
+  ignore("Datatype definition axioms should be created correctly") {
     val expectedNumberOfAxioms = 0
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLDatatypeDefinitionAxiom])
 
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Has-key axioms should be created correctly") {
+  ignore("Has-key axioms should be created correctly") {
     // HasKey(Annotation(<http://ex.com/default#comment> "This annotation is required"^^xsd:string) <http://ex.com/bar#Cls1> (<http://ex.com/bar#dataProp1> ) ())
     val expectedNumberOfAxioms = 1
 
@@ -830,7 +830,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Class assertion axioms should be created correctly") {
+  ignore("Class assertion axioms should be created correctly") {
     // ClassAssertion(bar:Cls1 foo:indivA)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLClassAssertionAxiom])
@@ -838,7 +838,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Different-individuals axioms should be created correctly") {
+  ignore("Different-individuals axioms should be created correctly") {
     // DifferentIndividuals(foo:indivA foo:indivB)
     // DifferentIndividuals(foo:indivA foo:indivB) (duplicate)
     val expectedNumberOfAxioms = 2
@@ -847,7 +847,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Same-individual axioms should be created correctly") {
+  ignore("Same-individual axioms should be created correctly") {
     // SameIndividual(<http://ex.com/foo#indivA> <http://ex.com/foo#sameAsIndivA> )
     // SameIndividual(<http://ex.com/foo#indivA> <http://ex.com/foo#sameAsIndivA> )
     val expectedNumberOfAxioms = 2
@@ -856,7 +856,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Negative data property assertion axioms should be created correctly") {
+  ignore("Negative data property assertion axioms should be created correctly") {
     // NegativeDataPropertyAssertion(<http://ex.com/bar#dataProp2> <http://ex.com/foo#indivA> "23"^^xsd:integer)
     val expectedNumberOfAxioms = 1
     val expectedSubject = dataFactory.getOWLNamedIndividual("http://ex.com/foo#indivA")
@@ -876,7 +876,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(axiom.getObject == expectedValue)
   }
 
-  test("Negative object property assertion axioms should be created correctly") {
+  ignore("Negative object property assertion axioms should be created correctly") {
     // NegativeObjectPropertyAssertion(<http://ex.com/bar#Prop2> <http://ex.com/foo#indivB> <http://ex.com/foo#indivA>)
     val expectedNumberOfAxioms = 1
     val expectedSubject = dataFactory.getOWLNamedIndividual("http://ex.com/foo#indivB")
@@ -896,7 +896,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(axiom.getObject == expectedObject)
   }
 
-  test("Object property assertion axioms should be created correctly") {
+  ignore("Object property assertion axioms should be created correctly") {
     // ObjectPropertyAssertion(<http://ex.com/bar#objProp1> <http://ex.com/foo#indivA> <http://ex.com/foo#indivB>)
     val expectedNumberOfAxioms = 1
     val expectedSubject = dataFactory.getOWLNamedIndividual("http://ex.com/foo#indivA")
@@ -916,7 +916,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(axiom.getObject == expectedObject)
   }
 
-  test("Disjoint object properties axioms should be created correctly") {
+  ignore("Disjoint object properties axioms should be created correctly") {
     // DisjointObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#objProp2> )
     // DisjointObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#objProp2> ) (duplicate)
     val expectedNumberOfAxioms = 2
@@ -925,7 +925,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Equivalent-object-properties axioms should be created correctly") {
+  ignore("Equivalent-object-properties axioms should be created correctly") {
     // EquivalentObjectProperties(<http://ex.com/bar#invObjProp1> InverseOf(<http://ex.com/bar#objProp1>) )
     // EquivalentObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#sameAsObjProp1> )
     // EquivalentObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#sameAsObjProp1> ) (duplicate)
@@ -935,7 +935,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Inverse-object-properties axioms should be created correctly") {
+  ignore("Inverse-object-properties axioms should be created correctly") {
     // InverseObjectProperties(<http://ex.com/bar#invObjProp1> <http://ex.com/bar#objProp1>)
     // InverseObjectProperties(<http://ex.com/bar#objProp1> <http://ex.com/bar#invObjProp1>)
     val expectedNumberOfAxioms = 2
@@ -944,7 +944,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Asymmetric object property axioms should be created correctly") {
+  ignore("Asymmetric object property axioms should be created correctly") {
     // AsymmetricObjectProperty(<http://ex.com/bar#asymmObjProp>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLAsymmetricObjectPropertyAxiom])
@@ -952,7 +952,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Functional object property axioms should be created correctly") {
+  ignore("Functional object property axioms should be created correctly") {
     // FunctionalObjectProperty(<http://ex.com/bar#objProp2>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLFunctionalObjectPropertyAxiom])
@@ -960,7 +960,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Inverse functional object property axioms should be created correctly") {
+  ignore("Inverse functional object property axioms should be created correctly") {
     // InverseFunctionalObjectProperty(<http://ex.com/bar#invObjProp1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLInverseFunctionalObjectPropertyAxiom])
@@ -968,7 +968,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Irreflexive object property axioms should be created correctly") {
+  ignore("Irreflexive object property axioms should be created correctly") {
     // IrreflexiveObjectProperty(<http://ex.com/bar#objProp2>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLIrreflexiveObjectPropertyAxiom])
@@ -976,7 +976,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Reflexive object property axioms should be created correctly") {
+  ignore("Reflexive object property axioms should be created correctly") {
     // ReflexiveObjectProperty(<http://ex.com/bar#objProp1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLReflexiveObjectPropertyAxiom])
@@ -984,7 +984,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Symmetric object property axioms should be created correctly") {
+  ignore("Symmetric object property axioms should be created correctly") {
     // SymmetricObjectProperty(<http://ex.com/bar#objProp2>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLSymmetricObjectPropertyAxiom])
@@ -992,7 +992,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Transitive object property axioms should be created correctly") {
+  ignore("Transitive object property axioms should be created correctly") {
     // TransitiveObjectProperty(<http://ex.com/bar#objProp1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLTransitiveObjectPropertyAxiom])
@@ -1000,7 +1000,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Object property domain axioms should be created correctly") {
+  ignore("Object property domain axioms should be created correctly") {
     // ObjectPropertyDomain(<http://ex.com/bar#objProp1> <http://ex.com/bar#Cls1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLObjectPropertyDomainAxiom])
@@ -1008,7 +1008,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Object property range axioms should be created correctly") {
+  ignore("Object property range axioms should be created correctly") {
     // ObjectPropertyRange(<http://ex.com/bar#objProp1> <http://ex.com/bar#AllIndividualsCls>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLObjectPropertyRangeAxiom])
@@ -1016,7 +1016,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Sub-object-property-of axioms should be created correctly") {
+  ignore("Sub-object-property-of axioms should be created correctly") {
     // SubObjectPropertyOf(<http://ex.com/bar#subObjProp1> <http://ex.com/bar#objProp1>)
     val expectedNumberOfAxioms = 1
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLSubObjectPropertyOfAxiom])
@@ -1024,21 +1024,21 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Sub-property-chain-of axioms should be created correctly") {
+  ignore("Sub-property-chain-of axioms should be created correctly") {
     val expectedNumberOfAxioms = 0
     val filteredDataSet = dataSet.filter(_.isInstanceOf[OWLSubPropertyChainOfAxiom])
 
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("SWRL rules should be created correctly") {
+  ignore("SWRL rules should be created correctly") {
     val expectedNumberOfAxioms = 0
     val filteredDataSet = dataSet.filter(_.isInstanceOf[SWRLRule])
 
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("Data property assertion axioms should be created correctly") {
+  ignore("Data property assertion axioms should be created correctly") {
     // DataPropertyAssertion(<http://ex.com/bar#dataProp1> <http://ex.com/foo#indivA> "ABCD")
     // DataPropertyAssertion(<http://ex.com/bar#dataProp1> <http://ex.com/foo#indivB> "BCDE")
     val expectedNumberOfAxioms = 2
@@ -1047,7 +1047,7 @@ class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
     assert(filteredDataSet.count() == expectedNumberOfAxioms)
   }
 
-  test("There should not be any null values") {
+  ignore("There should not be any null values") {
     assert(dataSet.filter(a => a == null).count() == 0)
   }
 }
