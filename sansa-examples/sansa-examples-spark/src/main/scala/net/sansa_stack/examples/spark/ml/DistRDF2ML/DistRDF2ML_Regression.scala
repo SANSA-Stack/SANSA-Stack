@@ -179,5 +179,9 @@ object DistRDF2ML_Regression {
 
     val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
     metagraph.take(10).foreach(println(_))
+
+    metagraph
+      .coalesce(1)
+      .saveAsNTriplesFile(args(0) + "someFolder")
   }
 }

@@ -24,7 +24,7 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 
-  private val dataPath = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
+  private val dataPath = this.getClass.getClassLoader.getResource("utils/svaTest.ttl").getPath
   private def getData() = {
     import net.sansa_stack.rdf.spark.io._
     import net.sansa_stack.rdf.spark.model._
@@ -90,6 +90,66 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .setLabelColumn("seed__down_age(Single_NonCategorical_Decimal)")
       .setNullReplacement("string", "Hallo")
       .setNullReplacement("digit", -1000)
+      .setNullReplacement("timestamp", java.sql.Timestamp.valueOf("1900-01-01 00:00:00"))
+      .setWord2VecSize(3)
+      .setWord2VecMinCount(1)
+
+
+
+    val mlReadyDf = smartVectorAssembler
+      .transform(collapsedDf)
+      .cache()
+
+    assert(inputDfSize == mlReadyDf.count())
+
+    assert(mlReadyDf.columns.toSet == Set("entityID", "label", "features"))
+
+    mlReadyDf.show(false)
+    mlReadyDf.schema.foreach(println(_))
+  }
+
+  test("Test2 SmartVectorAssembler") {
+    val dataset = getData()
+
+    val queryString = """
+                        |SELECT
+                        |?seed
+                        |?seed__down_age
+                        |?seed__down_name
+                        |?seed__down_birthday
+                        |
+                        |WHERE {
+                        |	?seed a <http://dig.isi.edu/Person> .
+                        |
+                        |	OPTIONAL {
+                        |		?seed <http://dig.isi.edu/age> ?seed__down_age .
+                        |	}
+                        |	OPTIONAL {
+                        |		?seed <http://dig.isi.edu/name> ?seed__down_name .
+                        |	}
+                        | OPTIONAL {
+                        |		?seed <http://dig.isi.edu/birthday> ?seed__down_birthday .
+                        |	}
+                        |
+                        |}""".stripMargin
+    val sparqlFrame = new SparqlFrame()
+      .setSparqlQuery(queryString)
+      .setCollapsByKey(true)
+      .setCollapsColumnName("seed")
+    val collapsedDf = sparqlFrame
+      .transform(dataset)
+      .cache()
+
+    collapsedDf.show(false)
+
+    val inputDfSize = collapsedDf.count()
+
+    val smartVectorAssembler = new SmartVectorAssembler()
+      .setEntityColumn("seed")
+      .setLabelColumn("seed__down_age(Single_NonCategorical_Decimal)")
+      .setNullReplacement("string", "Hallo")
+      .setNullReplacement("digit", -1000)
+      .setNullReplacement("timestamp", java.sql.Timestamp.valueOf("1900-01-01 00:00:00"))
       .setWord2VecSize(3)
       .setWord2VecMinCount(1)
 

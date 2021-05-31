@@ -7,6 +7,9 @@ import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{Decimal, DoubleType, StringType, StructType}
 import org.apache.spark.sql.functions.{udf, _}
+import java.sql.Timestamp
+
+import org.apache.spark.sql.types._
 
 import scala.collection.mutable
 
@@ -34,6 +37,7 @@ class SmartVectorAssembler extends Transformer{
   // null replacement
   protected var _nullDigitReplacement: Int = -1
   protected var _nullStringReplacement: String = ""
+  protected var _nullTimestampReplacement: Timestamp = Timestamp.valueOf("1900-01-01 00:00:00")
 
   protected var _word2VecSize = 2
   protected var _word2VecMinCount = 1
@@ -95,6 +99,9 @@ class SmartVectorAssembler extends Transformer{
     }
     else if (datatype.toLowerCase == "digit") _nullDigitReplacement = {
       value.asInstanceOf[Int]
+    }
+    else if (datatype.toLowerCase == "timestamp") _nullTimestampReplacement = {
+      value.asInstanceOf[Timestamp]
     }
     else {
       println("only digit and string are supported")
@@ -399,6 +406,9 @@ class SmartVectorAssembler extends Transformer{
       }
       else if (featureType.contains("Timestamp") & featureType.contains("Single")) {
         dfCollapsedTwoColumns
+          .withColumn(featureColumn, col(featureColumn).cast("string"))
+          .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
+          .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
           .withColumn(featureName + "UnixTimestamp(Single_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
           .withColumn(featureName + "DayOfWeek(Single_NonCategorical_Int)", dayofweek(col(featureColumn)))
           .withColumn(featureName + "DayOfMonth(Single_NonCategorical_Int)", dayofmonth(col(featureColumn)))
@@ -415,6 +425,9 @@ class SmartVectorAssembler extends Transformer{
         val df1 = df0
           .select(col(_entityColumn), explode_outer(col(featureColumn)))
           .withColumnRenamed("col", featureColumn)
+          .withColumn(featureColumn, col(featureColumn).cast("string"))
+          .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
+          .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
 
         val df2 = df1
           .withColumn(featureName + "UnixTimestamp(ListOf_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
