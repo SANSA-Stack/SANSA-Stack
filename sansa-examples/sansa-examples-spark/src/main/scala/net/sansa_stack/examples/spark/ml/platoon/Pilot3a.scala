@@ -1,5 +1,7 @@
 package net.sansa_stack.examples.spark.ml.platoon
 
+import java.util.{Calendar, Date}
+
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.ml.spark.utils.ML2Graph
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
@@ -13,6 +15,7 @@ import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.scalacheck.Prop.Exception
 
 object Pilot3a {
   def main(args: Array[String]): Unit = {
@@ -137,8 +140,14 @@ object Pilot3a {
     val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
     metagraph.take(10).foreach(println(_))
 
+    val metagraphDatetime: Int = Calendar.getInstance().getTime().toString.hashCode
+
+    val outputPath: String = args(0).split("\\.")(0) + metagraphDatetime.toString
+
     metagraph
       .coalesce(1)
-      .saveAsNTriplesFile(args(0) + "someFolder")
+      .saveAsNTriplesFile(outputPath)
+    println(outputPath)
+    println(outputPath + "/part-00000")
   }
 }
