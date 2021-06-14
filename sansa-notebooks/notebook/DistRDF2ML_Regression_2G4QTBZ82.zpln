@@ -1,0 +1,487 @@
+{
+  "paragraphs": [
+    {
+      "text": "import java.io.{File, PrintWriter}\nimport java.util.Calendar\n\nimport net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}\nimport net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.model.TripleOperations\nimport org.apache.jena.sys.JenaSystem\nimport org.apache.spark.ml.Pipeline\nimport org.apache.spark.ml.classification.RandomForestClassifier\nimport org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}\nimport org.apache.spark.ml.feature.{IndexToString, StringIndexer}\nimport org.apache.spark.ml.regression.RandomForestRegressor\nimport org.apache.spark.sql.functions.{col, collect_list, explode}\nimport org.apache.spark.sql.types.IntegerType\nimport org.apache.spark.sql.{DataFrame, SparkSession}\n\nimport scala.io.Source",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:20:05.834",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import java.io.{File, PrintWriter}\nimport java.util.Calendar\nimport net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}\nimport net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}\nimport net.sansa_stack.rdf.spark.io.NTripleReader\nimport net.sansa_stack.rdf.spark.model.TripleOperations\nimport org.apache.jena.sys.JenaSystem\nimport org.apache.spark.ml.Pipeline\nimport org.apache.spark.ml.classification.RandomForestClassifier\nimport org.apache.spark.ml.evaluation.{MulticlassClassificationEvaluator, RegressionEvaluator}\nimport org.apache.spark.ml.feature.{IndexToString, StringIndexer}\nimport org.apache.spark.ml.regression.RandomForestRegressor\nimport org.apache.spark.sql.functions.{col, collect_list, explode}\nimport org.apache.spark.sql.types....\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183521229_1809144641",
+      "id": "paragraph_1619183521229_1809144641",
+      "dateCreated": "2021-04-23 13:12:01.229",
+      "dateStarted": "2021-04-23 13:36:18.832",
+      "dateFinished": "2021-04-23 13:36:38.166",
+      "status": "FINISHED"
+    },
+    {
+      "text": "val inputPath:String\u003d \"hdfs://namenode:8020/data/linkedmdb-18-05-2009-dump.nt\"\nval dataset \u003d {\n      NTripleReader.load(\n        spark,\n        inputPath,\n        stopOnBadTerm \u003d ErrorParseMode.SKIP,\n        stopOnWarnings \u003d WarningParseMode.IGNORE\n      )\n        .toDS()\n        .cache()\n    }\n    println(f\"\\ndata consists of ${dataset.count()} triples\")\n    dataset.take(n \u003d 10).foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:20:08.251",
+      "progress": 100,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\ndata consists of 3579616 triples\nhttp://data.linkedmdb.org/interlink/85494 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/338\nhttp://data.linkedmdb.org/interlink/85495 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/643\nhttp://data.linkedmdb.org/interlink/85496 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/693\nhttp://data.linkedmdb.org/interlink/85497 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/947\nhttp://data.linkedmdb.org/interlink/85498 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1001\nhttp://data.linkedmdb.org/interlink/85499 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1035\nhttp://data.linkedmdb.org/interlink/85500 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1079\nhttp://data.linkedmdb.org/interlink/85501 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1115\nhttp://data.linkedmdb.org/interlink/85502 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1139\nhttp://data.linkedmdb.org/interlink/85503 @http://data.linkedmdb.org/oddlinker/link_source http://data.linkedmdb.org/actor/1212\n\u001b[1m\u001b[34minputPath\u001b[0m: \u001b[1m\u001b[32mString\u001b[0m \u003d hdfs://namenode:8020/data/linkedmdb-18-05-2009-dump.nt\n\u001b[1m\u001b[34mdataset\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.jena.graph.Triple]\u001b[0m \u003d [value: binary]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d0"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d1"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183524165_1253543579",
+      "id": "paragraph_1619183524165_1253543579",
+      "dateCreated": "2021-04-23 13:12:04.165",
+      "dateStarted": "2021-04-23 13:29:09.802",
+      "dateFinished": "2021-04-23 13:30:51.758",
+      "status": "FINISHED"
+    },
+    {
+      "text": "println(\"\\nFEATURE EXTRACTION OVER SPARQL\")\n    /**\n     * The sparql query used to gather features\n     */\n    val sparqlString \u003d \"\"\"\n      SELECT\n      ?movie\n      ?movie__down_genre__down_film_genre_name\n      ?movie__down_title ?movie__down_runtime\n      ?movie__down_actor__down_actor_name\n      WHERE {\n      ?movie \u003chttp://www.w3.org/1999/02/22-rdf-syntax-ns#type\u003e \u003chttp://data.linkedmdb.org/movie/film\u003e .\n      ?movie \u003chttp://data.linkedmdb.org/movie/genre\u003e ?movie__down_genre . ?movie__down_genre \u003chttp://data.linkedmdb.org/movie/film_genre_name\u003e ?movie__down_desiredGenre__down_film_genre_name .\n      OPTIONAL { ?movie \u003chttp://purl.org/dc/terms/title\u003e ?movie__down_title . }\n      OPTIONAL { ?movie \u003chttp://data.linkedmdb.org/movie/runtime\u003e ?movie__down_runtime . }\n      OPTIONAL { ?movie \u003chttp://data.linkedmdb.org/movie/actor\u003e ?movie__down_actor . ?movie__down_actor \u003chttp://data.linkedmdb.org/movie/actor_name\u003e ?movie__down_actor__down_actor_name . }\n      OPTIONAL { ?movie \u003chttp://data.linkedmdb.org/movie/genre\u003e ?movie__down_genre . ?movie__down_genre \u003chttp://data.linkedmdb.org/movie/film_genre_name\u003e ?movie__down_genre__down_film_genre_name . }\n      FILTER (?movie__down_desiredGenre__down_film_genre_name \u003d \u0027Superhero\u0027 || ?movie__down_desiredGenre__down_film_genre_name \u003d \u0027Fantasy\u0027 )\n      }\"\"\"\n\n    /**\n     * transformer that collect the features from the Dataset[Triple] to a common spark Dataframe\n     * collapsed\n     * by column movie\n     */\n    val sparqlFrame \u003d new SparqlFrame()\n      .setSparqlQuery(sparqlString)\n      .setCollapsByKey(true)\n      .setCollapsByKey(\"movie\")\n      \n      /**\n     * dataframe with resulting features\n     * in this collapsed by the movie column\n     */\n    val extractedFeaturesDf \u003d sparqlFrame\n      .transform(dataset)\n      .cache()\n      \n          /**\n     * feature descriptions of the resulting collapsed dataframe\n     */\n    val featureDescriptions \u003d sparqlFrame.getFeatureDescriptions()\n    println(s\"Feature decriptions are:\\n${featureDescriptions.mkString(\",\\n\")}\")\n\n    extractedFeaturesDf.show(10, false)\n    // extractedFeaturesDf.schema.foreach(println(_))",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:20:03.204",
+      "progress": 2,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d2"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d3"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d4"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d6"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d7"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d8"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d9"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d10"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d11"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d12"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d13"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d14"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d15"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d16"
+            },
+            {
+              "jobUrl": "http://3c3247309354:4040/jobs/job?id\u003d17"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183591436_61134149",
+      "id": "paragraph_1619183591436_61134149",
+      "dateCreated": "2021-04-23 13:13:11.436",
+      "dateStarted": "2021-04-23 13:30:53.745",
+      "dateFinished": "2021-04-23 13:14:43.352",
+      "status": "ABORT"
+    },
+    {
+      "text": "%md\n# Postprocess",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-23 13:33:44.335",
+      "progress": 0,
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003ePostprocess\u003c/h1\u003e\n\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619184405015_877671305",
+      "id": "paragraph_1619184405015_877671305",
+      "dateCreated": "2021-04-23 13:26:45.015",
+      "dateStarted": "2021-04-23 13:33:44.362",
+      "dateFinished": "2021-04-23 13:33:44.408",
+      "status": "FINISHED"
+    },
+    {
+      "text": "println(\"FEATURE EXTRACTION POSTPROCESSING\")\n    /**\n     * Here we adjust things in dataframe which do not fit to our expectations like:\n     * the fact that the runtime is in rdf data not annotated to be a double\n     * but easy castable\n     */\n    val postprocessedFeaturesDf \u003d extractedFeaturesDf\n      .withColumn(\"movie__down_runtime(ListOf_NonCategorical_Int)\", col(\"movie__down_runtime(ListOf_NonCategorical_String)\").cast(\"array\u003cint\u003e\"))\n      .drop(\"movie__down_runtime(ListOf_NonCategorical_String)\")\n      .withColumn(\"movie__down_runtime(Single_NonCategorical_Int)\", col(\"movie__down_runtime(ListOf_NonCategorical_Int)\").getItem(0))\n      .drop(\"movie__down_runtime(ListOf_NonCategorical_Int)\")\n    postprocessedFeaturesDf.show(10, false)",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:20:00.119",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "FEATURE EXTRACTION POSTPROCESSING\n+------------------------------------+------------------------------------------------------------------+-----------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+\n|movie                               |movie__down_genre__down_film_genre_name(ListOf_Categorical_String)|movie__down_title(Single_NonCategorical_String)|movie__down_actor__down_actor_name(ListOf_NonCategorical_String)                                                                                                      |movie__down_runtime(Single_NonCategorical_Int)|\n+------------------------------------+------------------------------------------------------------------+-----------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+\n|http://data.linkedmdb.org/film/10363|[Fantasy]                                                         |The Daydreamer                                 |[Ray Bolger, Hayley Mills, Jack Gilford, Burl Ives, Margaret Hamilton, Patty Duke]                                                                                    |101                                           |\n|http://data.linkedmdb.org/film/11210|[Superhero]                                                       |Son of Zorro                                   |[Roy Barcroft]                                                                                                                                                        |null                                          |\n|http://data.linkedmdb.org/film/9113 |[Fantasy]                                                         |Beasties                                       |[]                                                                                                                                                                    |83                                            |\n|http://data.linkedmdb.org/film/2531 |[Fantasy]                                                         |Faust                                          |[Jan Kraus, Petr Cepek, Antonin Zacpal, VladimÃ­r Kudla]                                                                                                              |97                                            |\n|http://data.linkedmdb.org/film/29868|[Fantasy]                                                         |I Clowns                                       |[Federico Fellini]                                                                                                                                                    |92                                            |\n|http://data.linkedmdb.org/film/19114|[Fantasy]                                                         |Beauty and the Beast                           |[William Gregory Lee, Justin Whalin, Jane March]                                                                                                                      |null                                          |\n|http://data.linkedmdb.org/film/30408|[Fantasy]                                                         |Lady in the Water                              |[Bill Irwin, Jeffrey Wright, Freddy Rodriguez, Bob Balaban, Mary Beth Hurt, Noah Gray-Cabey, Sarita Choudhury, Paul Giamatti, M. Night Shyamalan, Bryce Dallas Howard]|null                                          |\n|http://data.linkedmdb.org/film/8107 |[Superhero]                                                       |Mercury Man                                    |[Wasan Khantaau, Jinvipa Kheawkunya, Metinee Kingpayome, Nong Thoom, Darunee Khrittabhunyalai, Arnon Saisangchan]                                                     |null                                          |\n|http://data.linkedmdb.org/film/16064|[Fantasy]                                                         |Once Upon a Jedi                               |[]                                                                                                                                                                    |25                                            |\n|http://data.linkedmdb.org/film/4569 |[Superhero]                                                       |Wolverine                                      |[Hugh Jackman]                                                                                                                                                        |null                                          |\n+------------------------------------+------------------------------------------------------------------+-----------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------+\nonly showing top 10 rows\n\n\u001b[1m\u001b[34mpostprocessedFeaturesDf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [movie: string, movie__down_genre__down_film_genre_name(ListOf_Categorical_String): array\u003cstring\u003e ... 3 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d24"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d25"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183645875_1053964202",
+      "id": "paragraph_1619183645875_1053964202",
+      "dateCreated": "2021-04-23 13:14:05.875",
+      "dateStarted": "2021-04-23 13:22:11.801",
+      "dateFinished": "2021-04-23 13:23:06.247",
+      "status": "FINISHED"
+    },
+    {
+      "text": "println(\"\\nSMART VECTOR ASSEMBLER\")\n    val smartVectorAssembler \u003d new SmartVectorAssembler()\n      .setEntityColumn(\"movie\")\n      .setLabelColumn(\"movie__down_runtime(Single_NonCategorical_Int)\")\n      .setNullReplacement(\"string\", \"\")\n      .setNullReplacement(\"digit\", -1)\n      .setWord2VecSize(5)\n      .setWord2VecMinCount(1)\n      // .setWord2vecTrainingDfSizeRatio(svaWord2vecTrainingDfSizeRatio)\n\n    val assembledDf: DataFrame \u003d smartVectorAssembler\n     .transform(postprocessedFeaturesDf)\n     .cache()\n\n    assembledDf.show(10, false)",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:19:58.423",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nSMART VECTOR ASSEMBLER\nSmartVectorAssembler: no feature Columns are set -\u003e automatic retrieved columns: List(movie__down_genre__down_film_genre_name(ListOf_Categorical_String), movie__down_title(Single_NonCategorical_String), movie__down_actor__down_actor_name(ListOf_NonCategorical_String))\n+------------------------------------+-----+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|entityID                            |label|features                                                                                                                                                                                                                               |\n+------------------------------------+-----+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|http://data.linkedmdb.org/film/10363|101  |[-0.019833862781524658,0.09982756525278091,0.05435603857040405,-0.06950004398822784,-0.09904394298791885,-0.007733926797906557,0.0074358374113217,-0.01835029968060553,-0.012564204245184857,0.015887745656073093,0.0,0.0,0.0,-1.0]    |\n|http://data.linkedmdb.org/film/11210|null |[-0.03747438779100776,-0.008067870512604713,-0.038799685426056385,-0.04166199453175068,0.09052823483943939,-0.02442619390785694,0.007301831617951393,0.037837499752640724,0.018639070331119,0.031442165141925216,1.0,1.0,1.0,-1.0]     |\n|http://data.linkedmdb.org/film/9113 |83   |[-0.06669744104146957,0.07541295140981674,-0.04016606882214546,0.015554535202682018,-0.014372766017913818,-0.0901530385017395,0.06332655996084213,0.08119741827249527,-0.06633968651294708,-0.039498865604400635,0.0,0.0,0.0,-1.0]     |\n|http://data.linkedmdb.org/film/2531 |97   |[0.027580510824918747,-0.08437179028987885,0.015483069233596325,-1.9929409609176219E-4,-0.03385735675692558,0.009505981113761663,0.07188524166122079,-0.01593999221222475,0.04514771222602576,-0.034332407638430595,0.0,0.0,0.0,-1.0]  |\n|http://data.linkedmdb.org/film/29868|92   |[-0.007971405982971191,0.05195049196481705,-0.04127544164657593,0.013854754157364368,0.08569920063018799,-0.02496681548655033,0.01505826786160469,0.014710898394696414,-0.05878524109721184,0.032042655162513256,0.0,0.0,0.0,-1.0]     |\n|http://data.linkedmdb.org/film/19114|null |[0.027269364334642887,-0.054132554680109024,0.0012691442389041185,0.032915014773607254,0.02572575118392706,-0.017421871157629148,-0.026034698688558167,-0.014786509796977043,0.05464990410421575,-0.03435901951576982,0.0,0.0,0.0,-1.0]|\n|http://data.linkedmdb.org/film/30408|null |[0.07784902304410934,0.054809290915727615,-0.0726577639579773,0.0471646673977375,-0.011427190154790878,-0.006027062342542669,-0.016128899327114872,0.0021652260582651133,0.0022233482045323954,0.011323916199414625,0.0,0.0,0.0,-1.0]  |\n|http://data.linkedmdb.org/film/8107 |null |[0.04785839281976223,-0.03562925414007623,0.0710526667535305,0.0011764802038669586,0.08012198470532894,0.007991640130057931,-0.01564202271401882,0.010834319788652161,-0.006152176142980655,0.013743051560595632,1.0,1.0,1.0,-1.0]     |\n|http://data.linkedmdb.org/film/16064|25   |[0.023554829880595207,0.008514685090631247,0.04484519362449646,0.040968483313918114,-0.058905843645334244,-0.0901530385017395,0.06332655996084213,0.08119741827249527,-0.06633968651294708,-0.039498865604400635,0.0,0.0,0.0,-1.0]     |\n|http://data.linkedmdb.org/film/4569 |null |[-0.058598507195711136,0.02384636364877224,0.04152465984225273,0.06910450756549835,0.048677243292331696,0.034467016346752644,-0.06982088834047318,-0.02017590031027794,0.061388375237584114,0.017102456651628017,1.0,1.0,1.0,-1.0]     |\n+------------------------------------+-----+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\nonly showing top 10 rows\n\n\u001b[1m\u001b[34msmartVectorAssembler\u001b[0m: \u001b[1m\u001b[32mnet.sansa_stack.ml.spark.featureExtraction.SmartVectorAssembler\u001b[0m \u003d sparqlFrame_85683ac9d442\n\u001b[1m\u001b[34massembledDf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [entityID: string, label: int ... 1 more field]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d26"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d27"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d28"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d29"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d30"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d36"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d37"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183656031_1083914299",
+      "id": "paragraph_1619183656031_1083914299",
+      "dateCreated": "2021-04-23 13:14:16.031",
+      "dateStarted": "2021-04-23 13:23:14.662",
+      "dateFinished": "2021-04-23 13:24:27.696",
+      "status": "FINISHED"
+    },
+    {
+      "text": "println(\"\\nAPPLY Common SPARK MLlib Example Algorithm\")\n    /**\n     * drop rows where label is null\n     */\n    val mlDf \u003d assembledDf\n      .filter(col(\"label\").isNotNull)\n    mlDf.show(10, false)\n\n    // From here on process is used based on SApache SPark MLlib samples: https://spark.apache.org/docs/latest/ml-classification-regression.html#random-forest-regression\n\n    // Split the data into training and test sets (30% held out for testing).\n    val Array(trainingData, testData) \u003d mlDf.randomSplit(Array(0.7, 0.3))\n\n    // Train a RandomForest model.\n    val rf \u003d new RandomForestRegressor()\n      .setLabelCol(\"label\")\n      .setFeaturesCol(\"features\")\n\n    // Train model. This also runs the indexer.\n    val model \u003d rf.fit(trainingData)\n\n    // Make predictions.\n    val predictions \u003d model.transform(testData)\n\n    // Select example rows to display.\n    predictions.select(\"prediction\", \"label\", \"features\").show(10)\n\n    // Select (prediction, true label) and compute test error.\n    val evaluator \u003d new RegressionEvaluator()\n      .setLabelCol(\"label\")\n      .setPredictionCol(\"prediction\")\n      .setMetricName(\"rmse\")\n    val rmse \u003d evaluator.evaluate(predictions)\n    println(s\"Root Mean Squared Error (RMSE) on test data \u003d $rmse\")\n\n    println(s\"Learned regression forest model:\\n ${model}\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-04-28 11:19:56.917",
+      "progress": 5,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\nAPPLY Common SPARK MLlib Example Algorithm\n+------------------------------------+-----+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|entityID                            |label|features                                                                                                                                                                                                                             |\n+------------------------------------+-----+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\n|http://data.linkedmdb.org/film/10363|101  |[-0.019833862781524658,0.09982756525278091,0.05435603857040405,-0.06950004398822784,-0.09904394298791885,-0.007733926797906557,0.0074358374113217,-0.01835029968060553,-0.012564204245184857,0.015887745656073093,0.0,0.0,0.0,-1.0]  |\n|http://data.linkedmdb.org/film/9113 |83   |[-0.06669744104146957,0.07541295140981674,-0.04016606882214546,0.015554535202682018,-0.014372766017913818,-0.0901530385017395,0.06332655996084213,0.08119741827249527,-0.06633968651294708,-0.039498865604400635,0.0,0.0,0.0,-1.0]   |\n|http://data.linkedmdb.org/film/2531 |97   |[0.027580510824918747,-0.08437179028987885,0.015483069233596325,-1.9929409609176219E-4,-0.03385735675692558,0.009505981113761663,0.07188524166122079,-0.01593999221222475,0.04514771222602576,-0.034332407638430595,0.0,0.0,0.0,-1.0]|\n|http://data.linkedmdb.org/film/29868|92   |[-0.007971405982971191,0.05195049196481705,-0.04127544164657593,0.013854754157364368,0.08569920063018799,-0.02496681548655033,0.01505826786160469,0.014710898394696414,-0.05878524109721184,0.032042655162513256,0.0,0.0,0.0,-1.0]   |\n|http://data.linkedmdb.org/film/16064|25   |[0.023554829880595207,0.008514685090631247,0.04484519362449646,0.040968483313918114,-0.058905843645334244,-0.0901530385017395,0.06332655996084213,0.08119741827249527,-0.06633968651294708,-0.039498865604400635,0.0,0.0,0.0,-1.0]   |\n|http://data.linkedmdb.org/film/6543 |97   |[-0.00917462445795536,0.017132838256657124,0.05372663773596287,0.037870594300329685,0.022865808568894863,0.0027608871459960938,0.015259436768246815,-0.03245331472135149,0.025636080041294917,-0.02177595696412027,0.0,0.0,0.0,-1.0] |\n|http://data.linkedmdb.org/film/9935 |103  |[-0.04525428265333176,-0.0963907539844513,0.07869556546211243,0.07816526293754578,0.03133513033390045,-0.028323128586634994,-0.11822350136935711,-0.030700733419507742,0.007421758957207203,0.05826778523623943,0.0,0.0,0.0,-1.0]    |\n|http://data.linkedmdb.org/film/10576|93   |[0.07457700185477734,-0.06351564079523087,0.020706182345747948,-0.00693352147936821,-0.07780752703547478,0.027345006354153156,-0.011615287978202105,0.015019192360341549,0.036060433369129896,0.031009387457743287,0.0,0.0,0.0,-1.0] |\n|http://data.linkedmdb.org/film/18597|92   |[0.03260575793683529,0.01536734332330525,-0.013796083629131317,0.005629456602036953,0.0033427178859710693,-0.005303365045360157,-0.02537688559719494,0.06558338326535054,-0.024954337693218673,0.03335326484271458,0.0,0.0,0.0,-1.0] |\n|http://data.linkedmdb.org/film/25609|122  |[0.08839306980371475,0.0405123233795166,0.014863908290863037,0.03641925007104874,0.00621407013386488,0.018232805312921603,0.0031641106121242045,0.014936793812861044,-0.027337516751140354,0.02419349489112695,0.0,0.0,0.0,-1.0]     |\n+------------------------------------+-----+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+\nonly showing top 10 rows\n\n+------------------+-----+--------------------+\n|        prediction|label|            features|\n+------------------+-----+--------------------+\n| 86.57766031593471|   97|[0.02758051082491...|\n|57.329988118765286|   25|[0.02355482988059...|\n| 98.24705727745479|  122|[0.08839306980371...|\n|  101.832225255528|   84|[0.05467520530025...|\n| 97.07865550072525|   85|[0.00946791842579...|\n| 94.15090697244997|  129|[-0.0344725688919...|\n| 96.16460723437073|  120|[-0.0457512177526...|\n| 96.31901256162648|   98|[0.01117840968072...|\n| 79.98721575224292|  103|[-0.0126836281269...|\n| 98.71777259301514|  124|[-0.0784195065498...|\n+------------------+-----+--------------------+\nonly showing top 10 rows\n\nRoot Mean Squared Error (RMSE) on test data \u003d 32.82576711325189\nLearned regression forest model:\n RandomForestRegressionModel: uid\u003drfr_721a3338d49f, numTrees\u003d20, numFeatures\u003d14\n\u001b[1m\u001b[34mmlDf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [entityID: string, label: int ... 1 more field]\n\u001b[1m\u001b[34mtrainingData\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [entityID: string, label: int ... 1 more field]\n\u001b[1m\u001b[34mtestData\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.Dataset[org.apache.spark.sql.Row]\u001b[0m \u003d [entityID: string, label: int ... 1 more field]\n\u001b[1m\u001b[34mrf\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.ml.regression.RandomForestRegressor\u001b[0m \u003d rfr_721a3338d49f\n\u001b[1m\u001b[34mmodel\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.ml.regression.RandomForestRegressionModel\u001b[0m \u003d RandomForestRegressionModel: uid\u003drfr_721a3338d49f, numTrees\u003d20, numFeatures\u003d14\n\u001b[1m\u001b[34mpredictions\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m \u003d [entityID: string, label: i...\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d38"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d39"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d40"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d41"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d42"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d43"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d44"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d45"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d46"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d47"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d48"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d49"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d50"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d51"
+            },
+            {
+              "jobUrl": "http://e7a5265c5f18:4040/jobs/job?id\u003d52"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619183664214_1471480492",
+      "id": "paragraph_1619183664214_1471480492",
+      "dateCreated": "2021-04-23 13:14:24.214",
+      "dateStarted": "2021-04-23 13:24:37.254",
+      "dateFinished": "2021-04-23 13:25:44.389",
+      "status": "FINISHED"
+    },
+    {
+      "user": "anonymous",
+      "progress": 0,
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1619184277253_357733164",
+      "id": "paragraph_1619184277253_357733164",
+      "dateCreated": "2021-04-23 13:24:37.253",
+      "status": "READY"
+    }
+  ],
+  "name": "DistRDF2ML_Regression",
+  "id": "2G4QTBZ82",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}

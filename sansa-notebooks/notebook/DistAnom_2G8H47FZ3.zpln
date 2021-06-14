@@ -1,0 +1,84 @@
+{
+  "paragraphs": [
+    {
+      "text": "import net.sansa_stack.rdf.spark.io._\nimport org.apache.jena.riot.Lang\nimport org.apache.jena.graph\n\nimport org.apache.spark.rdd.RDD\nimport org.apache.spark.sql.SparkSession\nimport org.apache.spark.storage.StorageLevel\nimport net.sansa_stack.ml.spark.GenericAnomalyDetection.conodapproach._\nimport net.sansa_stack.rdf.common.io.riot.error.{\n  ErrorParseMode,\n  WarningParseMode\n}\n\nval numofpartition\u003d1\nval anomalyListLimit \u003d 10\n\nval input \u003d \"hdfs://namenode:8020/data/data/all.ttl\"\n// val input \u003d \"hdfs://namenode:8020/data/linkedmdb-18-05-2009-dump.nt\"\n\n \n\nval lang \u003d Lang.TURTLE\nval triplesRDD \u003d\n      spark.rdf(lang)(input).repartition(10).persist()\n\n// val triplesRDD: RDD[graph.Triple] \u003d NTripleReader.load(\n//      spark,\n//      input,\n//      stopOnBadTerm \u003d ErrorParseMode.SKIP,\n//      stopOnWarnings \u003d WarningParseMode.IGNORE\n//     )\n\nval objList \u003d List(\n      \"http://www.w3.org/2001/XMLSchema#double\",\n      \"http://www.w3.org/2001/XMLSchema#integer\",\n      \"http://www.w3.org/2001/XMLSchema#nonNegativeInteger\",\n      \"http://dbpedia.org/datatype/squareKilometre\"\n    )\n\n    var clusterOfSubject: RDD[(Set[(String, String, Object)])] \u003d null\n    println(\n      \"AnomalyDetection-using ApproxSimilarityJoin function with the help of HashingTF \"\n    )\n    val verbose \u003d false\n    val outDetection \u003d new AnomalyWithHashingTF(\n      triplesRDD,\n      objList,\n      spark,\n      numofpartition,\n      verbose\n    )\n    val now \u003d System.currentTimeMillis()\n    clusterOfSubject \u003d outDetection.run()\n\n    val setData \u003d\n      clusterOfSubject.repartition(1).persist(StorageLevel.MEMORY_AND_DISK)\n    val setDataStore \u003d setData.map(f \u003d\u003e f.toSeq)\n    if (verbose) {\n      println(\"-----------\")\n      println(\"Main Function 1\")\n      setDataStore.take(10) foreach println\n    }\n\n    val setDataSize \u003d setDataStore.filter(f \u003d\u003e f.size \u003e anomalyListLimit)\n    val test \u003d setDataSize.map(f \u003d\u003e outDetection.iqr2(f, anomalyListLimit))\n    val testfilter \u003d test.filter(f \u003d\u003e f.size \u003e 0) // .distinct()\n    val testfilterDistinct: RDD[(String, String, Object)] \u003d\n      testfilter.flatMap(f \u003d\u003e f)\n\n    println(\"-----------\")\n    val output \u003d \"/home/farshad/Desktop/anomalyExperiments/result\" + System\n      .currentTimeMillis() + \".txt\"\n    // testfilterDistinct.saveAsTextFile(output)\n    println(\"size of anomaly set \" + testfilterDistinct.collect().size)\n    testfilterDistinct.take(100) foreach println\n\n    println(\"Operation took: \" + (System.currentTimeMillis() - now))\n    setData.unpersist()\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-05-30 16:59:09.228",
+      "progress": 50,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9.0,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://8de002cf10b3:4040/jobs/job?id\u003d5"
+            },
+            {
+              "jobUrl": "http://8de002cf10b3:4040/jobs/job?id\u003d6"
+            },
+            {
+              "jobUrl": "http://8de002cf10b3:4040/jobs/job?id\u003d7"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1622375875890_651164585",
+      "id": "paragraph_1622375875890_651164585",
+      "dateCreated": "2021-05-30 11:57:55.890",
+      "dateStarted": "2021-05-30 16:59:09.250",
+      "dateFinished": "2021-05-30 16:56:42.279",
+      "status": "ABORT"
+    },
+    {
+      "text": "",
+      "user": "anonymous",
+      "dateUpdated": "2021-05-30 14:38:47.506",
+      "progress": 0,
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1622376049880_876339364",
+      "id": "paragraph_1622376049880_876339364",
+      "dateCreated": "2021-05-30 12:00:49.880",
+      "status": "READY"
+    }
+  ],
+  "name": "DistAnom",
+  "id": "2G8H47FZ3",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false
+  },
+  "info": {}
+}
