@@ -12,6 +12,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.spark.sql.functions.{col, collect_list, max, min, size}
 
@@ -90,7 +91,7 @@ class SparqlFrame extends Transformer{
     this
   }
 
-  def getRDFdescription(): Array[org.apache.jena.graph.Triple] = {
+  /* def getRDFdescription(): Array[org.apache.jena.graph.Triple] = {
 
     val transformerURI: Node = NodeFactory.createURI("sansa-stack/ml/transfomer/Sparqlframe")
     val pipelineElementURI: Node = NodeFactory.createURI("sansa-stack/ml/sansaVocab/ml/pipelineElement")
@@ -103,6 +104,99 @@ class SparqlFrame extends Transformer{
       )
     ).toArray
     description
+  }
+
+   */
+
+  /**
+   * gain all inforamtion from this transformer as knowledge graph
+   * @return RDD[Trile] describing the meta information
+   */
+  def getSemanticTransformerDescription(): RDD[org.apache.jena.graph.Triple] = {
+    /*
+    svahash type sva
+    svaahsh hyerparameter hyperparameterHash1
+    hyperparameterHash1 label label
+    hyperparameterHash1 value value
+    hyperparameterHash1 type hyperparameter
+    ...
+     */
+    val svaNode = NodeFactory.createBlankNode(uid)
+    val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+    val hyperparameterNodeValue = NodeFactory.createURI("sansa-stack/sansaVocab/value")
+    val nodeLabel = NodeFactory.createURI("rdfs/label")
+
+
+    val triples = List(
+      Triple.create(
+        svaNode,
+        NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+        NodeFactory.createURI("sansa-stack/sansaVocab/Transformer")
+      ), Triple.create(
+        svaNode,
+        NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+        NodeFactory.createURI("sansa-stack/sansaVocab/SparqlFrame")
+      ),
+      // _query
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_query").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_query").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_query, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_query").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_query", XSDDatatype.XSDstring)
+      ),
+      // _queryExcecutionEngine
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_queryExcecutionEngine").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_queryExcecutionEngine").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_queryExcecutionEngine, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_queryExcecutionEngine").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_queryExcecutionEngine", XSDDatatype.XSDstring)
+      ),
+      // _collapsByKey
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_collapsByKey").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_collapsByKey").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_collapsByKey, XSDDatatype.XSDboolean)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_featureColumns").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_featureColumns", XSDDatatype.XSDstring)
+      ),
+      /* // _keyColumnNameString
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_keyColumnNameString").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_keyColumnNameString").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteral(_keyColumnNameString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_keyColumnNameString").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_keyColumnNameString", XSDDatatype.XSDstring)
+      )
+
+       */
+    )
+    spark.sqlContext.sparkContext.parallelize(triples)
   }
 
   override def transformSchema(schema: StructType): StructType =

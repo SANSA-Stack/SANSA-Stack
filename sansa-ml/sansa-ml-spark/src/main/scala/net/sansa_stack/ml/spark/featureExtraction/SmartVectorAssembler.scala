@@ -8,7 +8,11 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{Decimal, DoubleType, StringType, StructType}
 import org.apache.spark.sql.functions.{udf, _}
 import java.sql.Timestamp
+import java.util.Calendar
 
+import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 
 import scala.collection.mutable
@@ -55,7 +59,7 @@ class SmartVectorAssembler extends Transformer{
   protected val spark = SparkSession.builder().getOrCreate()
 
   // needed default elements
-  override val uid: String = Identifiable.randomUID("sparqlFrame")
+  override val uid: String = Identifiable.randomUID("SmartVectorAssembler")
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
   override def transformSchema(schema: StructType): StructType =
     throw new NotImplementedError()
@@ -172,6 +176,207 @@ class SmartVectorAssembler extends Transformer{
    */
   def getFeatureVectorDescription(): ListBuffer[String] = {
     _featureVectorDescription
+  }
+
+  /**
+   * gain all inforamtion from this transformer as knowledge graph
+   * @return RDD[Trile] describing the meta information
+   */
+  def getSemanticTransformerDescription(): RDD[org.apache.jena.graph.Triple] = {
+    /*
+    svahash type sva
+    svaahsh hyerparameter hyperparameterHash1
+    hyperparameterHash1 label label
+    hyperparameterHash1 value value
+    hyperparameterHash1 type hyperparameter
+    ...
+     */
+    val svaNode = NodeFactory.createBlankNode(uid)
+    val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+    val hyperparameterNodeValue = NodeFactory.createURI("sansa-stack/sansaVocab/value")
+    val nodeLabel = NodeFactory.createURI("rdfs/label")
+
+
+    val triples = List(
+      Triple.create(
+        svaNode,
+        NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+        NodeFactory.createURI("sansa-stack/sansaVocab/Transformer")
+      ), Triple.create(
+        svaNode,
+        NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+        NodeFactory.createURI("sansa-stack/sansaVocab/SmartVectorAssembler")
+      ),
+      // _entityColumn
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_entityColumn").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_entityColumn").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue({if (_entityColumn != null) _entityColumn else "_entityColumn not set"}, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_entityColumn").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_entityColumn", XSDDatatype.XSDstring)
+      ),
+      // _labelColumn
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_labelColumn").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_labelColumn").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue({if (_labelColumn != null) _labelColumn else "_labelColumn not set"}, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_labelColumn").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_labelColumn", XSDDatatype.XSDstring)
+      ),
+      // _featureColumns
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_featureColumns").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_featureColumns").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue({if (_featureColumns != null) _featureColumns.mkString(", ") else "_featureColumns not set"}, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_featureColumns").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_featureColumns", XSDDatatype.XSDstring)
+      ),
+      // _entityColumn
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_featureVectorDescription").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_featureVectorDescription").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_featureVectorDescription.zipWithIndex.toSeq.map(_.swap).mkString(", "), XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_featureVectorDescription").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_featureVectorDescription", XSDDatatype.XSDstring)
+      ),
+      // _digitStringStrategy
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_digitStringStrategy").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_digitStringStrategy").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_digitStringStrategy, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_digitStringStrategy").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_digitStringStrategy", XSDDatatype.XSDstring)
+      ),
+      // _nullDigitReplacement
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_nullDigitReplacement").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullDigitReplacement").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_nullDigitReplacement, XSDDatatype.XSDint)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullDigitReplacement").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_nullDigitReplacement", XSDDatatype.XSDstring)
+      ),
+      // _nullStringReplacement
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_nullStringReplacement").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullStringReplacement").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_nullStringReplacement, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullStringReplacement").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_nullStringReplacement", XSDDatatype.XSDstring)
+      ),
+      // _nullTimestampReplacement
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_nullTimestampReplacement").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullTimestampReplacement").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_nullTimestampReplacement, XSDDatatype.XSDstring)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_nullTimestampReplacement").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_nullTimestampReplacement", XSDDatatype.XSDstring)
+      ),
+      // _word2VecSize
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_word2VecSize").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2VecSize").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_word2VecSize, XSDDatatype.XSDint)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2VecSize").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_word2VecSize", XSDDatatype.XSDstring)
+      ),
+      // _word2VecMinCount
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_word2VecMinCount").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2VecMinCount").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_word2VecMinCount, XSDDatatype.XSDint)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2VecMinCount").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_word2VecMinCount", XSDDatatype.XSDstring)
+      ),
+      // _word2vecTrainingDfSizeRatio
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_word2vecTrainingDfSizeRatio").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2vecTrainingDfSizeRatio").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_word2vecTrainingDfSizeRatio, XSDDatatype.XSDdouble)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_word2vecTrainingDfSizeRatio").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_word2vecTrainingDfSizeRatio", XSDDatatype.XSDstring)
+      ),
+      // _stringIndexerTrainingDfSizeRatio
+      Triple.create(
+        svaNode,
+        hyperparameterNodeP,
+        NodeFactory.createBlankNode((uid + "_stringIndexerTrainingDfSizeRatio").hashCode.toString)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_stringIndexerTrainingDfSizeRatio").hashCode.toString),
+        hyperparameterNodeValue,
+        NodeFactory.createLiteralByValue(_stringIndexerTrainingDfSizeRatio, XSDDatatype.XSDdouble)
+      ), Triple.create(
+        NodeFactory.createBlankNode((uid + "_stringIndexerTrainingDfSizeRatio").hashCode.toString),
+        nodeLabel,
+        NodeFactory.createLiteralByValue("_stringIndexerTrainingDfSizeRatio", XSDDatatype.XSDstring)
+      )
+    )
+    spark.sqlContext.sparkContext.parallelize(triples)
   }
 
   /**

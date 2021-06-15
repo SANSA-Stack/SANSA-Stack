@@ -183,5 +183,9 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
 
     mlReadyDf.show(false)
     mlReadyDf.schema.foreach(println(_))
+
+    smartVectorAssembler
+      .getSemanticTransformerDescription()
+      .foreach(println(_))
   }
 }
