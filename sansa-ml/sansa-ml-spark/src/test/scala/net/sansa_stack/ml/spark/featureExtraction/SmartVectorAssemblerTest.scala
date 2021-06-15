@@ -79,6 +79,8 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .setCollapsByKey(true)
     val collapsedDf = sparqlFrame
       .transform(dataset)
+      .withColumnRenamed("seed__down_name(Single_NonCategorical_String)", "seed__down_name(Single_Categorical_String)")
+      .withColumnRenamed("seed__down_hasParent__down_name(ListOf_NonCategorical_String)", "seed__down_hasParent__down_name(ListOf_Categorical_String)")
       .cache()
 
     collapsedDf.show(false)
@@ -91,6 +93,7 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .setNullReplacement("string", "Hallo")
       .setNullReplacement("digit", -1000)
       .setNullReplacement("timestamp", java.sql.Timestamp.valueOf("1900-01-01 00:00:00"))
+      .setDigitStringStrategy("hash")
       .setWord2VecSize(3)
       .setWord2VecMinCount(1)
 
@@ -149,6 +152,7 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .setLabelColumn("seed__down_age(Single_NonCategorical_Decimal)")
       .setNullReplacement("string", "Hallo")
       .setNullReplacement("digit", -1000)
+      .setDigitStringStrategy("index")
       .setNullReplacement("timestamp", java.sql.Timestamp.valueOf("1900-01-01 00:00:00"))
       .setWord2VecSize(3)
       .setWord2VecMinCount(1)

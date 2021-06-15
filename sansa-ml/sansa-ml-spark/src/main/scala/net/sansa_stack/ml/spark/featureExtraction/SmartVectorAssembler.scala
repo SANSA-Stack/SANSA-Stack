@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.feature.{StopWordsRemover, StringIndexer, Tokenizer, VectorAssembler, Word2Vec}
+import org.apache.spark.ml.feature.{HashingTF, StopWordsRemover, StringIndexer, Tokenizer, VectorAssembler, Word2Vec}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
@@ -33,6 +33,8 @@ class SmartVectorAssembler extends Transformer{
   // working process onfiguration
   protected var _numericCollapsingStrategy: String = "median"
   protected var _stringCollapsingStrategy: String = "concat"
+
+  protected var _digitStringStrategy: String = "hash"
 
   // null replacement
   protected var _nullDigitReplacement: Int = -1
@@ -150,6 +152,17 @@ class SmartVectorAssembler extends Transformer{
   }
 
   /**
+   * setter for of strategy to transform categorical strings to digit. option one is hash option two is index
+   * @param digitStringStrategy strategy, either hash or index
+   * @return transformer
+   */
+  def setDigitStringStrategy(digitStringStrategy: String): this.type = {
+    assert(Seq("hash", "index").contains(digitStringStrategy))
+    _digitStringStrategy = digitStringStrategy
+    this
+  }
+
+  /**
    * Validate set column to check if we need fallback to first column if not set
    * and if set if it is in available cols
    *
@@ -257,7 +270,8 @@ class SmartVectorAssembler extends Transformer{
         .select(_entityColumn, featureColumn)
 
       var newFeatureColumnName: String = featureName
-      val digitizedDf: DataFrame = if (featureType == "Single_NonCategorical_String") {
+      val digitizedDf: DataFrame =
+        if (featureType == "Single_NonCategorical_String") {
         newFeatureColumnName += "(Word2Vec)"
 
         val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
@@ -307,226 +321,263 @@ class SmartVectorAssembler extends Transformer{
           .withColumnRenamed("output", newFeatureColumnName)
           .select(_entityColumn, newFeatureColumnName)
       }
-      else if (featureType == "ListOf_NonCategorical_String") {
-        newFeatureColumnName += "(Word2Vec)"
+        else if (featureType == "ListOf_NonCategorical_String") {
+          newFeatureColumnName += "(Word2Vec)"
 
-        val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
-          .na.fill(_nullStringReplacement)
-          .withColumn("sentences", concat_ws(". ", col(featureColumn)))
-          .select(_entityColumn, "sentences")
+          val dfCollapsedTwoColumnsNullsReplaced = dfCollapsedTwoColumns
+            .na.fill(_nullStringReplacement)
+            .withColumn("sentences", concat_ws(". ", col(featureColumn)))
+            .select(_entityColumn, "sentences")
 
-        val tokenizer = new Tokenizer()
-          .setInputCol("sentences")
-          .setOutputCol("words")
+          val tokenizer = new Tokenizer()
+            .setInputCol("sentences")
+            .setOutputCol("words")
 
-        val tokenizedDf = tokenizer
-          .transform(dfCollapsedTwoColumnsNullsReplaced)
-          .select(_entityColumn, "words")
+          val tokenizedDf = tokenizer
+            .transform(dfCollapsedTwoColumnsNullsReplaced)
+            .select(_entityColumn, "words")
 
-        val remover = new StopWordsRemover()
-          .setInputCol("words")
-          .setOutputCol("filtered")
+          val remover = new StopWordsRemover()
+            .setInputCol("words")
+            .setOutputCol("filtered")
 
-        val inputDf = remover
-          .transform(tokenizedDf)
-          .select(_entityColumn, "filtered")
-          .persist()
-
-        val word2vec = new Word2Vec()
-          .setInputCol("filtered")
-          .setOutputCol("output")
-          .setMinCount(_word2VecMinCount)
-          .setVectorSize(_word2VecSize)
-
-        val word2vecTrainingDf = if (_word2vecTrainingDfSizeRatio == 1) {
-          inputDf
+          val inputDf = remover
+            .transform(tokenizedDf)
+            .select(_entityColumn, "filtered")
             .persist()
-        } else {
-          inputDf
-            .sample(withReplacement = false, fraction = _word2vecTrainingDfSizeRatio).toDF()
+
+          val word2vec = new Word2Vec()
+            .setInputCol("filtered")
+            .setOutputCol("output")
+            .setMinCount(_word2VecMinCount)
+            .setVectorSize(_word2VecSize)
+
+          val word2vecTrainingDf = if (_word2vecTrainingDfSizeRatio == 1) {
+            inputDf
+              .persist()
+          } else {
+            inputDf
+              .sample(withReplacement = false, fraction = _word2vecTrainingDfSizeRatio).toDF()
+              .persist()
+          }
+
+          val word2vecModel = word2vec
+            .fit(word2vecTrainingDf)
+
+          word2vecTrainingDf.unpersist()
+
+          word2vecModel
+            .transform(inputDf)
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
+        else if (featureType == "Single_Categorical_String") {
+
+          val inputDf = dfCollapsedTwoColumns
+            .na.fill(_nullStringReplacement)
+            .cache()
+
+          if (_digitStringStrategy == "index") {
+            newFeatureColumnName += "(IndexedString)"
+
+            val indexer = new StringIndexer()
+              .setInputCol(featureColumn)
+              .setOutputCol("output")
+
+            indexer
+              .fit(inputDf)
+              .transform(inputDf)
+              .withColumnRenamed("output", newFeatureColumnName)
+              .select(_entityColumn, newFeatureColumnName)
+          }
+          else {
+            newFeatureColumnName += "(Single_Categorical_HashedString)"
+
+            inputDf
+              .withColumn("output", hash(col(featureColumn)).cast(DoubleType))
+              .withColumnRenamed("output", newFeatureColumnName)
+              .select(_entityColumn, newFeatureColumnName)
+            /* val hashingTF = new HashingTF()
+              .setInputCol(featureColumn)
+              .setOutputCol("output")
+
+            hashingTF
+              .transform(inputDf)
+              .withColumnRenamed("output", newFeatureColumnName)
+              .select(_entityColumn, newFeatureColumnName) */
+          }
+        }
+        else if (featureType == "ListOf_Categorical_String") {
+
+          val inputDf = dfCollapsedTwoColumns
+            .select(col(_entityColumn), explode_outer(col(featureColumn)))
+            .na.fill(_nullStringReplacement)
+            .cache()
+
+
+          val stringIndexerTrainingDf = if (_stringIndexerTrainingDfSizeRatio == 1) {
+            inputDf
+              .persist()
+          } else {
+            inputDf
+              .sample(withReplacement = false, fraction = _stringIndexerTrainingDfSizeRatio).toDF()
+              .persist()
+          }
+
+          if (_digitStringStrategy == "index") {
+            newFeatureColumnName += "(ListOfIndexedString)"
+
+            val indexer = new StringIndexer()
+              .setInputCol("col")
+              .setOutputCol("outputTmp")
+
+            indexer
+              .fit(stringIndexerTrainingDf)
+              .transform(inputDf)
+              .groupBy(_entityColumn)
+              .agg(collect_list("outputTmp") as "output")
+              .select(_entityColumn, "output")
+              .withColumnRenamed("output", newFeatureColumnName)
+              .select(_entityColumn, newFeatureColumnName)
+          }
+          else {
+            newFeatureColumnName += "(ListOf_Categorical_HashedString)"
+
+            inputDf
+              .withColumn("output", hash(col("col")).cast(DoubleType))
+              .groupBy(_entityColumn)
+              .agg(collect_list("output") as "output")
+              .select(_entityColumn, "output")
+              .withColumnRenamed("output", newFeatureColumnName)
+              .select(_entityColumn, newFeatureColumnName)
+          }
+
+
+
+        }
+        else if (featureType.contains("Timestamp") & featureType.contains("Single")) {
+          dfCollapsedTwoColumns
+            .withColumn(featureColumn, col(featureColumn).cast("string"))
+            .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
+            .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
+            .withColumn(featureName + "UnixTimestamp(Single_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
+            .withColumn(featureName + "DayOfWeek(Single_NonCategorical_Int)", dayofweek(col(featureColumn)))
+            .withColumn(featureName + "DayOfMonth(Single_NonCategorical_Int)", dayofmonth(col(featureColumn)))
+            .withColumn(featureName + "DayOfYear(Single_NonCategorical_Int)", dayofyear(col(featureColumn)))
+            .withColumn(featureName + "Year(Single_NonCategorical_Int)", year(col(featureColumn)))
+            .withColumn(featureName + "Month(Single_NonCategorical_Int)", month(col(featureColumn)))
+            .withColumn(featureName + "Hour(Single_NonCategorical_Int)", hour(col(featureColumn)))
+            .withColumn(featureName + "Minute(Single_NonCategorical_Int)", minute(col(featureColumn)))
+            .withColumn(featureName + "Second(Single_NonCategorical_Int)", second(col(featureColumn)))
+            .drop(featureColumn)
+        }
+        else if (featureType.contains("Timestamp") & featureType.contains("ListOf")) {
+          val df0 = dfCollapsedTwoColumns
+          val df1 = df0
+            .select(col(_entityColumn), explode_outer(col(featureColumn)))
+            .withColumnRenamed("col", featureColumn)
+            .withColumn(featureColumn, col(featureColumn).cast("string"))
+            .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
+            .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
+
+          val df2 = df1
+            .withColumn(featureName + "UnixTimestamp(ListOf_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
+            .withColumn(featureName + "DayOfWeek(ListOf_NonCategorical_Int)", dayofweek(col(featureColumn)))
+            .withColumn(featureName + "DayOfMonth(ListOf_NonCategorical_Int)", dayofmonth(col(featureColumn)))
+            .withColumn(featureName + "DayOfYear(ListOf_NonCategorical_Int)", dayofyear(col(featureColumn)))
+            .withColumn(featureName + "Year(ListOf_NonCategorical_Int)", year(col(featureColumn)))
+            .withColumn(featureName + "Month(ListOf_NonCategorical_Int)", month(col(featureColumn)))
+            .withColumn(featureName + "Hour(ListOf_NonCategorical_Int)", hour(col(featureColumn)))
+            .withColumn(featureName + "Minute(ListOf_NonCategorical_Int)", minute(col(featureColumn)))
+            .withColumn(featureName + "Second(ListOf_NonCategorical_Int)", second(col(featureColumn)))
+            .drop(featureColumn)
             .persist()
+
+          val subFeatureColumns = df2.columns.filter(_ != _entityColumn)
+          var df3 = df0
+              .select(_entityColumn)
+              .persist()
+          for (subFeatureColumn <- subFeatureColumns) {
+            val df4 = df2.select(_entityColumn, subFeatureColumn)
+              .groupBy(_entityColumn)
+              .agg(collect_list(subFeatureColumn) as subFeatureColumn)
+            df3 = df3.join(df4, _entityColumn)
+          }
+
+          df2.unpersist()
+          df3
         }
 
-        val word2vecModel = word2vec
-          .fit(word2vecTrainingDf)
+        else if (
+          featureType.startsWith("ListOf") &&
+            (featureType.endsWith("Double") || featureType.endsWith("Decimal") || featureType.endsWith("Int")  || featureType.endsWith("Integer"))
+        ) {
+          newFeatureColumnName += s"(${featureType})"
 
-        word2vecTrainingDf.unpersist()
-
-        word2vecModel
-          .transform(inputDf)
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType == "Single_Categorical_String") {
-        newFeatureColumnName += "(IndexedString)"
-
-        val inputDf = dfCollapsedTwoColumns
-          .na.fill(_nullStringReplacement)
-          .cache()
-
-        val indexer = new StringIndexer()
-          .setInputCol(featureColumn)
-          .setOutputCol("output")
-
-        indexer
-          .fit(inputDf)
-          .transform(inputDf)
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType == "ListOf_Categorical_String") {
-        newFeatureColumnName += "(ListOfIndexedString)"
-
-        val inputDf = dfCollapsedTwoColumns
-          .select(col(_entityColumn), explode_outer(col(featureColumn)))
-          .na.fill(_nullStringReplacement)
-          .cache()
-
-        val stringIndexerTrainingDf = if (_stringIndexerTrainingDfSizeRatio == 1) {
-          inputDf
-            .persist()
-        } else {
-          inputDf
-            .sample(withReplacement = false, fraction = _stringIndexerTrainingDfSizeRatio).toDF()
-            .persist()
-        }
-
-        val indexer = new StringIndexer()
-          .setInputCol("col")
-          .setOutputCol("outputTmp")
-
-        indexer
-          .fit(stringIndexerTrainingDf)
-          .transform(inputDf)
-          .groupBy(_entityColumn)
-          .agg(collect_list("outputTmp") as "output")
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType.contains("Timestamp") & featureType.contains("Single")) {
-        dfCollapsedTwoColumns
-          .withColumn(featureColumn, col(featureColumn).cast("string"))
-          .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
-          .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
-          .withColumn(featureName + "UnixTimestamp(Single_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
-          .withColumn(featureName + "DayOfWeek(Single_NonCategorical_Int)", dayofweek(col(featureColumn)))
-          .withColumn(featureName + "DayOfMonth(Single_NonCategorical_Int)", dayofmonth(col(featureColumn)))
-          .withColumn(featureName + "DayOfYear(Single_NonCategorical_Int)", dayofyear(col(featureColumn)))
-          .withColumn(featureName + "Year(Single_NonCategorical_Int)", year(col(featureColumn)))
-          .withColumn(featureName + "Month(Single_NonCategorical_Int)", month(col(featureColumn)))
-          .withColumn(featureName + "Hour(Single_NonCategorical_Int)", hour(col(featureColumn)))
-          .withColumn(featureName + "Minute(Single_NonCategorical_Int)", minute(col(featureColumn)))
-          .withColumn(featureName + "Second(Single_NonCategorical_Int)", second(col(featureColumn)))
-          .drop(featureColumn)
-      }
-      else if (featureType.contains("Timestamp") & featureType.contains("ListOf")) {
-        val df0 = dfCollapsedTwoColumns
-        val df1 = df0
-          .select(col(_entityColumn), explode_outer(col(featureColumn)))
-          .withColumnRenamed("col", featureColumn)
-          .withColumn(featureColumn, col(featureColumn).cast("string"))
-          .na.fill(value = _nullTimestampReplacement.toString, cols = Array(featureColumn))
-          .withColumn(featureColumn, col(featureColumn).cast("timestamp"))
-
-        val df2 = df1
-          .withColumn(featureName + "UnixTimestamp(ListOf_NonCategorical_Int)", unix_timestamp(col(featureColumn)).cast("int"))
-          .withColumn(featureName + "DayOfWeek(ListOf_NonCategorical_Int)", dayofweek(col(featureColumn)))
-          .withColumn(featureName + "DayOfMonth(ListOf_NonCategorical_Int)", dayofmonth(col(featureColumn)))
-          .withColumn(featureName + "DayOfYear(ListOf_NonCategorical_Int)", dayofyear(col(featureColumn)))
-          .withColumn(featureName + "Year(ListOf_NonCategorical_Int)", year(col(featureColumn)))
-          .withColumn(featureName + "Month(ListOf_NonCategorical_Int)", month(col(featureColumn)))
-          .withColumn(featureName + "Hour(ListOf_NonCategorical_Int)", hour(col(featureColumn)))
-          .withColumn(featureName + "Minute(ListOf_NonCategorical_Int)", minute(col(featureColumn)))
-          .withColumn(featureName + "Second(ListOf_NonCategorical_Int)", second(col(featureColumn)))
-          .drop(featureColumn)
-          .persist()
-
-        val subFeatureColumns = df2.columns.filter(_ != _entityColumn)
-        var df3 = df0
-            .select(_entityColumn)
-            .persist()
-        for (subFeatureColumn <- subFeatureColumns) {
-          val df4 = df2.select(_entityColumn, subFeatureColumn)
+          dfCollapsedTwoColumns
+            .select(col(_entityColumn), explode_outer(col(featureColumn)))
+            .withColumnRenamed("col", "output")
+            .na.fill(_nullDigitReplacement)
             .groupBy(_entityColumn)
-            .agg(collect_list(subFeatureColumn) as subFeatureColumn)
-          df3 = df3.join(df4, _entityColumn)
+            .agg(collect_list("output") as "output")
+            .select(_entityColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+
+
         }
+        else if (featureType.endsWith("Double")) {
+          newFeatureColumnName += s"(${featureType})"
 
-        df2.unpersist()
-        df3
-      }
+          dfCollapsedTwoColumns
+            .withColumnRenamed(featureColumn, "output")
+            .na.fill(_nullDigitReplacement)
+            .select(_entityColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
+        else if (featureType.endsWith("Integer") || featureType.endsWith("Int")) {
+          newFeatureColumnName += s"(${featureType})"
 
-      else if (
-        featureType.startsWith("ListOf") &&
-          (featureType.endsWith("Double") || featureType.endsWith("Decimal") || featureType.endsWith("Int")  || featureType.endsWith("Integer"))
-      ) {
-        newFeatureColumnName += s"(${featureType})"
+          dfCollapsedTwoColumns
+            .withColumn("output", col(featureColumn).cast(DoubleType))
+            // .withColumnRenamed(featureColumn, "output")
+            .na.fill(_nullDigitReplacement)
+            .select(_entityColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
+        else if (featureType.endsWith("Boolean")) {
+          newFeatureColumnName += s"(${featureType})"
 
-        dfCollapsedTwoColumns
-          .select(col(_entityColumn), explode_outer(col(featureColumn)))
-          .withColumnRenamed("col", "output")
-          .na.fill(_nullDigitReplacement)
-          .groupBy(_entityColumn)
-          .agg(collect_list("output") as "output")
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
+          dfCollapsedTwoColumns
+            .withColumn("output", col(featureColumn).cast(DoubleType))
+            // .withColumnRenamed(featureColumn, "output")
+            .na.fill(_nullDigitReplacement)
+            .select(_entityColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
+        else if (featureType.endsWith("Decimal")) {
+          newFeatureColumnName += s"(${featureType})"
 
+          dfCollapsedTwoColumns
+            // .withColumn("output", col(featureColumn).cast(DoubleType))
+            .withColumnRenamed(featureColumn, "output")
+            .na.fill(_nullDigitReplacement)
+            .select(_entityColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
+        else {
+          newFeatureColumnName += ("(notDigitizedYet)")
 
-      }
-      else if (featureType.endsWith("Double")) {
-        newFeatureColumnName += s"(${featureType})"
-
-        dfCollapsedTwoColumns
-          .withColumnRenamed(featureColumn, "output")
-          .na.fill(_nullDigitReplacement)
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType.endsWith("Integer") || featureType.endsWith("Int")) {
-        newFeatureColumnName += s"(${featureType})"
-
-        dfCollapsedTwoColumns
-          .withColumn("output", col(featureColumn).cast(DoubleType))
-          // .withColumnRenamed(featureColumn, "output")
-          .na.fill(_nullDigitReplacement)
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType.endsWith("Boolean")) {
-        newFeatureColumnName += s"(${featureType})"
-
-        dfCollapsedTwoColumns
-          .withColumn("output", col(featureColumn).cast(DoubleType))
-          // .withColumnRenamed(featureColumn, "output")
-          .na.fill(_nullDigitReplacement)
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else if (featureType.endsWith("Decimal")) {
-        newFeatureColumnName += s"(${featureType})"
-
-        dfCollapsedTwoColumns
-          // .withColumn("output", col(featureColumn).cast(DoubleType))
-          .withColumnRenamed(featureColumn, "output")
-          .na.fill(_nullDigitReplacement)
-          .select(_entityColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
-      else {
-        newFeatureColumnName += ("(notDigitizedYet)")
-
-        println("transformation not possible yet")
-        dfCollapsedTwoColumns
-          .withColumnRenamed(featureColumn, "output")
-          .withColumnRenamed("output", newFeatureColumnName)
-          .select(_entityColumn, newFeatureColumnName)
-      }
+          println("transformation not possible yet")
+          dfCollapsedTwoColumns
+            .withColumnRenamed(featureColumn, "output")
+            .withColumnRenamed("output", newFeatureColumnName)
+            .select(_entityColumn, newFeatureColumnName)
+        }
 
       fullDigitizedDf = fullDigitizedDf.join(
         digitizedDf,
@@ -542,6 +593,8 @@ class SmartVectorAssembler extends Transformer{
     if (nonDigitizedCoulumns.size > 0) println(s"we drop following non digitized columns:\n${nonDigitizedCoulumns.mkString("\n")}")
     val onlyDigitizedDf = fullDigitizedDf
       .select(digitzedColumns.map(col(_)): _*)
+
+    // onlyDigitizedDf.show(false)
 
     fullDigitizedDf.unpersist()
 
@@ -585,6 +638,8 @@ class SmartVectorAssembler extends Transformer{
       columnsToAssemble = columnsToAssemble.filterNot(_ == "label")
     }
     // println(s"columns to assemble:\n${columnsToAssemble.mkString(", ")}")
+
+    // fixedLengthFeatureDf.show(false)
 
     val assembler = new VectorAssembler()
       .setInputCols(columnsToAssemble)
