@@ -103,6 +103,13 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
       .transform(collapsedDf)
       .cache()
 
+    println("Feature vector description:")
+    smartVectorAssembler
+      .getFeatureVectorDescription()
+      .zipWithIndex
+      .map(_.swap)
+      .foreach(println(_))
+
     assert(inputDfSize == mlReadyDf.count())
 
     assert(mlReadyDf.columns.toSet == Set("entityID", "label", "features"))
@@ -162,6 +169,13 @@ class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
     val mlReadyDf = smartVectorAssembler
       .transform(collapsedDf)
       .cache()
+
+    println("Feature vector description:")
+    smartVectorAssembler
+      .getFeatureVectorDescription()
+      .zipWithIndex
+      .map(_.swap)
+      .foreach(println(_))
 
     assert(inputDfSize == mlReadyDf.count())
 

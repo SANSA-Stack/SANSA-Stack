@@ -12,6 +12,7 @@ import java.sql.Timestamp
 import org.apache.spark.sql.types._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /**
  * This Transformer creates a needed Dataframe for common ML approaches in Spark MLlib.
@@ -29,6 +30,9 @@ class SmartVectorAssembler extends Transformer{
   protected var _labelColumn: String = null
   // list of columns which should be used as features
   protected var _featureColumns: List[String] = null
+
+  // feature vector descrition, adjusted within process
+  var _featureVectorDescription: ListBuffer[String] = null
 
   // working process onfiguration
   protected var _numericCollapsingStrategy: String = "median"
@@ -160,6 +164,14 @@ class SmartVectorAssembler extends Transformer{
     assert(Seq("hash", "index").contains(digitStringStrategy))
     _digitStringStrategy = digitStringStrategy
     this
+  }
+
+  /**
+   * get the description of explainable feature vector
+   * @return ListBuffer of Strings, describing for each index of the KG the content
+   */
+  def getFeatureVectorDescription(): ListBuffer[String] = {
+    _featureVectorDescription
   }
 
   /**
@@ -640,6 +652,23 @@ class SmartVectorAssembler extends Transformer{
     // println(s"columns to assemble:\n${columnsToAssemble.mkString(", ")}")
 
     // fixedLengthFeatureDf.show(false)
+    // fixedLengthFeatureDf.schema.foreach(println(_))
+    // fixedLengthFeatureDf.first().toSeq.map(_.getClass).foreach(println(_))
+
+    _featureVectorDescription = new ListBuffer[String]
+    for (c <- columnsToAssemble) {
+      // println(sf.name)
+      if (c.contains("Word2Vec")) { // sf.dataType == org.apache.spark.ml.linalg.Vectors) {
+        // println fixedLengthFeatureDf.first().getAs[org.apache.spark.ml.linalg.DenseVector](sf.name).size
+        for (w2v_index <- (0 until fixedLengthFeatureDf.first().getAs[org.apache.spark.ml.linalg.DenseVector](c).size)) {
+          _featureVectorDescription.append(c + "_" + w2v_index)
+        }
+      }
+      else {
+        _featureVectorDescription.append(c)
+      }
+    }
+    // _featureVectorDescription.foreach(println(_))
 
     val assembler = new VectorAssembler()
       .setInputCols(columnsToAssemble)
