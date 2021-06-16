@@ -132,5 +132,9 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
     assert(collapsedDf.columns.toSet == Set("seed", "seed__down_age(Single_NonCategorical_Decimal)", "seed__down_name(Single_NonCategorical_String)", "seed__down_hasParent__down_name(ListOf_NonCategorical_String)", "seed__down_hasParent__down_age(ListOf_NonCategorical_Decimal)"))
     assert(featureTypes("seed__down_hasParent__down_age")("isListOfEntries") == true)
     assert(featureTypes("seed__down_hasParent__down_name")("datatype") == StringType)
+
+    collapsingSparqlFrame
+      .getSemanticTransformerDescription()
+      .foreach(println(_))
   }
 }
