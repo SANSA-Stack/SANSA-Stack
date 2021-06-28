@@ -1,13 +1,13 @@
-package net.sansa_stack.hadoop.util;
+package net.sansa_stack.nio.util;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
-public interface ReadableByteChannelDecorator<T extends ReadableByteChannel>
+public interface ReadableByteChannelDecorator
         extends ReadableByteChannel
 {
-     T getDelegate();
+    ReadableByteChannel getDelegate();
 
     @Override
     default boolean isOpen() {

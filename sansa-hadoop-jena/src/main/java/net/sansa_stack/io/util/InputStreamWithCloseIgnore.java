@@ -1,10 +1,15 @@
-package net.sansa_stack.hadoop.util;
+package net.sansa_stack.io.util;
 
 import org.apache.commons.io.input.ProxyInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * A wrapper whose close() method is a noop.
+ * In contrast to CloseShieldInputStream this class' read method
+ * will not indicate EOF after close.
+ */
 public class InputStreamWithCloseIgnore
     extends ProxyInputStream
 {

@@ -1,4 +1,4 @@
-package net.sansa_stack.hadoop.util;
+package net.sansa_stack.io.util;
 
 import org.apache.commons.io.input.ProxyInputStream;
 

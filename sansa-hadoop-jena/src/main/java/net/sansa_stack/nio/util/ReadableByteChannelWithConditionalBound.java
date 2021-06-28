@@ -1,4 +1,4 @@
-package net.sansa_stack.hadoop.util;
+package net.sansa_stack.nio.util;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 /**
  * Readable byte channel wrapper that before every read checks for an
  * end-of-file (eof) condition.
- * Once true, any subsequent read immediatly returns -1 (eof).
+ * Once true, any subsequent read immediately returns -1 (eof).
  * Used to prevent reading across hadoop split boundaries
  */
 public class ReadableByteChannelWithConditionalBound<T extends ReadableByteChannel>

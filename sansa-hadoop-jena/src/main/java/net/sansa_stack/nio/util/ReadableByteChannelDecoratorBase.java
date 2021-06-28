@@ -1,9 +1,9 @@
-package net.sansa_stack.hadoop.util;
+package net.sansa_stack.nio.util;
 
 import java.nio.channels.ReadableByteChannel;
 
 public class ReadableByteChannelDecoratorBase<T extends ReadableByteChannel>
-    implements ReadableByteChannelDecorator<T>
+    implements ReadableByteChannelDecorator
 {
     protected T delegate;
 

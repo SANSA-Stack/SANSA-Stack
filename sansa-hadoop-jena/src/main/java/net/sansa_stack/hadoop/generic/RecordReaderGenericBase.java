@@ -2,10 +2,15 @@ package net.sansa_stack.hadoop.generic;
 
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.util.*;
+import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
+import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
+import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
+import net.sansa_stack.nio.util.*;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.aksw.jena_sparql_api.io.binseach.Seekable;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -42,6 +47,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * A generic record reader that uses a callback mechanism to detect a consecutive sequence of records
@@ -224,11 +230,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     }
 
     public void initRecordFlow() throws IOException {
-
-
         // val sw = Stopwatch.createStarted()
         // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
-
         // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
         Flowable<T> tmp = createRecordFlow();
@@ -266,8 +269,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         if (null != codec) {
             if (decompressor != null) {
                 // Not sure if returning a decompressor resets its state properly in all cases
-                // avoiding it for now
-                // CodecPool.returnDecompressor(decompressor)
+                // may want to comment the line out
+                CodecPool.returnDecompressor(decompressor);
             }
 
             decompressor = CodecPool.getDecompressor(codec);
@@ -275,39 +278,39 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             if (codec instanceof SplittableCompressionCodec) {
                 SplittableCompressionCodec scc = (SplittableCompressionCodec) codec;
 
-                // rawStream.seek(0)
-                // rawStream.seek(start)
-                // try {
-
                 SplitCompressionInputStream tmp = scc.createInputStream(rawStream, decompressor, start, end,
                         SplittableCompressionCodec.READ_MODE.BYBLOCK);
 
-
-//        val tmp: SplitCompressionInputStream = scc.createInputStream(
-//          new SeekableInputStream(new CloseShieldInputStream(rawStream), rawStream), decompressor, start, end,
-//          SplittableCompressionCodec.READ_MODE.BYBLOCK)
-
-                // tmp.read(new Array[Byte](1))
-                // tmp.skip(0)
                 long adjustedStart = tmp.getAdjustedStart();
                 long adjustedEnd = tmp.getAdjustedEnd();
 
                 // val rawPos = rawStream.getPos
                 // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
 
-                // stream = tmp // new SeekableInputStream(new CloseShieldInputStream(tmp), tmp)
+                // This wrapping creates a seekable input stream that advertises
+                // new positions after reading the byte before a block boundary
+                DeferredSeekablePushbackInputStream dspis =
+                        new DeferredSeekablePushbackInputStream(
+                                InputStreamWithCloseLogging.wrap(
+                                        new InputStreamWithZeroOffsetRead(tmp),
+                                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose),
+                                tmp);
 
-                stream =
-                        new SeekableInputStream(
-                                new InputStreamWithCloseIgnore(
-                                        InputStreamWithCloseLogging.wrap(
-                                                new InputStreamWithZeroOffsetRead(tmp),
-                                                ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose)), tmp);
+                // System.out.println("Requested pos: " + start + " Adjusted pos: " + adjustedStart + " Stream pos: " + tmp.getPos());
+
+                // TODO Maybe we need to call read before the position gets valid?
+                // Read one byte from the stream to update the position
+                // and push that byte back
+                int b = tmp.read();
+                if (b >= 0) {
+                    dspis.unread(b);
+                }
+                adjustedStart = dspis.getPos();
+
+                stream = new SeekableInputStream(
+                        new InputStreamWithCloseIgnore(dspis), dspis);
 
                 result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
-                // } catch {
-                // case _ => result = setStreamToInterval(start - 1, start -1)
-                // }
             } else {
                 // TODO Add support for non-splittable codecs: If the codec is non-splittable then we
                 //   just get a split across the whole file
@@ -316,16 +319,17 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             }
         } else {
             rawStream.seek(start);
-            // stream = rawStream
-            // stream.seek(start)
 
             stream =
                     new SeekableInputStream(
                             new InputStreamWithCloseIgnore(
                                     Channels.newInputStream(
-                                            new InterruptingReadableByteChannel(
-                                                    InputStreamWithCloseLogging.wrap(rawStream,
-                                                            ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose), rawStream, end))),
+                                            new InterruptingSeekableByteChannel(
+                                                    new SeekableByteChannelFromSeekableInputStream(
+                                                        InputStreamWithCloseLogging.wrap(rawStream,
+                                                                ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose),
+                                                        rawStream),
+                                                    end))),
                             rawStream);
 
             result = new AbstractMap.SimpleEntry<>(start, end);
@@ -343,77 +347,28 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         throw new RuntimeException("Unexpected close");
     }
 
-    /**
-     * Flowable transform that skips the first n groups of a flowable
-     *
-     * @param skipGroupCount
-     * @param classifier
-     * @param <I>
-     * @param <O>
-     * @param <K>
-     * @return
-     */
-/*
-    public static <I, O, K> FlowableTransformer<I, O> skipGroups(long skipGroupCount, Function<? super I, ? extends K> classifier) {
-        return upstream -> {
-            long[] numGroupsSkipped = {0};
-            boolean[] firstItemSeen = {false};
-            Object[] lastSeenKey = {null};
+    // Predicate to test whether a split position was hit or passed for the given stream
+    // and position
+    public boolean didHitSplitBound(org.apache.hadoop.fs.Seekable seekable, long splitPos) {
+        long rawPos;
+        try {
+            rawPos = seekable.getPos();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-            upstream.filter(item -> {
-                boolean r;
-                if (numGroupsSkipped[0] >= skipGroupCount) {
-                    r = true;
-                } else {
-                    Object key = classifier.apply(item);
-                    if (!firstItemSeen[0]) {
-                        lastSeenKey[0] = key;
-                        firstItemSeen[0] = true;
-                    } else {
-                        boolean isEqual = Objects.equals(lastSeenKey, key);
-                        if (!isEqual) {
-                            ++numGroupsSkipped[0];
-                            lastSeenKey[0] = key;
-                        }
-                    }
+        long exceededSplitPos = rawPos - splitPos;
+        boolean virtualEofReached = exceededSplitPos >= 0;
+        if (virtualEofReached) {
+            int maxExpectedExcess = isEncoded ? 1 : 0;
 
-                    r = numGroupsSkipped[0] >= skipGroupCount;
-                }
-                return r;
-            });
-        };
-    }
+            if (exceededSplitPos > maxExpectedExcess) {
+                logger.warn("Exceeded split pos by " + exceededSplitPos + " bytes");
+            }
+        }
+        return virtualEofReached;
+    };
 
-    public static <I, O, K> FlowableTransformer<I, O> takeGroups(long takeGroupCount, Function<? super I, ? extends K> classifier) {
-        return upstream -> {
-            long[] numGroupsTaken = {0};
-            boolean[] firstItemSeen = {false};
-            Object[] lastSeenKey = {null};
-
-            upstream.filter(item -> {
-                boolean r;
-                if (numGroupsTaken[0] >= takeGroupCount) {
-                    r = false;
-                } else {
-                    Object key = classifier.apply(item);
-                    if (!firstItemSeen[0]) {
-                        lastSeenKey[0] = key;
-                        firstItemSeen[0] = true;
-                    } else {
-                        boolean isEqual = Objects.equals(lastSeenKey, key);
-                        if (!isEqual) {
-                            ++numGroupsTaken[0];
-                            lastSeenKey[0] = key;
-                        }
-                    }
-
-                    r = numGroupsSkipped[0] >= skipGroupCount;
-                }
-                return r;
-            });
-        };
-    }
-*/
 
     /**
      * Modify a flow to perform aggregation of items
@@ -449,6 +404,41 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return result;
     }
 
+    protected InputStream effectiveInputStreamSupp(Seekable seekable) {
+        InputStream r = new SequenceInputStream(
+                new ByteArrayInputStream(prefixBytes),
+                Channels.newInputStream(seekable.cloneObject()));
+        return r;
+    };
+
+    protected Flowable<U> parseFromSeekable(Seekable seekable) {
+        Callable<InputStream> inSupp = () -> effectiveInputStreamSupp(seekable);
+
+        Flowable<U> r = parse(inSupp);
+        return r;
+    };
+
+    protected boolean prober(Seekable seekable) {
+        long pos;
+        try {
+            pos = seekable.getPos();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // printSeekable(seekable)
+        long recordCount = parseFromSeekable(seekable)
+                // .doOnError(t -> t.printStackTrace())
+                .take(probeRecordCount)
+                .count()
+                .onErrorReturnItem(-1L)
+                .blockingGet();
+        boolean foundValidRecordOffset = recordCount > 0;
+
+        // System.out.println(String.format("Probing at pos %s: %b", pos, foundValidRecordOffset));
+        return foundValidRecordOffset;
+    };
+
     protected Flowable<T> createRecordFlow() throws IOException {
 
         String splitName = split.getPath().getName();
@@ -457,76 +447,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
         // Clones the provided seekable!
-        Function<Seekable, InputStream> effectiveInputStreamSupp = seekable -> {
-            InputStream r = new SequenceInputStream(
-                    new ByteArrayInputStream(prefixBytes),
-                    Channels.newInputStream(seekable.cloneObject()));
-            return r;
-        };
-
-        /*
-        Function<Seekable, Flowable<Dataset>> parser = seekable -> {
-            Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
-
-            Flowable<Dataset> r = RDFDataMgrRx.createFlowableDatasets(inSupp, Lang.TRIG, null);
-            return r;
-        };
-        */
-
-        // Predicate<T> isNonEmptyDataset = t -> !isEmptyRecord(t);
-
-        Function<Seekable, Flowable<U>> parseFromSeekable = seekable -> {
-            Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
-
-            Flowable<U> r = parse(inSupp);
-            return r;
-        };
-
-        Predicate<Seekable> prober = seekable -> {
-            long pos;
-            try {
-                pos = seekable.getPos();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            // printSeekable(seekable)
-            long recordCount = parseFromSeekable.apply(seekable)
-                    // .doOnError(t -> t.printStackTrace())
-                    .take(probeRecordCount)
-                    .count()
-                    .onErrorReturnItem(-1L)
-                    .blockingGet();
-            boolean foundValidRecordOffset = recordCount > 0;
-
-            // System.out.println(String.format("Probing at pos %s: %b", pos, foundValidRecordOffset));
-            return foundValidRecordOffset;
-        };
-
-        // Predicate to test whether a split position was hit or passed for the given stream
-        // and position
-        BiPredicate<SeekableInputStream, Long> hitSplitBound = (strm, splitPos) -> {
-            long rawPos;
-            try {
-                rawPos = strm.getSeekable().getPos();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            long exceed = rawPos - splitPos;
-            boolean eofReached = exceed >= 0;
-            if (eofReached && exceed > 0) {
-                // For encoded streams reads will usually not interrupt exactly at the
-                // split end - but for unencoded ones it should be exact
-                logger.warn("Exceeded maximum boundary by " + exceed + " bytes; should be harmless");
-            }
-            return eofReached;
-        };
 
 
-        // Except for the first split, the first record may parse but incorrectly due to incompleteness,
-        // the second record may be wrongly connected to the incomplete record, so the third record should be safe.
-        // Once we find the start of the third record wethe
+
+
+        // Except for the first split, the first record may parse sucessfully but may
+        // actually be an incomplete record that is cut off an the split boundary and that would
+        // thus be interpreted incorrectly. For examyle, a quad "<g> | <s> <p> <o>" with "|" indicating the
+        // split boundary would be incorrectly seen as a triple in the default graph.
+        // The second record may be wrongly connected to the incomplete record, so the third record should be safe.
+        // Once we find the start of the third record we
         // then need to find probeRecordCount further records to validate the the starting position.
         // Hence we need to read up to (3 + probeRecordCount) * maxRecordLength bytes
         int skipRecordCount = 2;
@@ -541,7 +471,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
 
         StopWatch tailSw = StopWatch.createStarted();
-        long tmp = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, prober);
+        long tmp = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, this::prober);
         // If no record is found in the tail then take all its known bytes because
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
@@ -550,7 +480,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
         // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
         tailNav.setPos(tailBytes);
-        List<U> tailItems = parseFromSeekable.apply(tailNav)
+
+        // lines(tailNav).limit(100).forEach(System.out::println);
+
+        List<U> tailItems = parseFromSeekable(tailNav)
                 .lift(FlowableOperatorSequentialGroupBy.create(accumulating::classify, () -> (List<U>)new ArrayList(), Collection::add))
                 .map(Map.Entry::getValue)
                 .first(Collections.emptyList())
@@ -558,19 +491,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 .blockingGet();
 
         long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
-        logger.info(String.format("In split %s got %d tail items starting at pos %d with %d bytes read in %d ms",
+        logger.info(String.format("In split %s got %d tail items at pos %d within %d bytes read in %d ms",
                 splitId,
                 tailItems.size(),
+                adjustedSplitEnd,
                 tailBytes,
-                tailBuffer.getKnownDataSize(),
                 tailItemTime));
 
         // Set the stream to the start of the split and get the head buffer
-        // Note that we will use the stream in its state to read the body part
-        long knownDecodedDataLength[] = new long[]{-1};
-        if (!isEncoded) {
-            knownDecodedDataLength[0] = splitLength;
-        }
+        // Note that we will use the stream later in its state to read the body part
+        long knownDecodedDataLength[] = new long[]{ isEncoded ? -1 : splitLength };
 
         Map.Entry<Long, Long> adjustedHeadSplitBounds = setStreamToInterval(splitStart, adjustedSplitEnd);
         long adjustedSplitStart = adjustedHeadSplitBounds.getKey();
@@ -581,28 +511,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             return r;
         };
 
-        /*
-        InputStream splitBoundedHeadStream =
-                Channels.newInputStream(
-                        new InterruptingReadableByteChannel(
-                                stream,
-                                rawStream,
-                                adjustedSplitEnd,
-                                self -> {
-                                    long bytesRead = self.getBytesRead();
-                                    if (knownDecodedDataLength[0] >= 0) {
-                                        if (bytesRead == knownDecodedDataLength[0]) {
-                                            throw new RuntimeException("Attempt to reset known data length to already known value: " + knownDecodedDataLength[0]);
-                                        } else {
-                                            throw new RuntimeException("Inconsistent decoded data length: " + knownDecodedDataLength[0] + " bytes were declared as known but split end reached after " + bytesRead + " bytes");
-                                        }
-                                    }
-
-                                    knownDecodedDataLength[0] = bytesRead;
-                                    logger.info("Head stream encountered split end; decoded data length = " + knownDecodedDataLength[0]);
-                                }));
-
-         */
 
         // In the following snippet note that ReadableByteChannelWithConditionalBound's
         // callback mechanism is only used to detect the split length of the decoded data.
@@ -610,11 +518,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         InputStream splitBoundedHeadStream =
                 Channels.newInputStream(
                         new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
+                                new ReadableByteChannelFromInputStream(stream),
                                 self -> {
                                     if (knownDecodedDataLength[0] < 0) {
-                                        boolean foundBound = hitSplitBound.test(
-                                                new SeekableInputStream(rawStream, rawStream),
+                                        boolean foundBound = didHitSplitBound(
+                                                stream,
                                                 adjustedSplitEnd);
 
                                         if (foundBound) {
@@ -627,12 +535,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                                     return false;
                                 }));
 
-//        InputStream splitBoundedHeadStream =
-//                Channels.newInputStream(
-//                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-//                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
-//                                xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
-
         BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
@@ -641,7 +543,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         boolean isFirstSplit = splitStart == 0;
         int headBytes = isFirstSplit
                 ? 0
-                : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, prober));
+                : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, this::prober));
 
         long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
         logger.info(String.format("In split %s found head record at pos %d with %d bytes read in %d ms",
@@ -653,49 +555,27 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
-        //    val deltaSplitStart = adjustedSplitStart - splitStart
-        // println(s"Adjusted split start $splitStart to $adjustedSplitStart [$deltaSplitStart]")
+        // long deltaSplitStart = adjustedSplitStart - splitStart;
+        // logger.debug(String.format("Adjusted split start %d to %d [%d]", splitStart, adjustedSplitStart, deltaSplitStart);
 
         // Stream is now positioned at beginning of body region
         // And head and tail buffers have been populated
-        // logger.info(s"adjustment: [$splitStart, $splitEnd) -> [$adjustedSplitStart, $adjustedSplitEnd)")
+        logger.debug(String.format("Adjusted [%d, %d) to [%d, %d) | delta: (%d, %d)",
+                splitStart, splitEnd,
+                adjustedSplitStart, adjustedSplitEnd,
+                adjustedSplitStart - splitStart,
+                adjustedSplitEnd - splitEnd));
         // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
 
         // Set up the body stream whose read method returns
         // -1 upon reaching the split boundry
 
-//    var splitBoundedBodyStream: InputStream = InputStreamWithCloseLogging.wrap(
-//    new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-//      xstream => hitSplitBound(stream, adjustedSplitEnd)))), ExceptionUtils.getStackTrace(_), logger.info(_))
-
         InputStream splitBoundedBodyStream =
                 Channels.newInputStream(
                         new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
-                                xstream -> hitSplitBound.test(stream, adjustedSplitEnd)));
+                                new ReadableByteChannelFromInputStream(stream),
+                                xstream -> didHitSplitBound(stream, adjustedSplitEnd)));
 
-    /*
-        val bodyCore = InputStreamWithCloseLogging.wrap(
-          Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
-            xstream => hitSplitBound(rawStream, adjustedSplitEnd))), ExceptionUtils.getStackTrace(_), logClose(_))
-
-        var splitBoundedBodyStream: InputStream = new CloseShieldInputStream(bodyCore)
-
-        val bodyBytes = ByteStreams.toByteArray(splitBoundedBodyStream)
-
-        if (bodyBytes.length == 0) {
-          logger.warn(s"Original split start/end: $splitStart - $splitEnd - pos: ${rawStream.getPos}")
-          logger.warn(s"Adjusted split start/end: $adjustedSplitStart - $adjustedSplitEnd - pos: ${rawStream.getPos}")
-          logger.warn(s"Head bytes: $headBytes - known head buffer size:" + headBuffer.getKnownDataSize)
-
-          logger.warn("0 length body - WTF IS WRONG???")
-
-          val again = ByteStreams.toByteArray(bodyCore)
-          logger.warn("Now got: " + again.length)
-        }
-
-        splitBoundedBodyStream = new ByteArrayInputStream(bodyBytes)
-    */
 
         // Find the second record in the next split - i.e. after splitEnd (inclusive)
         // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
@@ -753,13 +633,15 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 }
             }
 
-            // Why the tailBuffer in encoded setting is displaced by 1 byte is beyond me...
-            int displacement = isEncoded ? 1 : 0;
+            // Displacement was needed due to hadoop reading one byte past split boundaries
+            // With DeferredSeekablePushbackInputStream this should no longer be needed
+            // // TailBuffer in encoded setting is displaced by 1 byte
+            // // int displacement = isEncoded ? 1 : 0;
 
             Seekable tailChannel = tailBuffer.newChannel();
-            tailChannel.nextPos(displacement);
+            // tailChannel.nextPos(displacement);
 
-            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
+            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes);
         }
 
         boolean writeOutSegments = false;
@@ -815,6 +697,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return result;
     }
 
+
+    public static Stream<String> lines(Seekable seekable) {
+        BufferedReader br = new BufferedReader(new InputStreamReader(Channels.newInputStream(seekable.cloneObject())));
+        return br.lines().onClose(() -> IOUtils.closeQuietly(br));
+    }
 
     /**
      * @param nav
@@ -1039,7 +926,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // At this time the progress would be reported as 100%
         float result = this.splitStart == this.splitEnd
                 ? 0.0F
-                : Math.min(1.0F, (this.rawStream.getPos() - this.splitStart) / (float) (this.splitEnd - this.splitStart));
+                : Math.min(1.0F, (this.stream.getPos() - this.splitStart) / (float) (this.splitEnd - this.splitStart));
         return result;
     }
 
@@ -1062,3 +949,144 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
     }
 }
+
+
+// TODO Clean up below
+
+/**
+ * Flowable transform that skips the first n groups of a flowable
+ *
+ * @param skipGroupCount
+ * @param classifier
+ * @param <I>
+ * @param <O>
+ * @param <K>
+ * @return
+ */
+/*
+    public static <I, O, K> FlowableTransformer<I, O> skipGroups(long skipGroupCount, Function<? super I, ? extends K> classifier) {
+        return upstream -> {
+            long[] numGroupsSkipped = {0};
+            boolean[] firstItemSeen = {false};
+            Object[] lastSeenKey = {null};
+
+            upstream.filter(item -> {
+                boolean r;
+                if (numGroupsSkipped[0] >= skipGroupCount) {
+                    r = true;
+                } else {
+                    Object key = classifier.apply(item);
+                    if (!firstItemSeen[0]) {
+                        lastSeenKey[0] = key;
+                        firstItemSeen[0] = true;
+                    } else {
+                        boolean isEqual = Objects.equals(lastSeenKey, key);
+                        if (!isEqual) {
+                            ++numGroupsSkipped[0];
+                            lastSeenKey[0] = key;
+                        }
+                    }
+
+                    r = numGroupsSkipped[0] >= skipGroupCount;
+                }
+                return r;
+            });
+        };
+    }
+
+    public static <I, O, K> FlowableTransformer<I, O> takeGroups(long takeGroupCount, Function<? super I, ? extends K> classifier) {
+        return upstream -> {
+            long[] numGroupsTaken = {0};
+            boolean[] firstItemSeen = {false};
+            Object[] lastSeenKey = {null};
+
+            upstream.filter(item -> {
+                boolean r;
+                if (numGroupsTaken[0] >= takeGroupCount) {
+                    r = false;
+                } else {
+                    Object key = classifier.apply(item);
+                    if (!firstItemSeen[0]) {
+                        lastSeenKey[0] = key;
+                        firstItemSeen[0] = true;
+                    } else {
+                        boolean isEqual = Objects.equals(lastSeenKey, key);
+                        if (!isEqual) {
+                            ++numGroupsTaken[0];
+                            lastSeenKey[0] = key;
+                        }
+                    }
+
+                    r = numGroupsSkipped[0] >= skipGroupCount;
+                }
+                return r;
+            });
+        };
+    }
+*/
+
+        /*
+        InputStream splitBoundedHeadStream =
+                Channels.newInputStream(
+                        new InterruptingReadableByteChannel(
+                                stream,
+                                rawStream,
+                                adjustedSplitEnd,
+                                self -> {
+                                    long bytesRead = self.getBytesRead();
+                                    if (knownDecodedDataLength[0] >= 0) {
+                                        if (bytesRead == knownDecodedDataLength[0]) {
+                                            throw new RuntimeException("Attempt to reset known data length to already known value: " + knownDecodedDataLength[0]);
+                                        } else {
+                                            throw new RuntimeException("Inconsistent decoded data length: " + knownDecodedDataLength[0] + " bytes were declared as known but split end reached after " + bytesRead + " bytes");
+                                        }
+                                    }
+
+                                    knownDecodedDataLength[0] = bytesRead;
+                                    logger.info("Head stream encountered split end; decoded data length = " + knownDecodedDataLength[0]);
+                                }));
+
+         */
+
+
+    /*
+        val bodyCore = InputStreamWithCloseLogging.wrap(
+          Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+            xstream => hitSplitBound(rawStream, adjustedSplitEnd))), ExceptionUtils.getStackTrace(_), logClose(_))
+
+        var splitBoundedBodyStream: InputStream = new CloseShieldInputStream(bodyCore)
+
+        val bodyBytes = ByteStreams.toByteArray(splitBoundedBodyStream)
+
+        if (bodyBytes.length == 0) {
+          logger.warn(s"Original split start/end: $splitStart - $splitEnd - pos: ${rawStream.getPos}")
+          logger.warn(s"Adjusted split start/end: $adjustedSplitStart - $adjustedSplitEnd - pos: ${rawStream.getPos}")
+          logger.warn(s"Head bytes: $headBytes - known head buffer size:" + headBuffer.getKnownDataSize)
+
+          logger.warn("0 length body - WTF IS WRONG???")
+
+          val again = ByteStreams.toByteArray(bodyCore)
+          logger.warn("Now got: " + again.length)
+        }
+
+        splitBoundedBodyStream = new ByteArrayInputStream(bodyBytes)
+    */
+        /*
+        Function<Seekable, Flowable<Dataset>> parser = seekable -> {
+            Callable<InputStream> inSupp = () -> effectiveInputStreamSupp.apply(seekable);
+
+            Flowable<Dataset> r = RDFDataMgrRx.createFlowableDatasets(inSupp, Lang.TRIG, null);
+            return r;
+        };
+        */
+
+// Predicate<T> isNonEmptyDataset = t -> !isEmptyRecord(t);
+//        InputStream splitBoundedHeadStream =
+//                Channels.newInputStream(
+//                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
+//                                new ReadableByteChannelWithoutCloseOnInterrupt(stream),
+//                                xstream -> hitSplitBound.test(new SeekableInputStream(rawStream, rawStream), adjustedSplitEnd)));
+
+// var splitBoundedBodyStream: InputStream = InputStreamWithCloseLogging.wrap(
+// new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
+// xstream => hitSplitBound(stream, adjustedSplitEnd)))), ExceptionUtils.getStackTrace(_), logger.info(_))

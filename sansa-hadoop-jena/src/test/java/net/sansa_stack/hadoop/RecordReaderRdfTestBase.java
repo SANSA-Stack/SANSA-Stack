@@ -78,7 +78,7 @@ public abstract class RecordReaderRdfTestBase<T> {
                 expected, actual, true,
                 System.err, ResultSetLang.SPARQLResultSetTSV);
 
-        Assert.assertTrue("Datasets were not isomoprhic - see output above", isIso);
+        Assert.assertTrue("Datasets were not isomorphic - see output above", isIso);
     }
 
 
