@@ -1,11 +1,14 @@
 package net.sansa_stack.hadoop.generic;
 
 import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.util.*;
+import net.sansa_stack.hadoop.util.InputStreamWithCloseLogging;
 import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
+import net.sansa_stack.hadoop.util.SeekableInputStream;
 import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
 import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
-import net.sansa_stack.nio.util.*;
+import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
+import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
+import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
@@ -42,8 +45,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -284,31 +285,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 long adjustedStart = tmp.getAdjustedStart();
                 long adjustedEnd = tmp.getAdjustedEnd();
 
-                // val rawPos = rawStream.getPos
-                // println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
-
-                // This wrapping creates a seekable input stream that advertises
-                // new positions after reading the byte before a block boundary
-                DeferredSeekablePushbackInputStream dspis =
-                        new DeferredSeekablePushbackInputStream(
-                                InputStreamWithCloseLogging.wrap(
+                stream =
+                        new SeekableInputStream(
+                                new InputStreamWithCloseIgnore(InputStreamWithCloseLogging.wrap(
                                         new InputStreamWithZeroOffsetRead(tmp),
-                                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose),
+                                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose)),
                                 tmp);
-
-                // System.out.println("Requested pos: " + start + " Adjusted pos: " + adjustedStart + " Stream pos: " + tmp.getPos());
-
-                // TODO Maybe we need to call read before the position gets valid?
-                // Read one byte from the stream to update the position
-                // and push that byte back
-                int b = tmp.read();
-                if (b >= 0) {
-                    dspis.unread(b);
-                }
-                adjustedStart = dspis.getPos();
-
-                stream = new SeekableInputStream(
-                        new InputStreamWithCloseIgnore(dspis), dspis);
 
                 result = new AbstractMap.SimpleEntry<>(adjustedStart, adjustedEnd);
             } else {
@@ -636,12 +618,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Displacement was needed due to hadoop reading one byte past split boundaries
             // With DeferredSeekablePushbackInputStream this should no longer be needed
             // // TailBuffer in encoded setting is displaced by 1 byte
-            // // int displacement = isEncoded ? 1 : 0;
+            int displacement = isEncoded ? 1 : 0;
 
             Seekable tailChannel = tailBuffer.newChannel();
-            // tailChannel.nextPos(displacement);
+            tailChannel.nextPos(displacement);
 
-            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes);
+            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
         }
 
         boolean writeOutSegments = false;
@@ -1090,3 +1072,42 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 // var splitBoundedBodyStream: InputStream = InputStreamWithCloseLogging.wrap(
 // new CloseShieldInputStream(Channels.newInputStream(new ReadableByteChannelWithConditionalBound[ReadableByteChannel](Channels.newChannel(stream),
 // xstream => hitSplitBound(stream, adjustedSplitEnd)))), ExceptionUtils.getStackTrace(_), logger.info(_))
+
+
+// val rawPos = rawStream.getPos
+// println(s"Adjusted: [$start, $end[ -> [$adjustedStart, $adjustedEnd[ - raw pos: $rawPos" )
+
+// This wrapping creates a seekable input stream that advertises
+// new positions after reading the byte before a block boundary
+/*
+                DeferredSeekablePushbackInputStream dspis =
+                        new DeferredSeekablePushbackInputStream(
+                                InputStreamWithCloseLogging.wrap(
+                                        new InputStreamWithZeroOffsetRead(tmp),
+                                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose),
+                                tmp);
+
+
+                // System.out.println("Requested pos: " + start + " Adjusted pos: " + adjustedStart + " Stream pos: " + tmp.getPos());
+
+
+                stream = new SeekableInputStream(
+                        new InputStreamWithCloseIgnore(dspis), dspis);
+*/
+                /*
+                SeekablePushbackInputStream core = new SeekablePushbackInputStream(
+                        new InputStreamWithCloseIgnore(InputStreamWithCloseLogging.wrap(
+                                new InputStreamWithZeroOffsetRead(tmp),
+                                ExceptionUtils::getStackTrace, RecordReaderGenericBase::logUnexpectedClose)),
+                        tmp, 1);
+
+                // TODO Maybe we need to call read before the position gets valid?
+                // Read one byte from the stream to update the position
+                // and push that byte back
+                int b = tmp.read();
+                if (b >= 0) {
+                    core.unread(b);
+                }
+                adjustedStart = core.getPos();
+                stream = new SeekableInputStream(core);
+*/
