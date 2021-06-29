@@ -12,6 +12,7 @@ import org.apache.flink.streaming.api.scala._
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
 import org.apache.jena.graph.Triple
+import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.riot.SysRIOT.fmtMessage
 import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
@@ -135,7 +136,7 @@ object NQuadsReader {
           }
         }
 
-      new ParserProfileStd(RiotLib.factoryRDF, errorHandler, IRIResolver.create, PrefixMapFactory.createForInput, RIOT.getContext.copy, checkRDFTerms || strict, strict)
+      new ParserProfileStd(RiotLib.factoryRDF, errorHandler, IRIxResolver.create.noBase.allowRelative(true).build, PrefixMapFactory.create, RIOT.getContext.copy, checkRDFTerms || strict, strict)
     }
 
     // parse each partition

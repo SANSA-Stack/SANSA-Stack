@@ -15,7 +15,9 @@ object Case{
     }
   }
 
-  def getEmptyRowVarMap(triple: Triple): Map[Var, Node] = getRowVarMap(triple, Node.NULL, Node.NULL, Node.NULL)
+  // I replaced the removed-due-to-deprecation Node.NULL with Node.ANY;
+  // as this seems to be pattern matching code it may be appropriate ~ Claus 2021-06-29
+  def getEmptyRowVarMap(triple: Triple): Map[Var, Node] = getRowVarMap(triple, Node.ANY, Node.ANY, Node.ANY)
 
   def getRowVarMap[N](triple: Triple, s: N, p: N, o: N): Map[Var, N] = {
     var map = Map[Var, N]()

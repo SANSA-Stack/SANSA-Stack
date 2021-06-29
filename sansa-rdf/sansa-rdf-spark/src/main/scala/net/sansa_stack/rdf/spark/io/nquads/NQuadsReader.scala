@@ -11,6 +11,7 @@ import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.IteratorResourceClosing
+import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
 import org.apache.jena.riot.system._
@@ -136,8 +137,8 @@ object NQuadReader {
       val seed = new UUID(path.hashCode, 0)
       new ParserProfileStd(RiotLib.factoryRDF(LabelToNode.createScopeByDocumentHash(seed)),
         errorHandler,
-        IRIResolver.create,
-        PrefixMapFactory.createForInput,
+        IRIxResolver.create.noBase.allowRelative(true).build,
+        PrefixMapFactory.create,
         RIOT.getContext.copy,
         checkRDFTerms || strict, strict)
     }

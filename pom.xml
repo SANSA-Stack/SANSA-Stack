@@ -69,8 +69,8 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.0</aksw-commons.version>
-        <jena.version>3.17.0</jena.version>
-        <jsa.subversion>2-SNAPSHOT</jsa.subversion>
+        <jena.version>4.0.0</jena.version>
+        <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
@@ -998,7 +998,8 @@
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>jena-elephas-io</artifactId>
-                <version>${jena.version}</version>
+                <!-- <version>${jena.version}</version> -->
+		<version>3.17.0</version>
             </dependency>
 
             <!-- Used in query layer apparently -->

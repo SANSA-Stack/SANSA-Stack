@@ -33,7 +33,7 @@ class ExecutionDispatch(opExecutor: OpExecutor)
 
   override def visit(opPath: OpPath): Unit = ???
 
-  override def visit(opFind: OpFind): Unit = ???
+  // override def visit(opFind: OpFind): Unit = ???
 
   override def visit(opTable: OpTable): Unit = ???
 

@@ -33,7 +33,7 @@ public class JenaKryoRegistratorLib {
         kryo.register(NodeValueBoolean.class, exprSerializer);
         kryo.register(NodeValueDecimal.class, exprSerializer);
         kryo.register(NodeValueDouble.class, exprSerializer);
-        kryo.register(NodeValueDT.class, exprSerializer);
+        kryo.register(NodeValueDateTime.class, exprSerializer);
         kryo.register(NodeValueDuration.class, exprSerializer);
         kryo.register(NodeValueFloat.class, exprSerializer);
         kryo.register(NodeValueInteger.class, exprSerializer);
