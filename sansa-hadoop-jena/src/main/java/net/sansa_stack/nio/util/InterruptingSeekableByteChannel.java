@@ -33,7 +33,7 @@ public class InterruptingSeekableByteChannel
 
         if (toRead != capacity) {
             byteBuffer = byteBuffer.duplicate();
-            byteBuffer.limit(toRead);
+            byteBuffer.limit(byteBuffer.position() + toRead);
         }
 
         int result = super.read(byteBuffer);
