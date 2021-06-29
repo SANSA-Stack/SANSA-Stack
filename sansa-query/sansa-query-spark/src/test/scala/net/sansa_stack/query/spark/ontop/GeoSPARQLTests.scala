@@ -32,7 +32,7 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
 
     SedonaSQLRegistrator.registerAll(spark)
 
-    GeometryDatatype.registerDatatypes()
+//    GeometryDatatype.registerDatatypes()
 
     val model = ModelFactory.createDefaultModel()
     model.read(this.getClass.getClassLoader.getResourceAsStream("geospatial/geodata.ttl"), null, "Turtle")
@@ -152,33 +152,33 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
         |PREFIX geo: <http://www.opengis.net/ont/geosparql#>
         |PREFIX geo-sf: <http://www.opengis.net/ont/sf#>
         |
-        |SELECT ?s1Geo
+        |SELECT ?geo1 ?geo2
         |WHERE {
         |	?s1Geo geo:asWKT ?geo1 .
         | ?s2Geo geo:asWKT ?geo2 .
+        | FILTER(?s1Geo != ?s2Geo)
         |	FILTER(geof:sfIntersects(?geo1, ?geo2))
         |}
         |""".stripMargin
     runQuery(query)
   }
 
-  val s =
-    """
-      |PREFIX my: <http://example.org/ApplicationSchema#>
-      |PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-      |PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
-      |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-      |SELECT (xsd:boolean(?sfIntersects) as ?intersects)
-      |WHERE {
-      |  my:A geo:hasDefaultGeometry ?aGeom .
-      |  ?aGeom geo:asGML ?aGML .
-      |  my:D geo:hasDefaultGeometry ?dGeom .
-      |  ?dGeom geo:asWKT ?dWKT .
-      |  BIND (geof:sfIntersects(?aGML, ?dWKT) as ?sfIntersects)
-      |}
-      |""".stripMargin
-
-
+  test(s"Test Ontop with mixed serialization intersection") {
+    val query =
+      """
+        |PREFIX my: <http://example.org/ApplicationSchema#>
+        |PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+        |PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+        |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+        |SELECT (?sfIntersects as ?intersects)
+        |WHERE {
+        |  my:A geo:hasDefaultGeometry/geo:asGML ?aGML .
+        |  my:D geo:hasDefaultGeometry/geo:asWKT ?dWKT .
+        |  BIND (geof:sfIntersects(?aGML, ?dWKT) as ?sfIntersects)
+        |}
+        |""".stripMargin
+    runQuery(query)
+  }
 
   def runQuery(query: String): Unit = {
     val qe = qef.createQueryExecution(query)

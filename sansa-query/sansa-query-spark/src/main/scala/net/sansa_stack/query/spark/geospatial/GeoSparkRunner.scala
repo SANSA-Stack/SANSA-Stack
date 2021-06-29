@@ -1,10 +1,10 @@
 package net.sansa_stack.query.spark.geospatial
 
+import org.apache.sedona.core.formatMapper.shapefileParser.ShapefileReader
+import org.apache.sedona.core.serde.SedonaKryoRegistrator
+import org.apache.sedona.sql.utils.{Adapter, SedonaSQLRegistrator}
 import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.SparkSession
-import org.datasyslab.geospark.formatMapper.shapefileParser.ShapefileReader
-import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
-import org.datasyslab.geosparksql.utils.{Adapter, GeoSparkSQLRegistrator}
 
 /**
  * @author Lorenz Buehmann
@@ -16,10 +16,10 @@ object GeoSparkRunner {
 
     val spark = SparkSession.builder()
       .config("spark.serializer", classOf[KryoSerializer].getName)
-      .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
+      .config("spark.kryo.registrator", classOf[SedonaKryoRegistrator].getName)
       .getOrCreate()
 
-    GeoSparkSQLRegistrator.registerAll(spark)
+    SedonaSQLRegistrator.registerAll(spark)
 
     val counties = spark.read.format("csv")
       .option("delimiter", "|")

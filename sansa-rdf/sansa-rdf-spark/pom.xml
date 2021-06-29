@@ -173,12 +173,16 @@
 
 		<!-- GeoSpark -->
 		<dependency>
-			<groupId>org.datasyslab</groupId>
-			<artifactId>geospark</artifactId>
+			<groupId>org.apache.sedona</groupId>
+			<artifactId>sedona-core-3.0_${scala.binary.version}</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.datasyslab</groupId>
-			<artifactId>geospark-sql_3.0</artifactId>
+			<groupId>org.apache.sedona</groupId>
+			<artifactId>sedona-sql-3.0_${scala.binary.version}</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.sedona</groupId>
+			<artifactId>sedona-python-adapter-3.0_${scala.binary.version}</artifactId>
 		</dependency>
 
     </dependencies>

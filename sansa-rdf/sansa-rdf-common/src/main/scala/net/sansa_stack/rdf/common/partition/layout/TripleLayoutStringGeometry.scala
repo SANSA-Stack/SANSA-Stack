@@ -22,13 +22,16 @@ object TripleLayoutStringGeometry
     val s = t.getSubject
     val o = t.getObject
     val v = if (o.isLiteral) {
-      val reader = if (o.getLiteral.getDatatype == WKTDatatype.INSTANCE) {
-        WKTReader.extract(o.getLiteralLexicalForm)
-      } else if (o.getLiteral.getDatatype == GMLDatatype.INSTANCE) {
-        GMLReader.extract(o.getLiteralLexicalForm)
-      } else {
-        throw new RuntimeException(s"Unsupported datatype. Layout only for WKT or GML literals: $t")
-      }
+      val reader =
+//        if (o.getLiteral.getDatatype == WKTDatatype.INSTANCE) {
+        if (o.getLiteral.getDatatype.getURI == WKTDatatype.URI) {
+          WKTReader.extract(o.getLiteralLexicalForm)
+//        } else if (o.getLiteral.getDatatype == GMLDatatype.INSTANCE) {
+        } else if (o.getLiteral.getDatatype.getURI == GMLDatatype.URI) {
+          GMLReader.extract(o.getLiteralLexicalForm)
+        } else {
+          throw new RuntimeException(s"Unsupported datatype. Layout only for WKT or GML literals: $t")
+        }
       reader.getGeometry
     } else {
       throw new RuntimeException(s"Not a literal node. Layout only for WKT or GML literals: $t")
