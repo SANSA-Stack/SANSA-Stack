@@ -171,6 +171,16 @@
 		</dependency>
 
 
+		<!-- GeoSpark -->
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.datasyslab</groupId>
+			<artifactId>geospark-sql_3.0</artifactId>
+		</dependency>
+
     </dependencies>
 
     <build>

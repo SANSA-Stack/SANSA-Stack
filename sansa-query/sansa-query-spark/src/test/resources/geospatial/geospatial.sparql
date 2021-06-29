@@ -1,0 +1,12 @@
+PREFIX my: <http://example.org/ApplicationSchema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+
+SELECT ?f
+WHERE {
+    my:A my:hasExactGeometry ?aGeom .
+    ?aGeom geo:asWKT ?aWKT .
+    ?f my:hasExactGeometry ?fGeom .
+    ?fGeom geo:asWKT ?fWKT .
+    FILTER (geof:sfContains(?aWKT, ?fWKT) && !sameTerm(?aGeom, ?fGeom))
+}
