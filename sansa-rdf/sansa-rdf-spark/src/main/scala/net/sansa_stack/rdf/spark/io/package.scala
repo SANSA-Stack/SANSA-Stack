@@ -1,7 +1,6 @@
 package net.sansa_stack.rdf.spark
 
 import com.typesafe.config.{Config, ConfigFactory}
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
 import net.sansa_stack.rdf.spark.io.stream.RiotFileInputFormat
 import net.sansa_stack.rdf.spark.utils.Logging
@@ -20,9 +19,10 @@ import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, _}
-
 import java.io.ByteArrayOutputStream
 import java.util.Collections
+
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigDataset
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -490,7 +490,7 @@ package object io {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
-        classOf[FileInputFormatTrigDataset],
+        classOf[FileInputFormatRdfTrigDataset],
         classOf[LongWritable],
         classOf[JenaDataset], confHadoop)
         .map { case (_, v) => v }

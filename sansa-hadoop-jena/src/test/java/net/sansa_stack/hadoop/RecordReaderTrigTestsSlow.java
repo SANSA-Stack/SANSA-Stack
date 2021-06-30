@@ -1,11 +1,10 @@
 package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset;
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigDataset;
 import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.query.Dataset;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -44,7 +43,7 @@ public class RecordReaderTrigTestsSlow
 
     @Override
     public InputFormat<?, Dataset> createInputFormat() {
-        return new FileInputFormatTrigDataset();
+        return new FileInputFormatRdfTrigDataset();
     }
 
     @Override

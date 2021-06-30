@@ -8,14 +8,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
-public class FileInputFormatTrigQuad
+public class FileInputFormatRdfTrigQuad
         extends FileInputFormatRdfBase<Quad> {
-    public FileInputFormatTrigQuad() {
-        super(Lang.TRIG, RecordReaderTrigQuad.PREFIXES_MAXLENGTH_KEY);
+    public FileInputFormatRdfTrigQuad() {
+        super(Lang.TRIG, RecordReaderRdfTrigQuad.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override
     public RecordReader<LongWritable, Quad> createRecordReaderActual(InputSplit inputSplit, TaskAttemptContext context) {
-        return new RecordReaderTrigQuad();
+        return new RecordReaderRdfTrigQuad();
     }
 }

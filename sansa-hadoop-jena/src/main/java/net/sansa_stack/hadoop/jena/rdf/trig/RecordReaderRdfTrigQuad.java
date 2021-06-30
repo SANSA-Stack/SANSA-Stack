@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-public class RecordReaderTrigQuad
+public class RecordReaderRdfTrigQuad
     extends RecordReaderGenericRdfNonAccumulatingBase<Quad>
 {
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.quad.record.minlength";
@@ -23,7 +23,7 @@ public class RecordReaderTrigQuad
 
     protected static final Pattern trigFwdPattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-    public RecordReaderTrigQuad() {
+    public RecordReaderRdfTrigQuad() {
         super(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,

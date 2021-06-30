@@ -8,15 +8,15 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 
-public class FileInputFormatTurtleTriple
+public class FileInputFormatRdfTurtleTriple
         extends FileInputFormatRdfBase<Triple>
 {
-    public FileInputFormatTurtleTriple() {
-        super(Lang.TURTLE, RecordReaderTurtleTriple.PREFIXES_MAXLENGTH_KEY);
+    public FileInputFormatRdfTurtleTriple() {
+        super(Lang.TURTLE, RecordReaderRdfTurtleTriple.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override
     public RecordReader<LongWritable, Triple> createRecordReaderActual(InputSplit inputSplit, TaskAttemptContext context) {
-        return new RecordReaderTurtleTriple();
+        return new RecordReaderRdfTurtleTriple();
     }
 }

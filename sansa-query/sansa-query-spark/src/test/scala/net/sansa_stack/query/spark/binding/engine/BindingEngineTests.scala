@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.binding.engine
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
@@ -14,10 +13,11 @@ import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.{FunSuite, Ignore}
-
 import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
+
+import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderRdfTrigDataset
 
 @Ignore // Doesn't always find the bz2 file the way its used heer
 class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
@@ -37,7 +37,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
   def createTestRdd(): RDD[Dataset] = {
     import net.sansa_stack.rdf.spark.io._
 
-    val testFile = new File(classOf[RecordReaderTrigDataset].getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
+    val testFile = new File(classOf[RecordReaderRdfTrigDataset].getClassLoader.getResource("hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
     val path = new Path(testFile.getAbsolutePath)
 
     spark.datasets(Lang.TRIG)(path.toString)

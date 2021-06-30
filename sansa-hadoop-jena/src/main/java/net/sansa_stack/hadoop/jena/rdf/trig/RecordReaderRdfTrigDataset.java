@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * RecordReader for the Trig RDF format that groups consecutive quads having the
  * same IRI for the graph component into Datasets.
  */
-public class RecordReaderTrigDataset
+public class RecordReaderRdfTrigDataset
     extends RecordReaderGenericRdfBase<Quad, Node, Dataset, Dataset>
 {
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.dataset.record.minlength";
@@ -53,7 +53,7 @@ public class RecordReaderTrigDataset
         }
     }
 
-    public RecordReaderTrigDataset() {
+    public RecordReaderRdfTrigDataset() {
         super(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,

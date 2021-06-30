@@ -8,15 +8,15 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.riot.Lang;
 
-public class FileInputFormatTrigDataset
+public class FileInputFormatRdfTrigDataset
     extends FileInputFormatRdfBase<Dataset>
 {
-    public FileInputFormatTrigDataset() {
-        super(Lang.TRIG, RecordReaderTrigDataset.PREFIXES_MAXLENGTH_KEY);
+    public FileInputFormatRdfTrigDataset() {
+        super(Lang.TRIG, RecordReaderRdfTrigDataset.PREFIXES_MAXLENGTH_KEY);
     }
 
     @Override
     public RecordReader<LongWritable, Dataset> createRecordReaderActual(InputSplit inputSplit, TaskAttemptContext context) {
-        return new RecordReaderTrigDataset();
+        return new RecordReaderRdfTrigDataset();
     }
 }

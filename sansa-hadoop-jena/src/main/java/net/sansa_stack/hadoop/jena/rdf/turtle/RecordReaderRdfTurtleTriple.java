@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-public class RecordReaderTurtleTriple
+public class RecordReaderRdfTurtleTriple
         extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
 {
 
@@ -43,7 +43,7 @@ public class RecordReaderTurtleTriple
                     "\\w*:"),
             Pattern.CASE_INSENSITIVE); // | Pattern.MULTILINE);
 
-    public RecordReaderTurtleTriple() {
+    public RecordReaderRdfTurtleTriple() {
         super(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,

@@ -2,7 +2,7 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.*;
 import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset;
+import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderRdfTrigDataset;
 import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.hadoop.conf.Configuration;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Test cases for the {@link RecordReaderTrigDataset}:
+ * Test cases for the {@link RecordReaderRdfTrigDataset}:
  * A given set of test datasets (represented as trig files) is first split into a configurable
  * number of splits from which the overall graph is then reassembled.
  * The reassembled dataset must match the one of the original file.
@@ -87,8 +87,8 @@ public abstract class RecordReaderRdfTestBase<T> {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
-        conf.set(RecordReaderTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
-        conf.set(RecordReaderTrigDataset.RECORD_PROBECOUNT_KEY, "1");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "1");
 
         configureHadoop(conf);
 
