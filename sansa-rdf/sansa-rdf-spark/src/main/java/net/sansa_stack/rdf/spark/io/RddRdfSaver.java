@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.hadoop.rdf.types.QuadWritable;
 import org.apache.jena.hadoop.rdf.types.TripleWritable;
@@ -27,6 +28,8 @@ import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -53,7 +56,6 @@ import java.util.function.Function;
  * lambdas for relevant conversion.
  *
  * Instances of this class should be created using the appropriate createFor[Type] methods.
- *   TODO Implementation for Model is currently missing
  *
  * @param <T>
  */
@@ -181,9 +183,14 @@ public class RddRdfSaver<T> {
         return outputFormat;
     }
 
-    public RddRdfSaver<T> setOutputFormat(RDFFormat outputFormat) {
-        this.outputFormat = outputFormat;
+    public RddRdfSaver<T> setOutputFormat(RDFFormat format) {
+        this.outputFormat = format;
         return this;
+    }
+
+    /** Raises an exception if the format is not found */
+    public RddRdfSaver<T> setOutputFormat(String formatName) {
+        return setOutputFormat(RDFLanguagesEx.findRdfFormat(formatName));
     }
 
     public boolean isAllowOverwriteFiles() {
@@ -628,7 +635,11 @@ public class RddRdfSaver<T> {
 
     /**
      * Create method.
-     * Note that the 'sendRecordToSTreamRDF' parameter is serializable
+     * Note that the 'sendRecordToSTreamRDF' parameter must be serializable
+     * because it is used within mapPartitions.
+     *
+     * The convertToTriple and convertToQuad arguments are applied on the
+     * driver while preparing the spark operations.
      *
      * @param rdd
      * @param sendRecordToStreamRDF
@@ -647,17 +658,41 @@ public class RddRdfSaver<T> {
     }
 
     public static RddRdfSaver<Triple> createForTriple(JavaRDD<Triple> rdd) {
-        return create(rdd,
+        return RddRdfSaver.<Triple>create(rdd,
                 (triple, streamRDF) -> streamRDF.triple(triple),
                 x -> x,
                 x -> x.map(triple -> Quad.create(Quad.defaultGraphNodeGenerated, triple)));
     }
 
     public static RddRdfSaver<Quad> createForQuad(JavaRDD<Quad> rdd) {
-        return create(rdd,
+        return RddRdfSaver.<Quad>create(rdd,
                 (quad, streamRDF) -> streamRDF.quad(quad),
                 x -> x.map(Quad::asTriple),
                 x -> x);
+    }
+
+    public static RddRdfSaver<Graph> createForGraph(JavaRDD<Graph> rdd) {
+        return RddRdfSaver.<Graph>create(rdd,
+                (graph, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(graph), streamRDF),
+                x -> x.flatMap(Graph::find),
+                x -> x.flatMap(graph -> graph.find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
+        );
+    }
+
+    public static RddRdfSaver<DatasetGraph> createForDatasetGraph(JavaRDD<DatasetGraph> rdd) {
+        return RddRdfSaver.<DatasetGraph>create(rdd,
+                (dg, streamRDF) -> StreamRDFOps.sendDatasetToStream(dg, streamRDF),
+                x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
+                x -> x.flatMap(DatasetGraph::find)
+        );
+    }
+
+    public static RddRdfSaver<Model> createForModel(JavaRDD<Model> rdd) {
+        return RddRdfSaver.<Model>create(rdd,
+                (model, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(model.getGraph()), streamRDF),
+                x -> x.flatMap(model -> model.getGraph().find()),
+                x -> x.flatMap(model -> model.getGraph().find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
+        );
     }
 
     public static RddRdfSaver<Dataset> createForDataset(JavaRDD<Dataset> rdd) {
