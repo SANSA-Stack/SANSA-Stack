@@ -3,10 +3,12 @@ package net.sansa_stack.rdf.spark.io;
 
 import org.aksw.commons.io.util.FileMerger;
 import org.aksw.commons.io.util.FileUtils;
+import org.aksw.commons.io.util.StdIo;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import org.aksw.jena_sparql_api.utils.io.StreamRDFDeferred;
 import org.aksw.jena_sparql_api.utils.io.StreamRDFUtils;
 import org.aksw.jena_sparql_api.utils.io.WriterStreamRDFBaseUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -49,6 +51,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A fluent API for configuration of how to save an RDD of RDF data to disk.
@@ -82,6 +85,13 @@ public class RddRdfSaver<T> {
     /** Whether to convert quads to triples if a triple-based output format is requested */
     protected boolean mapQuadsToTriplesForTripleLangs;
 
+    /**
+     * Only for console output: Instead of writing tuples out immediatly,
+     * collect up to this number of tuples in order to derive the used prefixes.
+     * Upon reaching this threshold, print out all seen prefixes and emit the held-back data
+     * as well as any further data immediately */
+    protected long deferOutputForUsedPrefixes = 0;
+
     // Static bindings for the generic 'T'
     protected BiConsumer<T, StreamRDF> sendRecordToStreamRDF;
     protected Function<JavaRDD<T>, JavaRDD<Triple>> convertToTriple;
@@ -90,6 +100,8 @@ public class RddRdfSaver<T> {
     // Cached attributes from the given RDD
     protected JavaSparkContext sparkContext;
     protected Configuration hadoopConfiguration;
+
+    protected Supplier<OutputStream> consoleOutSupplier = StdIo::openStdOutWithCloseShield;
 
     public RddRdfSaver(
             JavaRDD<T> rdd,
@@ -220,6 +232,31 @@ public class RddRdfSaver<T> {
         return this;
     }
 
+    public RddRdfSaver<T> setDeferOutputForUsedPrefixes(long deferOutputForUsedPrefixes) {
+        this.deferOutputForUsedPrefixes = deferOutputForUsedPrefixes;
+        return this;
+    }
+
+    /** If neither partition folder nor targe file is set the output goes to the console */
+    public boolean isConsoleOutput() {
+        return partitionFolder == null && targetFile == null;
+    }
+
+    public RddRdfSaver<T> setConsoleOutput() {
+        this.partitionFolder = null;
+        this.targetFile = null;
+        return this;
+    }
+
+    public RddRdfSaver<T> setConsoleOutSupplier(Supplier<OutputStream> consoleOutSupplier) {
+        this.consoleOutSupplier = consoleOutSupplier;
+        return this;
+    }
+
+    public Supplier<OutputStream> getConsoleOutSupplier() {
+        return consoleOutSupplier;
+    }
+
     /**
      * Pass this object to a consumer. Useful to conditionally configure this object
      * without breaking the fluent chain:
@@ -237,12 +274,49 @@ public class RddRdfSaver<T> {
     }
 
 
+    // @Override
+    public void run() throws IOException {
+        if (isConsoleOutput()) {
+            runOutputToConsole();
+        } else {
+            runSpark();
+        }
+    }
+
+
+    protected void runOutputToConsole() throws IOException {
+        try (OutputStream out = consoleOutSupplier.get()) {
+
+            // val out = Files.newOutputStream(Paths.get("output.trig"),
+            // StandardOpenOption.WRITE, StandardOpenOption.CREATE)
+            // System.out
+            StreamRDF coreWriter = StreamRDFWriter.getWriterStream(out, outputFormat, null);
+
+            if (coreWriter instanceof WriterStreamRDFBase) {
+                WriterStreamRDFBaseUtils.setNodeToLabel((WriterStreamRDFBase) coreWriter,
+                        SyntaxLabels.createNodeToLabelAsGiven());
+            }
+
+            StreamRDF writer = new StreamRDFDeferred(coreWriter, true, globalPrefixMapping, deferOutputForUsedPrefixes,
+                    Long.MAX_VALUE, null);
+
+            writer.start();
+            StreamRDFOps.sendPrefixesToStream(globalPrefixMapping, writer);
+
+            // val it = effectiveRdd.collect
+            Iterator<T> it = rdd.toLocalIterator();
+            it.forEachRemaining(item -> sendRecordToStreamRDF.accept(item, writer));
+            writer.finish();
+            out.flush();
+        }
+    }
+
     /**
      * Run the save action according to configuration
      *
      * @throws IOException
      */
-    public void run() throws IOException {
+    public void runSpark() throws IOException {
 /*
         val outFilePath = Paths.get(outFile).toAbsolutePath
         val outFileFileName = outFilePath.getFileName.toString

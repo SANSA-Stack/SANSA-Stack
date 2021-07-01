@@ -1511,14 +1511,13 @@
                                 <goal>testCompile</goal>
                             </goals>
                         </execution>
-			<!-- FIXME This doc-jar goal breaks the build ~ 2021-06-29 Claus
+			<!-- FIXME This doc-jar goal breaks the build ~ 2021-06-29 Claus -->
                         <execution>
                             <id>attach-javadocs</id>
                             <goals>
                                 <goal>doc-jar</goal>
                             </goals>
                         </execution>
-			-->
                     </executions>
                 </plugin>
 
@@ -1552,7 +1551,7 @@
                             <include>**/*Test*.*</include>
                             <include>**/*Suite.*</include>
                         </includes>
-                        <skipTests>false</skipTests>
+                        <!-- <skipTests>false</skipTests> -->
                     </configuration>
                 </plugin>
 
