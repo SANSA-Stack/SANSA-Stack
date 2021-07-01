@@ -6,11 +6,13 @@ nav_order: 1
 
 # Loading RDF
 
+
+## Scala
+
 We suggest to import the `net.sansa_stack.rdf.spark.io` package which adds the function `rdf()` to a Spark session. You can either explicitely specify the type of RDF serialization or let the API guess the format based on the file extension.
 
 For example, the following Scala code shows how to read an RDF file in N-Triples syntax (be it a local file or a file residing in HDFS) into a Spark RDD:
 
-## Scala
 
 ### Load as RDD
 
@@ -53,10 +55,13 @@ triples.take(5).foreach(println(_))
 
 ## Java
 
+The main class for loading RDDs with Java is  `net.sansa_stack.rdf.spark.io.input.impl.RdfSourceFactoryImpl`:
+
 <details open>
   <summary markdown="span">Java</summary>
 
 ```java
+import net.sansa_stack.rdf.spark.io.input.api.RdfSourceFactory;
 
 SparkSession sparkSession = SparkSession.builder().config(sparkConf).getOrCreate();
 
