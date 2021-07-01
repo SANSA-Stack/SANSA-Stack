@@ -1,3 +1,8 @@
+---
+title: Overview
+nav_order: 1
+---
+
 # Documentation
 This module provides the scala doc documentation. You can find the scala docs [here](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/index.html). The module tree is accessible on the right-hand side.
 We also provide ReadMe files in the SANSA-Stack Github project. The Github project is available [here](https://github.com/SANSA-Stack/SANSA-Stack).
