@@ -955,7 +955,7 @@
             <dependency>
                 <groupId>org.aksw.sparqlify</groupId>
                 <artifactId>sparqlify-core</artifactId>
-                <version>0.9.0</version>
+                <version>0.9.1-SNAPSHOT</version>
                 <exclusions>
                     <!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId>
                         </exclusion> -->
@@ -1512,12 +1512,14 @@
                             </goals>
                         </execution>
 			<!-- FIXME This doc-jar goal breaks the build ~ 2021-06-29 Claus -->
+<!--
                         <execution>
                             <id>attach-javadocs</id>
                             <goals>
                                 <goal>doc-jar</goal>
                             </goals>
                         </execution>
+-->
                     </executions>
                 </plugin>
 
