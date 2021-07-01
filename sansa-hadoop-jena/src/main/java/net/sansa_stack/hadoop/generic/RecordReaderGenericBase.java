@@ -172,7 +172,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         minRecordLength = job.getInt(minRecordLengthKey, 1);
         maxRecordLength = job.getInt(maxRecordLengthKey, 10 * 1024 * 1024);
-        probeRecordCount = job.getInt(probeRecordCountKey, 10);
+        probeRecordCount = job.getInt(probeRecordCountKey, 100);
         baseIri = job.get(baseIriKey);
 
         String str = context.getConfiguration().get(headerBytesKey);
