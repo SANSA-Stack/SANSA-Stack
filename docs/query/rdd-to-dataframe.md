@@ -48,6 +48,9 @@ df.show(20)
 }
 ```
 
+The output is a table with column names having generally the pattern `${varName}_${localNameOfDatatypeIri}`.
+If for a variable there exists just a single column then the column name is the var name.
+
 ```
 +----------+-------------------+------+
 |    o_date|         o_datetime|o_long|
@@ -58,5 +61,11 @@ df.show(20)
 |      null|               null|     5|
 +----------+-------------------+------+
 ```
+
+* Note that the integer and long values (5 and 6) ended up in the same column. This is because a type promoter was provided.
+The type promoter gets to see *all* used datatypes and can freely remap them.
+* If a datatype of a variable could not be mapped to an appropriate Spark datatype, then the callback provided by `.setVarToFallbackDatatype((v: Var) => stringOrNull)` is consulted. A fallback of `null` omits values of that type (i.e. there won't be a table column for those).
+Using the fallback `xsd:string` (`(v: Var) -> XSD.xstring.getURI()`) will attempt to convert any unsupported datatype to a string value (typically via `Object::toString`).
+
 
 
