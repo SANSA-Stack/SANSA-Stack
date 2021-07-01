@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.spark.io.input.impl;
 
+import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigQuad;
 import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
 import org.apache.jena.ext.com.google.common.collect.Table;
 import org.apache.jena.graph.Triple;
@@ -40,6 +41,11 @@ public class RddRdfLoaderRegistryImpl
                 Lang.TRIG,
                 Dataset.class,
                 (context, path) -> RddRdfLoader.createRdd(context, path, Dataset.class, FileInputFormatRdfTrigDataset.class));
+
+        registry.register(
+                Lang.TRIG,
+                Quad.class,
+                (context, path) -> RddRdfLoader.createRdd(context, path, Quad.class, FileInputFormatRdfTrigQuad.class));
 
         registry.register(
                 Lang.TURTLE,
