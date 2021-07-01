@@ -53,7 +53,7 @@ triples.take(5).foreach(println(_))
 
 ## Java
 
-<details opens>
+<details open>
   <summary markdown="span">Java</summary>
 
 ```java
