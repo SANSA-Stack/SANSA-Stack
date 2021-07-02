@@ -2,6 +2,7 @@ package net.sansa_stack.rdf.spark.io.input.api;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.jena.riot.Lang;
 
 
 /**
@@ -16,14 +17,26 @@ import org.apache.hadoop.fs.Path;
 public interface RdfSourceFactory {
 
     default RdfSource get(String sourceStr) {
+        return get(sourceStr, (Lang) null);
+    }
+
+    default RdfSource get(String sourceStr, Lang lang) {
+        Path path = new Path(sourceStr);
+        return get(path, null, lang);
+    }
+
+    default RdfSource get(String sourceStr, FileSystem fileSystem) {
+        Path path = new Path(sourceStr);
+        return get(path, fileSystem, null);
+    }
+
+    default RdfSource get(Path path, FileSystem fileSystem, Lang lang) {
         try {
-            return create(sourceStr);
+            return create(path, fileSystem, lang);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    RdfSource create(String sourceStr) throws Exception;
-    RdfSource create(String sourceStr, FileSystem fileSystem) throws Exception;
-    RdfSource create(Path path, FileSystem fileSystem) throws Exception;
+    RdfSource create(Path path, FileSystem fileSystem, Lang lang) throws Exception;
 }

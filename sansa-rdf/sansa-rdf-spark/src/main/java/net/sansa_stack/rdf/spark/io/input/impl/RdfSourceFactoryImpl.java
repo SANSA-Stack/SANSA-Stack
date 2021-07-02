@@ -36,33 +36,25 @@ public class RdfSourceFactoryImpl
         return new RdfSourceFactoryImpl(sparkSession);
     }
 
-
-    public RdfSource create(String sourceStr) throws Exception {
-        Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
-        FileSystem fileSystem = FileSystem.get(hadoopConf);
-        return create(sourceStr, fileSystem);
-    }
-
-
     @Override
-    public RdfSource create(String sourceStr, FileSystem fileSystem) throws Exception {
-        Path path = new Path(sourceStr);
+    public RdfSource create(Path path, FileSystem fileSystem, Lang lang) throws Exception {
 
-        return create(path, fileSystem);
-    }
-
-    @Override
-    public RdfSource create(Path path, FileSystem fileSystem) throws Exception {
-        Path resolvedPath = fileSystem.resolvePath(path);
-
-        EntityInfo entityInfo;
-        try (InputStream in = fileSystem.open(resolvedPath)) {
-             entityInfo = RDFDataMgrEx.probeEntityInfo(in, RDFDataMgrEx.DEFAULT_PROBE_LANGS);
+        if (fileSystem == null) {
+            Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
+            fileSystem = FileSystem.get(hadoopConf);
         }
 
-        Lang lang = RDFLanguages.contentTypeToLang(entityInfo.getContentType());
+        Path resolvedPath = fileSystem.resolvePath(path);
 
-        Objects.requireNonNull(lang, "Could not obtain lang for " + entityInfo.getContentType() + " from " + path);
+        if (lang == null) {
+            EntityInfo entityInfo;
+            try (InputStream in = fileSystem.open(resolvedPath)) {
+                entityInfo = RDFDataMgrEx.probeEntityInfo(in, RDFDataMgrEx.DEFAULT_PROBE_LANGS);
+            }
+            lang = RDFLanguages.contentTypeToLang(entityInfo.getContentType());
+
+            Objects.requireNonNull(lang, "Could not obtain lang for " + entityInfo.getContentType() + " from " + path);
+        }
 
         return new RdfSourceImpl(sparkSession, resolvedPath, lang);
     }
