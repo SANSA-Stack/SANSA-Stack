@@ -9,10 +9,10 @@ import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
 import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
 import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
 import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
+import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
 import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
-import org.aksw.jena_sparql_api.io.binseach.Seekable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.lang3.SystemUtils;
@@ -349,7 +349,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             }
         }
         return virtualEofReached;
-    };
+    }
 
 
     /**
@@ -391,14 +391,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 new ByteArrayInputStream(prefixBytes),
                 Channels.newInputStream(seekable.cloneObject()));
         return r;
-    };
+    }
 
     protected Flowable<U> parseFromSeekable(Seekable seekable) {
         Callable<InputStream> inSupp = () -> effectiveInputStreamSupp(seekable);
 
         Flowable<U> r = parse(inSupp);
         return r;
-    };
+    }
 
     protected boolean prober(Seekable seekable) {
         long pos;
@@ -419,7 +419,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         // System.out.println(String.format("Probing at pos %s: %b", pos, foundValidRecordOffset));
         return foundValidRecordOffset;
-    };
+    }
 
     protected Flowable<T> createRecordFlow() throws IOException {
 
