@@ -1,17 +1,20 @@
 package net.sansa_stack.examples.spark.ml.Similarity
 
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
-import net.sansa_stack.ml.spark.utils.ML2Graph
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.MinHashModel
+import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, ML2Graph}
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.NTripleReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.sys.JenaSystem
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object DaSim {
   def main(args: Array[String]): Unit = {
@@ -50,130 +53,72 @@ object DaSim {
     println(f"\ndata consists of ${dataset.count()} triples")
     dataset.take(n = 10).foreach(println(_))
 
-    // Hyperparameter
-    // val seedFetching
+    println("FETCH SEEDS")
 
-    println("\nFEATURE EXTRACTION OVER SPARQL")
-    /**
-     * The sparql query used to gather features
-     */
-    val sparqlString = """
-      SELECT
-      ?movie
-      ?movie__down_genre__down_film_genre_name
-      ?movie__down_title
-      (<http://www.w3.org/2001/XMLSchema#int>(?movie__down_runtime) as ?movie__down_runtime_asInt)
-      ?movie__down_runtime
-      ?movie__down_actor__down_actor_name
+    val p_seed_fetching_sparql =
+      """
+        |SELECT ?seed
+        |WHERE {
+        |?seed <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        |}
+        |""".stripMargin
 
-      WHERE {
-      ?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
-      ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre . ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_desiredGenre__down_film_genre_name .
+    val sf = new SparqlFrame()
+      .setSparqlQuery(p_seed_fetching_sparql)
 
-      OPTIONAL { ?movie <http://purl.org/dc/terms/title> ?movie__down_title . }
-      OPTIONAL { ?movie <http://data.linkedmdb.org/movie/runtime> ?movie__down_runtime . }
-      OPTIONAL { ?movie <http://data.linkedmdb.org/movie/actor> ?movie__down_actor . ?movie__down_actor <http://data.linkedmdb.org/movie/actor_name> ?movie__down_actor__down_actor_name . }
-      OPTIONAL { ?movie <http://data.linkedmdb.org/movie/genre> ?movie__down_genre . ?movie__down_genre <http://data.linkedmdb.org/movie/film_genre_name> ?movie__down_genre__down_film_genre_name . }
+    val seeds = sf.transform(dataset).limit(10) // TODO this is temporary
 
-      FILTER (?movie__down_desiredGenre__down_film_genre_name = 'Superhero' || ?movie__down_desiredGenre__down_film_genre_name = 'Fantasy' )
-      }"""
+    seeds.show(false)
+    println(seeds.count())
 
-    /**
-     * transformer that collect the features from the Dataset[Triple] to a common spark Dataframe
-     * collapsed
-     * by column movie
-     */
-    val sparqlFrame = new SparqlFrame()
-      .setSparqlQuery(sparqlString)
-      .setCollapsByKey(true)
-      .setCollapsColumnName("movie")
+    println("GATHER CANDIDATE PAIRS")
 
-    /**
-     * dataframe with resulting features
-     * in this collapsed by the movie column
-     */
-    val extractedFeaturesDf = sparqlFrame
-      .transform(dataset)
-      .cache()
+    implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
 
-    /**
-     * feature descriptions of the resulting collapsed dataframe
-     */
-    val featureDescriptions = sparqlFrame.getFeatureDescriptions()
-    println(s"Feature decriptions are:\n${featureDescriptions.mkString(",\n")}")
-
-    extractedFeaturesDf.show(10, false)
-    // extractedFeaturesDf.schema.foreach(println(_))
-
-    println("FEATURE EXTRACTION POSTPROCESSING")
-    /**
-     * Here we adjust things in dataframe which do not fit to our expectations like:
-     * the fact that the runtime is in rdf data not annotated to be a double
-     * but easy castable
-     */
-    val postprocessedFeaturesDf = extractedFeaturesDf
-      .withColumn("movie__down_runtime(ListOf_NonCategorical_Int)", col("movie__down_runtime(ListOf_NonCategorical_String)").cast("array<int>"))
-      .drop("movie__down_runtime(ListOf_NonCategorical_String)")
-      .withColumn("movie__down_runtime(Single_NonCategorical_Int)", col("movie__down_runtime(ListOf_NonCategorical_Int)").getItem(0))
-      .drop("movie__down_runtime(ListOf_NonCategorical_Int)")
-    postprocessedFeaturesDf.show(10, false)
-
-    // postprocessedFeaturesDf.withColumn("tmp", col("movie__down_runtime(ListOf_NonCategorical_Int)").getItem(0)).show(false)
-
-    println("\nSMART VECTOR ASSEMBLER")
-    val smartVectorAssembler = new SmartVectorAssembler()
-      .setEntityColumn("movie")
-      .setLabelColumn("movie__down_runtime(Single_NonCategorical_Int)")
-      .setNullReplacement("string", "")
-      .setNullReplacement("digit", -1)
-      .setWord2VecSize(5)
-      .setWord2VecMinCount(1)
-      // .setWord2vecTrainingDfSizeRatio(svaWord2vecTrainingDfSizeRatio)
-
-    val assembledDf: DataFrame = smartVectorAssembler
-     .transform(postprocessedFeaturesDf)
-     .cache()
-
-    assembledDf.show(10, false)
+    val filtered: Dataset[Triple] = seeds.rdd
+      .map(r => Tuple2(r(0).toString, r(0)))
+      .join(dataset.rdd.map(t => Tuple2(t.getSubject.toString(), t)))
+      .map(_._2._2)
+      .toDS()
+      .as[Triple]
+    filtered.take(20).foreach(println(_))
+    println(filtered.count())
 
 
-    println("\nAPPLY Common SPARK MLlib Example Algorithm")
-    /**
-     * drop rows where label is null
-     */
-    val mlDf = assembledDf
-      .filter(col("label").isNotNull)
-    mlDf.show(10, false)
+    val triplesDf = filtered.rdd.toDF()
 
-    // From here on process is used based on SApache SPark MLlib samples: https://spark.apache.org/docs/latest/ml-classification-regression.html#random-forest-regression
+    triplesDf.show(false)
 
-    // Split the data into training and test sets (30% held out for testing).
-    val Array(trainingData, testData) = mlDf.randomSplit(Array(0.7, 0.3))
+    val featureExtractorModel = new FeatureExtractorModel()
+      .setMode("os")
+    val extractedFeaturesDataFrame = featureExtractorModel
+      .transform(triplesDf)
 
-    // Train a RandomForest model.
-    val rf = new RandomForestRegressor()
-      .setLabelCol("label")
-      .setFeaturesCol("features")
+    extractedFeaturesDataFrame.show(false)
 
-    // Train model. This also runs the indexer.
-    val model = rf.fit(trainingData)
+    // count Vectorization
+    val cvModel: CountVectorizerModel = new CountVectorizer()
+      .setInputCol("extractedFeatures")
+      .setOutputCol("vectorizedFeatures")
+      .fit(extractedFeaturesDataFrame)
+    val tmpCvDf: DataFrame = cvModel.transform(extractedFeaturesDataFrame)
+    // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
+    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
+    val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf.filter(isNoneZeroVector(col("vectorizedFeatures"))).select("uri", "vectorizedFeatures").cache()
+    countVectorizedFeaturesDataFrame.show(false)
 
-    // Make predictions.
-    val predictions = model.transform(testData)
+    // similarity Estimations Overview
 
-    // Select example rows to display.
-    predictions.select("entityID", "prediction", "label", "features").show(10)
-    predictions.show()
+    // minHash similarity estimation
+    val minHashModel: MinHashModel = new MinHashModel()
+      .setInputCol("vectorizedFeatures") /* new MinHashLSH()
+      .setInputCol("vectorizedFeatures")
+      .setOutputCol("hashedFeatures")
+      .fit(countVectorizedFeaturesDataFrame) */
+    minHashModel
+      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.8, "distance")
+      .show(false)
 
-    val ml2Graph = new ML2Graph()
-      .setEntityColumn("entityID")
-      .setValueColumn("prediction")
 
-    val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
-    metagraph.take(10).foreach(println(_))
-
-    metagraph
-      .coalesce(1)
-      .saveAsNTriplesFile(args(0) + "someFolder")
   }
 }
