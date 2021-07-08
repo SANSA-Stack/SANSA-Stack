@@ -72,7 +72,7 @@
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.9.0</aksw-commons.version>
+        <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
         <jena.version>4.0.0</jena.version>
         <jsa.subversion>1-SNAPSHOT</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
