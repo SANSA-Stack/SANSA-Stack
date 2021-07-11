@@ -17,6 +17,26 @@ The SANSA project is structured in the following five layers developed in their 
 
 ## Paper Specific Documentation
 For recently published papers, we provide here a fast entry point to the provided modules. All of those modules are as well accessible over the standard documentation
+
+### DistRDF2ML
+
+#### Release
+The changes are made available within this release [here](https://github.com/SANSA-Stack/SANSA-Stack/releases/tag/v0.8.1_DistRDF2ML)
+
+#### Docs
+The documentation with sample code snippets are available within the [SANSA ML Readme](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml) which include:
+* [Literal2Feature - AutoSparql Generation for Feature Extraction](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#literal2feature-autosparql-generation-for-feature-extraction)
+* [SparqlFrame Feature Extractor](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#sparqlframe-feature-extractor)
+* [Smart Vector Assembler](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#smart-vector-assembler)
+* [ML2Graph](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#ml2graph)
+
+#### Code to Modules:
+This release majorly provides the modules:
+* [SparqlFrame](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/featureExtraction/SparqlFrame.scala)
+* [SmartVectorAssembler](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/featureExtraction/SmartVectorAssembler.scala)
+* [ML2Graph](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/ML2Graph.scala)
+
+
 ### DistSim ICSC Paper Documentation
 the documentation in docs are available [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
 the respective similarity estimation models are in this [github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity) and further needed utils are [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils)
