@@ -66,6 +66,8 @@ object SmartFeatureExtractor {
 
     val featureColumns = df.columns.diff(Seq(entityColumnNameString))
 
+    var joinDf = df.select(entityColumnNameString)
+
     for (featureColumn <- featureColumns) {
       println(featureColumn)
       val tmpDf = df.select(entityColumnNameString, featureColumn)
@@ -92,10 +94,61 @@ object SmartFeatureExtractor {
 
       val castTypeAsString = if (typeDistribution.size == 1) typeDistribution.keys.head else "String"
 
-      exDf.withColumn("remLit", first(split(col(featureColumn), "^^"))).show(false)
+      // exDf.withColumn("remLit", first(split(col(featureColumn), "^^"))).show(false)
+      val someDf = exDf
+        .withColumn("value", split(col(featureColumn), "\\^\\^")(0))
+        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1))
+        .withColumn("litType", split(col("litTypeUri"), "\\#")(1))
+        .na.fill(value = "string", Seq("litType"))
+        // .withColumn("solo", first(col("remLit")))
+      someDf
+        .show(false)
 
-      // if (castTypeAsString == String)
+      val litType: String = someDf.groupBy("litType").count().orderBy("count").rdd.map(r => r(0).toString).collect()(0)
 
+      println("casting")
+      println(litType)
+
+      val castType = litType.toLowerCase() match {
+        case "string" => "string"
+        case "integer" => "integer"
+        case "boolean" => "boolean"
+        case "timestamp" => "timestamp"
+        case _ => "string"
+      }
+
+      println(castType)
+
+      val castedDf = someDf
+        .withColumn("casted_value", col("value").cast(castType))
+        .select(entityColumnNameString, "casted_value")
+
+      castedDf.show(false)
+      castedDf.printSchema()
+
+      val newPivotedDf: DataFrame = someDf
+        .groupBy(entityColumnNameString)
+        .pivot("litType")
+        .agg(collect_list("value"))
+      newPivotedDf.show(false)
+
+      // rename columns
+      val currentColumnNames = newPivotedDf.columns
+      val renamedCols = Seq(currentColumnNames.toSeq(0)) ++ currentColumnNames.drop(1).map(c => featureColumn.split("/").last + "_" + c).toSeq
+
+      val renamedDf = newPivotedDf
+        .toDF(renamedCols: _*)
+      renamedDf
+        .show(false)
+
+      joinDf.show()
+
+      joinDf = joinDf
+        .join(renamedDf, Seq(entityColumnNameString), "left")
     }
+    joinDf
+      .show(false)
+    joinDf
+      .printSchema()
   }
 }
