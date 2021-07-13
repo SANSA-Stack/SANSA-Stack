@@ -19,6 +19,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object SmartFeatureExtractor {
+  val spark = SparkSession
+    .builder
+    .getOrCreate()
 
   var entityColumnNameString = "s"
 
@@ -27,10 +30,10 @@ object SmartFeatureExtractor {
      * expand initial DF to its features by one hop
      */
     val pivotFeatureDF = dataset
-      .toDF()
+      .toDF() // make a DF out of dataset
       .groupBy("s")
-      .pivot("p")
-      .agg(collect_list("o"))
+      .pivot("p") // create columns for each predicate as kind of respective features
+      .agg(collect_list("o")) // collect these features in list
 
     // need to rename cols so internal SQL does not have issues
     val newColNames: Array[String] = pivotFeatureDF
@@ -42,7 +45,8 @@ object SmartFeatureExtractor {
     /**
      * these are the feature columns we iterate over
      */
-    val featureColumns = df.columns.diff(Seq(entityColumnNameString))
+    val featureColumns = df.columns
+      .diff(Seq(entityColumnNameString))
 
     /**
      * This is the dataframe where we join the casted columns
@@ -54,23 +58,18 @@ object SmartFeatureExtractor {
       /**
        * two column df so ntity column with one additional column
        */
-      val tmpDf = df
-        .select(entityColumnNameString, featureColumn)
-      val exDf = tmpDf
-        .select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // TODO distinct to have mre unique subset to eval value type distribution
+      var tmpDf = df
+        .select(entityColumnNameString, featureColumn) // make two col df
+        .select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // exlode to get access to all vals
+        .withColumn("value", split(col(featureColumn), "\\^\\^")(0)) // gather the values
+        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1)) // get the litTypes by splitting the lit representation
+        .withColumn("litType", split(col("litTypeUri"), "\\#")(1)) // the datatype especially is often annotated after the hashtag
+        .na.fill(value = "string", Seq("litType")) // fallback to string, this does not only apply to non annotated literals but also to URIs or blanks
+        .groupBy(entityColumnNameString) // group again
+        .pivot("litType") // now expand by lit type s.t. we have for each featrutre maybe multiple cols if they are corresponding to different lit types
+        .agg(collect_list("value")) // collect back again these features
 
-      val someDf = exDf
-        .withColumn("value", split(col(featureColumn), "\\^\\^")(0))
-        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1))
-        .withColumn("litType", split(col("litTypeUri"), "\\#")(1))
-        .na.fill(value = "string", Seq("litType"))
-
-      var pvdf = someDf
-        .groupBy(entityColumnNameString)
-        .pivot("litType")
-        .agg(collect_list("value"))
-
-      val currentFeatureCols = pvdf.columns.drop(1)
+      val currentFeatureCols = tmpDf.columns.drop(1)
 
       currentFeatureCols.foreach(cn => {
         val castType = cn.toLowerCase() match {
@@ -81,13 +80,13 @@ object SmartFeatureExtractor {
           case _ => "string"
         }
         val newFC = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType
-        pvdf = pvdf
-          .withColumn(newFC, col(cn).cast("array<" + castType + ">"))
-          .drop(cn)
+        tmpDf = tmpDf
+          .withColumn(newFC, col(cn).cast("array<" + castType + ">")) // cast the respective cols to their identified feature cols
+          .drop(cn) // drop the old col
       })
 
       joinDf = joinDf
-        .join(pvdf, Seq(entityColumnNameString), "left")
+        .join(tmpDf, Seq(entityColumnNameString), "left")
     }
     joinDf
   }
