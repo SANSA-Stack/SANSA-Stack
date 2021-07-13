@@ -19,6 +19,79 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 object SmartFeatureExtractor {
+
+  var entityColumnNameString = "s"
+
+  def transform(dataset: Dataset[_]): DataFrame = {
+    /**
+     * expand initial DF to its features by one hop
+     */
+    val pivotFeatureDF = dataset
+      .toDF()
+      .groupBy("s")
+      .pivot("p")
+      .agg(collect_list("o"))
+
+    // need to rename cols so internal SQL does not have issues
+    val newColNames: Array[String] = pivotFeatureDF
+      .columns
+      .map(_.replace(".", "_"))
+    val df = pivotFeatureDF
+      .toDF(newColNames: _*)
+
+    /**
+     * these are the feature columns we iterate over
+     */
+    val featureColumns = df.columns.diff(Seq(entityColumnNameString))
+
+    /**
+     * This is the dataframe where we join the casted columns
+     */
+    var joinDf = df.select(entityColumnNameString)
+
+    // iterate over each feature column
+    for (featureColumn <- featureColumns) {
+      /**
+       * two column df so ntity column with one additional column
+       */
+      val tmpDf = df
+        .select(entityColumnNameString, featureColumn)
+      val exDf = tmpDf
+        .select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // TODO distinct to have mre unique subset to eval value type distribution
+
+      val someDf = exDf
+        .withColumn("value", split(col(featureColumn), "\\^\\^")(0))
+        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1))
+        .withColumn("litType", split(col("litTypeUri"), "\\#")(1))
+        .na.fill(value = "string", Seq("litType"))
+
+      var pvdf = someDf
+        .groupBy(entityColumnNameString)
+        .pivot("litType")
+        .agg(collect_list("value"))
+
+      val currentFeatureCols = pvdf.columns.drop(1)
+
+      currentFeatureCols.foreach(cn => {
+        val castType = cn.toLowerCase() match {
+          case "string" => "string"
+          case "integer" => "integer"
+          case "boolean" => "boolean"
+          case "timestamp" => "timestamp"
+          case _ => "string"
+        }
+        val newFC = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType
+        pvdf = pvdf
+          .withColumn(newFC, col(cn).cast("array<" + castType + ">"))
+          .drop(cn)
+      })
+
+      joinDf = joinDf
+        .join(pvdf, Seq(entityColumnNameString), "left")
+    }
+    joinDf
+  }
+
   def main(args: Array[String]): Unit = {
 
     val input = args(0)
@@ -50,105 +123,13 @@ object SmartFeatureExtractor {
       originalDataRDD = spark.rdf(lang)(input).persist()
     }
 
-    val pivotFeatureDF = originalDataRDD
+    val inDf = originalDataRDD
       .toDF()
-      .groupBy("s")
-      .pivot("p")
-      .agg(collect_list("o"))
-      .limit(1000)
-    pivotFeatureDF
-      .show(false)
 
-    val newColNames: Array[String] = pivotFeatureDF.columns.map(_.replace(".", "_"))
-    val df = pivotFeatureDF.toDF(newColNames: _*)
-
-    val entityColumnNameString = "s"
-
-    val featureColumns = df.columns.diff(Seq(entityColumnNameString))
-
-    var joinDf = df.select(entityColumnNameString)
-
-    for (featureColumn <- featureColumns) {
-      println(featureColumn)
-      val tmpDf = df.select(entityColumnNameString, featureColumn)
-      val exDf = tmpDf.select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // TODO distinct to have mre unique subset to eval value type distribution
-
-      exDf.show(false)
-      exDf.printSchema()
-
-      val sampleOfVals = exDf
-        .select(featureColumn)
-        .limit(10) // TODO nicer sampling strategy
-      val possibleTypes: Dataset[String] = sampleOfVals.map(
-        s => {
-          if (s.toString().contains("^^")) "Literal" // TODO maybe check already here for literal type
-          else if (s.toString().contains("http")) "URL"
-          else "String"
-        }
-      )
-
-      possibleTypes.foreach(println(_))
-
-      val typeDistribution: Map[String, Int] = possibleTypes.collect().groupBy(identity).mapValues(_.size)
-      typeDistribution.foreach(println(_))
-
-      val castTypeAsString = if (typeDistribution.size == 1) typeDistribution.keys.head else "String"
-
-      // exDf.withColumn("remLit", first(split(col(featureColumn), "^^"))).show(false)
-      val someDf = exDf
-        .withColumn("value", split(col(featureColumn), "\\^\\^")(0))
-        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1))
-        .withColumn("litType", split(col("litTypeUri"), "\\#")(1))
-        .na.fill(value = "string", Seq("litType"))
-        // .withColumn("solo", first(col("remLit")))
-      someDf
-        .show(false)
-
-      val litType: String = someDf.groupBy("litType").count().orderBy("count").rdd.map(r => r(0).toString).collect()(0)
-
-      println("casting")
-      println(litType)
-
-      val castType = litType.toLowerCase() match {
-        case "string" => "string"
-        case "integer" => "integer"
-        case "boolean" => "boolean"
-        case "timestamp" => "timestamp"
-        case _ => "string"
-      }
-
-      println(castType)
-
-      val castedDf = someDf
-        .withColumn("casted_value", col("value").cast(castType))
-        .select(entityColumnNameString, "casted_value")
-
-      castedDf.show(false)
-      castedDf.printSchema()
-
-      val newPivotedDf: DataFrame = someDf
-        .groupBy(entityColumnNameString)
-        .pivot("litType")
-        .agg(collect_list("value"))
-      newPivotedDf.show(false)
-
-      // rename columns
-      val currentColumnNames = newPivotedDf.columns
-      val renamedCols = Seq(currentColumnNames.toSeq(0)) ++ currentColumnNames.drop(1).map(c => featureColumn.split("/").last + "_" + c).toSeq
-
-      val renamedDf = newPivotedDf
-        .toDF(renamedCols: _*)
-      renamedDf
-        .show(false)
-
-      joinDf.show()
-
-      joinDf = joinDf
-        .join(renamedDf, Seq(entityColumnNameString), "left")
-    }
-    joinDf
-      .show(false)
-    joinDf
+    val outDf = transform(inDf)
+    outDf
+      .show()
+    outDf
       .printSchema()
   }
 }
