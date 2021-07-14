@@ -55,6 +55,8 @@ class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
       .transform(df)
     feDf
       .show(false)
+    feDf
+      .printSchema()
 
     assert(feDf.columns.toSeq.toSet == Set("s", "age", "hasParent", "hasSpouse", "name", "22-rdf-syntax-ns#type"))
   }
