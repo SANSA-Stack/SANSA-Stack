@@ -66,7 +66,7 @@ class SmartFeatureExtractor extends Transformer {
       /**
        * two column df so ntity column with one additional column
        */
-      var tmpDf = df
+      var tmpDf: DataFrame = df
         .select(entityColumnNameString, featureColumn) // make two col df
         .select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // exlode to get access to all vals
         .withColumn("value", split(col(featureColumn), "\\^\\^")(0)) // gather the values
@@ -77,20 +77,39 @@ class SmartFeatureExtractor extends Transformer {
         .pivot("litType") // now expand by lit type s.t. we have for each featrutre maybe multiple cols if they are corresponding to different lit types
         .agg(collect_list("value")) // collect back again these features
 
-      val currentFeatureCols = tmpDf.columns.drop(1)
+      val currentFeatureCols: Array[String] = tmpDf
+        .columns
+        .drop(1)
 
-      currentFeatureCols.foreach(cn => {
-        val castType = cn.toLowerCase() match {
+      currentFeatureCols.foreach(f = cn => {
+        val castType: String = cn.toLowerCase() match {
           case "string" => "string"
-          case "integer" => "integer"
-          case "boolean" => "boolean"
+          case "integer" => "double"
+          case "boolean" => "double"
+          case "double" => "double"
+          case "int" => "double"
+          case "float" => "double"
           case "timestamp" => "timestamp"
           case _ => "string"
         }
-        val newFC = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType
+        val newFC: String = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType
         tmpDf = tmpDf
           .withColumn(newFC, col(cn).cast("array<" + castType + ">")) // cast the respective cols to their identified feature cols
           .drop(cn) // drop the old col
+
+        val maxNumberElements = tmpDf
+          .select(col(entityColumnNameString), explode(col(featureColumn.split("/").last)))
+          .select(entityColumnNameString)
+          .groupBy(entityColumnNameString)
+          .count()
+          .agg(max("count"))
+          .select("max(count)")
+          .first()
+          .getLong(0)
+
+        if (maxNumberElements == 1) {
+          tmpDf = tmpDf.select(col(entityColumnNameString), explode(col(tmpDf.columns.last)).as(tmpDf.columns.last))
+        }
       })
 
       joinDf = joinDf
@@ -98,48 +117,6 @@ class SmartFeatureExtractor extends Transformer {
     }
     joinDf
   }
-
-  /* def main(args: Array[String]): Unit = {
-
-    val input = args(0)
-
-    val spark = {
-      SparkSession.builder
-        .appName(s"SampleFeatureExtractionPipeline")
-        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-        .config("spark.kryo.registrator", String.join(", ",
-          "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-          "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
-        .getOrCreate()
-    }
-    JenaSystem.init()
-    spark.sparkContext.setLogLevel("ERROR")
-
-    import spark.implicits._
-
-    var originalDataRDD: RDD[graph.Triple] = null
-    if (input.endsWith("nt")) {
-      originalDataRDD = NTripleReader
-        .load(
-          spark,
-          input,
-          stopOnBadTerm = ErrorParseMode.SKIP,
-          stopOnWarnings = WarningParseMode.IGNORE
-        )
-    } else {
-      val lang = Lang.TURTLE
-      originalDataRDD = spark.rdf(lang)(input).persist()
-    }
-
-    val inDf = originalDataRDD
-      .toDF()
-
-    val outDf = transform(inDf)
-    outDf
-      .show(false)
-    outDf
-      .printSchema()
-  } */
 
   override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
 
