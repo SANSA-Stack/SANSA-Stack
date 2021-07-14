@@ -1,26 +1,29 @@
 package net.sansa_stack.examples.spark.ml.Similarity
 
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
+import net.sansa_stack.ml.spark.featureExtraction._
 import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.MinHashModel
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, ML2Graph}
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
-import net.sansa_stack.rdf.spark.io.NTripleReader
+import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
 import org.apache.jena.graph.Triple
+import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
 
 object DaSim {
   def main(args: Array[String]): Unit = {
 
     // readIn
-    val inputPath: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
+    val input: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
 
     println("\nSETUP SPARK SESSION")
     val spark = {
@@ -39,45 +42,61 @@ object DaSim {
     /**
      * Read in dataset of Jena Triple representing the Knowledge Graph
      */
-    val dataset: Dataset[graph.Triple] = {
-      NTripleReader.load(
-        spark,
-        inputPath,
-        stopOnBadTerm = ErrorParseMode.SKIP,
-        stopOnWarnings = WarningParseMode.IGNORE
-      )
-        .toDS()
-        .cache()
+    var originalDataRDD: RDD[graph.Triple] = null
+    if (input.endsWith("nt")) {
+      originalDataRDD = NTripleReader
+        .load(
+          spark,
+          input,
+          stopOnBadTerm = ErrorParseMode.SKIP,
+          stopOnWarnings = WarningParseMode.IGNORE
+        )
+    } else {
+      val lang = Lang.TURTLE
+      originalDataRDD = spark.rdf(lang)(input).persist()
     }
-    // dataset.rdd.coalesce(1).saveAsNTriplesFile(args(0).replace(".", " ") + "clean.nt")
-    println(f"\ndata consists of ${dataset.count()} triples")
-    dataset.take(n = 10).foreach(println(_))
+    val dataset: Dataset[graph.Triple] = originalDataRDD
+      .toDS()
+      .cache()
 
-    println("FETCH SEEDS")
+    println(f"\ndata consists of ${dataset.count()} triples")
+    dataset
+      .take(n = 10).foreach(println(_))
+
+    /* println("FETCH SEEDS by SPARQL")
 
     val p_seed_fetching_sparql =
       """
         |SELECT ?seed
         |WHERE {
         |?seed <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+        |# ?seed <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> .
         |}
         |""".stripMargin
 
     val sf = new SparqlFrame()
       .setSparqlQuery(p_seed_fetching_sparql)
 
-    val seeds = sf.transform(dataset).limit(100) // TODO this is temporary
+    val seeds = sf
+      .transform(dataset)
+      .limit(100) // TODO this is temporary
 
-    println("seeds2")
-    val seeds2 = dataset.filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
-    seeds2
-      .rdd
-      .toDF()
-      .limit(100)
-      .show(false)
-    println("seeds1")
+    println("seeds by sparql")
     seeds.show(false)
     println(seeds.count())
+     */
+
+    println("FETCH SEEDS by filter")
+
+    val seeds: DataFrame = dataset
+      .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
+      // .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
+      .limit(10)
+      .rdd
+      .toDF()
+
+    seeds
+      .show(false)
 
     println("GATHER CANDIDATE PAIRS")
 
@@ -85,25 +104,35 @@ object DaSim {
 
     import spark.implicits._
 
-    val seedsList = seeds.select("seed").map(r => r.toString()).collect()
+    /* val seedsList = seeds
+      .select("s")
+      .map(r => r.toString())
+      .collect()
 
     val filtered2 = dataset
       .filter(t => seedsList.contains(t.getSubject))
     filtered2
       .take(100)
       .foreach(println(_))
+     */
 
-    val filtered: Dataset[Triple] = seeds.rdd
+    val filtered: Dataset[Triple] = seeds
+      .rdd
       .map(r => Tuple2(r(0).toString, r(0)))
       .join(dataset.rdd.map(t => Tuple2(t.getSubject.toString(), t)))
       .map(_._2._2)
       .toDS()
       .as[Triple]
-    filtered.take(20).foreach(println(_))
+    filtered
+      .take(20)
+      .foreach(println(_))
     println(filtered.count())
 
-    val triplesDf = filtered.rdd.toDF()
+    val triplesDf = filtered
+      .rdd
+      .toDF()
 
+    println("filtered KG")
     triplesDf.show(false)
 
     val featureExtractorModel = new FeatureExtractorModel()
@@ -134,15 +163,65 @@ object DaSim {
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame) */
-    val simDF = minHashModel
-      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.5, "distance")
+    val simDF: Dataset[Row] = minHashModel
+      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.9, "distance")
       .filter(col("uriA").notEqual(col("uriB")))
-    simDF.show(false)
+      .toDF()
+    simDF
+      .show(false)
 
     println("PROMISING CANDDATES")
     val candidatesPerElement = 3
-    simDF.sort("uriA", "distance").show(false)
+    simDF
+      .sort("uriA", "distance")
+      .show(false)
     //  .groupBy("uriA").
+
+    val tmpSchema = new StructType()
+      .add(StructField("id", StringType, true))
+
+    val candidatesForFE = spark.createDataFrame(
+      simDF
+        .rdd
+        .flatMap(r => Seq(r(0).toString, r(1).toString))
+        .distinct
+        .map(Row(_)),
+      tmpSchema
+    )
+      // .collect
+
+    candidatesForFE
+      .show(false)
+
+    println("postfilter already filtered KG")
+    val candidatesKG: Dataset[Triple] = candidatesForFE
+      .rdd
+      .map(r => Tuple2(r(0).toString, r(0)))
+      .join(filtered.rdd.map(t => Tuple2(t.getSubject.toString(), t)))
+      .map(_._2._2)
+      .toDS()
+      .as[Triple]
+
+    candidatesKG
+      .take(20)
+      .foreach(println(_))
+
+    println(candidatesKG.count())
+
+    val triplesDfCan: DataFrame = candidatesKG
+      .rdd
+      .toDF()
+
+    println("SmartFeatureExtractor")
+    val sfe = new SmartFeatureExtractor()
+      .setEntityColumnName("s")
+    // sfe.transform()
+
+    sfe
+      .transform(triplesDfCan)
+      .show(false)
+
+    /*
 
     println("LITERAL2FEATURE SPARQL QUERY")
     val seedVarName = "?seed"
@@ -173,23 +252,7 @@ object DaSim {
 
     featureDf.show(false)
 
-    println("PIVOT FEATURE EXTRACTOR")
-
-    val pivotFeatureDF = filtered
-      .rdd
-      .toDF()
-      .groupBy("s")
-      .pivot("p")
-      .agg(collect_list("o"))
-      .limit(1000)
-    pivotFeatureDF
-      .show(false)
-
-
-
-
-
-
+ */
 
 
 
