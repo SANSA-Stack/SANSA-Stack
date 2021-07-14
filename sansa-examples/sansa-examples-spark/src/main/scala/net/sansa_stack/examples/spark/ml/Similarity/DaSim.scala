@@ -2,7 +2,7 @@ package net.sansa_stack.examples.spark.ml.Similarity
 
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.ml.spark.featureExtraction._
-import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.MinHashModel
+import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{JaccardModel, MinHashModel}
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, ML2Graph}
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
@@ -89,8 +89,8 @@ object DaSim {
     println("FETCH SEEDS by filter")
 
     val seeds: DataFrame = dataset
-      .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
-      // .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
+      // .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
+      .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
       .limit(10)
       .rdd
       .toDF()
@@ -123,59 +123,59 @@ object DaSim {
       .map(_._2._2)
       .toDS()
       .as[Triple]
-    filtered
-      .take(20)
-      .foreach(println(_))
-    println(filtered.count())
+
+    println("the filtered kg has #triles:" + filtered.count())
 
     val triplesDf = filtered
       .rdd
       .toDF()
 
-    println("filtered KG")
-    triplesDf.show(false)
+    // println("filtered KG")
+    // triplesDf.show(false)
 
     val featureExtractorModel = new FeatureExtractorModel()
-      .setMode("os")
+      .setMode("or")
     val extractedFeaturesDataFrame = featureExtractorModel
       .transform(triplesDf)
 
-    extractedFeaturesDataFrame.show(false)
+    extractedFeaturesDataFrame
+      .show(false)
 
     // count Vectorization
     val cvModel: CountVectorizerModel = new CountVectorizer()
       .setInputCol("extractedFeatures")
       .setOutputCol("vectorizedFeatures")
       .fit(extractedFeaturesDataFrame)
-    val tmpCvDf: DataFrame = cvModel.transform(extractedFeaturesDataFrame)
+    val tmpCvDf: DataFrame = cvModel
+      .transform(extractedFeaturesDataFrame)
     // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 }, DataTypes.BooleanType)
-    val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
+    // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf
       // .filter(isNoneZeroVector(col("vectorizedFeatures")))
       .select("uri", "vectorizedFeatures").cache()
-    countVectorizedFeaturesDataFrame.show(false)
+    countVectorizedFeaturesDataFrame
+      .show(false)
 
     // similarity Estimations Overview
 
     // minHash similarity estimation
-    val minHashModel: MinHashModel = new MinHashModel()
-      .setInputCol("vectorizedFeatures") /* new MinHashLSH()
+    val simModel = new JaccardModel()
+      .setInputCol("vectorizedFeatures")
+      /* .setNumHashTables(10)
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame) */
-    val simDF: Dataset[Row] = minHashModel
-      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, 0.9, "distance")
+    val simDF: Dataset[Row] = simModel
+      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, valueColumn = "distCol") // , 0.9, "sim")
       .filter(col("uriA").notEqual(col("uriB")))
       .toDF()
     simDF
       .show(false)
 
     println("PROMISING CANDDATES")
-    val candidatesPerElement = 3
-    simDF
-      .sort("uriA", "distance")
-      .show(false)
-    //  .groupBy("uriA").
+    /* simDF
+      .sort("uriA", "distCol")
+      .show(false) */
 
     val tmpSchema = new StructType()
       .add(StructField("id", StringType, true))
@@ -217,9 +217,15 @@ object DaSim {
       .setEntityColumnName("s")
     // sfe.transform()
 
-    sfe
+    val feDf = sfe
       .transform(triplesDfCan)
+    feDf
       .show(false)
+
+    feDf
+      .printSchema()
+
+
 
     /*
 
