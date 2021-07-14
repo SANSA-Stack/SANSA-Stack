@@ -11,19 +11,27 @@ import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
+import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
-object SmartFeatureExtractor {
+class SmartFeatureExtractor extends Transformer {
   val spark = SparkSession
     .builder
     .getOrCreate()
 
   var entityColumnNameString = "s"
+
+  def setEntityColumnName(colName: String): this.type = {
+    entityColumnNameString = colName
+    this
+  }
 
   def transform(dataset: Dataset[_]): DataFrame = {
     /**
@@ -91,7 +99,7 @@ object SmartFeatureExtractor {
     joinDf
   }
 
-  def main(args: Array[String]): Unit = {
+  /* def main(args: Array[String]): Unit = {
 
     val input = args(0)
 
@@ -104,6 +112,7 @@ object SmartFeatureExtractor {
           "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
         .getOrCreate()
     }
+    JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")
 
     import spark.implicits._
@@ -127,8 +136,15 @@ object SmartFeatureExtractor {
 
     val outDf = transform(inDf)
     outDf
-      .show()
+      .show(false)
     outDf
       .printSchema()
-  }
+  } */
+
+  override def copy(extra: ParamMap): Transformer = defaultCopy(extra)
+
+  override def transformSchema(schema: StructType): StructType =
+    throw new NotImplementedError()
+
+  override val uid: String = "FIXME"
 }
