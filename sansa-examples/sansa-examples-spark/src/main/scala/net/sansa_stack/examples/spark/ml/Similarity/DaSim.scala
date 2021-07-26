@@ -260,6 +260,8 @@ object DaSim {
 
     var similarityEstimations: DataFrame = simDF
 
+    similarityEstimations.show(false)
+
     // similarityStrategies.foreach(println(_))
 
     similarityExecutionOrder.foreach(
@@ -357,30 +359,6 @@ object DaSim {
           }
         }
 
-        /* val scaler = new StandardScaler()
-          .setInputCol(featureName)
-          .setOutputCol("scaled_" + featureName)
-          .setWithStd(true)
-          .setWithMean(false)
-
-        // Compute summary statistics by fitting the StandardScaler.
-        val scalerModel = scaler.fit(twoColFeDf)
-
-        // Normalize each feature to have unit standard deviation.
-        val scaledData = scalerModel.transform(twoColFeDf)
-        scaledData.show()
-        val scaler = new MinMaxScaler()
-          .setInputCol(featureName)
-          .setOutputCol("scaled_" + featureName)
-
-        // Compute summary statistics and generate MinMaxScalerModel
-        val scalerModel = scaler.fit(twoColFeDf.groupBy("s").agg(collect_list(featureName).as(featureName)))
-
-        // rescale each feature to range [min, max].
-        val scaledData = scalerModel.transform(twoColFeDf)
-
-        scaledData.show(false) */
-
         val DfPairWithFeature = candidatePairsForSimEst
           .join(
             featureDfNormalized.select("s", "preparedFeature").withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
@@ -397,15 +375,68 @@ object DaSim {
 
 
 
-        DfPairWithFeature.show(false)
+        // DfPairWithFeature.show(false)
 
         println("now we execute the respective similarity estimation for this df of candidates")
 
-        println("we need to decide about similairty type by column data type")
+        println("we need to decide about similarity type by column data type")
 
+        /**
+         * categorical feature overlap calculation
+         */
+        if ((twoColFeDf.schema(1).dataType == StringType) || twoColFeDf.schema(1).dataType == ArrayType(StringType)) {
+          val jaccard = udf( (a: Vector, b: Vector) => {
+            // val featureIndicesA = a.toSparse.indices
+            // val featureIndicesB = b.toSparseindices
+            val fSetA = a.toSparse.indices.toSet
+            val fSetB = b.toSparse.indices.toSet
+            val intersection = fSetA.intersect(fSetB).size.toDouble
+            val union = fSetA.union(fSetB).size.toDouble
+            if (union == 0.0) {
+              0
+            }
+            else {
+              val jaccard = intersection / union
+              jaccard
+            }
 
+          })
+
+          val tmpDf = DfPairWithFeature
+            .withColumn(featureName + "_sim", jaccard(col(featureName + "_prepared_uriA"), col(featureName + "_prepared_uriB")))
+            // .select("uriA", "uriB", featureName + "_sim")
+          tmpDf.show(false)
+
+          similarityEstimations = similarityEstimations
+            .join(
+              tmpDf.select("uriA", "uriB", featureName + "_sim"),
+              Seq("uriA", "uriB"),
+              // similarityEstimations("uriA") === tmpDf("uriA") && similarityEstimations("uriB") === tmpDf("uriB"),
+            "inner"
+            )
+        }
+
+        /**
+         * categorical feature overlap calculation
+         */
+        else if ((twoColFeDf.schema(1).dataType == TimestampType) || twoColFeDf.schema(1).dataType == DoubleType) {
+
+          val tmpDf = DfPairWithFeature
+            .withColumn(featureName + "_sim", lit(1.0) - abs(col(featureName + "_prepared_uriA") - col(featureName + "_prepared_uriB")))
+            // .select("uriA", "uriB", featureName + "_sim")
+          tmpDf.show(false)
+
+          similarityEstimations = similarityEstimations
+            .join(
+              tmpDf.select("uriA", "uriB", featureName + "_sim"),
+              Seq("uriA", "uriB"),
+              // similarityEstimations("uriA") === tmpDf("uriA") && similarityEstimations("uriB") === tmpDf("uriB"),
+              "inner"
+            )
+        }
       }
     )
+    similarityEstimations.show()
   }
 
   /**
