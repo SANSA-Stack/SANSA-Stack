@@ -321,8 +321,38 @@ object DaSim {
             rescaledData
               .select("s", "preparedFeature")
           }
+          else if (twoColFeDf.schema(1).dataType == StringType) {
+            val twoColListFeDf = twoColFeDf
+              .groupBy("s").agg(collect_list(featureName) as "tmp")
+              .select("s", "tmp")
+
+            val hashingTF = new HashingTF()
+              .setInputCol("tmp")
+              .setOutputCol("rawFeatures")
+            // .setNumFeatures(20)
+
+            val featurizedData = hashingTF
+              .transform(twoColListFeDf)
+            // alternatively, CountVectorizer can also be used to get term frequency vectors
+
+            val idf = new IDF()
+              .setInputCol("rawFeatures")
+              .setOutputCol("preparedFeature")
+            val idfModel = idf
+              .fit(featurizedData)
+
+            val rescaledData = idfModel
+              .transform(featurizedData)
+            rescaledData
+              .select("s", "preparedFeature")
+
+            /* twoColFeDf.withColumn("preparedFeature", hash(col(featureName)).cast("double"))
+              .select("s", "preparedFeature") */
+          }
           else {
             println("you should never end up here")
+
+
             twoColFeDf.withColumnRenamed(featureName, "preparedFeature")
           }
         }
@@ -368,6 +398,12 @@ object DaSim {
 
 
         DfPairWithFeature.show(false)
+
+        println("now we execute the respective similarity estimation for this df of candidates")
+
+        println("we need to decide about similairty type by column data type")
+
+
       }
     )
   }
