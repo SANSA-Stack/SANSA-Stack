@@ -11,12 +11,12 @@ import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinMaxScaler, StandardScaler}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
 
 object DaSim {
@@ -90,10 +90,12 @@ object DaSim {
 
     val seeds: DataFrame = dataset
       // .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
-      .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
+      // .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
+      .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film"))))
       .limit(10)
       .rdd
       .toDF()
+      .select("s")
 
     seeds
       .show(false)
@@ -124,7 +126,7 @@ object DaSim {
       .toDS()
       .as[Triple]
 
-    println("the filtered kg has #triles:" + filtered.count())
+    println("the filtered kg has #triples:" + filtered.count())
 
     val triplesDf = filtered
       .rdd
@@ -134,7 +136,7 @@ object DaSim {
     // triplesDf.show(false)
 
     val featureExtractorModel = new FeatureExtractorModel()
-      .setMode("or")
+      .setMode("os")
     val extractedFeaturesDataFrame = featureExtractorModel
       .transform(triplesDf)
 
@@ -190,6 +192,9 @@ object DaSim {
     )
       // .collect
 
+    val candidatePairsForSimEst = simDF
+      .select("uriA", "uriB")
+
     candidatesForFE
       .show(false)
 
@@ -225,42 +230,125 @@ object DaSim {
     feDf
       .printSchema()
 
+    println("Decision for SimilarityEstimationApproach")
+
+    /* val similarityStrategies = feDf.schema.map(
+      c => {
+        if (c.name != "s") {
+          val simMode = c.dataType match {
+            case DoubleType => Tuple2(c.name, simMode)
+            case StringType => Tuple2(c.name, simMode)
+            case ArrayType(StringType, true) => Tuple2(c.name, simMode)
+          }
+        }
+      }
+    ) */
+
+    var similarityExecutionOrder: Array[String] = null
+
+    if (similarityExecutionOrder == null) similarityExecutionOrder = feDf
+      .columns
+      .drop(1) // drop first element cause it corresponds to entity column
+
+    for (feature <- similarityExecutionOrder) {
+      println("similarity estimation for feature: " + feature)
+    }
+
+    println()
+
+    var similarityEstimations: DataFrame = simDF
+
+    // similarityStrategies.foreach(println(_))
+
+    similarityExecutionOrder.foreach(
+      featureName => {
+        print(featureName)
+        // candidatePairsForSimEst.show()
+        // feDf.show()
+
+        val twoColFeDf = feDf.select("s", featureName)
+
+        println("respective to feature type we need to normalize and change data so similarity estimator can operate on it")
+        val featureDfNormalized = {
+          if (twoColFeDf.schema(1).dataType == DoubleType) {
+
+            val min_max = twoColFeDf.agg(min(featureName), max(featureName)).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = twoColFeDf.withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+            myScaledData.show()
+          }
+          else if (twoColFeDf.schema(1).dataType == TimestampType) {
+
+            val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)))
+
+            val min_max = unixTimeStampDf.agg(min("unixTimestamp"), max("unixTimestamp")).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = twoColFeDf.withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+            myScaledData.show()
+          }
+          else twoColFeDf
+        }
+
+        /* val scaler = new StandardScaler()
+          .setInputCol(featureName)
+          .setOutputCol("scaled_" + featureName)
+          .setWithStd(true)
+          .setWithMean(false)
+
+        // Compute summary statistics by fitting the StandardScaler.
+        val scalerModel = scaler.fit(twoColFeDf)
+
+        // Normalize each feature to have unit standard deviation.
+        val scaledData = scalerModel.transform(twoColFeDf)
+        scaledData.show()
+        val scaler = new MinMaxScaler()
+          .setInputCol(featureName)
+          .setOutputCol("scaled_" + featureName)
+
+        // Compute summary statistics and generate MinMaxScalerModel
+        val scalerModel = scaler.fit(twoColFeDf.groupBy("s").agg(collect_list(featureName).as(featureName)))
+
+        // rescale each feature to range [min, max].
+        val scaledData = scalerModel.transform(twoColFeDf)
+
+        scaledData.show(false) */
+
+        val DfPairWithFeature = candidatePairsForSimEst
+          .join(
+            feDf.select("s", featureName).withColumnRenamed(featureName, featureName + "_uriA"),
+            candidatePairsForSimEst("uriA") === feDf("s"),
+          "inner")
+          .drop("s")
+          .join(
+            feDf.select("s", featureName).withColumnRenamed(featureName, featureName + "_uriB"),
+            candidatePairsForSimEst("uriB") === feDf("s"),
+            "left")
+          .drop("s")
+
+        println("this is our combined dataframe for the respective feature: " + featureName)
 
 
-    /*
 
-    println("LITERAL2FEATURE SPARQL QUERY")
-    val seedVarName = "?seed"
-    val whereClauseForSeed = "?seed <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film>"
-    val maxUp = 0
-    val maxDown = 1
-    val numberSeeds = 5
-
-    val (totalSparqlQuery: String, var_names: List[String]) = FeatureExtractingSparqlGenerator.createSparql(
-      ds = dataset,
-      seedVarName = seedVarName,
-      seedWhereClause = whereClauseForSeed,
-      maxUp = maxUp,
-      maxDown = maxDown,
-      numberSeeds = numberSeeds
+        DfPairWithFeature.show(false)
+      }
     )
-    println(totalSparqlQuery)
+  }
 
-    println("SPARQL FRAME FEATURE EXTTRACTION")
-
-    val sf2 = new SparqlFrame()
-      .setSparqlQuery(totalSparqlQuery)
-      .setCollapsByKey(true)
-      .setCollapsColumnName("seed")
-
-    val featureDf = sf2
-      .transform(dataset)
-
-    featureDf.show(false)
-
- */
-
-
-
+  /**
+   * a method to calculate similarities for df with double features
+   * @param df
+   * @param featureColumn
+   * @param uriAcolName
+   * @param uriBcolName
+   * @return
+   */
+  def doubleSim(df: DataFrame, featureColumn: String, uriAcolName: String = "uriA", uriBcolName: String = "uriB"): DataFrame = {
+    df
   }
 }
