@@ -11,7 +11,7 @@ import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinMaxScaler, StandardScaler}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinMaxScaler, StandardScaler}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
@@ -44,13 +44,15 @@ object DaSim {
      */
     var originalDataRDD: RDD[graph.Triple] = null
     if (input.endsWith("nt")) {
-      originalDataRDD = NTripleReader
+      val lang = Lang.NTRIPLES
+      originalDataRDD = spark.rdf(lang)(input).persist()
+      /* originalDataRDD = NTripleReader
         .load(
           spark,
           input,
           stopOnBadTerm = ErrorParseMode.SKIP,
           stopOnWarnings = WarningParseMode.IGNORE
-        )
+        ) */
     } else {
       val lang = Lang.TURTLE
       originalDataRDD = spark.rdf(lang)(input).persist()
@@ -262,7 +264,7 @@ object DaSim {
 
     similarityExecutionOrder.foreach(
       featureName => {
-        print(featureName)
+        println(featureName)
         // candidatePairsForSimEst.show()
         // feDf.show()
 
@@ -278,21 +280,51 @@ object DaSim {
             val range = if ((col_max - col_min) > 0) col_max - col_min else 1
 
             val myScaledData = twoColFeDf.withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
-            myScaledData.show()
+
+            myScaledData
           }
           else if (twoColFeDf.schema(1).dataType == TimestampType) {
 
-            val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)))
+            val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
+
+            // unixTimeStampDf.show()
+            // unixTimeStampDf.printSchema()
 
             val min_max = unixTimeStampDf.agg(min("unixTimestamp"), max("unixTimestamp")).head()
+            // println(min_max)
             val col_min = min_max.getDouble(0)
             val col_max = min_max.getDouble(1)
-            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+            val range = if ((col_max - col_min) != 0) col_max - col_min else 1
 
-            val myScaledData = twoColFeDf.withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
-            myScaledData.show()
+            val myScaledData = unixTimeStampDf.withColumn("preparedFeature", (col("unixTimestamp") - lit(col_min)) / lit(range))
+
+            myScaledData
           }
-          else twoColFeDf
+          else if (twoColFeDf.schema(1).dataType == ArrayType(StringType)) {
+            val hashingTF = new HashingTF()
+              .setInputCol(featureName)
+              .setOutputCol("rawFeatures")
+              // .setNumFeatures(20)
+
+            val featurizedData = hashingTF
+              .transform(twoColFeDf)
+            // alternatively, CountVectorizer can also be used to get term frequency vectors
+
+            val idf = new IDF()
+              .setInputCol("rawFeatures")
+              .setOutputCol("preparedFeature")
+            val idfModel = idf
+              .fit(featurizedData)
+
+            val rescaledData = idfModel
+              .transform(featurizedData)
+            rescaledData
+              .select("s", "preparedFeature")
+          }
+          else {
+            println("you should never end up here")
+            twoColFeDf.withColumnRenamed(featureName, "preparedFeature")
+          }
         }
 
         /* val scaler = new StandardScaler()
@@ -321,12 +353,12 @@ object DaSim {
 
         val DfPairWithFeature = candidatePairsForSimEst
           .join(
-            feDf.select("s", featureName).withColumnRenamed(featureName, featureName + "_uriA"),
+            featureDfNormalized.select("s", "preparedFeature").withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
             candidatePairsForSimEst("uriA") === feDf("s"),
           "inner")
           .drop("s")
           .join(
-            feDf.select("s", featureName).withColumnRenamed(featureName, featureName + "_uriB"),
+            featureDfNormalized.select("s", "preparedFeature").withColumnRenamed("preparedFeature", featureName + "_prepared_uriB"),
             candidatePairsForSimEst("uriB") === feDf("s"),
             "left")
           .drop("s")
