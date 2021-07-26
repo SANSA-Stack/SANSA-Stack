@@ -45,11 +45,8 @@ class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
     val dataset = getData()
     val df = dataset.rdd.toDF()
 
-    df.show()
-
     val sfe = new SmartFeatureExtractor()
       .setEntityColumnName("s")
-    // sfe.transform()
 
     val feDf = sfe
       .transform(df)
