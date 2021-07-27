@@ -436,7 +436,53 @@ object DaSim {
         }
       }
     )
+    println("SIMILARITY DATAFRAME")
     similarityEstimations.show()
+
+    println("OPTIONAL SIMILARITY STRECHING")
+    val parameter_noralize_similarity_columns = true
+
+    var norm_sim_df: DataFrame = similarityEstimations
+    if (parameter_noralize_similarity_columns) {
+      val sim_columns = norm_sim_df.columns.drop(3)
+
+      sim_columns.foreach(
+        sim_col => {
+          val min_max = norm_sim_df.agg(min(sim_col), max(sim_col)).head()
+          val col_min = min_max.getDouble(0)
+          val col_max = min_max.getDouble(1)
+          val range = if ((col_max - col_min) != 0) col_max - col_min else 1
+
+          norm_sim_df = norm_sim_df
+            .withColumn("tmp", (col(sim_col) - lit(col_min)) / lit(range))
+            .drop(sim_col)
+            .withColumnRenamed("tmp", sim_col)
+        }
+      )
+    }
+
+    println("WEIGTHED SUM OVER SIMILARITY VALUES")
+    println("Now we calculate the weighted Sum")
+    val weighted_sum_df: DataFrame = if (parameter_noralize_similarity_columns) norm_sim_df else similarityEstimations
+
+    val sim_columns = norm_sim_df.columns.drop(3)
+
+    println("we will weight by four elements")
+    val epsilon = 0.01
+
+    var parameter_importance: Map[String, Double] = null
+    if (parameter_importance == null) {
+      parameter_importance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    }
+
+    println("parameter_importance", parameter_importance)
+    assert(1.0 - parameter_importance.toSeq.map(_._2).sum.abs < epsilon)
+
+
+
+
+
+
   }
 
   /**
