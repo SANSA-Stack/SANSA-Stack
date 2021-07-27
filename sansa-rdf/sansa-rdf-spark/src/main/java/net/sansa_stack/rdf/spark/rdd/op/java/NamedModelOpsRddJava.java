@@ -1,5 +1,10 @@
 package net.sansa_stack.rdf.spark.rdd.op.java;
 
+import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
+import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
@@ -21,10 +26,26 @@ public class NamedModelOpsRddJava {
      * @param rdd
      * @return
      */
-    public static JavaRDD<Dataset> mapToDatasets(JavaPairRDD<String, Model> rdd) {
-        return rdd.map(graphNameAndmodel -> {
+    public static JavaRDD<Dataset> mapToDataset(JavaPairRDD<String, Model> rdd) {
+        return rdd.map(graphNameAndModel -> {
             Dataset r = DatasetFactory.create();
-            r.addNamedModel(graphNameAndmodel._1(), graphNameAndmodel._2());
+            r.addNamedModel(graphNameAndModel._1(), graphNameAndModel._2());
+            return r;
+        });
+    }
+
+
+    public static JavaRDD<ResourceInDataset> mapToResourceInDataset(JavaPairRDD<String, Model> rdd) {
+        return rdd.map(graphNameAndModel -> {
+            String graphName = graphNameAndModel._1();
+            Model model = graphNameAndModel._2();
+
+            Node node = NodeFactory.createURI(graphName);
+
+            Dataset dataset = DatasetFactoryEx.createInsertOrderPreservingDataset();
+            dataset.addNamedModel(graphName, model);
+
+            ResourceInDataset r = new ResourceInDatasetImpl(dataset, graphName, node);
             return r;
         });
     }

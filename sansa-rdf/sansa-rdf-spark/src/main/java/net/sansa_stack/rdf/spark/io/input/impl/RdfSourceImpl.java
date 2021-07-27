@@ -102,10 +102,10 @@ public class RdfSourceImpl
         } else {
             if (RDFLanguages.isTriples(lang)) {
                 // TODO groupTriples by subject
-                result = NamedModelOpsRddJava.mapToDatasets(TripleOpsRddJava.groupBySubjects(asTriples().toJavaRDD())).rdd();
+                result = NamedModelOpsRddJava.mapToDataset(TripleOpsRddJava.groupBySubjects(asTriples().toJavaRDD())).rdd();
                 // result = asModels().toJavaRDD().map(DatasetFactory::wrap).rdd();
             } else {
-                result = NamedModelOpsRddJava.mapToDatasets(QuadOpsRddJava.groupByNamedGraph(asQuads().toJavaRDD())).rdd();
+                result = NamedModelOpsRddJava.mapToDataset(QuadOpsRddJava.groupByNamedGraph(asQuads().toJavaRDD())).rdd();
             }
         }
 

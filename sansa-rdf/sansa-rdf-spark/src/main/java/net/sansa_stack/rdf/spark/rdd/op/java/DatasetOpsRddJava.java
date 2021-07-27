@@ -33,7 +33,7 @@ public class DatasetOpsRddJava {
         JavaPairRDD<String, Model> step2 = NamedModelOpsRddJava.groupNamedModels(
                 step1, distinct, sortGraphsByIri, numPartitions);
 
-        JavaRDD<Dataset> result = NamedModelOpsRddJava.mapToDatasets(step2);
+        JavaRDD<Dataset> result = NamedModelOpsRddJava.mapToDataset(step2);
 
         return result;
     }
