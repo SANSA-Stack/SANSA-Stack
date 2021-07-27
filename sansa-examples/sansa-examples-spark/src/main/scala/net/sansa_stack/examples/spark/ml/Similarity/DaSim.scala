@@ -11,13 +11,14 @@ import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinMaxScaler, StandardScaler}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinMaxScaler, StandardScaler, VectorAssembler}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
+
 
 object DaSim {
   def main(args: Array[String]): Unit = {
@@ -442,7 +443,8 @@ object DaSim {
     println("OPTIONAL SIMILARITY STRECHING")
     val parameter_noralize_similarity_columns = true
 
-    var norm_sim_df: DataFrame = similarityEstimations
+    var norm_sim_df: DataFrame = similarityEstimations.cache()
+
     if (parameter_noralize_similarity_columns) {
       val sim_columns = norm_sim_df.columns.drop(3)
 
@@ -461,15 +463,18 @@ object DaSim {
       )
     }
 
+    norm_sim_df.show(false)
+
     println("WEIGTHED SUM OVER SIMILARITY VALUES")
     println("Now we calculate the weighted Sum")
     val weighted_sum_df: DataFrame = if (parameter_noralize_similarity_columns) norm_sim_df else similarityEstimations
 
     val sim_columns = norm_sim_df.columns.drop(3)
 
-    println("we will weight by four elements")
+    println("we will weight by four elements: importance, availability, information content, reliability")
     val epsilon = 0.01
 
+    // importance
     var parameter_importance: Map[String, Double] = null
     if (parameter_importance == null) {
       parameter_importance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
@@ -479,9 +484,38 @@ object DaSim {
     assert(1.0 - parameter_importance.toSeq.map(_._2).sum.abs < epsilon)
 
 
+    // reliability
+    var parameter_reliability: Map[String, Double] = null
+    if (parameter_reliability == null) {
+      parameter_reliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    }
 
+    println("parameter_reliability", parameter_reliability)
+    assert(1.0 - parameter_reliability.toSeq.map(_._2).sum.abs < epsilon)
 
+    // availability
+    var parameter_availability: Map[String, Double] = null
+    if (parameter_availability == null) {
+      parameter_availability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    }
 
+    println("parameter_availability", parameter_availability)
+    assert(1.0 - parameter_availability.toSeq.map(_._2).sum.abs < epsilon)
+
+    // now we calculate weighted sum
+    var final_calc_df = weighted_sum_df
+    sim_columns.foreach(
+      sim_col => {
+        final_calc_df = final_calc_df
+          .withColumn("tmp", col(sim_col) * (lit(parameter_availability(sim_col)) + lit(parameter_availability(sim_col)) + lit(parameter_importance(sim_col)))/3.0)
+          .drop(sim_col)
+          .withColumnRenamed("tmp", sim_col)
+      }
+    )
+
+    final_calc_df
+      .withColumn("sum", sim_columns.map(col).reduce((c1, c2) => c1 + c2) as "overall_similarity_score")
+      .show()
 
   }
 
