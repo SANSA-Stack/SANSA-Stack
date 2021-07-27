@@ -170,17 +170,24 @@ object DaSim {
       .setInputCol("vectorizedFeatures")
       .setOutputCol("hashedFeatures")
       .fit(countVectorizedFeaturesDataFrame) */
-    val simDF: Dataset[Row] = simModel
-      .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, valueColumn = "distCol") // , 0.9, "sim")
-      .filter(col("uriA").notEqual(col("uriB")))
-      .toDF()
+    val simDF: DataFrame = spark.createDataFrame(
+      simModel
+        .similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFeaturesDataFrame, valueColumn = "distCol") // , 0.9, "sim")
+        .filter(col("uriA").notEqual(col("uriB")))
+        .rdd //  from here on drop symetric dublicates
+        .map(r => Set(r.getString(0), r.getString(1)))
+        .distinct()
+        .map(s => s.toSeq)
+        .map(l => Row(l(0), l(1))),
+      new StructType()
+        .add(StructField("uriA", StringType, true))
+        .add(StructField("uriB", StringType, true))
+    )
+
     simDF
       .show(false)
 
     println("PROMISING CANDDATES")
-    /* simDF
-      .sort("uriA", "distCol")
-      .show(false) */
 
     val tmpSchema = new StructType()
       .add(StructField("id", StringType, true))
