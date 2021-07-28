@@ -520,9 +520,35 @@ object DaSim {
       }
     )
 
+    final_calc_df = final_calc_df
+      .withColumn("overall_similarity_score", sim_columns.map(col).reduce((c1, c2) => c1 + c2))
     final_calc_df
-      .withColumn("sum", sim_columns.map(col).reduce((c1, c2) => c1 + c2) as "overall_similarity_score")
-      .show()
+      .show(false)
+
+    println("SEMANTIFICATION OF RESULTS")
+    val semanticResult = final_calc_df.rdd.map(row => {
+      val uriA = row.getAs[String]("uriA")
+      val uriB = row.getAs[String]("uriB")
+
+      val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
+
+      // now we need to get most important factor
+
+      val simScores = sim_columns
+        .map(sc => (sc, row.getAs[Double](sc)))
+
+      val bestSimScore = simScores
+        .sortBy(_._2)
+        .last
+        ._2
+
+      val listMostRelevant = simScores
+        .filter(ss => (bestSimScore - ss._2) < epsilon)
+
+      (uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+    })
+
+    semanticResult foreach println
 
   }
 
