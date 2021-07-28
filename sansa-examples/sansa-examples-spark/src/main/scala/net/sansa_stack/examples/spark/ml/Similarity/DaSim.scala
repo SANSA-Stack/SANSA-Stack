@@ -526,6 +526,18 @@ object DaSim {
       .show(false)
 
     println("SEMANTIFICATION OF RESULTS")
+
+    /* TODO semantification of overall information:
+    *  TODO experiment hash with timestamp and type
+    *  TODO feature respective strategy for similarity estimation
+    *  TODO feature weighting
+    *  TODO initial element filter: sparql based, or programming absed
+    *  TODO DistSim feature extraction method: "or", ...
+    *  TODO feature extraction method like SmartFeatureExtractor
+    * */
+
+    // TODO sim values and most significant factors
+    println("semantification of similarity values")
     val semanticResult = final_calc_df.rdd.map(row => {
       val uriA = row.getAs[String]("uriA")
       val uriB = row.getAs[String]("uriB")
