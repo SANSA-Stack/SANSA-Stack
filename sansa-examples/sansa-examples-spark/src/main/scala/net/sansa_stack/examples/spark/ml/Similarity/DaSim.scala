@@ -9,6 +9,7 @@ import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, ML2Graph}
 import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
@@ -24,6 +25,8 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Row, SparkSession}
 
 object DaSim {
   def main(args: Array[String]): Unit = {
+
+    val _parameter_distSimFeatureExtractionMethod = "os"
 
     // readIn
     val input: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
@@ -141,7 +144,7 @@ object DaSim {
     // triplesDf.show(false)
 
     val featureExtractorModel = new FeatureExtractorModel()
-      .setMode("os")
+      .setMode(_parameter_distSimFeatureExtractionMethod)
     val extractedFeaturesDataFrame = featureExtractorModel
       .transform(triplesDf)
 
@@ -542,39 +545,30 @@ object DaSim {
     * */
 
     // TODO sim values and most significant factors
-    println("semantification of similarity values")
-    val semanticResult = final_calc_df.rdd.map(row => {
-      val uriA = row.getAs[String]("uriA")
-      val uriB = row.getAs[String]("uriB")
 
-      val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
-
-      // now we need to get most important factor
-
-      val simScores = sim_columns
-        .map(sc => (sc, row.getAs[Double](sc)))
-
-      val bestSimScore = simScores
-        .sortBy(_._2)
-        .last
-        ._2
-
-      val listMostRelevant = simScores
-        .filter(ss => (bestSimScore - ss._2) < epsilon)
-
-      (uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
-    })
-
-    semanticResult foreach println
-
-    val ml2graph = new ML2Graph()
+    /* val ml2graph = new ML2Graph()
       .setEntityColumns(Array("uriA", "uriB"))
       .setValueColumn("overall_similarity_score")
 
     ml2graph
       .transform(final_calc_df)
       .foreach(println(_))
+     */
 
+    val semanticResult: RDD[Triple] = dasimSemantification(
+      resultDf = final_calc_df,
+      entityCols = Array("uriA", "uriB"),
+      finalValCol = "overall_similarity_score",
+      similarityCols = sim_columns,
+      availability = parameter_availability,
+      reliability = parameter_reliability,
+      importance = parameter_importance,
+      distSimFeatureExtractionMethod = _parameter_distSimFeatureExtractionMethod,
+      initialFilter = "unknown", // TODO
+      featureExtractionMethod = "unknown") // TODO
+
+    semanticResult foreach println
+    println(semanticResult.count())
   }
 
   /**
@@ -593,13 +587,13 @@ object DaSim {
     resultDf: DataFrame,
     entityCols: Array[String],
     finalValCol: String,
-    featureCols: Array[String],
+    similarityCols: Array[String],
     availability: Map[String, Double],
     reliability: Map[String, Double],
     importance: Map[String, Double],
     distSimFeatureExtractionMethod: String,
     initialFilter: String,
-    featureExtractionMethod: String,
+    featureExtractionMethod: String
                           ): RDD[Triple] = {
 
     val spark = SparkSession.builder.getOrCreate()
@@ -607,6 +601,7 @@ object DaSim {
     // strings for URIs
     var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
     var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
+    var _commentPropertyURIasString: String = "sansa-stack/sansaVocab/comment"
     var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
     var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
@@ -620,6 +615,7 @@ object DaSim {
 
     val valueNodeP = NodeFactory.createURI(_valuePropertyURIasString)
 
+    val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
 
 
     // create experiment node
@@ -629,11 +625,14 @@ object DaSim {
 
     val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
     val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
+    val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
+    val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
 
 
 
     // overall annotation
     // Create all inforamtion for this central node
+    println("central node triples")
     val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
       Triple.create(
         experimentNode,
@@ -641,17 +640,19 @@ object DaSim {
         experimentTypeNode
       )
     ))
+    centralNodeTriples foreach println
 
     // distsim feature extraction
     val hyperparameterInitialFilter = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/initialFilter")
-    val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction"
+    val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction")
     val hyperparameterFeatureExtractionStrategy = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/featureExtractionStrategy")
     val hyperparameterAvailability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/availability")
     val hyperparameterReliability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/reliability")
     val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
 
     // now hyperparameters
-    val HyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+    println("hyperparameer semantification")
+    val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
       // hyperparameterInitialFilter
       Triple.create(
         experimentNode,
@@ -781,55 +782,86 @@ object DaSim {
         NodeFactory.createLiteral(importance.map(m => m._1 + ": " + m._2.toString).mkString("; "))
       )
     ))
+    hyperparameterTriples foreach println
 
-    // transform dataframe to metagraph
-    // now for the small triples:
-    /* val metagraph: RDD[Triple] = df
-      .rdd
-      .flatMap(row => {
-        val entityNames: Array[String] = b_entityColumns.value.map(row.asInstanceOf[Row].getAs[String](_)) /* if (b_entityColumns.value.size == 2) {
-          Array(row.asInstanceOf[Row].getAs[String](0), row.asInstanceOf[Row].getAs[String](1))
-        } else {
-          Array(row.asInstanceOf[Row].getAs[String](0))
-        } */
 
-        val entityNodes: Array[Node] = entityNames.map(NodeFactory.createURI(_))
-        val value: String = row.asInstanceOf[Row].getAs[Any](b_valueColumn.value).toString
-        val valueNode = NodeFactory.createLiteralByValue(value, b_valueDatatype.value)
+    // now semantic representation of dimilsrity results
+    println("semantification of similarity values")
+    val semanticResult = resultDf.rdd.flatMap(row => {
+      val uriA = row.getAs[String](entityCols(0))
+      val uriB = row.getAs[String](entityCols(1))
 
-        val predictionNode: Node = NodeFactory.createBlankNode(experimentHash + entityNames.mkString("").hashCode)
+      val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
 
-        val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
-        val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
-        val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
-        // val experimentTypePropertyNode: Node = NodeFactory.createURI(experimentTypePropertyURIasString)
+      // now we need to get most important factor
 
-        // entity nodes to prediction blank node
-        val entityNodeTriples: Array[Triple] = entityNodes.map(
-          entityNode =>
-            Triple.create(
-              predictionNode,
-              elementPropertyNode,
-              entityNode
-            )
-        )
+      val simScores = similarityCols
+        .map(sc => (sc, row.getAs[Double](sc)))
 
-        // prediction blank node to overall experiment
-        val valueExperimentTriples: Array[Triple] = Array(
-          Triple.create(
-            experimentNode,
-            predictionPropertyNode,
-            predictionNode
-          ),
+      val bestSimScore = simScores
+        .sortBy(_._2)
+        .last
+        ._2
+
+      val epsilon = 0.001
+
+      val listMostRelevant = simScores
+        .filter(ss => (bestSimScore - ss._2) < epsilon)
+
+      (uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+
+      val entityNodes = Array(
+        NodeFactory.createURI(uriA),
+        NodeFactory.createURI(uriB)
+      )
+
+      val valueNode = NodeFactory.createLiteralByValue(overall_similarity_score, XSDDatatype.XSDdouble)
+
+      val commentNodeP = NodeFactory.createLiteral(_commentPropertyURIasString)
+      val mostRelevantNode = NodeFactory.createURI("most relevant:" + listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+
+      // now semantification
+      val predictionNode: Node = NodeFactory.createBlankNode(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
+
+      // entity nodes to prediction blank node
+      val entityNodeTriples: Array[Triple] = entityNodes.map(
+        entityNode =>
           Triple.create(
             predictionNode,
-            valuePropertyURINode,
-            valueNode
+            elementPropertyNode,
+            entityNode
           )
-        )
-        entityNodeTriples ++ valueExperimentTriples
-      })
+      )
 
-    centralNodeTriples.union(metagraph) */
+      // prediction blank node to overall experiment
+      val valueExperimentTriples: Array[Triple] = Array(
+        Triple.create(
+          experimentNode,
+          predictionPropertyNode,
+          predictionNode
+        ),
+        Triple.create(
+          predictionNode,
+          valuePropertyURINode,
+          valueNode
+        ),
+        Triple.create(
+          predictionNode,
+          valuePropertyURINode,
+          valueNode
+        ),
+        Triple.create(
+          predictionNode,
+          commentNodeP,
+          mostRelevantNode
+        )
+      )
+      entityNodeTriples ++ valueExperimentTriples
+    })
+
+    semanticResult foreach println
+
+    // now we need to merge central node, hyperparamters and semantic result
+    centralNodeTriples.union(semanticResult).union(hyperparameterTriples)
   }
 }
