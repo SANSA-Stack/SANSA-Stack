@@ -1,5 +1,7 @@
 package net.sansa_stack.examples.spark.ml.Similarity
 
+import java.util.{Calendar, Date}
+
 import net.sansa_stack.ml.spark.featureExtraction.{FeatureExtractingSparqlGenerator, SmartVectorAssembler, SparqlFrame}
 import net.sansa_stack.ml.spark.featureExtraction._
 import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{JaccardModel, MinHashModel}
@@ -8,7 +10,7 @@ import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMod
 import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
-import org.apache.jena.graph.Triple
+import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinMaxScaler, StandardScaler, VectorAssembler}
@@ -514,14 +516,17 @@ object DaSim {
     sim_columns.foreach(
       sim_col => {
         final_calc_df = final_calc_df
-          .withColumn("tmp", col(sim_col) * (lit(parameter_availability(sim_col)) + lit(parameter_availability(sim_col)) + lit(parameter_importance(sim_col)))/3.0)
-          .drop(sim_col)
-          .withColumnRenamed("tmp", sim_col)
+          .withColumn("tmp_" + sim_col, col(sim_col) * (lit(parameter_availability(sim_col)) + lit(parameter_availability(sim_col)) + lit(parameter_importance(sim_col)))/3.0)
+          // .drop(sim_col)
+          // .withColumnRenamed("tmp", sim_col)
       }
     )
 
+    // final_calc_df.show(false)
+
     final_calc_df = final_calc_df
-      .withColumn("overall_similarity_score", sim_columns.map(col).reduce((c1, c2) => c1 + c2))
+      .withColumn("overall_similarity_score", sim_columns.map(sc => "tmp_" + sc).map(col).reduce((c1, c2) => c1 + c2))
+    sim_columns.map(sc => "tmp_" + sc).foreach(sc => final_calc_df = final_calc_df.drop(sc))
     final_calc_df
       .show(false)
 
@@ -562,6 +567,14 @@ object DaSim {
 
     semanticResult foreach println
 
+    val ml2graph = new ML2Graph()
+      .setEntityColumns(Array("uriA", "uriB"))
+      .setValueColumn("overall_similarity_score")
+
+    ml2graph
+      .transform(final_calc_df)
+      .foreach(println(_))
+
   }
 
   /**
@@ -574,5 +587,249 @@ object DaSim {
    */
   def doubleSim(df: DataFrame, featureColumn: String, uriAcolName: String = "uriA", uriBcolName: String = "uriB"): DataFrame = {
     df
+  }
+
+  def dasimSemantification(
+    resultDf: DataFrame,
+    entityCols: Array[String],
+    finalValCol: String,
+    featureCols: Array[String],
+    availability: Map[String, Double],
+    reliability: Map[String, Double],
+    importance: Map[String, Double],
+    distSimFeatureExtractionMethod: String,
+    initialFilter: String,
+    featureExtractionMethod: String,
+                          ): RDD[Triple] = {
+
+    val spark = SparkSession.builder.getOrCreate()
+
+    // strings for URIs
+    var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
+    var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
+    var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+    var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+    var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+
+    val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+    // val typeNode = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    val nodeLabel = NodeFactory.createURI("rdfs/label")
+
+    val typeNodeP = NodeFactory.createURI(_experimentTypePropertyURIasString)
+
+    val valueNodeP = NodeFactory.createURI(_valuePropertyURIasString)
+
+
+
+    // create experiment node
+    val metagraphDatetime: Date = Calendar.getInstance().getTime()
+    val experimentHash: String = metagraphDatetime.toString.hashCode.toString
+    val experimentNode: Node = NodeFactory.createBlankNode(_experimentTypeURIasString + "/" + experimentHash)
+
+    val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
+
+
+
+    // overall annotation
+    // Create all inforamtion for this central node
+    val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+      Triple.create(
+        experimentNode,
+        experimentTypePropertyNode,
+        experimentTypeNode
+      )
+    ))
+
+    // distsim feature extraction
+    val hyperparameterInitialFilter = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/initialFilter")
+    val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction"
+    val hyperparameterFeatureExtractionStrategy = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/featureExtractionStrategy")
+    val hyperparameterAvailability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/availability")
+    val hyperparameterReliability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/reliability")
+    val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
+
+    // now hyperparameters
+    val HyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+      // hyperparameterInitialFilter
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterInitialFilter
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        nodeLabel,
+        NodeFactory.createLiteral("initial filter")
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        valueNodeP,
+        NodeFactory.createLiteral(initialFilter)
+      ),
+
+      // distsim feature extraction
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterDistSimFeatureExtractionNode
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        nodeLabel,
+        NodeFactory.createLiteral("DistSim feature extraction strategy")
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        valueNodeP,
+        NodeFactory.createLiteral(distSimFeatureExtractionMethod)
+      ),
+
+      // hyperparameterFeatureExtractionStrategy
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterFeatureExtractionStrategy
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        nodeLabel,
+        NodeFactory.createLiteral("feature extraction strategy")
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        valueNodeP,
+        NodeFactory.createLiteral(featureExtractionMethod)
+      ),
+      // hyperparameterAvailability
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterAvailability
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        nodeLabel,
+        NodeFactory.createLiteral("availability")
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        valueNodeP,
+        NodeFactory.createLiteral(availability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      ),
+      // hyperparameterReliability
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterReliability
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        nodeLabel,
+        NodeFactory.createLiteral("reliability")
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        valueNodeP,
+        NodeFactory.createLiteral(reliability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      ),
+      // hyperparameterImportance
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterImportance
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        nodeLabel,
+        NodeFactory.createLiteral("importance")
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        valueNodeP,
+        NodeFactory.createLiteral(importance.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      )
+    ))
+
+    // transform dataframe to metagraph
+    // now for the small triples:
+    /* val metagraph: RDD[Triple] = df
+      .rdd
+      .flatMap(row => {
+        val entityNames: Array[String] = b_entityColumns.value.map(row.asInstanceOf[Row].getAs[String](_)) /* if (b_entityColumns.value.size == 2) {
+          Array(row.asInstanceOf[Row].getAs[String](0), row.asInstanceOf[Row].getAs[String](1))
+        } else {
+          Array(row.asInstanceOf[Row].getAs[String](0))
+        } */
+
+        val entityNodes: Array[Node] = entityNames.map(NodeFactory.createURI(_))
+        val value: String = row.asInstanceOf[Row].getAs[Any](b_valueColumn.value).toString
+        val valueNode = NodeFactory.createLiteralByValue(value, b_valueDatatype.value)
+
+        val predictionNode: Node = NodeFactory.createBlankNode(experimentHash + entityNames.mkString("").hashCode)
+
+        val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
+        val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
+        val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
+        // val experimentTypePropertyNode: Node = NodeFactory.createURI(experimentTypePropertyURIasString)
+
+        // entity nodes to prediction blank node
+        val entityNodeTriples: Array[Triple] = entityNodes.map(
+          entityNode =>
+            Triple.create(
+              predictionNode,
+              elementPropertyNode,
+              entityNode
+            )
+        )
+
+        // prediction blank node to overall experiment
+        val valueExperimentTriples: Array[Triple] = Array(
+          Triple.create(
+            experimentNode,
+            predictionPropertyNode,
+            predictionNode
+          ),
+          Triple.create(
+            predictionNode,
+            valuePropertyURINode,
+            valueNode
+          )
+        )
+        entityNodeTriples ++ valueExperimentTriples
+      })
+
+    centralNodeTriples.union(metagraph) */
   }
 }
