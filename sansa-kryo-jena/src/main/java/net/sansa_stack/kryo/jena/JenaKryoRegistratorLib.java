@@ -18,6 +18,15 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.DatasetImpl;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.Binding0;
+import org.apache.jena.sparql.engine.binding.Binding1;
+import org.apache.jena.sparql.engine.binding.Binding2;
+import org.apache.jena.sparql.engine.binding.Binding3;
+import org.apache.jena.sparql.engine.binding.Binding4;
+import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.apache.jena.sparql.engine.binding.BindingOverMap;
+import org.apache.jena.sparql.engine.binding.BindingRoot;
 import org.apache.jena.sparql.expr.*;
 import org.apache.jena.sparql.expr.nodevalue.*;
 
@@ -75,6 +84,17 @@ public class JenaKryoRegistratorLib {
 
         kryo.register(ModelCom.class, new ModelSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
         kryo.register(DatasetImpl.class, new DatasetSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
+
+
+        Serializer<Binding> bindingSerializer = new BindingSerializer();
+        kryo.register(BindingRoot.class, bindingSerializer);
+        kryo.register(Binding0.class, bindingSerializer);
+        kryo.register(Binding1.class, bindingSerializer);
+        kryo.register(Binding2.class, bindingSerializer);
+        kryo.register(Binding3.class, bindingSerializer);
+        kryo.register(Binding4.class, bindingSerializer);
+        kryo.register(BindingOverMap.class, bindingSerializer);
+        kryo.register(BindingHashMap.class, bindingSerializer);
 
         Gson gson = new Gson();
 
