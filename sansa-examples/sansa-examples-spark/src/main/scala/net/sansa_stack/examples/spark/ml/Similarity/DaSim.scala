@@ -27,6 +27,7 @@ object DaSim {
   def main(args: Array[String]): Unit = {
 
     val _parameter_distSimFeatureExtractionMethod = "os"
+    val _parameterVerboseProcess = false
 
     // readIn
     val input: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
@@ -67,9 +68,9 @@ object DaSim {
       .toDS()
       .cache()
 
-    println(f"\ndata consists of ${dataset.count()} triples")
-    dataset
-      .take(n = 10).foreach(println(_))
+    if (_parameterVerboseProcess) println(f"\ndata consists of ${dataset.count()} triples")
+
+    if (_parameterVerboseProcess) dataset.take(n = 10).foreach(println(_))
 
     /* println("FETCH SEEDS by SPARQL")
 
@@ -105,8 +106,7 @@ object DaSim {
       .toDF()
       .select("s")
 
-    seeds
-      .show(false)
+    if (_parameterVerboseProcess) seeds.show(false)
 
     println("GATHER CANDIDATE PAIRS")
 
@@ -134,7 +134,7 @@ object DaSim {
       .toDS()
       .as[Triple]
 
-    println("the filtered kg has #triples:" + filtered.count())
+    if (_parameterVerboseProcess) println("the filtered kg has #triples:" + filtered.count())
 
     val triplesDf = filtered
       .rdd
@@ -148,8 +148,7 @@ object DaSim {
     val extractedFeaturesDataFrame = featureExtractorModel
       .transform(triplesDf)
 
-    extractedFeaturesDataFrame
-      .show(false)
+    if (_parameterVerboseProcess) extractedFeaturesDataFrame.show(false)
 
     // count Vectorization
     val cvModel: CountVectorizerModel = new CountVectorizer()
@@ -163,8 +162,7 @@ object DaSim {
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf
       // .filter(isNoneZeroVector(col("vectorizedFeatures")))
       .select("uri", "vectorizedFeatures").cache()
-    countVectorizedFeaturesDataFrame
-      .show(false)
+    if (_parameterVerboseProcess) countVectorizedFeaturesDataFrame.show(false)
 
     // similarity Estimations Overview
 
@@ -189,8 +187,7 @@ object DaSim {
         .add(StructField("uriB", StringType, true))
     )
 
-    simDF
-      .show(false)
+    if (_parameterVerboseProcess) simDF.show(false)
 
     println("PROMISING CANDDATES")
 
@@ -210,10 +207,9 @@ object DaSim {
     val candidatePairsForSimEst = simDF
       .select("uriA", "uriB")
 
-    candidatesForFE
-      .show(false)
+    if (_parameterVerboseProcess) candidatesForFE.show(false)
 
-    println("postfilter already filtered KG")
+    println("POSTFILTER KG")
     val candidatesKG: Dataset[Triple] = candidatesForFE
       .rdd
       .map(r => Tuple2(r(0).toString, r(0)))
@@ -222,30 +218,26 @@ object DaSim {
       .toDS()
       .as[Triple]
 
-    candidatesKG
-      .take(20)
-      .foreach(println(_))
+    if (_parameterVerboseProcess) candidatesKG.take(20).foreach(println(_))
 
-    println(candidatesKG.count())
+    if (_parameterVerboseProcess) println(candidatesKG.count())
 
     val triplesDfCan: DataFrame = candidatesKG
       .rdd
       .toDF()
 
-    println("SmartFeatureExtractor")
+    println("SMARTFEATUREEXTRACTOR")
     val sfe = new SmartFeatureExtractor()
       .setEntityColumnName("s")
     // sfe.transform()
 
     val feDf = sfe
       .transform(triplesDfCan)
-    feDf
-      .show(false)
+    if (_parameterVerboseProcess) feDf.show(false)
 
-    feDf
-      .printSchema()
+    if (_parameterVerboseProcess) feDf.printSchema()
 
-    println("Decision for SimilarityEstimationApproach")
+    if (_parameterVerboseProcess) println("Decision for SimilarityEstimationApproach")
 
     /* val similarityStrategies = feDf.schema.map(
       c => {
@@ -265,18 +257,19 @@ object DaSim {
       .columns
       .drop(1) // drop first element cause it corresponds to entity column
 
-    for (feature <- similarityExecutionOrder) {
-      println("similarity estimation for feature: " + feature)
+    if (_parameterVerboseProcess) {
+      for (feature <- similarityExecutionOrder) {
+        println("similarity estimation for feature: " + feature)
+      }
     }
-
-    println()
 
     var similarityEstimations: DataFrame = simDF
 
-    similarityEstimations.show(false)
+    if (_parameterVerboseProcess) similarityEstimations.show(false)
 
     // similarityStrategies.foreach(println(_))
 
+    println("CALCULATE SIMILARITIES")
     similarityExecutionOrder.foreach(
       featureName => {
         println(featureName)
@@ -285,7 +278,7 @@ object DaSim {
 
         val twoColFeDf = feDf.select("s", featureName)
 
-        println("respective to feature type we need to normalize and change data so similarity estimator can operate on it")
+        if (_parameterVerboseProcess) println("respective to feature type we need to normalize and change data so similarity estimator can operate on it")
         val featureDfNormalized = {
           if (twoColFeDf.schema(1).dataType == DoubleType) {
 
@@ -384,15 +377,15 @@ object DaSim {
             "left")
           .drop("s")
 
-        println("this is our combined dataframe for the respective feature: " + featureName)
+        if (_parameterVerboseProcess) println("this is our combined dataframe for the respective feature: " + featureName)
 
 
 
         // DfPairWithFeature.show(false)
 
-        println("now we execute the respective similarity estimation for this df of candidates")
+        if (_parameterVerboseProcess) println("now we execute the respective similarity estimation for this df of candidates")
 
-        println("we need to decide about similarity type by column data type")
+        if (_parameterVerboseProcess) println("we need to decide about similarity type by column data type")
 
         /**
          * categorical feature overlap calculation
@@ -418,7 +411,7 @@ object DaSim {
           val tmpDf = DfPairWithFeature
             .withColumn(featureName + "_sim", jaccard(col(featureName + "_prepared_uriA"), col(featureName + "_prepared_uriB")))
             // .select("uriA", "uriB", featureName + "_sim")
-          tmpDf.show(false)
+          if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
             .join(
@@ -437,7 +430,7 @@ object DaSim {
           val tmpDf = DfPairWithFeature
             .withColumn(featureName + "_sim", lit(1.0) - abs(col(featureName + "_prepared_uriA") - col(featureName + "_prepared_uriB")))
             // .select("uriA", "uriB", featureName + "_sim")
-          tmpDf.show(false)
+          if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
             .join(
@@ -475,15 +468,15 @@ object DaSim {
       )
     }
 
-    norm_sim_df.show(false)
+    if (_parameterVerboseProcess) norm_sim_df.show(false)
 
     println("WEIGTHED SUM OVER SIMILARITY VALUES")
-    println("Now we calculate the weighted Sum")
+    // println("Now we calculate the weighted Sum")
     val weighted_sum_df: DataFrame = if (parameter_noralize_similarity_columns) norm_sim_df else similarityEstimations
 
     val sim_columns = norm_sim_df.columns.drop(3)
 
-    println("we will weight by four elements: importance, availability, information content, reliability")
+    if (_parameterVerboseProcess) println("we will weight by four elements: importance, availability, information content, reliability")
     val epsilon = 0.01
 
     // importance
@@ -492,7 +485,7 @@ object DaSim {
       parameter_importance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
     }
 
-    println("parameter_importance", parameter_importance)
+    if (_parameterVerboseProcess) println("parameter_importance", parameter_importance)
     assert(1.0 - parameter_importance.toSeq.map(_._2).sum.abs < epsilon)
 
 
@@ -502,7 +495,7 @@ object DaSim {
       parameter_reliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
     }
 
-    println("parameter_reliability", parameter_reliability)
+    if (_parameterVerboseProcess) println("parameter_reliability", parameter_reliability)
     assert(1.0 - parameter_reliability.toSeq.map(_._2).sum.abs < epsilon)
 
     // availability
@@ -511,7 +504,7 @@ object DaSim {
       parameter_availability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
     }
 
-    println("parameter_availability", parameter_availability)
+    if (_parameterVerboseProcess) println("parameter_availability", parameter_availability)
     assert(1.0 - parameter_availability.toSeq.map(_._2).sum.abs < epsilon)
 
     // now we calculate weighted sum
@@ -530,8 +523,7 @@ object DaSim {
     final_calc_df = final_calc_df
       .withColumn("overall_similarity_score", sim_columns.map(sc => "tmp_" + sc).map(col).reduce((c1, c2) => c1 + c2))
     sim_columns.map(sc => "tmp_" + sc).foreach(sc => final_calc_df = final_calc_df.drop(sc))
-    final_calc_df
-      .show(false)
+    if (_parameterVerboseProcess) final_calc_df.show(false)
 
     println("SEMANTIFICATION OF RESULTS")
 
@@ -567,8 +559,10 @@ object DaSim {
       initialFilter = "unknown", // TODO
       featureExtractionMethod = "unknown") // TODO
 
-    semanticResult foreach println
-    println(semanticResult.count())
+    if (_parameterVerboseProcess) semanticResult foreach println
+    if (_parameterVerboseProcess) println(semanticResult.count())
+
+    semanticResult.coalesce(1).saveAsNTriplesFile("/Users/carstendraschner/Downloads/tmpDasimOutput2")
   }
 
   /**
@@ -621,7 +615,7 @@ object DaSim {
     // create experiment node
     val metagraphDatetime: Date = Calendar.getInstance().getTime()
     val experimentHash: String = metagraphDatetime.toString.hashCode.toString
-    val experimentNode: Node = NodeFactory.createBlankNode(_experimentTypeURIasString + "/" + experimentHash)
+    val experimentNode: Node = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash)
 
     val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
     val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
@@ -632,7 +626,7 @@ object DaSim {
 
     // overall annotation
     // Create all inforamtion for this central node
-    println("central node triples")
+    // println("central node triples")
     val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
       Triple.create(
         experimentNode,
@@ -651,7 +645,7 @@ object DaSim {
     val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
 
     // now hyperparameters
-    println("hyperparameer semantification")
+    // println("hyperparameer semantification")
     val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
       // hyperparameterInitialFilter
       Triple.create(
@@ -786,7 +780,7 @@ object DaSim {
 
 
     // now semantic representation of dimilsrity results
-    println("semantification of similarity values")
+    // println("semantification of similarity values")
     val semanticResult = resultDf.rdd.flatMap(row => {
       val uriA = row.getAs[String](entityCols(0))
       val uriB = row.getAs[String](entityCols(1))
@@ -821,7 +815,7 @@ object DaSim {
       val mostRelevantNode = NodeFactory.createURI("most relevant:" + listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
 
       // now semantification
-      val predictionNode: Node = NodeFactory.createBlankNode(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
+      val predictionNode: Node = NodeFactory.createURI(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
 
       // entity nodes to prediction blank node
       val entityNodeTriples: Array[Triple] = entityNodes.map(
@@ -845,11 +839,11 @@ object DaSim {
           valuePropertyURINode,
           valueNode
         ),
-        Triple.create(
+        /* Triple.create(
           predictionNode,
           valuePropertyURINode,
           valueNode
-        ),
+        ), */
         Triple.create(
           predictionNode,
           commentNodeP,
@@ -859,7 +853,7 @@ object DaSim {
       entityNodeTriples ++ valueExperimentTriples
     })
 
-    semanticResult foreach println
+    // semanticResult foreach println
 
     // now we need to merge central node, hyperparamters and semantic result
     centralNodeTriples.union(semanticResult).union(hyperparameterTriples)
