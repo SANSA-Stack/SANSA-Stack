@@ -183,20 +183,15 @@ class DaSimEstimator {
   }
 
   def listDistinctCandidates(candidatePairs: DataFrame): DataFrame = {
-    val spark = SparkSession.builder().getOrCreate()
 
-    val tmpSchema = new StructType()
-      .add(StructField("id", StringType, true))
-
-    val candidatesForFE = spark.createDataFrame(
-      candidatePairs
-        .rdd
-        .flatMap(r => Seq(r(0).toString, r(1).toString))
-        .distinct
-        .map(Row(_)),
-      tmpSchema
-    )
-    candidatesForFE
+    candidatePairs
+      .drop("uriB")
+      .withColumnRenamed("uriA", "id")
+      .union(
+        candidatePairs
+          .drop("uriA")
+          .withColumnRenamed("uriB", "id")
+      ).distinct()
   }
 
   def calculateDasinSimilarities(
