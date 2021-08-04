@@ -25,6 +25,9 @@ class DaSimEstimator {
   var _pDistSimFeatureExtractionMethod = "or"
   var _pDistSimThreshold = 1.0
 
+  // similarity calculation
+  var pSimilarityCalculationExecutionOrder: Array[String] = null
+
   // final value aggregation
   var pValueStreching: Boolean = true
   var pAvailability: Map[String, Double] = null
@@ -42,6 +45,40 @@ class DaSimEstimator {
 
   def setObjectFilter(objectFilter: String): this.type = {
     _pInitialFilterByObject = objectFilter
+    this
+  }
+  def setDistSimFeatureExtractionMethod(distSimFeatureExtractionMethod: String): this.type = {
+    _pDistSimFeatureExtractionMethod = distSimFeatureExtractionMethod
+    this
+  }
+
+  def setDistSimThreshold(distSimThreshold: Double): this.type = {
+    _pDistSimThreshold = distSimThreshold
+    this
+  }
+
+  def setSimilarityCalculationExecutionOrder(similarityCalculationExecutionOrder: Array[String]): this.type = {
+    pSimilarityCalculationExecutionOrder = similarityCalculationExecutionOrder
+    this
+  }
+
+  def setSimilarityValueStreching(valueStreching: Boolean): this.type = {
+    pValueStreching = valueStreching
+    this
+  }
+
+  def setAvailability(availability: Map[String, Double]): this.type = {
+    pAvailability = availability
+    this
+  }
+
+  def setReliability(reliability: Map[String, Double]): this.type = {
+    pReliability = reliability
+    this
+  }
+
+  def setImportance(importance: Map[String, Double]): this.type = {
+    pImportance = importance
     this
   }
 
@@ -200,16 +237,13 @@ class DaSimEstimator {
   def calculateDasinSimilarities(
     candidatePairsDataFrame: DataFrame,
     extractedFeatureDataframe: DataFrame,
-    similarityExecutionOrder: Array[String],
-    availability: Map[String, Double] = null,
-    reliability: Map[String, Double] = null,
-    importance: Map[String, Double] = null,
-
   ): DataFrame = {
 
     var similarityEstimations: DataFrame = candidatePairsDataFrame
 
-    similarityExecutionOrder.foreach(
+    if (pSimilarityCalculationExecutionOrder == 0) pSimilarityCalculationExecutionOrder = extractedFeatureDataframe.columns.drop(1)
+
+    pSimilarityCalculationExecutionOrder.foreach(
       featureName => {
         // println(featureName)
 
@@ -488,7 +522,7 @@ class DaSimEstimator {
     val similarityEstimations: DataFrame = calculateDasinSimilarities(
       candidatePairs,
       featureDf,
-      featureDf.columns,
+      pSimilarityCalculationExecutionOrder,
     ).cache()
     similarityEstimations.show(false)
 
