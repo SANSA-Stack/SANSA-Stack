@@ -415,32 +415,6 @@ class DaSimEstimator {
     importance: Map[String, Double] = null,
     reliability: Map[String, Double] = null
                               ): DataFrame = {
-    /*
-    // sim scores treching s.t. each sim score has min of 0 and max of 1 within the respective column
-    var norm_sim_df: DataFrame = simDf.cache()
-
-    if (valueStreching) {
-      val sim_columns = norm_sim_df.columns.drop(3)
-
-      sim_columns.foreach(
-        sim_col => {
-          val min_max = norm_sim_df.agg(min(sim_col), max(sim_col)).head()
-          val col_min = min_max.getDouble(0)
-          val col_max = min_max.getDouble(1)
-          val range = if ((col_max - col_min) != 0) col_max - col_min else 1
-
-          norm_sim_df = norm_sim_df
-            .withColumn("tmp", (col(sim_col) - lit(col_min)) / lit(range))
-            .drop(sim_col)
-            .withColumnRenamed("tmp", sim_col)
-        }
-      )
-    }
-
-    println("norm df")
-    norm_sim_df.show(false)
-
-     */
 
     val sim_columns = simDf.columns.drop(3)
 
