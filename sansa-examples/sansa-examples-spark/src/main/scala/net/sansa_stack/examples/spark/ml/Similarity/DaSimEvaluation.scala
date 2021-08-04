@@ -43,6 +43,9 @@ object DaSimEvaluation {
     val dse = new DaSimEstimator()
       // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
       .setObjectFilter("http://data.linkedmdb.org/movie/film")
+      .setDistSimFeatureExtractionMethod("os")
+      .setSimilarityValueStreching(false)
+      .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
     dse.transform(dataset)
       .show(false)
   }
