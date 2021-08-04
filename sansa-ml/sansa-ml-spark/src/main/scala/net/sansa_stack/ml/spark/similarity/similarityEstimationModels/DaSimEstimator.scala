@@ -103,9 +103,6 @@ class DaSimEstimator {
       .rdd
       .toDF()
 
-    // println("filtered KG")
-    // triplesDf.show(false)
-
     val featureExtractorModel = new FeatureExtractorModel()
       .setMode(_pDistSimFeatureExtractionMethod)
     val extractedFeaturesDataFrame = featureExtractorModel
@@ -214,7 +211,7 @@ class DaSimEstimator {
 
     similarityExecutionOrder.foreach(
       featureName => {
-        println(featureName)
+        // println(featureName)
 
         val twoColFeDf = extractedFeatureDataframe.select("s", featureName)
 
@@ -382,7 +379,6 @@ class DaSimEstimator {
         }
       }
     )
-    println("SIMILARITY DATAFRAME")
     similarityEstimations
 
   }
@@ -421,9 +417,18 @@ class DaSimEstimator {
     val epsilon = 0.01
 
     // if these parameters are not set we calculate them as equally distributed ones
-    if (pAvailability == null) pAvailability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
-    if (pImportance == null) pImportance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
-    if (pReliability == null) pReliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    if (pAvailability == null) {
+      pAvailability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+      println("DaSimEstimator: availability parameter is not set so it is automatically equally distributed: " + pAvailability)
+    }
+    if (pImportance == null) {
+      pImportance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+      println("DaSimEstimator: importance parameter is not set so it is automatically equally distributed: " + pImportance)
+    }
+    if (pReliability == null) {
+      pReliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+      println("DaSimEstimator: reliability parameter is not set so it is automatically equally distributed: " + pReliability)
+    }
 
     // now we calculate weighted sum
     var final_calc_df = simDf
