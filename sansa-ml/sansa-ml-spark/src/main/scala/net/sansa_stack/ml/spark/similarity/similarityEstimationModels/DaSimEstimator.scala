@@ -22,11 +22,17 @@ class DaSimEstimator {
   var _pInitialFilterByObject: String = null
 
   // DistSIm candidate gathering
-  val _pDistSimFeatureExtractionMethod = "or"
-  val _pDistSimThreshold = 1.0
+  var _pDistSimFeatureExtractionMethod = "or"
+  var _pDistSimThreshold = 1.0
+
+  // final value aggregation
+  var pValueStreching: Boolean = true
+  var pAvailability: Map[String, Double] = null
+  var pReliability: Map[String, Double] = null
+  var pImportance: Map[String, Double] = null
 
   // general
-  val _parameterVerboseProcess = false
+  var _parameterVerboseProcess = false
 
 
   def setSparqlFilter(sparqlFilter: String): this.type = {
@@ -212,7 +218,7 @@ class DaSimEstimator {
 
         val twoColFeDf = extractedFeatureDataframe.select("s", featureName)
 
-        if (_parameterVerboseProcess) println("respective to feature type we need to normalize and change data so similarity estimator can operate on it")
+        // if (_parameterVerboseProcess) println("respective to feature type we need to normalize and change data so similarity estimator can operate on it")
         val featureDfNormalized = {
           if (twoColFeDf.schema(1).dataType == DoubleType) {
 
@@ -381,6 +387,102 @@ class DaSimEstimator {
 
   }
 
+  def normSimColumns(df: DataFrame): DataFrame = {
+    var norm_sim_df: DataFrame = df.cache()
+
+    val sim_columns = norm_sim_df.columns.drop(3)
+
+    sim_columns.foreach(
+      sim_col => {
+        val min_max = norm_sim_df.agg(min(sim_col), max(sim_col)).head()
+        val col_min = min_max.getDouble(0)
+        val col_max = min_max.getDouble(1)
+        val range = if ((col_max - col_min) != 0) col_max - col_min else 1
+
+        norm_sim_df = norm_sim_df
+          .withColumn("tmp", (col(sim_col) - lit(col_min)) / lit(range))
+          .drop(sim_col)
+          .withColumnRenamed("tmp", sim_col)
+      }
+    )
+    norm_sim_df
+  }
+
+  def aggregateSimilarityScore(
+    simDf: DataFrame,
+    valueStreching: Boolean = true,
+    availability: Map[String, Double] = null,
+    importance: Map[String, Double] = null,
+    reliability: Map[String, Double] = null
+                              ): DataFrame = {
+    /*
+    // sim scores treching s.t. each sim score has min of 0 and max of 1 within the respective column
+    var norm_sim_df: DataFrame = simDf.cache()
+
+    if (valueStreching) {
+      val sim_columns = norm_sim_df.columns.drop(3)
+
+      sim_columns.foreach(
+        sim_col => {
+          val min_max = norm_sim_df.agg(min(sim_col), max(sim_col)).head()
+          val col_min = min_max.getDouble(0)
+          val col_max = min_max.getDouble(1)
+          val range = if ((col_max - col_min) != 0) col_max - col_min else 1
+
+          norm_sim_df = norm_sim_df
+            .withColumn("tmp", (col(sim_col) - lit(col_min)) / lit(range))
+            .drop(sim_col)
+            .withColumnRenamed("tmp", sim_col)
+        }
+      )
+    }
+
+    println("norm df")
+    norm_sim_df.show(false)
+
+     */
+
+    val sim_columns = simDf.columns.drop(3)
+
+    val epsilon = 0.01
+
+    // if these parameters are not set we calculate them as equally distributed ones
+    if (pAvailability == null) pAvailability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    if (pImportance == null) pImportance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+    if (pReliability == null) pReliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
+
+    // now we calculate weighted sum
+    var final_calc_df = simDf
+    sim_columns.foreach(
+      sim_col => {
+        final_calc_df = final_calc_df
+          .withColumn(
+            "tmp_" + sim_col,
+            {
+              col(sim_col) *
+                (
+                  lit(pAvailability(sim_col)) +
+                  lit(pImportance(sim_col)) +
+                  lit(pReliability(sim_col))
+                  )/3.0
+            })
+        // .drop(sim_col)
+        // .withColumnRenamed("tmp", sim_col)
+      }
+    )
+
+    // final_calc_df
+    final_calc_df = final_calc_df
+      .withColumn("overall_similarity_score", sim_columns.map(sc => "tmp_" + sc).map(col).reduce((c1, c2) => c1 + c2))
+    // drop helper columns
+    sim_columns
+      .map(sc => "tmp_" + sc)
+      .foreach(sc => final_calc_df = final_calc_df.drop(sc))
+    final_calc_df
+  }
+
+
+
   def transform(dataset: Dataset[Triple]): DataFrame = {
     // gather seeds
     println("gather seeds")
@@ -396,12 +498,33 @@ class DaSimEstimator {
     candidateList.show(false)
     // feature extraction
     println("feature extraction")
-    val featureDf: DataFrame = gatherFeatures(dataset, candidateList, null).cache()
+    val featureDf: DataFrame = gatherFeatures(
+      dataset,
+      candidateList,
+      null).cache()
     featureDf.show(false)
     featureDf
     // dasim similarity estimation calculation
-    val similarityEstimations: DataFrame = calculateDasinSimilarities(candidatePairs, featureDf, featureDf.columns)
+    println("column wise similarity calculation")
+    val similarityEstimations: DataFrame = calculateDasinSimilarities(
+      candidatePairs,
+      featureDf,
+      featureDf.columns,
+    ).cache()
     similarityEstimations.show(false)
-    similarityEstimations
+
+    println("(optional) sim norm columns")
+    val aggregatableDf = if (pValueStreching) normSimColumns(similarityEstimations) else similarityEstimations
+
+    println("final similarity aggregation")
+    val aggregatedSimilarityScoreDf: DataFrame = aggregateSimilarityScore(
+      aggregatableDf,
+      pValueStreching,
+      pAvailability,
+      pImportance,
+      pReliability
+    )
+    aggregatedSimilarityScoreDf.show(false)
+    aggregatedSimilarityScoreDf
   }
 }
