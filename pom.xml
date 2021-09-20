@@ -69,7 +69,7 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.0</aksw-commons.version>
-        <jena.version>3.17.0</jena.version>
+        <jena.version>4.2.0</jena.version>
         <jsa.subversion>2-SNAPSHOT</jsa.subversion>
         <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
 
