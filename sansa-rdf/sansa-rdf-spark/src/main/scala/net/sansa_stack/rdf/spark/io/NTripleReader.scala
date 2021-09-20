@@ -12,7 +12,7 @@ import net.sansa_stack.rdf.common.io.riot.lang.LangNTriplesSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.commons.io.IOUtils
 import org.apache.jena.atlas.io.PeekReader
-import org.apache.jena.atlas.iterator.IteratorResourceClosing
+import org.apache.jena.atlas.iterator.Iter
 import org.apache.jena.graph.Triple
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.rdf.model.impl.NTripleReader
@@ -207,7 +207,7 @@ object NTripleReader {
           // filter out null values
           Iterators.filter(it, Predicates.notNull[Triple]())
         }
-      new IteratorResourceClosing[Triple](it, input).asScala
+      Iter.onCloseIO(it, input).asScala
     })
   }
 

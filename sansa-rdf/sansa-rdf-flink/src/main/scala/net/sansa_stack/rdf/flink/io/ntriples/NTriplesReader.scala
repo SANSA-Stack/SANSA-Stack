@@ -10,7 +10,7 @@ import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.flink.streaming.api.scala._
 import org.apache.jena.atlas.io.PeekReader
-import org.apache.jena.atlas.iterator.IteratorResourceClosing
+import org.apache.jena.atlas.iterator.{Iter, IteratorResourceClosing}
 import org.apache.jena.graph.Triple
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.riot.{RIOT, SysRIOT}
@@ -162,7 +162,7 @@ object NTriplesReader {
           // filter out null values
           Iterators.filter(it, Predicates.notNull[Triple]())
         }
-      new IteratorResourceClosing[Triple](it, input).asScala
+      Iter.onCloseIO(it, input).asScala
     })
   }
 
