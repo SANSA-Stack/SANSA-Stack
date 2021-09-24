@@ -130,7 +130,7 @@ public class RecordReaderJsonArray
                                 try {
                                     nextItem = gson.fromJson(reader, JsonElement.class);
                                 } catch (IllegalArgumentException y) {
-                                    System.out.println("COMPLETED!");
+                                    // System.out.println("COMPLETED!");
                                     e.onComplete();
                                 }
 
@@ -138,7 +138,7 @@ public class RecordReaderJsonArray
                                     throw new RuntimeException("More items found after array end: " + nextItem);
                                 }
                             } else {
-                                System.out.println("COMPLETED!");
+                                // System.out.println("COMPLETED!");
                                 e.onComplete();
                             }
                         }
