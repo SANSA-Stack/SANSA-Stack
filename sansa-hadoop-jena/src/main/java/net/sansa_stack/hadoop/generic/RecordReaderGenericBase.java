@@ -27,11 +27,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.jena.ext.com.google.common.primitives.Ints;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,11 +95,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 {
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderGenericBase.class);
 
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
     protected final String minRecordLengthKey;
     protected final String maxRecordLengthKey;
     protected final String probeRecordCountKey;
-    protected final String headerBytesKey;
-    protected final String baseIriKey;
+    // protected final String headerBytesKey;
 
     /**
      * Regex pattern to search for candidate record starts
@@ -115,7 +111,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     protected final Accumulating<U, G, A, T> accumulating;
 
-    protected String baseIri;
     protected long maxRecordLength;
     protected long minRecordLength;
     protected int probeRecordCount;
@@ -134,7 +129,19 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     protected FileSplit split;
     protected CompressionCodec codec;
-    protected byte[] prefixBytes;
+
+
+    /**
+     * Subclasses may initialize the pre/post-amble bytes in the
+     * {@link #initialize(InputSplit, TaskAttemptContext)} method rather
+     * than the ctor!
+     *
+     * A (possibly empty) sequence of bytes to prepended to any stream passed to the parser.
+     * For example, for RDF data this could be a set of prefix declarations.
+     */
+    protected byte[] preambleBytes = EMPTY_BYTE_ARRAY;
+    protected byte[] postambleBytes = EMPTY_BYTE_ARRAY;
+
     protected FSDataInputStream rawStream;
     protected SeekableInputStream stream;
     protected boolean isEncoded = false;
@@ -148,15 +155,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             String maxRecordLengthKey,
             String probeRecordCountKey,
             Pattern recordStartPattern,
-            String baseIriKey,
-            String headerBytesKey,
+            // String headerBytesKey,
             Accumulating<U, G, A, T> accumulating) {
         this.minRecordLengthKey = minRecordLengthKey;
         this.maxRecordLengthKey = maxRecordLengthKey;
         this.probeRecordCountKey = probeRecordCountKey;
         this.recordStartPattern = recordStartPattern;
-        this.baseIriKey = baseIriKey;
-        this.headerBytesKey = headerBytesKey;
+        // this.headerBytesKey = headerBytesKey;
         this.accumulating = accumulating;
     }
 
@@ -173,17 +178,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         minRecordLength = job.getInt(minRecordLengthKey, 1);
         maxRecordLength = job.getInt(maxRecordLengthKey, 10 * 1024 * 1024);
         probeRecordCount = job.getInt(probeRecordCountKey, 100);
-        baseIri = job.get(baseIriKey);
-
-        String str = context.getConfiguration().get(headerBytesKey);
-        Model model = ModelFactory.createDefaultModel();
-        if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
-        // val prefixBytes = baos.toByteArray
-        prefixBytes = baos.toByteArray();
-
 
         split = (FileSplit) inputSplit;
 
@@ -386,10 +380,15 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return result;
     }
 
+    protected InputStream effectiveInputStream(InputStream base) {
+        return base;
+    }
+
+
     protected InputStream effectiveInputStreamSupp(Seekable seekable) {
         InputStream r = new SequenceInputStream(
-                new ByteArrayInputStream(prefixBytes),
-                Channels.newInputStream(seekable.cloneObject()));
+                new ByteArrayInputStream(preambleBytes),
+                effectiveInputStream(Channels.newInputStream(seekable.cloneObject())));
         return r;
     }
 
@@ -453,11 +452,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
 
         StopWatch tailSw = StopWatch.createStarted();
-        long tmp = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, this::prober);
+        long tailRecordOffset = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, this::prober);
         // If no record is found in the tail then take all its known bytes because
         // we assume we hit the last few splits of the stream and there simply are no further record
         // starts anymore
-        long tailBytes = tmp < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tmp);
+        long tailBytes = tailRecordOffset < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset);
 
         // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
         // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
@@ -569,9 +568,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
 
         // Assemble the overall stream
-        InputStream prefixStream = new ByteArrayInputStream(prefixBytes);
+        InputStream preambleStream = new ByteArrayInputStream(preambleBytes);
         InputStream headStream = null;
         InputStream tailStream = null;
+        InputStream postambleStream = null;
 
         if (headBytes < 0) {
             // FIXME There are two possibilities now why we couldn't find a record
@@ -583,9 +583,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     "(3) Some bug in the implementation", splitStart));
 
             // No data from this split
-            headStream = new ByteArrayInputStream(new byte[0]);
-            splitBoundedBodyStream = new ByteArrayInputStream(new byte[0]);
-            tailStream = new ByteArrayInputStream(new byte[0]);
+            headStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+            splitBoundedBodyStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+            tailStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+            postambleStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
         } else {
 
             // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
@@ -603,6 +604,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             }
 
             headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headLength - headBytes);
+
+            if (!isFirstSplit) {
+                headStream = effectiveInputStream(headStream);
+            }
 
             // Sanity check for non-encoded data: The body must immediately follow
             // the (adjusted) split start + the know header size
@@ -624,6 +629,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             tailChannel.nextPos(displacement);
 
             tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
+
+            // If there is a tailRecord then inject the postamble
+            postambleStream = tailRecordOffset < 0
+                    ? new ByteArrayInputStream(EMPTY_BYTE_ARRAY)
+                    : new ByteArrayInputStream(postambleBytes);
         }
 
         boolean writeOutSegments = false;
@@ -635,26 +645,30 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
             logger.info("Writing segment " + splitName + " " + splitStart + " to " + basePath);
 
-            // Path basePath = Paths.get("/mnt/LinuxData/tmp/");
+            // Path basePath = Paths.get("/mnt/LinuxData/tailRecordOffset/");
 
-            Path prefixFile = basePath.resolve(splitName + "_" + splitStart + ".prefix.dat");
+            Path preambleFile = basePath.resolve(splitName + "_" + splitStart + ".preamble.dat");
             Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.dat");
             Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.dat");
             Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.dat");
-            Files.copy(prefixStream, prefixFile);
+            Path postambleFile = basePath.resolve(splitName + "_" + splitStart + ".postamble.dat");
+            Files.copy(preambleStream, preambleFile);
             Files.copy(headStream, headFile);
             Files.copy(splitBoundedBodyStream, bodyFile);
             Files.copy(tailStream, tailFile);
+            Files.copy(postambleStream, postambleFile);
             // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
-            prefixStream = Files.newInputStream(prefixFile, StandardOpenOption.READ);
+            preambleStream = Files.newInputStream(preambleFile, StandardOpenOption.READ);
             headStream = Files.newInputStream(headFile, StandardOpenOption.READ);
             splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ);
             tailStream = Files.newInputStream(tailFile, StandardOpenOption.READ);
+            postambleStream = Files.newInputStream(postambleFile, StandardOpenOption.READ);
         }
 
 
         InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
-                Arrays.asList(prefixStream, headStream, splitBoundedBodyStream, tailStream))), ExceptionUtils::getStackTrace, RecordReaderGenericBase::logClose);
+                Arrays.asList(preambleStream, headStream, splitBoundedBodyStream, tailStream, postambleStream))),
+                ExceptionUtils::getStackTrace, RecordReaderGenericBase::logClose);
 
 
         Flowable<T> result = null;

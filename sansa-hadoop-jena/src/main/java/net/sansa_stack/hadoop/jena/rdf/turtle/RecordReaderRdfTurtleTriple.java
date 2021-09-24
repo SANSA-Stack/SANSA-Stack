@@ -1,7 +1,6 @@
 package net.sansa_stack.hadoop.jena.rdf.turtle;
 
 import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfBase;
 import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfNonAccumulatingBase;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;

@@ -2,7 +2,7 @@ package net.sansa_stack.hadoop.jena.rdf.trig;
 
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.generic.Accumulating;
-import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfBase;
+import net.sansa_stack.hadoop.jena.rdf.base.RecordReaderGenericRdfAccumulatingBase;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.aksw.jena_sparql_api.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Node;
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * same IRI for the graph component into Datasets.
  */
 public class RecordReaderRdfTrigDataset
-    extends RecordReaderGenericRdfBase<Quad, Node, Dataset, Dataset>
+    extends RecordReaderGenericRdfAccumulatingBase<Quad, Node, Dataset, Dataset>
 {
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.dataset.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.record.maxlength";
