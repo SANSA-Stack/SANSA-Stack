@@ -93,7 +93,7 @@ public abstract class RecordReaderCsvTestBase {
 
         Job job = Job.getInstance(conf);
         // TrigFileInputFormat inputFormat = new TrigFileInputFormat();
-        InputFormat<?, List<String>> inputFormat = new FileInputFormatCsv();
+        InputFormat<?, List> inputFormat = new FileInputFormatCsv();
 
         // add input path of the file
         org.apache.hadoop.fs.Path testHadoopPath = new org.apache.hadoop.fs.Path(testPath.toString());

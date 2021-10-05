@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  *
  */
 public class RecordReaderCsv
-    extends RecordReaderGenericBase<List<String>, List<String>, List<String>, List<String>>
+    extends RecordReaderGenericBase<List, List, List, List>
 {
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.csv.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.csv.record.maxlength";
@@ -91,7 +91,7 @@ public class RecordReaderCsv
     }
 
     @Override
-    protected Flowable<List<String>> parse(Callable<InputStream> inputStreamSupplier) {
+    protected Flowable<List> parse(Callable<InputStream> inputStreamSupplier) {
 
         return Flowable.generate( // <JsonElement, Map.Entry<JsonReader, Boolean>>
                 () -> new State(new InputStreamReader(inputStreamSupplier.call())),

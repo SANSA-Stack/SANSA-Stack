@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import java.util.List;
 
 public class FileInputFormatCsv
-        extends FileInputFormat<LongWritable, List<String>> {
+        extends FileInputFormat<LongWritable, List> {
 
     public FileInputFormatCsv() {
     }
@@ -28,7 +28,7 @@ public class FileInputFormatCsv
     }
 
     @Override
-    public RecordReader<LongWritable, List<String>> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
+    public RecordReader<LongWritable, List> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
         return new RecordReaderCsv();
     }
 }
