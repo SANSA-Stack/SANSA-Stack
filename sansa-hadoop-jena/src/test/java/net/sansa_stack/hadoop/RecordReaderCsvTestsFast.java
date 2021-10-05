@@ -8,8 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RunWith(Parameterized.class)
-public class RecordReaderJsonArrayTestsFast
-    extends RecordReaderJsonArrayTestBase
+public class RecordReaderCsvTestsFast
+    extends RecordReaderCsvTestBase
 {
     /**
      * Test case parameters
@@ -20,16 +20,16 @@ public class RecordReaderJsonArrayTestsFast
         // Each file is mapped to the number of  min splits and max splits(both inclusive)
         Map<String, Range<Integer>> map = new LinkedHashMap<>();
 
-        map.put("src/test/resources/test-data.json",
-                Range.closed(1, 5));
+        map.put("/home/raven/Datasets/bio2rdf_sparql_logs_01-2019_to_07-2021.head.csv",
+                Range.closed(1, 10));
 
-        map.put("src/test/resources/test-data.json.bz2",
-                Range.closed(1, 5));
+//        map.put("src/test/resources/test-data.json.bz2",
+//                Range.closed(1, 5));
 
         return createParameters(map);
     }
 
-    public RecordReaderJsonArrayTestsFast(String file, int numSplits) {
+    public RecordReaderCsvTestsFast(String file, int numSplits) {
         super(file, numSplits);
     }
 }

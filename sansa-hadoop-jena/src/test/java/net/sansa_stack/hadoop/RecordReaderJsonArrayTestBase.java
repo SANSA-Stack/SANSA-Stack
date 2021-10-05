@@ -6,11 +6,9 @@ import com.google.common.collect.Range;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderRdfTrigDataset;
-import net.sansa_stack.hadoop.json.FileInputFormatJsonArray;
-import net.sansa_stack.hadoop.json.RecordReaderJsonArray;
+import net.sansa_stack.hadoop.parser.json.FileInputFormatJsonArray;
+import net.sansa_stack.hadoop.parser.json.RecordReaderJsonArray;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -38,9 +36,9 @@ import java.util.stream.Collectors;
  * @author Lorenz Buehmann
  * @author Claus Stadler
  */
-public abstract class RecordReaderJsonArrayTest {
+public abstract class RecordReaderJsonArrayTestBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecordReaderJsonArrayTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecordReaderJsonArrayTestBase.class);
 
     public static List<Object[]> createParameters(Map<String, Range<Integer>> fileToNumSplits) {
 
@@ -57,7 +55,7 @@ public abstract class RecordReaderJsonArrayTest {
     protected String file;
     protected int numSplits;
 
-    public RecordReaderJsonArrayTest(String file, int numSplits) {
+    public RecordReaderJsonArrayTestBase(String file, int numSplits) {
         this.file = file;
         this.numSplits = numSplits;
     }

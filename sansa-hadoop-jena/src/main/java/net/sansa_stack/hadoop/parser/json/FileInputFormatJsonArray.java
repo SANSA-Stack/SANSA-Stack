@@ -1,4 +1,4 @@
-package net.sansa_stack.hadoop.json;
+package net.sansa_stack.hadoop.parser.json;
 
 import com.google.gson.JsonElement;
 import org.apache.hadoop.fs.Path;
