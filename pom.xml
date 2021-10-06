@@ -461,7 +461,7 @@
             </dependency>
 
             <!-- rxjava ideomatic SPARQL fluents
-                 Ssimilar to Java8 Streams but with resource management and back pressure handling  -->
+                 Similar to Java8 Streams but with resource management and back pressure handling  -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>
                 <artifactId>jena-sparql-api-rx</artifactId>

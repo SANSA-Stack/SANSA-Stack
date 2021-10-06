@@ -107,7 +107,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * used to avoid having to invoke the actual parser (which may start a new thread)
      * on each single character
      */
-    protected final Pattern recordStartPattern;
+    protected Pattern recordStartPattern;
 
     protected final Accumulating<U, G, A, T> accumulating;
 
@@ -148,6 +148,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected long splitStart = -1;
     protected long splitLength = -1;
     protected long splitEnd = -1;
+    protected boolean isFirstSplit = false;
+
 
     // Will be set in case an error occurs
     protected Throwable raisedThrowable = null;
@@ -204,6 +206,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         splitStart = split.getStart();
         splitLength = split.getLength();
         splitEnd = splitStart + splitLength;
+
+        isFirstSplit = splitStart == 0;
 
         // maxRecordLength = Math.min(maxRecordLength, splitLength)
         // println("Split length = " + splitLength)
@@ -525,7 +529,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         StopWatch headSw = StopWatch.createStarted();
 
-        boolean isFirstSplit = splitStart == 0;
         int headBytes = isFirstSplit
                 ? 0
                 : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, this::prober));

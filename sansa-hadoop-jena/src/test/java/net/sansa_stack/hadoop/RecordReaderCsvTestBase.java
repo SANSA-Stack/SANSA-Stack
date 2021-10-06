@@ -3,7 +3,6 @@ package net.sansa_stack.hadoop;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
-import com.opencsv.exceptions.CsvException;
 import net.sansa_stack.hadoop.parser.csv.FileInputFormatCsv;
 import net.sansa_stack.hadoop.parser.csv.RecordReaderCsv;
 import org.apache.commons.compress.compressors.CompressorException;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,7 +64,7 @@ public abstract class RecordReaderCsvTestBase {
     }
 
     @Test
-    public void test() throws IOException, InterruptedException, CompressorException, CsvException {
+    public void test() throws IOException, InterruptedException, CompressorException {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");

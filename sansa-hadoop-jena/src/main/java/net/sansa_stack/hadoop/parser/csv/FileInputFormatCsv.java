@@ -1,5 +1,10 @@
 package net.sansa_stack.hadoop.parser.csv;
 
+import com.google.common.io.BaseEncoding;
+import net.sansa_stack.hadoop.util.ConfigurationUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -11,6 +16,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class FileInputFormatCsv
@@ -30,5 +36,13 @@ public class FileInputFormatCsv
     @Override
     public RecordReader<LongWritable, List> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
         return new RecordReaderCsv();
+    }
+
+    public static void setCsvFormat(Configuration conf, CSVFormat csvFormat) {
+        ConfigurationUtils.setSerializable(conf, RecordReaderCsv.CSV_FORMAT_RAW_KEY, csvFormat);
+    }
+
+    public static CSVFormat getCsvFormat(Configuration conf, CSVFormat defaultValue) {
+        return ConfigurationUtils.getSerializable(conf, RecordReaderCsv.CSV_FORMAT_RAW_KEY, defaultValue);
     }
 }

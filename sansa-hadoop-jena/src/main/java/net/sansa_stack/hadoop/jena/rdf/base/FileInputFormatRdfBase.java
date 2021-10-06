@@ -33,11 +33,10 @@ import java.util.List;
  * Base class for unit testing of reading an RDF file with
  * an arbitrary number of splits.
  * RDF is read as Datasets which means that triples are expanded to quads.
- *
+ * <p>
  * (We could generalize to tuples of RDF terms using Bindings)
- *
+ * <p>
  * The only method that need to be overriden is {@link #createRecordReaderActual(InputSplit, TaskAttemptContext)}.
- *
  *
  * @param <T>
  */
@@ -85,7 +84,7 @@ public abstract class FileInputFormatRdfBase<T>
             TaskAttemptContext context);
 
 
-            @Override
+    @Override
     public List<InputSplit> getSplits(JobContext job) throws IOException {
         List<InputSplit> splits = super.getSplits(job);
 

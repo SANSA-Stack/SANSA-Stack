@@ -9,8 +9,7 @@ import java.util.Map;
 
 @RunWith(Parameterized.class)
 public class RecordReaderCsvTestsFast
-    extends RecordReaderCsvTestBase
-{
+        extends RecordReaderCsvTestBase {
     /**
      * Test case parameters
      */
@@ -20,11 +19,11 @@ public class RecordReaderCsvTestsFast
         // Each file is mapped to the number of  min splits and max splits(both inclusive)
         Map<String, Range<Integer>> map = new LinkedHashMap<>();
 
-//        map.put("/home/raven/Datasets/bio2rdf_sparql_logs_01-2019_to_07-2021.head.csv",
-//                Range.closed(1, 10));
+        map.put("src/test/resources/bio2rdf_sparql_logs_01-2019_to_07-2021.head10000.csv.bz2",
+                Range.closed(1, 10));
 
-//           map.put("/home/raven/Datasets/bio2rdf_sparql_logs_processed_01-2019_to_07-2021.head10000.csv",
-//                Range.closed(1, 10));
+        map.put("src/test/resources/bio2rdf_sparql_logs_processed_01-2019_to_07-2021.head10000.csv.bz2",
+                Range.closed(1, 10));
 
 
 //        map.put("src/test/resources/test-data.json.bz2",

@@ -3,9 +3,12 @@ package net.sansa_stack.hadoop.parser.csv;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.generic.Accumulating;
 import net.sansa_stack.hadoop.generic.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.util.ConfigurationUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
@@ -32,13 +35,38 @@ public class RecordReaderCsv
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.csv.record.maxlength";
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.csv.record.probecount";
 
-    // Match a character (the dot at the end) if for the preceeding character it holds:
-    // Match a newline; however only if there is no subsequent sole double quote followed by a newline, comma or eof.
-    // Stop matching 'dot' if there was a single quote in the past
-    // FIXME Make the lookahead amount configurable
-    protected static final Pattern csvFwdPattern = Pattern.compile(
-            "(?<=\n(?!((?<![^\"]\"[^\"]).){0,100000}\"(\r?\n|,|$))).",
-            Pattern.DOTALL | Pattern.MULTILINE);
+    /** Key for the serialized bytes of a {@link CSVFormat} instance */
+    public static final String CSV_FORMAT_RAW_KEY = "mapreduce.input.csv.format.raw";
+
+    /**
+     * The maximum length of a CSV cell containing new lines
+     *
+     */
+    public static final String CELL_MAXLENGTH_KEY = "mapreduce.input.csv.cell.maxlength";
+    public static final long CELL_MAXLENGTH_DEFAULT_VALUE = 300000;
+
+    /* The csv format used by this instance. Initialized during initialize() */
+    protected CSVFormat csvFormat;
+
+    /**
+     * Create a regex for matching csv record starts.
+     * Matches the character following a newline character, whereas that newline is not within a csv cell
+     * w.r.t. a certain amount of lookahead.
+     *
+     * The regex does the following:
+     * Match a character (the dot at the end) if for the preceeding character it holds:
+     * Match a newline; however only if there is no subsequent sole double quote followed by a newline, comma or eof.
+     * Stop matching 'dot' if there was a single quote in the past
+     *
+     * @param n The maximum number of lookahead bytes to check for whether a newline character
+     *          might be within a csv cell
+     * @return The corresponding regex pattern
+     */
+    public static Pattern createStartOfCsvRecordPattern(long n) {
+        return Pattern.compile(
+                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + n + "}\"(\r?\n|,|$))).",
+                Pattern.DOTALL | Pattern.MULTILINE);
+    }
 
     // Failed regexes
     // "(?!(([^\"]|\"\")*\"(\r?\n\r?|,|$)))(?:\r?\n\r?).",
@@ -50,7 +78,7 @@ public class RecordReaderCsv
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                csvFwdPattern);
+                null);
     }
 
     public RecordReaderCsv(
@@ -64,10 +92,25 @@ public class RecordReaderCsv
     @Override
     public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException {
         super.initialize(inputSplit, context);
+
+        Configuration conf = context.getConfiguration();
+        long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
+        String csvFormatStr = conf.get(CSV_FORMAT_RAW_KEY, null);
+
+        // Default to EXCEL
+        CSVFormat rawCsvFormat = FileInputFormatCsv.getCsvFormat(conf, CSVFormat.EXCEL);
+
+        boolean skipHeader = isFirstSplit && rawCsvFormat.getSkipHeaderRecord();
+
+        this.csvFormat = CSVFormat.Builder.create(rawCsvFormat)
+                .setSkipHeaderRecord(skipHeader)
+                .build();
+
+        this.recordStartPattern = createStartOfCsvRecordPattern(cellMaxLength);
     }
 
     protected CSVParser newCsvParser(Reader reader) throws IOException {
-        return new CSVParser(reader, CSVFormat.EXCEL);
+        return new CSVParser(reader, csvFormat);
     }
 
     /** State class used for Flowable.generate */
