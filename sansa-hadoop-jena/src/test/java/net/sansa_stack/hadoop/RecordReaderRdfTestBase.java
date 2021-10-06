@@ -2,7 +2,7 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.*;
 import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderRdfTrigDataset;
+import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
 import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.hadoop.conf.Configuration;

@@ -1,8 +1,9 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
+
 import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
+import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition._
 import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
@@ -82,13 +83,13 @@ object MainSansaSparqlServer {
     val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o . OPTIONAL { ?s <foobar> ?y } }")
       .execSelectSpark()
 
-    val schemaMapping = RddOfBindingToDataFrameMapper
+    val schemaMapping = RddOfBindingsToDataFrameMapper
       .configureSchemaMapper(resultSet)
       .setVarToFallbackDatatype((v: Var) => null)
       .createSchemaMapping
 
     println(schemaMapping)
-    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val df = RddOfBindingsToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df.show(20)
 

@@ -1,9 +1,9 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
+import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
 import net.sansa_stack.rdf.spark.partition.RDFPartition
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
@@ -348,10 +348,10 @@ class SparqlFrame extends Transformer{
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
-    val schemaMapping = RddOfBindingToDataFrameMapper
+    val schemaMapping = RddOfBindingsToDataFrameMapper
       .configureSchemaMapper(resultSet)
       .createSchemaMapping()
-    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val df = RddOfBindingsToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     val resultDf = if (_collapsByKey) collapsByKey(df) else df
 

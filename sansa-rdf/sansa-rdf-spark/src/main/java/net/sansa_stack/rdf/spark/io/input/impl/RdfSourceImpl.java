@@ -1,5 +1,6 @@
 package net.sansa_stack.rdf.spark.io.input.impl;
 
+import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfNamedModelsOps;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
@@ -12,9 +13,8 @@ import org.apache.spark.sql.SparkSession;
 
 import net.sansa_stack.rdf.spark.io.input.api.RddRdfLoader;
 import net.sansa_stack.rdf.spark.io.input.api.RdfSource;
-import net.sansa_stack.rdf.spark.rdd.op.java.NamedModelOpsRddJava;
-import net.sansa_stack.rdf.spark.rdd.op.java.QuadOpsRddJava;
-import net.sansa_stack.rdf.spark.rdd.op.java.TripleOpsRddJava;
+import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfQuadsOps;
+import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfTriplesOps;
 
 public class RdfSourceImpl
     implements RdfSource
@@ -62,10 +62,10 @@ public class RdfSourceImpl
             result = loader.load(sparkSession.sparkContext(), path.toString());
         } else {
             if (RDFLanguages.isTriples(lang)) {
-                result = TripleOpsRddJava.groupBySubjects(asTriples().toJavaRDD())
+                result = JavaRddOfTriplesOps.groupBySubjects(asTriples().toJavaRDD())
                         .values().rdd();
             } else {
-                result = QuadOpsRddJava.groupByNamedGraph(asQuads().toJavaRDD())
+                result = JavaRddOfQuadsOps.groupByNamedGraph(asQuads().toJavaRDD())
                         .values().rdd();
             }
         }
@@ -102,10 +102,10 @@ public class RdfSourceImpl
         } else {
             if (RDFLanguages.isTriples(lang)) {
                 // TODO groupTriples by subject
-                result = NamedModelOpsRddJava.mapToDataset(TripleOpsRddJava.groupBySubjects(asTriples().toJavaRDD())).rdd();
+                result = JavaRddOfNamedModelsOps.mapToDataset(JavaRddOfTriplesOps.groupBySubjects(asTriples().toJavaRDD())).rdd();
                 // result = asModels().toJavaRDD().map(DatasetFactory::wrap).rdd();
             } else {
-                result = NamedModelOpsRddJava.mapToDataset(QuadOpsRddJava.groupByNamedGraph(asQuads().toJavaRDD())).rdd();
+                result = JavaRddOfNamedModelsOps.mapToDataset(JavaRddOfQuadsOps.groupByNamedGraph(asQuads().toJavaRDD())).rdd();
             }
         }
 

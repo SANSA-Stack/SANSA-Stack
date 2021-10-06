@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.binding.engine
 import net.sansa_stack.query.spark.binding.engine.OpExecutorImpl.SYM_RDD_OF_DATASET
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
-import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
+import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
+import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import org.aksw.jena_sparql_api.utils.QueryUtils
 import org.apache.jena.query.Dataset
 import org.apache.jena.sparql.algebra.{Op, OpAsQuery}
@@ -29,11 +29,11 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
   }
 
   override def execute(op: OpProject, rdd: RDD[Binding]): RDD[Binding] =
-    RddOfBindingOps.project(exec(op.getSubOp, rdd), op.getVars)
+    RddOfBindingsOps.project(exec(op.getSubOp, rdd), op.getVars)
     // RddOfBindingOps.project(rdd, op.getVars)
 
   override def execute(op: OpGroup, rdd: RDD[Binding]): RDD[Binding] =
-    RddOfBindingOps.group(exec(op.getSubOp, rdd), op.getGroupVars, op.getAggregators)
+    RddOfBindingsOps.group(exec(op.getSubOp, rdd), op.getGroupVars, op.getAggregators)
 //    RddOfBindingOps.group(rdd, op.getGroupVars, op.getAggregators)
 
   override def execute(op: OpService, rdd: RDD[Binding]): RDD[Binding] = {
@@ -61,7 +61,7 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
           OpAsQuery.asQuery(op.getSubOp)
         }
 
-        result = RddOfDatasetOps.selectWithSparqlPerPartition(rddOfDataset, query)
+        result = RddOfDatasetsOps.selectWithSparqlPerPartition(rddOfDataset, query)
 
         success = true
       } else if (serviceUri == "rdd:perGraph") {
@@ -78,7 +78,7 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
           OpAsQuery.asQuery(op.getSubOp)
         }
 
-        result = RddOfDatasetOps.flatMapWithSparqlSelect(rddOfDataset, query)
+        result = RddOfDatasetsOps.flatMapWithSparqlSelect(rddOfDataset, query)
 
         success = true
       }
@@ -92,10 +92,10 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
   }
 
   override def execute(op: OpOrder, rdd: RDD[Binding]): RDD[Binding] =
-    RddOfBindingOps.order(exec(op.getSubOp, rdd), op.getConditions)
+    RddOfBindingsOps.order(exec(op.getSubOp, rdd), op.getConditions)
 
   override def execute(op: OpExtend, rdd: RDD[Binding]): RDD[Binding] =
-    RddOfBindingOps.extend(exec(op.getSubOp, rdd), op.getVarExprList)
+    RddOfBindingsOps.extend(exec(op.getSubOp, rdd), op.getVarExprList)
 
   override def execute(op: OpUnion, rdd: RDD[Binding]): RDD[Binding] = {
     // TODO This method should get the (spark-based) executor
@@ -111,7 +111,7 @@ class OpExecutorImpl(val execCxt: ExecutionContext)
     exec(op.getSubOp, rdd).distinct()
 
   override def execute(op: OpFilter, rdd: RDD[Binding]): RDD[Binding] = {
-    RddOfBindingOps.filter(exec(op.getSubOp, rdd), op.getExprs)
+    RddOfBindingsOps.filter(exec(op.getSubOp, rdd), op.getExprs)
     // RddOfBindingOps.filter(rdd, op.getExprs)
   }
 

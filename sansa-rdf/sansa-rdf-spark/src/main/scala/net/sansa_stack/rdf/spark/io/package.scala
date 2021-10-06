@@ -22,7 +22,7 @@ import org.apache.spark.sql.{Row, _}
 import java.io.ByteArrayOutputStream
 import java.util.Collections
 
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigDataset
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or

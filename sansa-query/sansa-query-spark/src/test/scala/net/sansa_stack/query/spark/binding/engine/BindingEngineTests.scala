@@ -2,7 +2,6 @@ package net.sansa_stack.query.spark.binding.engine
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingOps
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.lang3.time.StopWatch
 import org.apache.hadoop.fs.Path
@@ -17,7 +16,8 @@ import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderRdfTrigDataset
+import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset
+import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
 
 @Ignore // Doesn't always find the bz2 file the way its used heer
 class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
@@ -73,7 +73,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
     val sw2 = StopWatch.createStarted
     val rdd = createTestRdd()
 
-    val resultSetSpark: ResultSetSpark = RddOfBindingOps.execSparqlSelect(rdd, QueryFactory.create(
+    val resultSetSpark: ResultSetSpark = RddOfBindingsOps.execSparqlSelect(rdd, QueryFactory.create(
       """
         | SELECT ?qec (SUM(?qc_contrib) AS ?qc) {
         |   SERVICE <rdd:perPartition> {

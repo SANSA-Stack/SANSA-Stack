@@ -7,7 +7,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 
-import net.sansa_stack.hadoop.generic.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 
 /**
  * Abstraction of a source of RDF. Provides methods to access the data

@@ -1,6 +1,5 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
-import net.sansa_stack.rdf.spark.model.rdd.RddOfDatasetOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigMerge
 import org.aksw.commons.io.util.StdIo
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
@@ -17,9 +16,10 @@ import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-
 import java.net.URI
 import java.util.concurrent.TimeUnit
+
+import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 
 
 /**
@@ -112,7 +112,7 @@ object CmdSansaTrigMergeImpl {
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
 
-    val effectiveRdd = RddOfDatasetOps.groupNamedGraphsByGraphIri(initialRdd, cmd.sort, cmd.distinct, cmd.numPartitions)
+    val effectiveRdd = RddOfDatasetsOps.groupNamedGraphsByGraphIri(initialRdd, cmd.sort, cmd.distinct, cmd.numPartitions)
 
     val outRdfFormat = RDFLanguagesEx.findRdfFormat(cmd.outFormat)
       // RDFFormat.TRIG_BLOCKS

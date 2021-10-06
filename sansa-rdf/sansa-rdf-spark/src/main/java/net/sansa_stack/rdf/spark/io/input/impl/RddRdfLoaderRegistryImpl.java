@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.spark.io.input.impl;
 
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigQuad;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
 import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
 import org.apache.jena.ext.com.google.common.collect.Table;
 import org.apache.jena.graph.Triple;
@@ -12,8 +12,8 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigDataset;
-import net.sansa_stack.hadoop.jena.rdf.turtle.FileInputFormatRdfTurtleTriple;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
+import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
 import net.sansa_stack.rdf.spark.io.input.api.RddRdfLoader;
 import net.sansa_stack.rdf.spark.io.input.api.RddRdfLoaderRegistry;
 
