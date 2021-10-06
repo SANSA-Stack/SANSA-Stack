@@ -3,11 +3,9 @@ package net.sansa_stack.hadoop.parser.csv;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.generic.Accumulating;
 import net.sansa_stack.hadoop.generic.RecordReaderGenericBase;
-import net.sansa_stack.hadoop.util.ConfigurationUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -19,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
@@ -46,7 +43,8 @@ public class RecordReaderCsv
     public static final long CELL_MAXLENGTH_DEFAULT_VALUE = 300000;
 
     /* The csv format used by this instance. Initialized during initialize() */
-    protected CSVFormat csvFormat;
+    protected CSVFormat requestedCsvFormat;
+    protected CSVFormat effectiveCsvFormat;
 
     /**
      * Create a regex for matching csv record starts.
@@ -95,22 +93,23 @@ public class RecordReaderCsv
 
         Configuration conf = context.getConfiguration();
         long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
-        String csvFormatStr = conf.get(CSV_FORMAT_RAW_KEY, null);
+        this.recordStartPattern = createStartOfCsvRecordPattern(cellMaxLength);
 
         // Default to EXCEL
-        CSVFormat rawCsvFormat = FileInputFormatCsv.getCsvFormat(conf, CSVFormat.EXCEL);
+        this.requestedCsvFormat = FileInputFormatCsv.getCsvFormat(conf, CSVFormat.EXCEL);
 
-        boolean skipHeader = isFirstSplit && rawCsvFormat.getSkipHeaderRecord();
+        // The header record is skipped only in postprocessing by createRecordFlow()
+        this.effectiveCsvFormat = disableSkipHeaderRecord(requestedCsvFormat);
+    }
 
-        this.csvFormat = CSVFormat.Builder.create(rawCsvFormat)
-                .setSkipHeaderRecord(skipHeader)
+    protected CSVFormat disableSkipHeaderRecord(CSVFormat csvFormat) {
+        return CSVFormat.Builder.create(csvFormat)
+                .setSkipHeaderRecord(false)
                 .build();
-
-        this.recordStartPattern = createStartOfCsvRecordPattern(cellMaxLength);
     }
 
     protected CSVParser newCsvParser(Reader reader) throws IOException {
-        return new CSVParser(reader, csvFormat);
+        return new CSVParser(reader, effectiveCsvFormat);
     }
 
     /** State class used for Flowable.generate */
@@ -122,6 +121,22 @@ public class RecordReaderCsv
         public List<String> priorRow = null;
 
         State(Reader reader) { this.reader = reader; }
+    }
+
+    /**
+     * Override createRecordFlow to skip the first record if the
+     * requested format demands so.
+     * This assumes that the header actually resides on the first split!
+     */
+    @Override
+    protected Flowable<List> createRecordFlow() throws IOException {
+        Flowable<List> tmp = super.createRecordFlow();
+
+        if (requestedCsvFormat.getSkipHeaderRecord() && isFirstSplit) {
+            tmp = tmp.skip(1);
+        }
+
+        return tmp;
     }
 
     @Override

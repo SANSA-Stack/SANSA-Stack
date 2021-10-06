@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.ops;
 import com.google.common.base.Preconditions;
 import io.reactivex.rxjava3.core.FlowableTransformer;
 import net.sansa_stack.rdf.spark.util.JavaSparkContextUtils;
-import org.aksw.commons.rx.util.RxUtils;
+import org.aksw.commons.rx.util.FlowableEx;
 import org.aksw.jena_sparql_api.rx.query_flow.QueryFlowOps;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -31,7 +31,7 @@ public class JavaRddRxOps {
 
     /** Map operation based on a flowable transformer */
     public static <I, O> JavaRDD<O> map(JavaRDD<I> rdd, SerializableFlowableTransformer<I, O> transformer) {
-        return rdd.mapPartitions(it -> RxUtils.<I, Iterator<I>>fromIteratorSupplier(() -> it)
+        return rdd.mapPartitions(it -> FlowableEx.<I, Iterator<I>>fromIteratorSupplier(() -> it)
                 .compose(transformer).blockingIterable().iterator());
     }
 

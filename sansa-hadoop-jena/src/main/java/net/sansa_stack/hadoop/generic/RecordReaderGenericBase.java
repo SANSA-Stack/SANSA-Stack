@@ -400,20 +400,26 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return r;
     }
 
+    public static long getPos(Seekable seekable) {
+        long result;
+        try {
+            result = seekable.getPos();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
+    }
+
     protected Flowable<U> parseFromSeekable(Seekable seekable) {
         Callable<InputStream> inSupp = () -> effectiveInputStreamSupp(seekable);
-
+        // long pos = getPos(seekable);
         Flowable<U> r = parse(inSupp);
         return r;
     }
 
     protected boolean prober(Seekable seekable) {
-        long pos;
-        try {
-            pos = seekable.getPos();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // long pos = getPos(seekable);
 
         // printSeekable(seekable)
         long recordCount = parseFromSeekable(seekable)
