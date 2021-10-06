@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +71,7 @@ public abstract class RecordReaderCsvTestBase {
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
         conf.set(RecordReaderCsv.RECORD_MAXLENGTH_KEY, "1000000");
-        conf.set(RecordReaderCsv.RECORD_PROBECOUNT_KEY, "300");
+        conf.set(RecordReaderCsv.RECORD_PROBECOUNT_KEY, "200");
 
         configureHadoop(conf);
 
@@ -103,9 +104,17 @@ public abstract class RecordReaderCsvTestBase {
         // inputFormat.getSplits(job);
 
         List<List<String>> actual = new ArrayList<>();
+
+
+        Throwable[] error = new Throwable[]{null};
         RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
+                .doOnError(t -> error[0] = t)
+                .onErrorComplete()
                 .forEach(actual::add);
 
+        if (error[0] != null) {
+            throw new RuntimeException(error[0]);
+        }
 
         Assert.assertEquals(expected, actual);
 

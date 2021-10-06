@@ -149,6 +149,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected long splitLength = -1;
     protected long splitEnd = -1;
 
+    // Will be set in case an error occurs
+    protected Throwable raisedThrowable = null;
 
     public RecordReaderGenericBase(
             String minRecordLengthKey,
@@ -230,7 +232,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
         Flowable<T> tmp = createRecordFlow();
-        datasetFlow = tmp.blockingIterable().iterator();
+        datasetFlow = tmp
+                .doOnError(t -> raisedThrowable = t).onErrorComplete()
+                .blockingIterable().iterator();
     }
 
     /**
@@ -840,7 +844,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         boolean isEndReached = false;
 
         long result = -1l;
+
+        StopWatch sw = StopWatch.createStarted();
         while (m.find() && !isEndReached) {
+            // logger.info("Time spent on regex matching: " + sw.getTime(TimeUnit.MILLISECONDS) + "ms");
+
             int start = m.start();
             int end = m.end();
             // The matcher yields absolute byte positions from the beginning of the byte sequence
@@ -873,6 +881,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     break;
                 }
             }
+            sw.reset();
+            sw.start();
         }
 
         return result;
@@ -887,6 +897,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         boolean result;
         if (!datasetFlow.hasNext()) {
+
+            if (raisedThrowable != null) {
+                throw new RuntimeException(raisedThrowable);
+            }
+
             // System.err.println("nextKeyValue: Drained all datasets from flow")
             result = false;
         } else {
