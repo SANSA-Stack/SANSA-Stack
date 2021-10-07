@@ -1,6 +1,7 @@
 package net.sansa_stack.query.spark.rdd.op;
 
 import com.google.common.base.Preconditions;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableTransformer;
 import net.sansa_stack.rdf.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.rx.util.FlowableEx;
@@ -30,8 +31,8 @@ public class JavaRddRxOps {
             extends FlowableTransformer<Upstream, Downstream>, Serializable {}
 
     /** Map operation based on a flowable transformer */
-    public static <I, O> JavaRDD<O> map(JavaRDD<I> rdd, SerializableFlowableTransformer<I, O> transformer) {
-        return rdd.mapPartitions(it -> FlowableEx.<I, Iterator<I>>fromIteratorSupplier(() -> it)
+    public static <I, O> JavaRDD<O> mapPartitions(JavaRDD<I> rdd, SerializableFlowableTransformer<I, O> transformer) {
+        return rdd.mapPartitions(it -> Flowable.fromIterable(() -> it)
                 .compose(transformer).blockingIterable().iterator());
     }
 

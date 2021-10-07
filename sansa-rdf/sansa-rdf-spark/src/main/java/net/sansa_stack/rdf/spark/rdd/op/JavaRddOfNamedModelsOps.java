@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.rdd.op;
 
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import org.aksw.jena_sparql_api.rx.ModelFactoryEx;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
 import org.apache.jena.graph.Node;
@@ -8,6 +9,8 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -19,7 +22,19 @@ import org.apache.spark.api.java.JavaRDD;
  * for these operations on Jena's Graph level.
  */
 public class JavaRddOfNamedModelsOps {
-    public static <K> JavaPairRDD<K, Model> groupNamedModelsByGraphIri(
+
+    /**
+     * Group and/or sort named models by their graph iri
+     *
+     * @param rdd
+     * @param distinct        If false then models with the same key remain
+     *                        separated otherwise they become merged
+     * @param sortGraphsByIri Whether to apply sorting in addition to grouping
+     * @param numPartitions   Number of partitions to use for sorting; only
+     *                        applicable if sortGraphsByIri is true.
+     * @return
+     */
+    public static <K> JavaPairRDD<K, Model> groupNamedModels(
             JavaPairRDD<K, Model> rdd,
             boolean distinct,
             boolean sortGraphsByIri,
@@ -37,10 +52,22 @@ public class JavaRddOfNamedModelsOps {
      * @param rdd
      * @return
      */
-    public static JavaRDD<Dataset> mapToDataset(JavaPairRDD<String, Model> rdd) {
+    public static JavaRDD<Dataset> mapToDatasets(JavaPairRDD<String, Model> rdd) {
         return rdd.map(graphNameAndModel -> {
             Dataset r = DatasetFactory.create();
             r.addNamedModel(graphNameAndModel._1(), graphNameAndModel._2());
+            return r;
+        });
+    }
+
+    public static JavaRDD<Resource> mapToResources(JavaPairRDD<String, Model> rdd) {
+        return rdd.map(graphNameAndModel -> {
+            String graphName = graphNameAndModel._1();
+            Model model = graphNameAndModel._2();
+
+            Node node = NodeFactory.createURI(graphName);
+            Resource r = model.asRDFNode(node).asResource();
+
             return r;
         });
     }
@@ -60,17 +87,7 @@ public class JavaRddOfNamedModelsOps {
         });
     }
 
-    /**
-     * Group and/or sort named models by their graph iri
-     *
-     * @param rdd
-     * @param distinct        If false then models with the same key remain
-     *                        separated otherwise they become merged
-     * @param sortGraphsByIri Whether to apply sorting in addition to grouping
-     * @param numPartitions   Number of partitions to use for sorting; only
-     *                        applicable if sortGraphsByIri is true.
-     * @return
-     */
+    /*
     public static <K> JavaPairRDD<K, Model> groupNamedModels(
             JavaPairRDD<K, Model> rdd,
             boolean distinct,
@@ -99,4 +116,5 @@ public class JavaRddOfNamedModelsOps {
 
         return resultRdd;
     }
+    */
 }

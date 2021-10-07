@@ -9,7 +9,7 @@ import org.apache.spark.api.java.JavaRDD;
 import scala.Tuple2;
 
 public class JavaRddOfDatasetsOps {
-    public static JavaPairRDD<String, Model> toNamedModels(JavaRDD<? extends Dataset> rdd) {
+    public static JavaPairRDD<String, Model> flatMapToNamedModels(JavaRDD<? extends Dataset> rdd) {
         // TODO Add a flag to include the default graph under a certain name such as
         // Quad.defaultGraph
         return rdd.flatMapToPair(
@@ -29,11 +29,11 @@ public class JavaRddOfDatasetsOps {
 
         // Note: Model is usually ModelCom so we get out-of-the-box serialization
         // If we used Graph we'd have to deal with a lot more variation in kryo
-        JavaPairRDD<String, Model> step1 = toNamedModels(rdd);
+        JavaPairRDD<String, Model> step1 = flatMapToNamedModels(rdd);
         JavaPairRDD<String, Model> step2 = JavaRddOfNamedModelsOps.groupNamedModels(
                 step1, distinct, sortGraphsByIri, numPartitions);
 
-        JavaRDD<Dataset> result = JavaRddOfNamedModelsOps.mapToDataset(step2);
+        JavaRDD<Dataset> result = JavaRddOfNamedModelsOps.mapToDatasets(step2);
 
         return result;
     }

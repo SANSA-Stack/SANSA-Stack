@@ -4,9 +4,12 @@ import com.google.common.base.Preconditions;
 import net.sansa_stack.rdf.spark.util.JavaSparkContextUtils;
 import org.aksw.jena_sparql_api.rx.query_flow.QueryFlowOps;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.syntax.Template;
@@ -35,7 +38,7 @@ public class JavaRddOfBindingsOps {
                     .flatMap(QueryFlowOps.createMapperTriples(template)::apply);
         };
 
-        return JavaRddRxOps.map(rdd, mapper);
+        return JavaRddRxOps.mapPartitions(rdd, mapper);
     }
 
     /**
@@ -57,7 +60,29 @@ public class JavaRddOfBindingsOps {
                     .flatMap(QueryFlowOps.createMapperQuads(template)::apply);
         };
 
-        return JavaRddRxOps.map(rdd, mapper);
+        return JavaRddRxOps.mapPartitions(rdd, mapper);
+    }
+
+    /** Each binding becomes its own dataset */
+    public static JavaRDD<Dataset> tarqlDatasets(JavaRDD<Binding> rdd, Query query) {
+        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
+
+        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
+        Broadcast<Query> queryBc = cxt.broadcast(query);
+        JavaRddRxOps.SerializableFlowableTransformer<Binding, Dataset> mapper = upstream -> {
+            Query q = queryBc.getValue();
+            Template template = q.getConstructTemplate();
+            Op op = Algebra.compile(q);
+
+            return upstream
+                    .compose(QueryFlowOps.createMapperBindings(op))
+                    .flatMap(QueryFlowOps.createMapperQuads(template)::apply)
+                    .reduceWith(DatasetGraphFactory::create, (dsg, quad) -> { dsg.add(quad); return dsg; })
+                    .map(DatasetFactory::wrap)
+                    .toFlowable();
+        };
+
+        return JavaRddRxOps.mapPartitions(rdd, mapper);
     }
 
 }
