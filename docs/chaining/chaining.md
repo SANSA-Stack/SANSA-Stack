@@ -8,7 +8,8 @@ While it is easy to create individual (static) functions that transform one rdd 
 chaining such functions directly is cumbersome to use:
 
 ```java
-# Hard to read because transformations appear in reverse order of the application
+# Hard to read because transformations appear in reverse order of their application
+JavaRDD<I> input = ...;
 JavaRDD<O> output = fn3.apply(fn2.apply(fn1.apply(input)));
 ```
 
@@ -28,7 +29,6 @@ would allow more naturally placing the input before the transform:
 ```java
 JavaRDD<Resource> output = input.compose(compositeTransform); # NOT POSSIBLE
 ```
-
 
 Spark itself unfortunately does not intrisically provide this mechanism, but SANSA provides a little framework
 aimed to easy the creation of such transformation chains.
@@ -59,7 +59,7 @@ JavaRDD<Resource> output = compositeTransform.apply(input);
 An further advantage of such transformation functions is that serialization can be tackled inside of the
 transformer:
 
-```
+```java
 public static JavaRddFunction<String, String> myTransform(ParamA inputArgA, ParamB inputArgB) {
     return rdd -> {
         # Make the arguments serializable; either using lambda serialization or broadcasts
@@ -73,9 +73,6 @@ public static JavaRddFunction<String, String> myTransform(ParamA inputArgA, Para
         });
     }
 }
-
-
-
 ```
 
 
