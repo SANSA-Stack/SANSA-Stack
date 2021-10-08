@@ -26,7 +26,7 @@ public interface JavaPairRddFunction<KI, VI, KO, VO>
         return rdd -> next.apply(this.apply(rdd));
     }
 
-    public static <K, V> JavaPairRddFunction<K, V, K, V> identity() {
+    static <K, V> JavaPairRddFunction<K, V, K, V> identity() {
         return x -> x;
     }
 }

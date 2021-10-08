@@ -37,7 +37,7 @@ public interface JavaRddFunction<I, O>
         return rdd -> next.apply(this.apply(rdd));
     }
 
-    public static <I> JavaRddFunction<I, I> identity() {
+    static <I> JavaRddFunction<I, I> identity() {
         return x -> x;
     }
 }
