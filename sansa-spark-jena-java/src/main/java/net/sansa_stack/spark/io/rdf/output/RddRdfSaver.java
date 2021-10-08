@@ -636,9 +636,6 @@ public class RddRdfSaver<T> {
         String rdfFormatStr = rdfFormat.toString();
 
         JavaRDD<String> dataBlocks = javaRdd.mapPartitions(it -> {
-            // Ensure that jena's format registries are initialized
-            JenaSystem.init();
-
             RDFFormat rdfFmt = RDFLanguagesEx.findRdfFormat(rdfFormatStr);
             PrefixMapping pmap = prefixMappingBc.getValue();
             Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, mapQuadsToTriplesForTripleLangs, pmap);
