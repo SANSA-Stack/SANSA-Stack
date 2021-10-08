@@ -53,10 +53,13 @@
         </dependency>
 
         <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-kryo-jena</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <!-- <scope>${spark.deps.scope}</scope> -->
         </dependency>
 
         <dependency>
@@ -74,6 +77,10 @@
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-kryo-jena</artifactId>
         </dependency>
 
         <!--
