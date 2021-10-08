@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.rdd.op;
+package net.sansa_stack.spark.rdd.op.rx;
 
 import com.google.common.base.Preconditions;
 import io.reactivex.rxjava3.core.Flowable;
