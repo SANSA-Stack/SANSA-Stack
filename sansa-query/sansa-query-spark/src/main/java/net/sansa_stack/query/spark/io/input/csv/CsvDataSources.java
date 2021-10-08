@@ -15,9 +15,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-public class CsvSources {
+public class CsvDataSources {
 
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
@@ -46,10 +47,17 @@ public class CsvSources {
         Configuration conf = new Configuration();
         FileInputFormatCsv.setCsvFormat(conf, csvFormat);
 
-        @SuppressWarnings("unchecked")
-        JavaRDD<List<String>> rdd = sc.newAPIHadoopFile(path, FileInputFormatCsv.class, LongWritable.class, List.class, conf)
-                .map(t -> (List<String>)t._2);
-
+        JavaRDD<List<String>> rdd;
+        if (false) {
+            // Commons-CSV
+            rdd = sc.newAPIHadoopFile(path, FileInputFormatCsv.class, LongWritable.class, List.class, conf)
+                    .map(t -> (List<String>) t._2);
+        } else {
+            // Univocity CSV
+            rdd = sc.newAPIHadoopFile(path,
+                    net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv.class, LongWritable.class, String[].class, conf)
+                    .map(t -> Arrays.asList( t._2));
+        }
         JavaRDD<Binding> bindingRdd = rdd.map(mapper);
         return bindingRdd;
     }
