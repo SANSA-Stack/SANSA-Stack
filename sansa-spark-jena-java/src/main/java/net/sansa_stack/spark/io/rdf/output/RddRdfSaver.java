@@ -34,6 +34,7 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.FmtUtils;
+import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -635,6 +636,9 @@ public class RddRdfSaver<T> {
         String rdfFormatStr = rdfFormat.toString();
 
         JavaRDD<String> dataBlocks = javaRdd.mapPartitions(it -> {
+            // Ensure that jena's format registries are initialized
+            JenaSystem.init();
+
             RDFFormat rdfFmt = RDFLanguagesEx.findRdfFormat(rdfFormatStr);
             PrefixMapping pmap = prefixMappingBc.getValue();
             Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, mapQuadsToTriplesForTripleLangs, pmap);
