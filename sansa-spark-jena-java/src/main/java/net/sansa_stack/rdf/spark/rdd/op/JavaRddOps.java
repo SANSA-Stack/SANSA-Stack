@@ -1,6 +1,5 @@
 package net.sansa_stack.rdf.spark.rdd.op;
 
-import org.aksw.commons.lambda.serializable.SerializableBinaryOperator;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -8,7 +7,6 @@ import org.apache.spark.api.java.function.Function2;
 
 import java.util.Collections;
 import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collector;
 
 public class JavaRddOps {

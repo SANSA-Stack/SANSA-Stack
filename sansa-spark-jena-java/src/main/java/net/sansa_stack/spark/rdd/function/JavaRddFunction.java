@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.function;
+package net.sansa_stack.spark.rdd.function;
 
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.apache.spark.api.java.JavaRDD;

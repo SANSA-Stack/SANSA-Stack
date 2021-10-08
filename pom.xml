@@ -116,6 +116,7 @@
     <modules>
         <module>sansa-hadoop-jena</module>
         <module>sansa-kryo-jena</module>
+        <module>sansa-spark-jena-java</module>
 
         <module>sansa-test-resources</module>
         <module>sansa-resource-metadata</module>
@@ -170,6 +171,12 @@
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
                 <version>4.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

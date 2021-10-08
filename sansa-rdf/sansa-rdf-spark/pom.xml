@@ -11,6 +11,11 @@
     </parent>
 
     <dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
