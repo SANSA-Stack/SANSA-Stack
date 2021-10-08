@@ -779,6 +779,14 @@
                 </exclusions>
                 -->
             </dependency>
+
+            <!-- Univocity csv/tsv parsers are used in spark-sql but also sansa-hadoop-jena; versions should be aligned -->
+            <dependency>
+                <groupId>com.univocity</groupId>
+                <artifactId>univocity-parsers</artifactId>
+                <version>2.9.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>

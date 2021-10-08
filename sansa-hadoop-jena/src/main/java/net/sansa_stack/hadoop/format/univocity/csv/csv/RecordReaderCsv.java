@@ -1,20 +1,22 @@
-package net.sansa_stack.hadoop.format.commons_csv.csv;
+package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
@@ -24,7 +26,7 @@ import java.util.regex.Pattern;
  *
  */
 public class RecordReaderCsv
-    extends RecordReaderGenericBase<List, List, List, List>
+    extends RecordReaderGenericBase<String[], String[], String[], String[]>
 {
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsv.class);
 
@@ -108,17 +110,20 @@ public class RecordReaderCsv
                 .build();
     }
 
-    protected CSVParser newCsvParser(Reader reader) throws IOException {
-        return new CSVParser(reader, effectiveCsvFormat);
+    protected CsvParser newCsvParser(Reader reader) throws IOException {
+        CsvParserSettings settings = CsvUtils.defaultSettings(false);
+        CsvParser parser = new CsvParser(settings);
+        parser.beginParsing(reader);
+        // parser.parse(reader);
+        return parser;
     }
 
     /** State class used for Flowable.generate */
     private static class State {
         public Reader reader;
-        public CSVParser csvParser = null;
-        public Iterator<CSVRecord> iterator;
+        public CsvParser csvParser = null;
         public long seenRowLength = -1;
-        public List<String> priorRow = null;
+        public String[] priorRow = null;
 
         State(Reader reader) { this.reader = reader; }
     }
@@ -129,8 +134,8 @@ public class RecordReaderCsv
      * This assumes that the header actually resides on the first split!
      */
     @Override
-    protected Flowable<List> createRecordFlow() throws IOException {
-        Flowable<List> tmp = super.createRecordFlow();
+    protected Flowable<String[]> createRecordFlow() throws IOException {
+        Flowable<String[]> tmp = super.createRecordFlow();
 
         if (requestedCsvFormat.getSkipHeaderRecord() && isFirstSplit) {
             tmp = tmp.skip(1);
@@ -140,7 +145,7 @@ public class RecordReaderCsv
     }
 
     @Override
-    protected Flowable<List> parse(Callable<InputStream> inputStreamSupplier) {
+    protected Flowable<String[]> parse(Callable<InputStream> inputStreamSupplier) {
 
         return Flowable.generate(
                 () -> new State(new InputStreamReader(inputStreamSupplier.call())),
@@ -151,19 +156,17 @@ public class RecordReaderCsv
 //                    if (true) throw new RuntimeException("dummy exception");
 
                     try {
-                        Iterator<CSVRecord> it = s.iterator;
+                        CsvParser it = s.csvParser;
                         if (it == null) {
-                            s.csvParser = newCsvParser(s.reader);
-                            it = s.iterator = s.csvParser.iterator();
+                            it = s.csvParser = newCsvParser(s.reader);
                         }
 
-                        if (!it.hasNext()) {
+                        String[] row;
+                        if ((row = it.parseNext()) == null) {
                             e.onComplete();
                         } else {
-                            CSVRecord csvRecord = it.next();
-                            List<String> row = csvRecord.toList();
 
-                            long rowLength = row.size();
+                            long rowLength = row.length;
                             if (s.seenRowLength == -1) {
                                 s.seenRowLength = rowLength;
                             } else if (rowLength != s.seenRowLength) {
@@ -184,6 +187,6 @@ public class RecordReaderCsv
                         e.onError(x);
                     }
                 },
-                s -> s.csvParser.close());
+                s -> s.reader.close());
     }
 }

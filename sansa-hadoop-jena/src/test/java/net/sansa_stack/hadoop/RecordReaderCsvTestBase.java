@@ -3,7 +3,6 @@ package net.sansa_stack.hadoop;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv;
 import net.sansa_stack.hadoop.format.commons_csv.csv.RecordReaderCsv;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.csv.CSVFormat;
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class RecordReaderCsvTestBase {
+public abstract class RecordReaderCsvTestBase<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsvTestBase.class);
 
@@ -63,6 +62,11 @@ public abstract class RecordReaderCsvTestBase {
         return new CSVParser(reader, CSVFormat.EXCEL);
     }
 
+    protected abstract InputFormat<?, T> getInputFormat();
+    protected abstract List<String> recordToList(T record);
+
+    protected abstract List<List<String>> parseConventional(Path resource);
+
     @Test
     public void test() throws IOException, InterruptedException, CompressorException {
 
@@ -76,14 +80,16 @@ public abstract class RecordReaderCsvTestBase {
         Path referencePath = Paths.get(file).toAbsolutePath();
         Path testPath = referencePath;
 
-        List<List<String>> expected = new ArrayList<>();
+        List<List<String>> expected = parseConventional(referencePath);
 
-        try (CSVParser csvParser = newCsvParser(new InputStreamReader(RecordReaderJsonArrayTestBase.autoDecode(Files.newInputStream(referencePath))))) {
-            Iterator<CSVRecord> it = csvParser.iterator();
-            while (it.hasNext()) {
-                CSVRecord csvRecord = it.next();
-                List<String> row = csvRecord.toList();
-                expected.add(row);
+        int m = Math.min(2, expected.size());
+        for (int i = 0; i < m; ++i) {
+            List<String> row = expected.get(i);
+
+            System.out.println("Row #" + i);
+            int n = row.size();
+            for (int j = 0; j < n; ++j) {
+                System.out.println("Cell: " + row.get(j));
             }
         }
 
@@ -91,8 +97,8 @@ public abstract class RecordReaderCsvTestBase {
 
 
         Job job = Job.getInstance(conf);
-        // TrigFileInputFormat inputFormat = new TrigFileInputFormat();
-        InputFormat<?, List> inputFormat = new FileInputFormatCsv();
+
+        InputFormat<?, T> inputFormat = getInputFormat();
 
         // add input path of the file
         org.apache.hadoop.fs.Path testHadoopPath = new org.apache.hadoop.fs.Path(testPath.toString());
@@ -106,6 +112,7 @@ public abstract class RecordReaderCsvTestBase {
 
         Throwable[] error = new Throwable[]{null};
         RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
+                .map(this::recordToList)
                 .doOnError(t -> error[0] = t)
                 .onErrorComplete()
                 .forEach(actual::add);
