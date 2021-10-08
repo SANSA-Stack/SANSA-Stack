@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.io;
+package net.sansa_stack.spark.io.rdf.output;
 
 
 import org.aksw.commons.io.util.FileMerger;

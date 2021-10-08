@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.io.input.csv;
+package net.sansa_stack.spark.io.csv.input;
 
 import net.sansa_stack.hadoop.format.commons_csv.csv.CsvUtils;
 import net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv;

@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.io.input.impl;
+package net.sansa_stack.spark.io.rdf.input.impl;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -12,8 +12,8 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.spark.sql.SparkSession;
 
-import net.sansa_stack.rdf.spark.io.input.api.RdfSource;
-import net.sansa_stack.rdf.spark.io.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 
 /**
  * Implementation of a source factory based on spark/hadoop.

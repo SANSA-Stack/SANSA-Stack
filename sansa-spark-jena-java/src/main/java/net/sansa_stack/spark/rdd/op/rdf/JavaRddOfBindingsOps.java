@@ -1,8 +1,8 @@
-package net.sansa_stack.rdf.spark.rdd.op;
+package net.sansa_stack.spark.rdd.op.rdf;
 
 import com.google.common.base.Preconditions;
 import net.sansa_stack.spark.rdd.op.rx.JavaRddRxOps;
-import net.sansa_stack.rdf.spark.util.JavaSparkContextUtils;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jena_sparql_api.rx.query_flow.QueryFlowOps;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;

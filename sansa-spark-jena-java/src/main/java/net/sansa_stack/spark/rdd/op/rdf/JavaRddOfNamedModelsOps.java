@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op;
+package net.sansa_stack.spark.rdd.op.rdf;
 
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;

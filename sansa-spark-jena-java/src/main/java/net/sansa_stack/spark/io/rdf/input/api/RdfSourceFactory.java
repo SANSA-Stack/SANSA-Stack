@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.io.input.api;
+package net.sansa_stack.spark.io.rdf.input.api;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

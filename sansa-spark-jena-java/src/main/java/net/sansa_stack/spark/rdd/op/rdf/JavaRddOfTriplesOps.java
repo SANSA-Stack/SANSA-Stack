@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op;
+package net.sansa_stack.spark.rdd.op.rdf;
 
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.util.strings.StringUtils;

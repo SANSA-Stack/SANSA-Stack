@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op;
+package net.sansa_stack.spark.rdd.op.rdf;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;

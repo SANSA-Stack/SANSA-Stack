@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.util;
+package net.sansa_stack.spark.util;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;

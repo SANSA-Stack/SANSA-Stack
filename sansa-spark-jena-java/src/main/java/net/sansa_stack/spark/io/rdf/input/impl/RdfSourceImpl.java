@@ -1,6 +1,6 @@
-package net.sansa_stack.rdf.spark.io.input.impl;
+package net.sansa_stack.spark.io.rdf.input.impl;
 
-import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfNamedModelsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
@@ -11,10 +11,10 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
 
-import net.sansa_stack.rdf.spark.io.input.api.RddRdfLoader;
-import net.sansa_stack.rdf.spark.io.input.api.RdfSource;
-import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfQuadsOps;
-import net.sansa_stack.rdf.spark.rdd.op.JavaRddOfTriplesOps;
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
 
 public class RdfSourceImpl
     implements RdfSource
