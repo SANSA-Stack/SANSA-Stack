@@ -1,8 +1,8 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.ResourceInDataset;
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.ResourceInDatasetImpl;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
-import org.aksw.jena_sparql_api.utils.model.ResourceInDataset;
-import org.aksw.jena_sparql_api.utils.model.ResourceInDatasetImpl;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
