@@ -46,6 +46,8 @@ import scala.Tuple2;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -62,7 +64,7 @@ import java.util.function.Function;
  * @param <T>
  */
 public class RddRdfWriter<T>
-    extends RdfWriterSpec<RddRdfWriter<T>>
+    extends RddRdfWriterSpettings<RddRdfWriter<T>>
 {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
@@ -630,5 +632,22 @@ public class RddRdfWriter<T>
                 x -> x.flatMap(ds -> WrappedIterator.create(ds.asDatasetGraph().find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(ds -> ds.asDatasetGraph().find())
         );
+    }
+
+
+    public static void validate(RddRdfWriterSpettings<?> settings) {
+        RDFFormat outputFormat = settings.getOutputFormat();
+        if (!StreamRDFWriter.registered(outputFormat)) {
+            throw new IllegalArgumentException(outputFormat + " is not a streaming format");
+        }
+
+        // TODO We need access to the hadoop FileSystem object for further validation
+//        if (!settings.isAllowOverwriteFiles()) {
+//             Path targetFile = settings.getTargetFile();
+
+//            if (Files.exists(targetFile, LinkOption.NOFOLLOW_LINKS)) {
+//                throw new IllegalArgumentException("File already exists and overwrite is prohibited: " + targetFile);
+//            }
+//        }
     }
 }

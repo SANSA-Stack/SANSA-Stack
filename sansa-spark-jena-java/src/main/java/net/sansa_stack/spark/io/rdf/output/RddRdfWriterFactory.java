@@ -10,7 +10,7 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 
 public class RddRdfWriterFactory
-    extends RdfWriterSpec<RddRdfWriterFactory>
+    extends RddRdfWriterSpettings<RddRdfWriterFactory>
 {
     public static RddRdfWriterFactory create() {
         return new RddRdfWriterFactory();
@@ -22,10 +22,7 @@ public class RddRdfWriterFactory
     }
 
     public RddRdfWriterFactory validate() {
-        if (!StreamRDFWriter.registered(outputFormat)) {
-            throw new IllegalArgumentException(outputFormat + " is not a streaming format");
-        }
-
+        RddRdfWriter.validate(this);
         return self();
     }
 
