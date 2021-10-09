@@ -19,14 +19,18 @@ import org.apache.jena.riot.RDFFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class OutputFormatRdfRegistry {
-    private static transient OutputFormatRdfRegistry INSTANCE = null;
+/**
+ * Registry for mapping between jena's {@link RDFFormat} and
+ * hadoop's {@link org.apache.hadoop.mapreduce.OutputFormat}.
+ */
+public class RddRdfWriterFormatRegistry {
+    private static transient RddRdfWriterFormatRegistry INSTANCE = null;
 
-    public static OutputFormatRdfRegistry getInstance() {
+    public static RddRdfWriterFormatRegistry getInstance() {
         if (INSTANCE == null) {
-            synchronized (OutputFormatRdfRegistry.class) {
+            synchronized (RddRdfWriterFormatRegistry.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = OutputFormatRdfRegistry.createDefault();
+                    INSTANCE = RddRdfWriterFormatRegistry.createDefault();
                 }
             }
         }
@@ -36,7 +40,7 @@ public class OutputFormatRdfRegistry {
 
     protected Map<Lang, FormatEntry> registry = new LinkedHashMap<>();
 
-    public OutputFormatRdfRegistry register(Lang lang, FormatEntry entry) {
+    public RddRdfWriterFormatRegistry register(Lang lang, FormatEntry entry) {
         registry.put(lang, entry);
 
         return this;
@@ -90,8 +94,8 @@ public class OutputFormatRdfRegistry {
         return result;
     }
 
-    public static OutputFormatRdfRegistry createDefault() {
-        OutputFormatRdfRegistry result = new OutputFormatRdfRegistry();
+    public static RddRdfWriterFormatRegistry createDefault() {
+        RddRdfWriterFormatRegistry result = new RddRdfWriterFormatRegistry();
         Map<Lang, FormatEntry> map = getDefaults();
 
         for (Map.Entry<Lang, FormatEntry> e : map.entrySet()) {

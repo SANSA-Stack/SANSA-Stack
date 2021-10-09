@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream
 import java.util.Collections
 
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
-import net.sansa_stack.spark.io.rdf.output.RddRdfSaver
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriter
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -185,7 +185,7 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
-    def configureSave(): RddRdfSaver[Triple] = RddRdfSaver.createForTriple(triples)
+    def configureSave(): RddRdfWriter[Triple] = RddRdfWriter.createForTriple(triples)
 
 
     //     * @param singleFile write to a single file only (internally, this is done by RDD::coalesce(1) function)
@@ -247,7 +247,7 @@ package object io {
    */
   implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
 
-    def configureSave(): RddRdfSaver[Quad] = RddRdfSaver.createForQuad(quads)
+    def configureSave(): RddRdfWriter[Quad] = RddRdfWriter.createForQuad(quads)
 
     /**
      * Deprecated; this method does not reuse Jena's RDFFormat/Lang system and also
@@ -332,8 +332,8 @@ package object io {
    *
    */
   implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
-    def configureSave(): RddRdfSaver[JenaDataset] = {
-      RddRdfSaver.createForDataset(quads);
+    def configureSave(): RddRdfWriter[JenaDataset] = {
+      RddRdfWriter.createForDataset(quads);
     }
   }
 

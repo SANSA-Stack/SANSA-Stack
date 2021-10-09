@@ -1,9 +1,9 @@
 package net.sansa_stack.spark.io.rdf.output;
 
 
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 import org.aksw.commons.io.util.FileMerger;
 import org.aksw.commons.io.util.FileUtils;
-import org.aksw.commons.io.util.StdIo;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
@@ -34,7 +34,6 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.FmtUtils;
-import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -52,7 +51,6 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * A fluent API for configuration of how to save an RDD of RDF data to disk.
@@ -63,199 +61,49 @@ import java.util.function.Supplier;
  *
  * @param <T>
  */
-public class RddRdfSaver<T> {
-    private static final Logger logger = LoggerFactory.getLogger(RddRdfSaver.class);
-
-    protected JavaRDD<T> rdd;
-    protected Path partitionFolder;
-    protected Path targetFile;
-
-    protected boolean useCoalesceOne;
-
-    /* Only applicable if a on outputFile is specified */
-    protected boolean deletePartitionFolderAfterMerge;
-    protected PrefixMapping globalPrefixMapping;
-    protected RDFFormat outputFormat;
-
-    // protected Object saveMode; // SaveMode saveMode;//mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-    protected boolean allowOverwriteFiles;
-    protected boolean useElephas;
-
-    protected boolean partitionsAsIndependentFiles;
-
-    /** Whether to convert quads to triples if a triple-based output format is requested */
-    protected boolean mapQuadsToTriplesForTripleLangs;
-
-    /**
-     * Only for console output: Instead of writing tuples out immediatly,
-     * collect up to this number of tuples in order to derive the used prefixes.
-     * Upon reaching this threshold, print out all seen prefixes and emit the held-back data
-     * as well as any further data immediately */
-    protected long deferOutputForUsedPrefixes = 0;
+public class RddRdfWriter<T>
+    extends RdfWriterSpec<RddRdfWriter<T>>
+{
+    private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
     // Static bindings for the generic 'T'
     protected BiConsumer<T, StreamRDF> sendRecordToStreamRDF;
-    protected Function<JavaRDD<T>, JavaRDD<Triple>> convertToTriple;
-    protected Function<JavaRDD<T>, JavaRDD<Quad>> convertToQuad;
+    protected JavaRddFunction<T, Triple> convertToTriple;
+    protected JavaRddFunction<T, Quad> convertToQuad;
 
     // Cached attributes from the given RDD
     protected JavaSparkContext sparkContext;
+
+    protected JavaRDD<T> rdd;
+
     protected Configuration hadoopConfiguration;
 
-    protected Supplier<OutputStream> consoleOutSupplier = StdIo::openStdOutWithCloseShield;
-
-    public RddRdfSaver(
-            JavaRDD<T> rdd,
+    public RddRdfWriter(
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF,
-            Function<JavaRDD<T>, JavaRDD<Triple>> convertToTriple,
-            Function<JavaRDD<T>, JavaRDD<Quad>> convertToQuad) {
+            JavaRddFunction<T, Triple> convertToTriple,
+            JavaRddFunction<T, Quad> convertToQuad) {
         super();
-        this.rdd = rdd;
-
-        this.sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
-        this.hadoopConfiguration = sparkContext.hadoopConfiguration();
-
         this.sendRecordToStreamRDF = sendRecordToStreamRDF;
         this.convertToTriple = convertToTriple;
         this.convertToQuad = convertToQuad;
     }
 
-    public boolean isMapQuadsToTriplesForTripleLangs() {
-        return mapQuadsToTriplesForTripleLangs;
-    }
+    public RddRdfWriter<T>  setRdd(JavaRDD<T> rdd) {
+        this.rdd = rdd;
 
-    /**
-     * Whether to convert quads to triples if a triple-based output format is requested
-     * Jena by default discards any quad outside of the default graph when writing to a triple format.
-     * Setting this flag to true will map each quad in a named graph to the default graph.
-     */
-    public RddRdfSaver setMapQuadsToTriplesForTripleLangs(boolean mapQuadsToTriplesForTripleLangs) {
-        this.mapQuadsToTriplesForTripleLangs = mapQuadsToTriplesForTripleLangs;
+        this.sparkContext = rdd == null ? null : JavaSparkContext.fromSparkContext(rdd.context());
+        this.hadoopConfiguration = rdd == null ? null : sparkContext.hadoopConfiguration();
+
         return this;
     }
 
-    public boolean isUseCoalesceOne() {
-        return useCoalesceOne;
+    public JavaRDD<T> getRdd() {
+        return rdd;
     }
 
-    public void setUseCoalesceOne(boolean useCoalesceOne) {
-        this.useCoalesceOne = useCoalesceOne;
-    }
-
-    public boolean isDeletePartitionFolderAfterMerge() {
-        return deletePartitionFolderAfterMerge;
-    }
-
-    public RddRdfSaver<T> setDeletePartitionFolderAfterMerge(boolean deletePartitionFolderAfterMerge) {
-        this.deletePartitionFolderAfterMerge = deletePartitionFolderAfterMerge;
-        return this;
-    }
-
-    public PrefixMapping getGlobalPrefixMapping() {
-        return globalPrefixMapping;
-    }
-
-    public Path getPartitionFolder() {
-        return partitionFolder;
-    }
-
-    public RddRdfSaver<T> setPartitionFolder(Path partitionFolder) {
-        this.partitionFolder = partitionFolder;
-        return this;
-    }
-
-    public RddRdfSaver<T> setPartitionFolder(String partitionFolder) {
-        return setPartitionFolder(partitionFolder == null ? null : new Path(partitionFolder));
-    }
-
-    public Path getTargetFile() {
-        return targetFile;
-    }
-
-    public RddRdfSaver<T> setTargetFile(Path targetFile) {
-        this.targetFile = targetFile;
-        return this;
-    }
-
-    public RddRdfSaver<T> setTargetFile(String targetFile) {
-        return setTargetFile(targetFile == null ? null : new Path(targetFile));
-    }
-
-    /**
-     * Set a prefix mapping to be used "globally" across all partitions.
-     *
-     * @param globalPrefixMapping
-     * @return
-     */
-    public RddRdfSaver<T> setGlobalPrefixMapping(PrefixMapping globalPrefixMapping) {
-        this.globalPrefixMapping = globalPrefixMapping;
-        return this;
-    }
-
-    public RDFFormat getOutputFormat() {
-        return outputFormat;
-    }
-
-    public RddRdfSaver<T> setOutputFormat(RDFFormat format) {
-        this.outputFormat = format;
-        return this;
-    }
-
-    /** Raises an exception if the format is not found */
-    public RddRdfSaver<T> setOutputFormat(String formatName) {
-        return setOutputFormat(RDFLanguagesEx.findRdfFormat(formatName));
-    }
-
-    public boolean isAllowOverwriteFiles() {
-        return allowOverwriteFiles;
-    }
-
-    public RddRdfSaver<T> setAllowOverwriteFiles(boolean allowOverwriteFiles) {
-        this.allowOverwriteFiles = allowOverwriteFiles;
-        return this;
-    }
-
-    public boolean isUseElephas() {
-        return useElephas;
-    }
-
-    public RddRdfSaver<T> setUseElephas(boolean useElephas) {
-        this.useElephas = useElephas;
-        return this;
-    }
-
-    public boolean isPartitionsAsIndependentFiles() {
-        return partitionsAsIndependentFiles;
-    }
-
-    public RddRdfSaver<T> setPartitionsAsIndependentFiles(boolean partitionsAsIndependentFiles) {
-        this.partitionsAsIndependentFiles = partitionsAsIndependentFiles;
-        return this;
-    }
-
-    public RddRdfSaver<T> setDeferOutputForUsedPrefixes(long deferOutputForUsedPrefixes) {
-        this.deferOutputForUsedPrefixes = deferOutputForUsedPrefixes;
-        return this;
-    }
-
-    /** If neither partition folder nor targe file is set the output goes to the console */
-    public boolean isConsoleOutput() {
-        return partitionFolder == null && targetFile == null;
-    }
-
-    public RddRdfSaver<T> setConsoleOutput() {
-        this.partitionFolder = null;
-        this.targetFile = null;
-        return this;
-    }
-
-    public RddRdfSaver<T> setConsoleOutSupplier(Supplier<OutputStream> consoleOutSupplier) {
-        this.consoleOutSupplier = consoleOutSupplier;
-        return this;
-    }
-
-    public Supplier<OutputStream> getConsoleOutSupplier() {
-        return consoleOutSupplier;
+    @Override
+    protected RddRdfWriter<T> self() {
+        return (RddRdfWriter<T>)this;
     }
 
     /**
@@ -269,11 +117,19 @@ public class RddRdfSaver<T> {
      * @param action
      * @return
      */
-    public RddRdfSaver<T> mutate(Consumer<RddRdfSaver<T>> action) {
+    public RddRdfWriter<T> mutate(Consumer<RddRdfWriter<T>> action) {
         action.accept(this);
         return this;
     }
 
+
+    public void runUnchecked() {
+        try {
+            run();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // @Override
     public void run() throws IOException {
@@ -471,8 +327,8 @@ public class RddRdfSaver<T> {
      * the set of files created by it.
      * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
      *
-     * @param mode
-     * @param exitOnError /
+     * mode
+     * exitOnError /
      *                    def saveToFile(outFile: String,
      *                    prefixMapping: PrefixMapping,
      *                    rdfFormat: RDFFormat,
@@ -615,7 +471,7 @@ public class RddRdfSaver<T> {
      * No other partition will write out prefixes.
      *
      * @param path the folder into which the file(s) will be written to
-     * @param mode the expected behavior of saving the data to a data source
+     * mode the expected behavior of saving the data to a data source
      */
     public static <T> void saveToFolder(
             JavaRDD<T> javaRdd,
@@ -690,7 +546,7 @@ public class RddRdfSaver<T> {
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
         Configuration hadoopConfiguration = sparkContext.hadoopConfiguration();
 
-        OutputFormatRdfRegistry.FormatEntry entry = OutputFormatRdfRegistry.getInstance().get(lang);
+        RddRdfWriterFormatRegistry.FormatEntry entry = RddRdfWriterFormatRegistry.getInstance().get(lang);
         Objects.requireNonNull(entry, String.format("No format registered for %s", lang));
         // TODO Add some registry to connect rdd + rdfFormat with the
         // hadoop API
@@ -716,62 +572,60 @@ public class RddRdfSaver<T> {
      * The convertToTriple and convertToQuad arguments are applied on the
      * driver while preparing the spark operations.
      *
-     * @param rdd
      * @param sendRecordToStreamRDF
      * @param convertToTriple
      * @param convertToQuad
      * @param <T>
      * @return
      */
-    public static <T> RddRdfSaver create(
-            JavaRDD<T> rdd,
+    public static <T> RddRdfWriter create(
             SerializableBiConsumer<T, StreamRDF> sendRecordToStreamRDF,
-            Function<JavaRDD<T>, JavaRDD<Triple>> convertToTriple,
-            Function<JavaRDD<T>, JavaRDD<Quad>> convertToQuad) {
-        return new RddRdfSaver<>(
-                rdd, sendRecordToStreamRDF, convertToTriple, convertToQuad);
+            JavaRddFunction<T, Triple> convertToTriple,
+            JavaRddFunction<T, Quad> convertToQuad) {
+        return new RddRdfWriter<>(
+                sendRecordToStreamRDF, convertToTriple, convertToQuad);
     }
 
-    public static RddRdfSaver<Triple> createForTriple(JavaRDD<Triple> rdd) {
-        return RddRdfSaver.<Triple>create(rdd,
+    public static RddRdfWriter<Triple> createForTriple() {
+        return RddRdfWriter.<Triple>create(
                 (triple, streamRDF) -> streamRDF.triple(triple),
                 x -> x,
                 x -> x.map(triple -> Quad.create(Quad.defaultGraphNodeGenerated, triple)));
     }
 
-    public static RddRdfSaver<Quad> createForQuad(JavaRDD<Quad> rdd) {
-        return RddRdfSaver.<Quad>create(rdd,
+    public static RddRdfWriter<Quad> createForQuad() {
+        return RddRdfWriter.<Quad>create(
                 (quad, streamRDF) -> streamRDF.quad(quad),
                 x -> x.map(Quad::asTriple),
                 x -> x);
     }
 
-    public static RddRdfSaver<Graph> createForGraph(JavaRDD<Graph> rdd) {
-        return RddRdfSaver.<Graph>create(rdd,
+    public static RddRdfWriter<Graph> createForGraph() {
+        return RddRdfWriter.<Graph>create(
                 (graph, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(graph), streamRDF),
                 x -> x.flatMap(Graph::find),
                 x -> x.flatMap(graph -> graph.find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
         );
     }
 
-    public static RddRdfSaver<DatasetGraph> createForDatasetGraph(JavaRDD<DatasetGraph> rdd) {
-        return RddRdfSaver.<DatasetGraph>create(rdd,
+    public static RddRdfWriter<DatasetGraph> createForDatasetGraph() {
+        return RddRdfWriter.<DatasetGraph>create(
                 (dg, streamRDF) -> StreamRDFOps.sendDatasetToStream(dg, streamRDF),
                 x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(DatasetGraph::find)
         );
     }
 
-    public static RddRdfSaver<Model> createForModel(JavaRDD<Model> rdd) {
-        return RddRdfSaver.<Model>create(rdd,
+    public static RddRdfWriter<Model> createForModel() {
+        return RddRdfWriter.<Model>create(
                 (model, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(model.getGraph()), streamRDF),
                 x -> x.flatMap(model -> model.getGraph().find()),
                 x -> x.flatMap(model -> model.getGraph().find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
         );
     }
 
-    public static RddRdfSaver<Dataset> createForDataset(JavaRDD<Dataset> rdd) {
-        return RddRdfSaver.<Dataset>create(rdd,
+    public static RddRdfWriter<Dataset> createForDataset() {
+        return RddRdfWriter.<Dataset>create(
                 (ds, streamRDF) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), streamRDF),
                 x -> x.flatMap(ds -> WrappedIterator.create(ds.asDatasetGraph().find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(ds -> ds.asDatasetGraph().find())
