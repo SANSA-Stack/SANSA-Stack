@@ -3,6 +3,7 @@ package net.sansa_stack.spark.rdd.op.rdf;
 import com.google.common.base.Preconditions;
 import net.sansa_stack.spark.rdd.op.rx.JavaRddRxOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.commons.rx.function.RxFunction;
 import org.aksw.jena_sparql_api.rx.query_flow.QueryFlowOps;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
@@ -29,7 +30,7 @@ public class JavaRddOfBindingsOps {
 
         JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
         Broadcast<Query> queryBc = cxt.broadcast(query);
-        JavaRddRxOps.SerializableFlowableTransformer<Binding, Triple> mapper = upstream -> {
+        RxFunction<Binding, Triple> mapper = upstream -> {
             Query q = queryBc.getValue();
             Template template = q.getConstructTemplate();
             Op op = Algebra.compile(q);
@@ -51,7 +52,7 @@ public class JavaRddOfBindingsOps {
 
         JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
         Broadcast<Query> queryBc = cxt.broadcast(query);
-        JavaRddRxOps.SerializableFlowableTransformer<Binding, Quad> mapper = upstream -> {
+        RxFunction<Binding, Quad> mapper = upstream -> {
             Query q = queryBc.getValue();
             Template template = q.getConstructTemplate();
             Op op = Algebra.compile(q);
@@ -70,7 +71,7 @@ public class JavaRddOfBindingsOps {
 
         JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
         Broadcast<Query> queryBc = cxt.broadcast(query);
-        JavaRddRxOps.SerializableFlowableTransformer<Binding, Dataset> mapper = upstream -> {
+        RxFunction<Binding, Dataset> mapper = upstream -> {
             Query q = queryBc.getValue();
             Template template = q.getConstructTemplate();
             Op op = Algebra.compile(q);

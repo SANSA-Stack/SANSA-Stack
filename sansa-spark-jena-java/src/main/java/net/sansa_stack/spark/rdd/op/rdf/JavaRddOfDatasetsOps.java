@@ -5,7 +5,6 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-
 import scala.Tuple2;
 
 public class JavaRddOfDatasetsOps {
@@ -37,6 +36,19 @@ public class JavaRddOfDatasetsOps {
 
         return result;
     }
+
+    /* ResourceInDatasetFlowOps is currently in jsa-rx-io; needs consolidation...
+    public static JavaRddFunction<Dataset, NodesInDataset> mapToNodesInDataset(Query graphAndNodeSelector) {
+        String queryStr = graphAndNodeSelector.toString();
+
+        return rdd -> rdd.mapPartitions(it -> {
+           Query query = QueryFactory.create(queryStr);
+           return Streams.stream(it)
+                   .map(ResourceInDatasetFlowOps.mapToGroupedResourceInDataset(query))
+                   .iterator();
+        });
+    }
+     */
 
 }
 

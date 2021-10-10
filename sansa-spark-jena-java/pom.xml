@@ -78,10 +78,6 @@
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-kryo-jena</artifactId>
-        </dependency>
 
         <!--
         <dependency>

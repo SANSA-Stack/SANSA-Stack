@@ -76,7 +76,7 @@ public class RddRdfWriter<T>
     // Cached attributes from the given RDD
     protected JavaSparkContext sparkContext;
 
-    protected JavaRDD<T> rdd;
+    protected JavaRDD<? extends T> rdd;
 
     protected Configuration hadoopConfiguration;
 
@@ -90,7 +90,7 @@ public class RddRdfWriter<T>
         this.convertToQuad = convertToQuad;
     }
 
-    public RddRdfWriter<T>  setRdd(JavaRDD<T> rdd) {
+    public RddRdfWriter<T> setRdd(JavaRDD<? extends T> rdd) {
         this.rdd = rdd;
 
         this.sparkContext = rdd == null ? null : JavaSparkContext.fromSparkContext(rdd.context());
@@ -99,7 +99,7 @@ public class RddRdfWriter<T>
         return this;
     }
 
-    public JavaRDD<T> getRdd() {
+    public JavaRDD<? extends T> getRdd() {
         return rdd;
     }
 
@@ -163,7 +163,7 @@ public class RddRdfWriter<T>
             StreamRDFOps.sendPrefixesToStream(globalPrefixMapping, writer);
 
             // val it = effectiveRdd.collect
-            Iterator<T> it = rdd.toLocalIterator();
+            Iterator<? extends T> it = rdd.toLocalIterator();
             it.forEachRemaining(item -> sendRecordToStreamRDF.accept(item, writer));
             writer.finish();
             out.flush();
@@ -223,7 +223,7 @@ public class RddRdfWriter<T>
         }
 
 
-        JavaRDD<T> effectiveRdd = rdd;
+        JavaRDD<T> effectiveRdd = rdd.map(x -> (T)x);
 
         if (useCoalesceOne) {
             effectiveRdd = effectiveRdd.coalesce(1);

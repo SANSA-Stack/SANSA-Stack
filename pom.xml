@@ -475,6 +475,12 @@
                 <version>${jsa.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.aksw.jena-sparql-api</groupId>
+                <artifactId>jena-sparql-api-rx-io</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
             <!-- Io package; used for the distributed trig reader hadoop plugin -->
             <dependency>
                 <groupId>org.aksw.jena-sparql-api</groupId>

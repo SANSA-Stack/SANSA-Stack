@@ -4,7 +4,6 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
@@ -26,27 +25,27 @@ public class RddRdfWriterFactory
         return self();
     }
 
-    public RddRdfWriter<Triple> forTriple(JavaRDD<Triple> rdd) {
+    public RddRdfWriter<Triple> forTriple(JavaRDD<? extends Triple> rdd) {
         return RddRdfWriter.createForTriple().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<Quad> forQuad(JavaRDD<Quad> rdd) {
+    public RddRdfWriter<Quad> forQuad(JavaRDD<? extends Quad> rdd) {
         return RddRdfWriter.createForQuad().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<Graph> forGraph(JavaRDD<Graph> rdd) {
+    public RddRdfWriter<Graph> forGraph(JavaRDD<? extends Graph> rdd) {
         return RddRdfWriter.createForGraph().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<DatasetGraph> forDatasetGraph(JavaRDD<DatasetGraph> rdd) {
+    public RddRdfWriter<DatasetGraph> forDatasetGraph(JavaRDD<? extends DatasetGraph> rdd) {
         return RddRdfWriter.createForDatasetGraph().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<Model> forModel(JavaRDD<Model> rdd) {
+    public RddRdfWriter<Model> forModel(JavaRDD<? extends Model> rdd) {
         return RddRdfWriter.createForModel().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<Dataset> forDataset(JavaRDD<Dataset> rdd) {
+    public RddRdfWriter<Dataset> forDataset(JavaRDD<? extends Dataset> rdd) {
         return RddRdfWriter.createForDataset().configureFrom(this).setRdd(rdd);
     }
 }
