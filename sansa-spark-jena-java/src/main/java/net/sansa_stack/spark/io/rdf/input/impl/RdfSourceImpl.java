@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
@@ -93,9 +94,9 @@ public class RdfSourceImpl
     }
 
     @Override
-    public RDD<Dataset> asDatasets() {
-        RDD<Dataset> result;
-        RddRdfLoader<Dataset> loader = RddRdfLoaderRegistryImpl.get().find(lang, Dataset.class);
+    public RDD<DatasetOneNg> asDatasets() {
+        RDD<DatasetOneNg> result;
+        RddRdfLoader<DatasetOneNg> loader = RddRdfLoaderRegistryImpl.get().find(lang, DatasetOneNg.class);
 
         if (loader != null) {
             result = loader.load(sparkSession.sparkContext(), path.toString());

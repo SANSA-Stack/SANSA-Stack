@@ -1,6 +1,8 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
 import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.ResourceInDataset;
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetOneNgImpl;
 import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.ResourceInDatasetImpl;
 import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
 import org.apache.jena.graph.Node;
@@ -49,10 +51,12 @@ public class JavaRddOfNamedModelsOps {
      * @param rdd
      * @return
      */
-    public static JavaRDD<Dataset> mapToDatasets(JavaPairRDD<String, Model> rdd) {
+    public static JavaRDD<DatasetOneNg> mapToDatasets(JavaPairRDD<String, Model> rdd) {
         return rdd.map(graphNameAndModel -> {
-            Dataset r = DatasetFactory.create();
-            r.addNamedModel(graphNameAndModel._1(), graphNameAndModel._2());
+            DatasetOneNg r = DatasetOneNgImpl.create(
+                    graphNameAndModel._1, graphNameAndModel._2.getGraph());
+            // Dataset r = DatasetFactory.create();
+            // r.addNamedModel(graphNameAndModel._1(), graphNameAndModel._2());
             return r;
         });
     }
