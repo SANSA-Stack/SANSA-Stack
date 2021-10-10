@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import org.apache.jena.query.Dataset;
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -24,7 +24,7 @@ public class JavaRddOfResourcesOps {
      *
      * @author Claus Stadler 2021-10-07
      */
-    public static JavaRDD<Dataset> mapToDatasets(JavaRDD<Resource> rdd) {
+    public static JavaRDD<DatasetOneNg> mapToDatasets(JavaRDD<Resource> rdd) {
         return JavaRddOfNamedModelsOps.mapToDatasets(mapToNamedModels(rdd));
     }
 }

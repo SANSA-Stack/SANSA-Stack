@@ -1,5 +1,6 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
 import org.apache.jena.ext.com.google.common.collect.Streams;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
@@ -23,7 +24,7 @@ public class JavaRddOfDatasetsOps {
      *
      * Ignores default graphs which get lost.
      */
-    public static JavaRDD<Dataset> groupNamedGraphsByGraphIri(JavaRDD<? extends Dataset> rdd, boolean distinct,
+    public static JavaRDD<DatasetOneNg> groupNamedGraphsByGraphIri(JavaRDD<? extends Dataset> rdd, boolean distinct,
             boolean sortGraphsByIri, int numPartitions) {
 
         // Note: Model is usually ModelCom so we get out-of-the-box serialization
@@ -32,7 +33,7 @@ public class JavaRddOfDatasetsOps {
         JavaPairRDD<String, Model> step2 = JavaRddOfNamedModelsOps.groupNamedModels(
                 step1, distinct, sortGraphsByIri, numPartitions);
 
-        JavaRDD<Dataset> result = JavaRddOfNamedModelsOps.mapToDatasets(step2);
+        JavaRDD<DatasetOneNg> result = JavaRddOfNamedModelsOps.mapToDatasets(step2);
 
         return result;
     }

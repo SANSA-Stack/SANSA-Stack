@@ -3,6 +3,7 @@ package net.sansa_stack.kryo.jena;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.google.gson.Gson;
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetOneNgImpl;
 import org.apache.jena.graph.*;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
@@ -84,7 +85,7 @@ public class JenaKryoRegistratorLib {
 
         kryo.register(ModelCom.class, new ModelSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
         kryo.register(DatasetImpl.class, new DatasetSerializer(Lang.RDFTHRIFT, RDFFormat.RDF_THRIFT_VALUES));
-
+        kryo.register(DatasetOneNgImpl.class, new DatasetOneNgSerializer());
 
         Serializer<Binding> bindingSerializer = new BindingSerializer();
         kryo.register(BindingRoot.class, bindingSerializer);
