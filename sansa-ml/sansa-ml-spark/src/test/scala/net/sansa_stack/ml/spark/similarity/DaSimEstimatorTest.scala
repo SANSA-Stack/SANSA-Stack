@@ -50,7 +50,24 @@ class DaSimEstimatorTest extends FunSuite with DataFrameSuiteBase {
       .setDistSimFeatureExtractionMethod("os")
       .setSimilarityValueStreching(false)
       .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
-    dse.transform(dataset)
-      .show(false)
+
+    val resultSimDf = dse
+      .transform(dataset)
+
+    resultSimDf.show(false)
+
+    val metagraph = dse.semantification(
+      resultDf = resultSimDf,
+      entityCols = resultSimDf.columns.slice(0, 2),
+      finalValCol = "overall_similarity_score",
+      similarityCols = resultSimDf.columns.slice(2, resultSimDf.columns.length - 1),
+      availability = dse.pAvailability,
+      reliability = dse.pReliability,
+      importance = dse.pImportance,
+      distSimFeatureExtractionMethod = dse._pDistSimFeatureExtractionMethod,
+      initialFilter = if (dse._pInitialFilterByObject != null) dse._pInitialFilterByObject else dse._pInitialFilterBySPARQL,
+      featureExtractionMethod = if (dse.pSparqlFeatureExtractionQuery != null) dse.pSparqlFeatureExtractionQuery else "SmartFeatureExtractor"
+    )
+    metagraph.foreach(println(_))
   }
 }
