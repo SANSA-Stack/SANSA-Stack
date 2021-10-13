@@ -822,8 +822,6 @@ class DaSimEstimator {
 
         val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
 
-        println(uriA, uriB, overall_similarity_score)
-
         // now we need to get most important factor
 
         val simScores: Array[(String, Double)] = similarityCols
