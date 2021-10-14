@@ -234,14 +234,14 @@ class DaSimEstimator {
       ).distinct()
   }
 
-  def calculateDasinSimilarities(
+  def calculateDaSimSimilarities(
     candidatePairsDataFrame: DataFrame,
     extractedFeatureDataframe: DataFrame,
   ): DataFrame = {
 
     var similarityEstimations: DataFrame = candidatePairsDataFrame
 
-    if (pSimilarityCalculationExecutionOrder == 0) pSimilarityCalculationExecutionOrder = extractedFeatureDataframe.columns.drop(1)
+    if (pSimilarityCalculationExecutionOrder == null) pSimilarityCalculationExecutionOrder = extractedFeatureDataframe.columns.drop(1)
 
     pSimilarityCalculationExecutionOrder.foreach(
       featureName => {
@@ -519,10 +519,9 @@ class DaSimEstimator {
     featureDf
     // dasim similarity estimation calculation
     println("column wise similarity calculation")
-    val similarityEstimations: DataFrame = calculateDasinSimilarities(
+    val similarityEstimations: DataFrame = calculateDaSimSimilarities(
       candidatePairs,
-      featureDf,
-      pSimilarityCalculationExecutionOrder,
+      featureDf
     ).cache()
     similarityEstimations.show(false)
 
