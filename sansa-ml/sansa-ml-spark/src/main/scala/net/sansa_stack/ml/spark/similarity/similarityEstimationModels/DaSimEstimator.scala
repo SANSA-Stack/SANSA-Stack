@@ -1,15 +1,19 @@
 package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
+import java.util.{Calendar, Date}
+
 import net.sansa_stack.ml.spark.featureExtraction.{SmartFeatureExtractor, SparqlFrame}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
 import net.sansa_stack.rdf.spark.io.RDFReader
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSession}
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF}
 import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{abs, col, collect_list, lit, max, min, udf, unix_timestamp}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
@@ -25,6 +29,9 @@ class DaSimEstimator {
   var _pDistSimFeatureExtractionMethod = "or"
   var _pDistSimThreshold = 1.0
 
+  // feature extraction
+  var pSparqlFeatureExtractionQuery = null
+
   // similarity calculation
   var pSimilarityCalculationExecutionOrder: Array[String] = null
 
@@ -37,51 +44,117 @@ class DaSimEstimator {
   // general
   var _parameterVerboseProcess = false
 
-
+  /**
+   * candidate filtering sparql
+   * with this parameter you can reduce the list of of candidates by use use of a sparql query
+   * @param sparqlFilter SPARQL filter applied ontop of input KG
+   * @return adjusted transformer
+   */
   def setSparqlFilter(sparqlFilter: String): this.type = {
     _pInitialFilterBySPARQL = sparqlFilter
     this
   }
 
+  /**
+   * FIlter init KG by spo object
+   * Filter the KG by the object of spo structure, so an alternative and faster compared to sparql
+   * @param objectFilter string representing the object for spo filter
+   * @return adjusted transformer
+   */
   def setObjectFilter(objectFilter: String): this.type = {
     _pInitialFilterByObject = objectFilter
     this
   }
+
+  /**
+   * DistSim feature extraction method
+   * feature extracting method for first guesses via DistSim
+   * @param distSimFeatureExtractionMethod DistSim feature Extraction Method
+   * @return adjusted transformer
+   */
   def setDistSimFeatureExtractionMethod(distSimFeatureExtractionMethod: String): this.type = {
     _pDistSimFeatureExtractionMethod = distSimFeatureExtractionMethod
     this
   }
 
+  /**
+   * DistSim Threshold min Similarity
+   * This is the threshold for minimal similarity score being used within Distsim for promising canidates
+   * @param distSimThreshold DistSim threshold min similarity score for prefilter candidate pairs
+   * @return adjusted transformer
+   */
   def setDistSimThreshold(distSimThreshold: Double): this.type = {
     _pDistSimThreshold = distSimThreshold
     this
   }
 
+  /**
+   * Execution order of similarity scores
+   * here you can specify in which order the similarity values should be executed
+   * @param similarityCalculationExecutionOrder
+   * @return adjusted transformer
+   */
   def setSimilarityCalculationExecutionOrder(similarityCalculationExecutionOrder: Array[String]): this.type = {
     pSimilarityCalculationExecutionOrder = similarityCalculationExecutionOrder
     this
   }
 
+  /**
+   * Normalize similairty scores per feature
+   * this parameter offers that the feature dedicated similarity scores are streched/normed s.t. they all reach from zero to one
+   * @param valueStreching
+   * @return adjusted transformer
+   */
   def setSimilarityValueStreching(valueStreching: Boolean): this.type = {
     pValueStreching = valueStreching
     this
   }
 
+  /**
+   * specify manually the availability of each feature
+   * this parameter weights the relevance of a certain feature similarity based on their availability
+   * it is possible that the availability is known
+   * if the value is not given, it will be considered to be equally distributed
+   * @param availability
+   * @return adjusted transformer
+   */
   def setAvailability(availability: Map[String, Double]): this.type = {
     pAvailability = availability
     this
   }
 
+  /**
+   * specify manually the reliability of each feature
+   * this parameter weights the relevance of a certain feature similarity based on their reliability
+   * it is possible that the reliability is known, for example that certain data might be influenced by ffake news or that data is rarely updated
+   * if the value is not given, it will be considered to be equally distributed
+   * @param reliability
+   * @return adjusted transformer
+   */
   def setReliability(reliability: Map[String, Double]): this.type = {
     pReliability = reliability
     this
   }
 
+  /**
+   * specify manually the importance of each feature
+   * this parameter weights the relevance of a certain feature similarity based on their importance
+   * this value offers user to influence weightning on personal preferance
+   * @param importance
+   * @return adjusted transformer
+   */
   def setImportance(importance: Map[String, Double]): this.type = {
     pImportance = importance
     this
   }
 
+  /**
+   * internal method that collects seeds by either sparql or object filter
+   * @param ds dataset of triples representing input kg
+   * @param sparqlFilter filter by sparql initial kg
+   * @param objectFilter gilter init kg by spo object
+   * @return dataframe with one column containing string representation of seed URIs
+   */
   def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null): DataFrame = {
 
     val spark = SparkSession.builder.getOrCreate()
@@ -124,6 +197,14 @@ class DaSimEstimator {
   seeds
   }
 
+  /**
+   * we use distsim to gather promising candidates
+   * @param dataset prefiltered KG for gathering candidates
+   * @param seeds the seeds to be used for calculating promising cadidates via DistSim
+   * @param _pDistSimFeatureExtractionMethod method for distsim feature extractor
+   * @param _pDistSimThreshold threshold for distsim postfilter pairs by min threshold
+   * @return dataframe with candidate pairs resulting from DistSim
+   */
   def gatherCandidatePairs(dataset: Dataset[Triple], seeds: DataFrame, _pDistSimFeatureExtractionMethod: String = "os", _pDistSimThreshold: Double = 0): DataFrame = {
     val spark = SparkSession.builder().getOrCreate()
     implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
@@ -190,6 +271,17 @@ class DaSimEstimator {
     candidatePairsForSimEst
   }
 
+  /**
+   * feature extraction for extensive similarity scores
+   * creates dataframe with all features
+   * two options for feature gathering
+   * either SparqlFrame
+   * or SmartFeature Extractor which operates pivot based
+   * @param ds dataset of KG
+   * @param candidates dandidate pairs from distsim
+   * @param sparqlFeatureExtractionQuery optional, but if set we use sparql frame and not smartfeatureextractor
+   * @return dataframe with columns corresponding to the features and the uri identifier
+   */
   def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null): DataFrame = {
     val featureDf = {
       if (sparqlFeatureExtractionQuery != null) {
@@ -222,6 +314,11 @@ class DaSimEstimator {
     featureDf
   }
 
+  /**
+   * list all elements which exists within the resulting uris of distsim
+   * @param candidatePairs candidate pairs in a dataframe coming from distsim
+   * @return dataframw ith one column having the relevant uris as strings
+   */
   def listDistinctCandidates(candidatePairs: DataFrame): DataFrame = {
 
     candidatePairs
@@ -234,6 +331,13 @@ class DaSimEstimator {
       ).distinct()
   }
 
+  /**
+   * calculate with the new approach the weighted and feature specific simialrity scores
+   *
+   * @param candidatePairsDataFrame candidate pairs which span up the combinations to be calculated on
+   * @param extractedFeatureDataframe extracted feature dataframe
+   * @return calculate for each feature the pairwise similarity score
+   */
   def calculateDaSimSimilarities(
     candidatePairsDataFrame: DataFrame,
     extractedFeatureDataframe: DataFrame,
@@ -417,6 +521,11 @@ class DaSimEstimator {
 
   }
 
+  /**
+   * optional method to normalize similarity columns
+   * @param df similarity scored dataframe which needs to be normalized
+   * @return normalized dataframe
+   */
   def normSimColumns(df: DataFrame): DataFrame = {
     var norm_sim_df: DataFrame = df.cache()
 
@@ -438,6 +547,15 @@ class DaSimEstimator {
     norm_sim_df
   }
 
+  /**
+   * aggregate similarity scores and weight those
+   * @param simDf similarity dataframw with the feature specific sim scores
+   * @param valueStreching parameter, optional to strech features, by deafault set
+   * @param availability weightning by availability
+   * @param importance user specific weighning over importance
+   * @param reliability optional opportunity to incluence weighning by reliability
+   * @return similarity dataframe with aggregated and weigthed final similarity score
+   */
   def aggregateSimilarityScore(
     simDf: DataFrame,
     valueStreching: Boolean = true,
@@ -494,8 +612,294 @@ class DaSimEstimator {
     final_calc_df
   }
 
+  def semantification(
+      resultDf: DataFrame,
+      entityCols: Array[String],
+      finalValCol: String,
+      similarityCols: Array[String],
+      availability: Map[String, Double],
+      reliability: Map[String, Double],
+      importance: Map[String, Double],
+      distSimFeatureExtractionMethod: String,
+      initialFilter: String,
+      featureExtractionMethod: String
+    ): RDD[Triple] = {
+
+      val spark = SparkSession.builder.getOrCreate()
+
+      // strings for URIs
+      var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
+      var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
+      var _commentPropertyURIasString: String = "sansa-stack/sansaVocab/comment"
+      var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+      var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+      var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+
+      val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+      // val typeNode = NodeFactory.createURI(_experimentTypePropertyURIasString)
+      val nodeLabel = NodeFactory.createURI("rdfs/label")
+
+      // create reused nodes
+      val typeNodeP = NodeFactory.createURI(_experimentTypePropertyURIasString)
+
+      val valueNodeP = NodeFactory.createURI(_valuePropertyURIasString)
+
+      val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
 
 
+      // create experiment node
+      val metagraphDatetime: Date = Calendar.getInstance().getTime()
+      val experimentHash: String = metagraphDatetime.toString.hashCode.toString
+      val experimentNode: Node = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash)
+
+      val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
+      val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
+      val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
+      val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
+
+
+
+      // overall annotation
+      // Create all inforamtion for this central node
+      println("central node triples")
+      val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+        Triple.create(
+          experimentNode,
+          experimentTypePropertyNode,
+          experimentTypeNode
+        )
+      ))
+
+      centralNodeTriples foreach println
+
+      // distsim feature extraction
+      val hyperparameterInitialFilter = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/initialFilter")
+      val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction")
+      val hyperparameterFeatureExtractionStrategy = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/featureExtractionStrategy")
+      val hyperparameterAvailability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/availability")
+      val hyperparameterReliability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/reliability")
+      val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
+
+      // now hyperparameters
+      // println("hyperparameer semantification")
+      val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+        // hyperparameterInitialFilter
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterInitialFilter
+        ),
+        Triple.create(
+          hyperparameterInitialFilter,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterInitialFilter,
+          nodeLabel,
+          NodeFactory.createLiteral("initial filter")
+        ),
+        Triple.create(
+          hyperparameterInitialFilter,
+          valueNodeP,
+          NodeFactory.createLiteral(initialFilter)
+        ),
+
+        // distsim feature extraction
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterDistSimFeatureExtractionNode
+        ),
+        Triple.create(
+          hyperparameterDistSimFeatureExtractionNode,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterDistSimFeatureExtractionNode,
+          nodeLabel,
+          NodeFactory.createLiteral("DistSim feature extraction strategy")
+        ),
+        Triple.create(
+          hyperparameterDistSimFeatureExtractionNode,
+          valueNodeP,
+          NodeFactory.createLiteral(distSimFeatureExtractionMethod)
+        ),
+
+        // hyperparameterFeatureExtractionStrategy
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterFeatureExtractionStrategy
+        ),
+        Triple.create(
+          hyperparameterFeatureExtractionStrategy,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterFeatureExtractionStrategy,
+          nodeLabel,
+          NodeFactory.createLiteral("feature extraction strategy")
+        ),
+        Triple.create(
+          hyperparameterFeatureExtractionStrategy,
+          valueNodeP,
+          NodeFactory.createLiteral(featureExtractionMethod)
+        ),
+        // hyperparameterAvailability
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterAvailability
+        ),
+        Triple.create(
+          hyperparameterAvailability,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterAvailability,
+          nodeLabel,
+          NodeFactory.createLiteral("availability")
+        ),
+        Triple.create(
+          hyperparameterAvailability,
+          valueNodeP,
+          NodeFactory.createLiteral(availability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+        ),
+        // hyperparameterReliability
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterReliability
+        ),
+        Triple.create(
+          hyperparameterReliability,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterReliability,
+          nodeLabel,
+          NodeFactory.createLiteral("reliability")
+        ),
+        Triple.create(
+          hyperparameterReliability,
+          valueNodeP,
+          NodeFactory.createLiteral(reliability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+        ),
+        // hyperparameterImportance
+        Triple.create(
+          experimentNode,
+          hyperparameterNodeP,
+          hyperparameterImportance
+        ),
+        Triple.create(
+          hyperparameterImportance,
+          typeNodeP,
+          hyperparameterNodeP
+        ),
+        Triple.create(
+          hyperparameterImportance,
+          nodeLabel,
+          NodeFactory.createLiteral("importance")
+        ),
+        Triple.create(
+          hyperparameterImportance,
+          valueNodeP,
+          NodeFactory.createLiteral(importance.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+        )
+      ))
+
+      // now semantic representation of dimilsrity results
+      // println("semantification of similarity values")
+      val semanticResult = resultDf.rdd.flatMap(row => {
+        val uriA = row.getAs[String](entityCols(0))
+        val uriB = row.getAs[String](entityCols(1))
+
+        val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
+
+        // now we need to get most important factor
+
+        val simScores: Array[(String, Double)] = similarityCols
+          .map(sc => (sc, row.getAs[Double](sc)))
+
+        val bestSimScore = simScores
+          .sortBy(_._2)
+          .last
+          ._2
+
+        val epsilon = 0.001
+
+        val listMostRelevant = simScores
+          .filter(ss => (bestSimScore - ss._2) < epsilon)
+
+        (uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+
+        val entityNodes = Array(
+          NodeFactory.createURI(uriA),
+          NodeFactory.createURI(uriB)
+        )
+
+        val valueNode = NodeFactory.createLiteralByValue(overall_similarity_score, XSDDatatype.XSDdouble)
+
+        val commentNodeP = NodeFactory.createLiteral(_commentPropertyURIasString)
+        val mostRelevantNode = NodeFactory.createURI("most relevant:" + listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+
+        // now semantification
+        val predictionNode: Node = NodeFactory.createURI(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
+
+        // entity nodes to prediction blank node
+        val entityNodeTriples: Array[Triple] = entityNodes.map(
+          entityNode =>
+            Triple.create(
+              predictionNode,
+              elementPropertyNode,
+              entityNode
+            )
+        )
+
+        // prediction blank node to overall experiment
+        val valueExperimentTriples: Array[Triple] = Array(
+          Triple.create(
+            experimentNode,
+            predictionPropertyNode,
+            predictionNode
+          ),
+          Triple.create(
+            predictionNode,
+            valuePropertyURINode,
+            valueNode
+          ),
+          /* Triple.create(
+            predictionNode,
+            valuePropertyURINode,
+            valueNode
+          ), */
+          Triple.create(
+            predictionNode,
+            commentNodeP,
+            mostRelevantNode
+          )
+        )
+        entityNodeTriples ++ valueExperimentTriples
+      })
+
+      // semanticResult foreach println
+
+      // now we need to merge central node, hyperparamters and semantic result
+      centralNodeTriples.union(semanticResult).union(hyperparameterTriples)
+    }
+
+  /**
+   * transforms da kg to a similarity score dataframe based on parameters
+   * overall method encapsulating the methods and should be used from outside
+   * @param dataset knowledge graph
+   * @return dataframw with results of similarity scores as metagraph
+   */
   def transform(dataset: Dataset[Triple]): DataFrame = {
     // gather seeds
     println("gather seeds")
@@ -514,7 +918,7 @@ class DaSimEstimator {
     val featureDf: DataFrame = gatherFeatures(
       dataset,
       candidateList,
-      null).cache()
+      sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null).cache()
     featureDf.show(false)
     featureDf
     // dasim similarity estimation calculation
