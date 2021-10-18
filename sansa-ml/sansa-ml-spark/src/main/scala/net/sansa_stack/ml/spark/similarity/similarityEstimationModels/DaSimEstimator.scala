@@ -11,10 +11,10 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SparkSe
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{abs, col, collect_list, lit, max, min, udf, unix_timestamp}
+import org.apache.spark.sql.functions.{abs, array, coalesce, col, collect_list, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
 class DaSimEstimator {
@@ -228,6 +228,60 @@ class DaSimEstimator {
 
     // extractedFeaturesDataFrame.show(false)
 
+
+    // similarity Estimations Overview
+
+    // countVectorizedFeaturesDataFrame.show(false)
+
+    println("Min Hash for candidate pairs")
+
+    // extractedFeaturesDataFrame.show(false)
+
+    val hashingTF = new HashingTF()
+      .setInputCol("extractedFeatures")
+      .setOutputCol("vectorizedFeatures")
+
+      // .setNumFeatures(20)
+    val hashedDf = hashingTF
+      .transform(extractedFeaturesDataFrame)
+      .select("uri", "vectorizedFeatures")
+      .limit(100)
+      .cache()
+
+
+    val mh = new MinHashLSH()
+      .setNumHashTables(5)
+      .setInputCol("vectorizedFeatures")
+      .setOutputCol("hashes")
+
+    val model = mh.fit(hashedDf)
+
+    val tmpSim = model
+      .approxSimilarityJoin(hashedDf, hashedDf, 0.6, "JaccardDistance")
+      .cache()
+      // .withColumn("uriA", first(col("datasetA")))
+      // .withColumn("uriB", first(col("datasetB")))
+      // .select("uriA", "uriB", "JaccardDistance")
+
+    tmpSim
+      .show(false)
+
+    val filteredTmpDf = tmpSim
+      .withColumn("uriA", col("datasetA").getField("uri"))
+      .withColumn("uriB", col("datasetB").getField("uri"))
+      .filter(col("uriA").notEqual(col("uriB")))
+      .withColumn("set", array(col("uriA"), col("uriB")))
+      .withColumn("sortedSet", sort_array(col("set")))
+      .select("uriA", "uriB", "set", "sortedSet", "JaccardDistance")
+      .dropDuplicates("sortedSet")
+      .cache()
+
+    filteredTmpDf
+      .show(false)
+
+    // minHash similarity estimation
+    println("old approach")
+
     // count Vectorization
     val cvModel: CountVectorizerModel = new CountVectorizer()
       .setInputCol("extractedFeatures")
@@ -239,12 +293,12 @@ class DaSimEstimator {
     // val isNoneZeroVector = udf({ v: Vector => v.numNonzeros > 0 })
     val countVectorizedFeaturesDataFrame: DataFrame = tmpCvDf
       // .filter(isNoneZeroVector(col("vectorizedFeatures")))
-      .select("uri", "vectorizedFeatures").cache()
-    // similarity Estimations Overview
+      .select("uri", "vectorizedFeatures")
+      // .limit(50)
+      .cache()
 
-    // countVectorizedFeaturesDataFrame.show(false)
+    countVectorizedFeaturesDataFrame.show(false)
 
-    // minHash similarity estimation
     val simModel = new JaccardModel()
       .setInputCol("vectorizedFeatures")
     /* .setNumHashTables(10)
@@ -389,9 +443,15 @@ class DaSimEstimator {
               .setOutputCol("rawFeatures")
             // .setNumFeatures(20)
 
+            // println(featureName)
+
+            // twoColFeDf.show(false)
+
             val featurizedData = hashingTF
-              .transform(twoColFeDf)
+              .transform(twoColFeDf.withColumn(featureName, coalesce(col(featureName), array())))
             // alternatively, CountVectorizer can also be used to get term frequency vectors
+
+            // featurizedData.show(false)
 
             val idf = new IDF()
               .setInputCol("rawFeatures")
@@ -580,6 +640,22 @@ class DaSimEstimator {
     if (pReliability == null) {
       pReliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
       println("DaSimEstimator: reliability parameter is not set so it is automatically equally distributed: " + pReliability)
+    }
+
+    if (pImportance.size < sim_columns.size) {
+      val tmp = sim_columns.toSet.diff(pImportance.map(_._1).toSet).map(sc => (sc, 0.0))
+      pImportance = pImportance ++ tmp
+      println("only some columns got Importance values, all others ($tmp) are now set to 0.0")
+    }
+    if (pAvailability.size < sim_columns.size) {
+      val tmp = sim_columns.toSet.diff(pAvailability.map(_._1).toSet).map(sc => (sc, 0.0))
+      pAvailability = pAvailability ++ tmp
+      println("only some columns got Availability values, all others ($tmp) are now set to 0.0")
+    }
+    if (pReliability.size < sim_columns.size) {
+      val tmp = sim_columns.toSet.diff(pReliability.map(_._1).toSet).map(sc => (sc, 0.0))
+      pReliability = pReliability ++ tmp
+      println(s"only some columns got Importance values, all others ($tmp) are now set to 0.0")
     }
 
     // now we calculate weighted sum
@@ -907,7 +983,9 @@ class DaSimEstimator {
     seeds.show(false)
     // gather cadidate pairs by DistSim
     println("gather candidate pairs by DistSim")
-    val candidatePairs: DataFrame = gatherCandidatePairs(dataset, seeds, _pDistSimFeatureExtractionMethod, _pDistSimThreshold).cache()
+    val candidatePairs: DataFrame = gatherCandidatePairs(dataset, seeds, _pDistSimFeatureExtractionMethod, _pDistSimThreshold)
+      .cache()
+      .limit(10)
     candidatePairs.show(false)
     // unique candidates
     println("unique candidates")
