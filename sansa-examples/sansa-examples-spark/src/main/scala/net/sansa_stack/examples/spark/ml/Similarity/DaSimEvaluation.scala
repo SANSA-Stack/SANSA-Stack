@@ -5,7 +5,8 @@ import java.util.{Calendar, Date}
 import net.sansa_stack.ml.spark.featureExtraction._
 import net.sansa_stack.ml.spark.similarity.similarityEstimationModels.{DaSimEstimator, JaccardModel}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
-import net.sansa_stack.rdf.spark.io.RDFReader
+import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
+import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph
@@ -34,16 +35,23 @@ object DaSimEvaluation {
     spark.sparkContext.setLogLevel("ERROR")
     JenaSystem.init()
     val lang = Lang.TURTLE
-    val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/sampleMovieDB.nt").persist()
+    // val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/lmdb.nt").persist()
 
-    val dataset: Dataset[Triple] = originalDataRDD
+    val dataset: Dataset[Triple] = NTripleReader
+      .load(
+        spark,
+        "/Users/carstendraschner/Datasets/lmdb.nt",
+        stopOnBadTerm = ErrorParseMode.SKIP,
+        stopOnWarnings = WarningParseMode.IGNORE
+      )
       .toDS()
-      .cache()
+      .persist()
 
     val dse = new DaSimEstimator()
       // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
       .setObjectFilter("http://data.linkedmdb.org/movie/film")
-      .setDistSimFeatureExtractionMethod("os")
+      .setDistSimFeatureExtractionMethod("on")
+      .setDistSimThreshold(0.5)
       .setSimilarityValueStreching(false)
       .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
     dse.transform(dataset)
