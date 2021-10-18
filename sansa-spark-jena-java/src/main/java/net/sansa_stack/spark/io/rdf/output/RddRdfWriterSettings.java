@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class RddRdfWriterSpettings<SELF extends RddRdfWriterSpettings> {
+public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
     protected Path partitionFolder;
     protected Path targetFile;
 
@@ -47,7 +47,7 @@ public class RddRdfWriterSpettings<SELF extends RddRdfWriterSpettings> {
         return (SELF)this;
     }
 
-    public SELF configureFrom(RddRdfWriterSpettings<?> other) {
+    public SELF configureFrom(RddRdfWriterSettings<?> other) {
         this.partitionFolder = other.partitionFolder;
         this.targetFile = other.targetFile;
         this.useCoalesceOne = other.useCoalesceOne;

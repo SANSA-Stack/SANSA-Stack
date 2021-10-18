@@ -46,8 +46,6 @@ import scala.Tuple2;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -64,7 +62,7 @@ import java.util.function.Function;
  * @param <T>
  */
 public class RddRdfWriter<T>
-    extends RddRdfWriterSpettings<RddRdfWriter<T>>
+    extends RddRdfWriterSettings<RddRdfWriter<T>>
 {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
@@ -164,7 +162,9 @@ public class RddRdfWriter<T>
 
             // val it = effectiveRdd.collect
             Iterator<? extends T> it = rdd.toLocalIterator();
-            it.forEachRemaining(item -> sendRecordToStreamRDF.accept(item, writer));
+            it.forEachRemaining(item -> {
+                sendRecordToStreamRDF.accept(item, writer);
+            });
             writer.finish();
             out.flush();
         }
@@ -635,7 +635,7 @@ public class RddRdfWriter<T>
     }
 
 
-    public static void validate(RddRdfWriterSpettings<?> settings) {
+    public static void validate(RddRdfWriterSettings<?> settings) {
         RDFFormat outputFormat = settings.getOutputFormat();
         if (!StreamRDFWriter.registered(outputFormat)) {
             throw new IllegalArgumentException(outputFormat + " is not a streaming format");
