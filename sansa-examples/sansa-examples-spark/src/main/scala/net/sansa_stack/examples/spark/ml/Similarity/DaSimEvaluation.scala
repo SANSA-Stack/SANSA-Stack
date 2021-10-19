@@ -52,7 +52,7 @@ object DaSimEvaluation {
       .setObjectFilter("http://data.linkedmdb.org/movie/film")
       .setDistSimFeatureExtractionMethod("on")
       .setDistSimThreshold(0.9)
-      .setSimilarityCalculationExecutionOrder(Array("writer", "actor", "country", "genre", "runtime", "title"))
+      .setSimilarityCalculationExecutionOrder(Array("runtime")) // Array("writer", "actor", "country", "genre", "runtime", "title"))
       .setSimilarityValueStreching(false)
       .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
 
@@ -64,6 +64,8 @@ object DaSimEvaluation {
     result
       .select("uriA", "uriB", "overall_similarity_score")
       .show(false)
+
+    println(s"the result has ${result.count()} elements")
 
     spark.stop()
   }
