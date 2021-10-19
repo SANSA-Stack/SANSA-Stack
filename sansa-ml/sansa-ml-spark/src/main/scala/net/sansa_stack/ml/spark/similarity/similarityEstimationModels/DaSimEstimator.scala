@@ -979,15 +979,17 @@ class DaSimEstimator {
     // gather seeds
     println("gather seeds")
     val seeds: DataFrame = gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
-      .limit(100)
+      .limit(1000)
       .cache()
     seeds
       .show(false)
     // gather cadidate pairs by DistSim
     println("gather candidate pairs")
     val candidatePairs: DataFrame = gatherCandidatePairs(dataset, seeds, _pDistSimFeatureExtractionMethod, _pDistSimThreshold = _pDistSimThreshold)
-      .limit(5)
+      // .limit(100)
       .cache()
+
+    println(s"We have ${candidatePairs.count()} candidate pairs")
 
     candidatePairs.show(false)
     // unique candidates
@@ -999,9 +1001,13 @@ class DaSimEstimator {
     val featureDf: DataFrame = gatherFeatures(
       dataset,
       candidateList,
-      sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null).cache()
+      sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null)
+      .cache()
     featureDf.show(false)
-    featureDf
+
+    println(s"We have ${featureDf.count()} entries in feature DF pairs")
+
+
     // dasim similarity estimation calculation
     println("column wise similarity calculation")
     val similarityEstimations: DataFrame = calculateDaSimSimilarities(
