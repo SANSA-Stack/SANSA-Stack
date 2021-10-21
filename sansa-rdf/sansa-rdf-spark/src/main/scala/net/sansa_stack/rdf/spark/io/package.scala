@@ -24,6 +24,7 @@ import java.util.Collections
 
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter
+import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -185,7 +186,7 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
-    def configureSave(): RddRdfWriter[Triple] = RddRdfWriter.createForTriple(triples)
+    def configureSave(): RddRdfWriter[Triple] = RddRdfWriter.createForTriple.setRdd(triples)
 
 
     //     * @param singleFile write to a single file only (internally, this is done by RDD::coalesce(1) function)
@@ -247,7 +248,7 @@ package object io {
    */
   implicit class RDFQuadsWriter[T](quads: RDD[Quad]) {
 
-    def configureSave(): RddRdfWriter[Quad] = RddRdfWriter.createForQuad(quads)
+    def configureSave(): RddRdfWriter[Quad] = RddRdfWriter.createForQuad.setRdd(quads)
 
     /**
      * Deprecated; this method does not reuse Jena's RDFFormat/Lang system and also
@@ -333,7 +334,7 @@ package object io {
    */
   implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
     def configureSave(): RddRdfWriter[JenaDataset] = {
-      RddRdfWriter.createForDataset(quads);
+      RddRdfWriter.createForDataset.setRdd(quads)
     }
   }
 
@@ -402,7 +403,7 @@ package object io {
      * @param lang
      * @return
      */
-    def datasets(lang: Lang): String => RDD[JenaDataset] = {
+    def datasets(lang: Lang): String => RDD[DatasetOneNg] = {
       if (!RDFLanguages.isQuads(lang)) {
         throw new RuntimeException("Language " + lang + " not a quad-based language according to jena's registry")
       }
@@ -487,13 +488,13 @@ package object io {
      *
      * @return the [[RDD]] of datasets
      */
-    def trig: String => RDD[JenaDataset] = path => {
+    def trig: String => RDD[DatasetOneNg] = path => {
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       spark.sparkContext.newAPIHadoopFile(path,
         classOf[FileInputFormatRdfTrigDataset],
         classOf[LongWritable],
-        classOf[JenaDataset], confHadoop)
+        classOf[DatasetOneNg], confHadoop)
         .map { case (_, v) => v }
     }
 
