@@ -4,7 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.RDFNodeInDataset;
+import org.aksw.jenax.arq.dataset.api.RDFNodeInDataset;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 

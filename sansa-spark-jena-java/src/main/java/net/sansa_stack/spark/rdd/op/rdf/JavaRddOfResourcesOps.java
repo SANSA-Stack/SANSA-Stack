@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.spark.api.java.JavaPairRDD;

@@ -2,7 +2,7 @@ package net.sansa_stack.hadoop.format.jena.trig;
 
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
-import org.aksw.jena_sparql_api.rx.RDFDataMgrRx;
+import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 

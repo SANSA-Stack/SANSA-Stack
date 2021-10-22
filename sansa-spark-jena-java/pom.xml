@@ -57,6 +57,19 @@
             <artifactId>sansa-kryo-jena</artifactId>
         </dependency>
 
+
+<!--
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-lambdas-serializable</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rx</artifactId>
+        </dependency>
+-->
+
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.binary.version}</artifactId>

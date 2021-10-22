@@ -2,8 +2,8 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
-import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.query.Dataset;
 import org.junit.runner.RunWith;

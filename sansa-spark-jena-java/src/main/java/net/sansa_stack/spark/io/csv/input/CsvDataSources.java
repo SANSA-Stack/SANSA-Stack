@@ -42,7 +42,7 @@ public class CsvDataSources {
             JavaSparkContext sc,
             String path,
             CSVFormat csvFormat,
-            Function<List<String>, Binding> mapper) throws IOException
+            Function<List<String>, Binding> mapper)
     {
         Configuration conf = new Configuration();
         FileInputFormatCsv.setCsvFormat(conf, csvFormat);

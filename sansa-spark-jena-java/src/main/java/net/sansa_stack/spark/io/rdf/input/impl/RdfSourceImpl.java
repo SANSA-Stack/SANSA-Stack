@@ -1,7 +1,7 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;

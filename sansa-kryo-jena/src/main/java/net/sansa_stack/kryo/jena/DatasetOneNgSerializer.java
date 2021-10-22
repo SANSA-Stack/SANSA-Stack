@@ -4,11 +4,10 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetOneNgImpl;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.impl.ModelCom;
-import org.apache.jena.sparql.core.DatasetImpl;
 
 public class DatasetOneNgSerializer
     extends Serializer<DatasetOneNg>

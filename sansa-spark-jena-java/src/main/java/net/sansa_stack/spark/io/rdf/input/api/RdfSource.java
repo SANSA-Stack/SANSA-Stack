@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.io.rdf.input.api;
 
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;

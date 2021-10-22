@@ -1,10 +1,13 @@
 package net.sansa_stack.hadoop;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Range;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
 import net.sansa_stack.hadoop.util.FileSplitUtils;
-import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;

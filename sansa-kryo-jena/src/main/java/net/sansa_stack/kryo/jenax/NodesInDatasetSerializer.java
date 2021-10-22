@@ -4,20 +4,18 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.NodesInDataset;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.GraphNameAndNode;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.NodesInDatasetImpl;
 import org.apache.jena.query.Dataset;
 
 import java.util.Set;
 
 /**
- * Serializer for {@link NodesInDataset}.
+ * Serializer for NodesInDataset.
  *
- * Currently this implementation only supports {@link NodesInDatasetImpl}.
+ * Currently this implementation only supports NodesInDatasetImpl
  *
  * @param <T>
  */
+/*
 public class NodesInDatasetSerializer<T extends NodesInDataset> extends Serializer<T> {
 
     public NodesInDatasetSerializer() {
@@ -37,3 +35,4 @@ public class NodesInDatasetSerializer<T extends NodesInDataset> extends Serializ
         return (T)result;
     }
 }
+*/

@@ -140,8 +140,8 @@
         </dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-analytics</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-analytics-core</artifactId>
 		</dependency>
 
 		<!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId>

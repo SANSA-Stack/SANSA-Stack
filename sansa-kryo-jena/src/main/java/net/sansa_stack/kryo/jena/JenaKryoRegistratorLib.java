@@ -3,7 +3,7 @@ package net.sansa_stack.kryo.jena;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.google.gson.Gson;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetOneNgImpl;
+import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
 import org.apache.jena.graph.*;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
@@ -14,20 +14,11 @@ import org.apache.jena.rdf.model.impl.PropertyImpl;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.jena.sparql.core.DatasetImpl;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
-import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.Binding0;
-import org.apache.jena.sparql.engine.binding.Binding1;
-import org.apache.jena.sparql.engine.binding.Binding2;
-import org.apache.jena.sparql.engine.binding.Binding3;
-import org.apache.jena.sparql.engine.binding.Binding4;
-import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import org.apache.jena.sparql.engine.binding.BindingOverMap;
-import org.apache.jena.sparql.engine.binding.BindingRoot;
+import org.apache.jena.sparql.engine.binding.*;
 import org.apache.jena.sparql.expr.*;
 import org.apache.jena.sparql.expr.nodevalue.*;
 
@@ -95,7 +86,7 @@ public class JenaKryoRegistratorLib {
         kryo.register(Binding3.class, bindingSerializer);
         kryo.register(Binding4.class, bindingSerializer);
         kryo.register(BindingOverMap.class, bindingSerializer);
-        kryo.register(BindingHashMap.class, bindingSerializer);
+        // kryo.register(BindingHashMap.class, bindingSerializer);
 
         Gson gson = new Gson();
 

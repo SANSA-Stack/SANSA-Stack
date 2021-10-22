@@ -1,7 +1,7 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
 import org.aksw.commons.lambda.serializable.SerializableFunction;
-import org.aksw.commons.util.strings.StringUtils;
+import org.aksw.commons.util.string.StringUtils;
 import org.aksw.jena_sparql_api.io.json.RDFNodeJsonUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;

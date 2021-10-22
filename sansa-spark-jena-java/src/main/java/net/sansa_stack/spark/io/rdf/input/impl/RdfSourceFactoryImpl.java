@@ -3,8 +3,8 @@ package net.sansa_stack.spark.io.rdf.input.impl;
 import java.io.InputStream;
 import java.util.Objects;
 
-import org.aksw.jena_sparql_api.rx.RDFDataMgrEx;
-import org.aksw.jena_sparql_api.rx.entity.EntityInfo;
+import org.aksw.commons.util.entity.EntityInfo;
+import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

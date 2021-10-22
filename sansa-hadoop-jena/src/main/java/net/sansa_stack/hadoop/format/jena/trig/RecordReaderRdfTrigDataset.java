@@ -3,15 +3,12 @@ package net.sansa_stack.hadoop.format.jena.trig;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfAccumulatingBase;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetGraphOneNgImpl;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.impl.DatasetOneNgImpl;
-import org.aksw.jena_sparql_api.rx.RDFDataMgrRx;
-import org.apache.jena.graph.Graph;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
+import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.graph.GraphFactory;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;

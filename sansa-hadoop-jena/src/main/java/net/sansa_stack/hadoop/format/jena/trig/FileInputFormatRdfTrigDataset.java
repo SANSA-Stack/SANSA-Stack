@@ -1,7 +1,7 @@
 package net.sansa_stack.hadoop.format.jena.trig;
 
 import net.sansa_stack.hadoop.format.jena.base.FileInputFormatRdfBase;
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
