@@ -23,6 +23,9 @@ import org.apache.spark.sql._
 
 object DaSimEvaluation {
   def main(args: Array[String]): Unit = {
+
+    var currentTime: Long = System.nanoTime
+
     val spark = {
       SparkSession.builder
         .appName(s"SampleFeatureExtractionPipeline")
@@ -34,8 +37,12 @@ object DaSimEvaluation {
     }
     spark.sparkContext.setLogLevel("ERROR")
     JenaSystem.init()
-    val lang = Lang.TURTLE
-    // val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/lmdb.nt").persist()
+
+    val timeSparkSetup = (System.nanoTime - currentTime) / 1e9d
+    println(f"\ntime needed timeSparkSetup: ${timeSparkSetup}")
+    currentTime = System.nanoTime
+
+    // val originalDataRDD = spark.rdf(Lang.TURTLE)("/Users/carstendraschner/Datasets/lmdb.nt").persist()
 
     val dataset: Dataset[Triple] = NTripleReader
       .load(
@@ -47,12 +54,17 @@ object DaSimEvaluation {
       .toDS()
       .persist()
 
+    val timeRead = (System.nanoTime - currentTime) / 1e9d
+    println(f"\ntime needed timeRead: ${timeRead}")
+    currentTime = System.nanoTime
+
+
     val dse = new DaSimEstimator()
       // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
       .setObjectFilter("http://data.linkedmdb.org/movie/film")
       .setDistSimFeatureExtractionMethod("on")
       .setDistSimThreshold(0.9)
-      .setSimilarityCalculationExecutionOrder(Array("runtime")) // Array("writer", "actor", "country", "genre", "runtime", "title"))
+      .setSimilarityCalculationExecutionOrder(Array("writer", "actor", "country", "genre", "runtime", "title")) // Array("runtime")) //
       .setSimilarityValueStreching(false)
       .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
 
@@ -65,7 +77,14 @@ object DaSimEvaluation {
       .select("uriA", "uriB", "overall_similarity_score")
       .show(false)
 
+    /* result
+      .sort(desc("overall_similarity_score"))
+      .show(true) */
+
     println(s"the result has ${result.count()} elements")
+
+    val timeSe4kg = (System.nanoTime - currentTime) / 1e9d
+    println(f"\ntime needed Se4kgRead: ${timeSe4kg}")
 
     spark.stop()
   }
