@@ -256,8 +256,7 @@ class DaSimEstimator {
       // .withColumn("uriB", first(col("datasetB")))
       // .select("uriA", "uriB", "JaccardDistance")
 
-      tmpSim
-        .show(false)
+      // tmpSim.show(false)
 
       val filteredTmpDf = tmpSim
         .withColumn("uriA", col("datasetA").getField("uri"))
