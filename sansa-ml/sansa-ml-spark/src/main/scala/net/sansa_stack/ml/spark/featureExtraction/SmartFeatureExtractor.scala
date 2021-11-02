@@ -34,10 +34,15 @@ class SmartFeatureExtractor extends Transformer {
   }
 
   def transform(dataset: Dataset[_]): DataFrame = {
+
+    implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
+
     /**
      * expand initial DF to its features by one hop
      */
     val pivotFeatureDF = dataset
+      .rdd
+      .map(_.asInstanceOf[Triple])
       .toDF() // make a DF out of dataset
       .groupBy("s")
       .pivot("p") // create columns for each predicate as kind of respective features
