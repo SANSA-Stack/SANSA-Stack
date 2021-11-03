@@ -29,6 +29,7 @@ The documentation with sample code snippets are available within the [SANSA ML R
 * [SparqlFrame Feature Extractor](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#sparqlframe-feature-extractor)
 * [Smart Vector Assembler](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#smart-vector-assembler)
 * [ML2Graph](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#ml2graph)
+* [DistAD](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/distad/sansa-ml/README.md#distad-distributed-anomaly-detection)
 
 #### Code to Modules:
 This release majorly provides the modules:
@@ -47,3 +48,7 @@ the respective similarity estimation models are in this [github directory](https
 * [Minmial Examples](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/minimalCalls.scala)
 * [Evaluation of Experiment Class](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/experiment/SimilarityPipelineExperiment.scala)
 * [Metagraph Creation](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/SimilarityExperimentMetaGraphFactory.scala)
+
+### DistAD ICSC Paper Documentation
+The documentation in docs are available [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml).
+The modules are in this [github directory](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection).
