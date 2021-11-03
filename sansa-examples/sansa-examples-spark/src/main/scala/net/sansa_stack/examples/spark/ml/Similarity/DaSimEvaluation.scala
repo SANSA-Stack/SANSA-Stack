@@ -24,6 +24,8 @@ import org.apache.spark.sql._
 object DaSimEvaluation {
   def main(args: Array[String]): Unit = {
 
+    val inputPath = args(0)
+
     var currentTime: Long = System.nanoTime
 
     val spark = {
@@ -47,7 +49,7 @@ object DaSimEvaluation {
     val dataset: Dataset[Triple] = NTripleReader
       .load(
         spark,
-        "/Users/carstendraschner/Datasets/lmdb.nt",
+        inputPath,
         stopOnBadTerm = ErrorParseMode.SKIP,
         stopOnWarnings = WarningParseMode.IGNORE
       )
