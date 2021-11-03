@@ -347,16 +347,26 @@ class DaSimEstimator {
         implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
         import net.sansa_stack.rdf.spark.model.TripleOperations
 
-        val filteredDF: DataFrame = ds
+        val seedList: Array[String] = candidates.collect().map(_.getAs[String](0))
+
+        val filteredDS: Dataset[Triple] = ds
+          .filter(r => seedList.contains(r.getSubject.toString()))
+          .map(_.asInstanceOf[Triple])
+          .rdd
+          .toDS()
+          .cache()
+
+        /* val filteredDF: DataFrame = ds
           .rdd
           .toDF()
           .join(candidates.withColumnRenamed("id", "s"), "s")
           .cache()
+         */
 
         val sfe = new SmartFeatureExtractor()
           .setEntityColumnName("s")
         val feDf = sfe
-          .transform(filteredDF)
+          .transform(filteredDS)
         feDf
       }
     }
@@ -978,7 +988,7 @@ class DaSimEstimator {
     // gather seeds
     println("gather seeds")
     val seeds: DataFrame = gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
-      .limit(1000)
+      .limit(1000) // TODO only tmp for debug and first try outs
       .cache()
     seeds
       .show(false)
