@@ -374,6 +374,18 @@
 
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-utils</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-relations</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-arq-datasets-orderaware</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
@@ -422,7 +434,7 @@
             <!-- Our exception utils -->
             <dependency>
                 <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-util</artifactId>
+                <artifactId>aksw-commons-utils</artifactId>
                 <version>${aksw-commons.version}</version>
             </dependency>
 

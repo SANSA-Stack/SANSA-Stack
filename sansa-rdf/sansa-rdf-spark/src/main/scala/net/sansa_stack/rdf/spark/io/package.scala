@@ -24,7 +24,7 @@ import java.util.Collections
 
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter
-import org.aksw.jena_sparql_api.rdf.model.ext.dataset.api.DatasetOneNg
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or

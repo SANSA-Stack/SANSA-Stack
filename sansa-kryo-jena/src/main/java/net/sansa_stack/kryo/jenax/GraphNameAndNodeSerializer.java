@@ -1,11 +1,12 @@
 package net.sansa_stack.kryo.jenax;
 
+import org.aksw.jenax.sparql.relation.dataset.GraphNameAndNode;
+import org.apache.jena.graph.Node;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import org.aksw.jenax.arq.dataset.impl.GraphNameAndNode;
-import org.apache.jena.graph.Node;
 
 public class GraphNameAndNodeSerializer extends Serializer<GraphNameAndNode> {
 

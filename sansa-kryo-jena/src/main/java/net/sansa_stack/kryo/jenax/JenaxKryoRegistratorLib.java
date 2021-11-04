@@ -1,10 +1,11 @@
 package net.sansa_stack.kryo.jenax;
 
-import com.esotericsoftware.kryo.Kryo;
 import org.aksw.jenax.arq.dataset.api.RDFNodeInDataset;
-import org.aksw.jenax.arq.dataset.impl.GraphNameAndNode;
 import org.aksw.jenax.arq.dataset.impl.LiteralInDatasetImpl;
 import org.aksw.jenax.arq.dataset.impl.ResourceInDatasetImpl;
+import org.aksw.jenax.sparql.relation.dataset.GraphNameAndNode;
+
+import com.esotericsoftware.kryo.Kryo;
 
 /**
  * Additional serializers for jena related classes which are however not part of the official jena.

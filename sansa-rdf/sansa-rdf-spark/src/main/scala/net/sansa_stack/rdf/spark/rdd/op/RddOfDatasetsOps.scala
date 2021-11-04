@@ -1,15 +1,14 @@
 package net.sansa_stack.rdf.spark.rdd.op
 
-import net.sansa_stack.rdf.spark.utils.SparkSessionUtils
-
 import java.util.Objects
-import org.aksw.jena_sparql_api.utils.{DatasetGraphUtils, IteratorResultSetBinding}
+
+import org.aksw.jenax.arq.util.quad.DatasetGraphUtils
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, Resource}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.spark.HashPartitioner
+import org.apache.jena.sparql.exec.RowSet
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -57,7 +56,6 @@ object RddOfDatasetsOps {
                                   distinct: Boolean = true,
                                   sortGraphsByIri: Boolean = false,
                                   numPartitions: Int = 0): RDD[Dataset] = {
-    import collection.JavaConverters._
     // Note: Model is usually ModelCom so we get out-of-the-box serialization
     // If we used Graph we'd have to deal with a lot more variation
     val step1 = toNamedModels(rdd)
@@ -92,7 +90,7 @@ object RddOfDatasetsOps {
       val qe = QueryExecutionFactory.create(query, all)
       var r: Seq[Binding] = null
       try {
-        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+        r = RowSet.adapt(qe.execSelect).asScala.toList
       } finally {
         qe.close()
       }
@@ -115,7 +113,7 @@ object RddOfDatasetsOps {
       val qe = QueryExecutionFactory.create(query, in)
       var r: Seq[Binding] = null
       try {
-        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+        r = RowSet.adapt(qe.execSelect).asScala.toList
       } finally {
         qe.close()
       }
@@ -142,7 +140,7 @@ object RddOfDatasetsOps {
       val qe = QueryExecutionFactory.create(query, dataset)
       var r: Seq[Binding] = null
       try {
-        r = new IteratorResultSetBinding(qe.execSelect).asScala.toList
+        r = RowSet.adapt(qe.execSelect).asScala.toList
       } finally {
         qe.close()
       }
