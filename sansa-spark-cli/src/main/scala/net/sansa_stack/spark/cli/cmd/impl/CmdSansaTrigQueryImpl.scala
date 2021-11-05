@@ -6,7 +6,7 @@ import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.lang3.time.StopWatch
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.jena.query.{Dataset, QueryFactory, Syntax}
+import org.apache.jena.query.{Dataset, QueryFactory, ResultSet, Syntax}
 import org.apache.jena.riot.{Lang, ResultSetMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit
 
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg
 
 /**
  * Called from the Java class [[CmdSansaTrigQuery]]
@@ -95,7 +96,7 @@ object CmdSansaTrigQueryImpl {
 
     import net.sansa_stack.rdf.spark.io._
 
-    val initialRdd: RDD[Dataset] = spark.sparkContext.union(
+    val initialRdd: RDD[DatasetOneNg] = spark.sparkContext.union(
       validPathSet
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 
@@ -107,7 +108,7 @@ object CmdSansaTrigQueryImpl {
     val resultSetSpark: ResultSetSpark =
       RddOfBindingsOps.execSparqlSelect(effectiveRdd, query)
 
-    ResultSetMgr.write(System.out, resultSetSpark.collectToTable().toResultSet, outLang)
+    ResultSetMgr.write(System.out, ResultSet.adapt(resultSetSpark.collectToTable().toRowSet), outLang)
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds")
 

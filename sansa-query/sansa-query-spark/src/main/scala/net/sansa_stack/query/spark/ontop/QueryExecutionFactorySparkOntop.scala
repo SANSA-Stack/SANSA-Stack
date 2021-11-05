@@ -1,10 +1,9 @@
 package net.sansa_stack.query.spark.ontop
 
-import org.apache.jena.query.{Query, QueryExecutionFactory}
-import org.apache.spark.sql.SparkSession
-
 import net.sansa_stack.query.spark.api.domain.QueryExecutionSpark
 import net.sansa_stack.query.spark.api.impl.QueryExecutionFactorySparkBase
+import org.apache.jena.query.Query
+import org.apache.spark.sql.SparkSession
 
 /**
  * A query execution factory for Ontop.

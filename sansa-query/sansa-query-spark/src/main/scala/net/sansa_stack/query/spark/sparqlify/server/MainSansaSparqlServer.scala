@@ -11,7 +11,7 @@ import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Var
-import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
@@ -158,7 +158,7 @@ object MainSansaSparqlServer {
   }
 
   def rowToBinding(row: Row): Binding = {
-    val result = new BindingHashMap()
+    val result = BindingFactory.builder
 
     val fieldNames = row.schema.fieldNames
     row.toSeq.zipWithIndex.foreach {
@@ -168,7 +168,7 @@ object MainSansaSparqlServer {
         RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v)
     }
 
-    result
+    result.build
   }
 
 }

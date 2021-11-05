@@ -1,14 +1,14 @@
 package net.sansa_stack.query.spark.ontop
 
-import org.aksw.jena_sparql_api.core.{QueryExecutionFactory, ResultSetCloseable}
-import org.apache.jena.query.{Query, ResultSet}
-import org.apache.spark.sql.SparkSession
-
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.{QueryExecutionSparkBase, ResultSetSparkImpl}
-import scala.collection.JavaConverters._
+import org.aksw.jena_sparql_api.core.ResultSetCloseable
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
+import org.apache.jena.query.Query
+import org.apache.spark.sql.SparkSession
 
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
+import scala.collection.JavaConverters._
 
 class QueryExecutionSparkOntop(query: Query,
                                subFactory: QueryExecutionFactory,
@@ -28,7 +28,7 @@ class QueryExecutionSparkOntop(query: Query,
     if (ontop.settings.useLocalEvaluation) {
       val bindings = ontop.computeBindingsLocal(query.toString).iterator
 
-      val rs = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
+      val rs = ResultSetUtils.createUsingVars(query.getProjectVars, bindings.asJava)
 
       new ResultSetCloseable(rs)
     } else {

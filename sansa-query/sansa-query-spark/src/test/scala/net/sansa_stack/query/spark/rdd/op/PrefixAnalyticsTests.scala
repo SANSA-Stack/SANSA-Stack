@@ -1,23 +1,17 @@
 package net.sansa_stack.query.spark.rdd.op
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.common.partition.layout.TripleLayout
-import net.sansa_stack.rdf.common.partition.schema.SchemaStringBoolean
-import net.sansa_stack.rdf.common.qualityassessment.utils.vocabularies.DQV.RDFS
-import org.aksw.jena_sparql_api.analytics.{PrefixAccumulator, ResultSetAnalytics}
-import org.aksw.jena_sparql_api.utils.{ResultSetUtils, Vars}
+import org.aksw.jenax.arq.analytics.ResultSetAnalytics
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.exec.RowSetAdapter
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.catalyst.ScalaReflection.universe.typeOf
-import org.apache.spark.sql.types.{DataType, DataTypes, StructType}
 import org.scalatest.FunSuite
 
-import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.Type
+import scala.jdk.CollectionConverters.asScalaIteratorConverter
 
 class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
 
@@ -32,16 +26,12 @@ class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
 
 
   test("extracting prefixes from bindings should work") {
-    import collection.JavaConverters._
 
     val model = RDFDataMgr.loadModel("rdf.nt")
-    val bindings: Seq[Binding] = ResultSetUtils.toIteratorBinding(
+    val bindings: Seq[Binding] = new RowSetAdapter(
       QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toSeq
 
     val rdd: RDD[Binding] = sc.parallelize(bindings)
-    import net.sansa_stack.rdf.spark.model._
-
-
     import net.sansa_stack.query.spark._
 
     val evalResult = rdd.javaCollect(ResultSetAnalytics.usedPrefixes(6).asCollector())

@@ -3,10 +3,9 @@ package net.sansa_stack.query.spark.api.impl;
 import net.sansa_stack.query.spark.api.domain.JavaQueryExecutionSpark;
 import net.sansa_stack.query.spark.sparqlify.JavaResultSetSpark;
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect;
-import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.core.ResultSetCloseable;
-import org.aksw.jena_sparql_api.utils.ResultSetUtils;
-import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter;
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactory;
+import org.aksw.jenax.arq.util.binding.ResultSetUtils;
 import org.apache.jena.atlas.json.JsonArray;
 import org.apache.jena.atlas.json.JsonObject;
 import org.apache.jena.graph.Triple;
@@ -63,7 +62,7 @@ public abstract class JavaQueryExecutionSparkBase
         JavaResultSetSpark rs = execSelectSparkJava();
         Iterator<Binding> it = rs.getRdd().collect().iterator();//.toLocalIterator();
 
-        ResultSet tmp = ResultSetUtils.create2(rs.getResultVars(), it);
+        ResultSet tmp = ResultSetUtils.createUsingVars(rs.getResultVars(), it);
         ResultSetCloseable result = new ResultSetCloseable(tmp);
         return result;
     }

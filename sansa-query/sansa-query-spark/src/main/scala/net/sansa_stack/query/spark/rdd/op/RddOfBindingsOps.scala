@@ -9,8 +9,8 @@ import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
-import org.aksw.jena_sparql_api.analytics.arq.ConvertArqAggregator
-import org.aksw.jena_sparql_api.utils.{BindingUtils, QueryUtils, VarExprListUtils}
+import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
+import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
 import org.apache.jena.sparql.ARQConstants
@@ -18,7 +18,7 @@ import org.apache.jena.sparql.algebra.op.OpService
 import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
-import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory, BindingMap}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingMap, BindingProject}
 import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.NodeFactoryExtra
@@ -66,7 +66,8 @@ object RddOfBindingsOps {
    */
   def project(rddOfBindings: RDD[_ <: Binding], projectVars: util.Collection[Var]): RDD[Binding] = {
     val varList = projectVars
-    rddOfBindings.mapPartitions(_.map(BindingUtils.project(_, varList)))
+
+    rddOfBindings.mapPartitions(_.map(x => BindingFactory.copy(new BindingProject(varList, x))))
   }
 
   // filterKeep
@@ -138,13 +139,13 @@ object RddOfBindingsOps {
       // Restore bindings from groupKey (already a binding)
       // and the accumulated values (instances of Map[Var, Node])
       .mapPartitions(_.map(keyAndMap => {
-        val r: BindingMap = BindingFactory.create()
+        val r: BindingBuilder = BindingFactory.builder
         r.addAll(keyAndMap._1)
 
         val map: util.Map[Var, Node] = keyAndMap._2.getValue
         map.forEach((v, n) => r.add(v, n))
 
-        r.asInstanceOf[Binding]
+        r.build()
       }))
 
     result
@@ -219,11 +220,11 @@ object RddOfBindingsOps {
 
     var broadcastVel = rdd.context.broadcast(varExprList)
     rdd.mapPartitions(_.map(b => {
-      val r: BindingMap = BindingFactory.create()
+      val r: BindingBuilder = BindingFactory.builder
       val contrib = VarExprListUtils.copyProject(broadcastVel.value, b, execCxt)
       r.addAll(b)
       r.addAll(contrib)
-      r
+      r.build
     }))
   }
 

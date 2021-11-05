@@ -3,11 +3,13 @@ package net.sansa_stack.query.spark.rdd.op
 import java.util
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.aksw.jena_sparql_api.utils.{ResultSetUtils, Vars}
+import org.aksw.jenax.arq.util.`var`.Vars
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.apache.jena.query.{Query, QueryExecutionFactory, SortCondition}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.core.VarExprList
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.jena.sparql.exec.RowSetAdapter
 import org.apache.jena.sparql.expr.aggregate.AggCount
 import org.apache.jena.sparql.expr._
 import org.apache.spark.SparkConf
@@ -32,7 +34,7 @@ class RddOfBindingsOpsTests extends FunSuite with DataFrameSuiteBase {
 
   def createTestRdd(): RDD[Binding] = {
     val model = RDFDataMgr.loadModel("rdf.nt")
-    val bindings: Seq[Binding] = ResultSetUtils.toIteratorBinding(
+    val bindings: Seq[Binding] = new RowSetAdapter(
       QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toSeq
 
     val rdd: RDD[Binding] = sc.parallelize(bindings)

@@ -2,10 +2,10 @@ package net.sansa_stack.query.spark.binding.engine
 import net.sansa_stack.query.spark.binding.engine.OpExecutorImpl.SYM_RDD_OF_DATASET
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
-import org.aksw.jena_sparql_api.utils.QueryUtils
+import org.aksw.jenax.arq.util.syntax.QueryUtils
 import org.apache.jena.query.Dataset
-import org.apache.jena.sparql.algebra.{Op, OpAsQuery}
 import org.apache.jena.sparql.algebra.op._
+import org.apache.jena.sparql.algebra.{Op, OpAsQuery}
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.util.Symbol

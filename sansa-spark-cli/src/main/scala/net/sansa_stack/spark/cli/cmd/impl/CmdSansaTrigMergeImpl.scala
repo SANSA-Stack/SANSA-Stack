@@ -1,9 +1,14 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
+import java.net.URI
+import java.util.concurrent.TimeUnit
+
+import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import net.sansa_stack.spark.cli.cmd.CmdSansaTrigMerge
 import org.aksw.commons.io.util.StdIo
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
-import org.aksw.jena_sparql_api.utils.io.{StreamRDFDeferred, WriterStreamRDFBaseUtils}
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg
+import org.aksw.jenax.arq.util.streamrdf.{StreamRDFDeferred, WriterStreamRDFBaseUtils}
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.lang3.time.StopWatch
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -16,10 +21,6 @@ import org.apache.jena.shared.impl.PrefixMappingImpl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-import java.net.URI
-import java.util.concurrent.TimeUnit
-
-import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 
 
 /**
@@ -107,7 +108,7 @@ object CmdSansaTrigMergeImpl {
     import net.sansa_stack.rdf.spark.io._
 
 
-    val initialRdd: RDD[Dataset] = spark.sparkContext.union(
+    val initialRdd: RDD[DatasetOneNg] = spark.sparkContext.union(
       validPathSet
         .map(path => spark.datasets(Lang.TRIG)(path.toString)).toSeq)
 

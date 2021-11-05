@@ -374,6 +374,12 @@
 
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-analytics-core</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-arq-utils</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
@@ -505,6 +511,12 @@
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-arq-rx</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-rx-dataaccess</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
@@ -1210,7 +1222,7 @@
             <dependency>
                 <groupId>org.aksw.bsbm</groupId>
                 <artifactId>bsbm-core</artifactId>
-                <version>3.1.4</version>
+                <version>3.1.6-SNAPSHOT</version>
                 <scope>test</scope>
             </dependency>
 

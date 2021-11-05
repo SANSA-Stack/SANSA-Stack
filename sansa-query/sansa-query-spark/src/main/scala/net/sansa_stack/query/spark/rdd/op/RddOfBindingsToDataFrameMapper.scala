@@ -7,9 +7,9 @@ import java.util.Calendar
 import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
-import org.aksw.jena_sparql_api.analytics.ResultSetAnalytics
 import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
-import org.aksw.jena_sparql_api.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
+import org.aksw.jenax.arq.analytics.ResultSetAnalytics
+import org.aksw.jenax.arq.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
 import org.aksw.r2rml.common.vocab.R2rmlTerms
 import org.apache.jena.datatypes.TypeMapper
 import org.apache.jena.datatypes.xsd.XSDDateTime
@@ -20,8 +20,6 @@ import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataType, DataTypes, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
-
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Mapper from SPARQL bindings to DataFrames

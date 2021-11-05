@@ -58,13 +58,12 @@
             <scope>test</scope>
         </dependency>
 
-<!--
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-core</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-rx-dataaccess</artifactId>
             <scope>test</scope>
         </dependency>
--->
+
     </dependencies>
 
 </project>
