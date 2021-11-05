@@ -6,6 +6,7 @@ import java.util
 import com.esotericsoftware.kryo.io.{Input, Output}
 import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, ResultSetCloseable}
 import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.apache.flink.api.common.typeinfo.TypeInformation
@@ -40,7 +41,7 @@ class QueryExecutionSparqlifyFlink(
 
     val it = ds.collect.iterator
 
-    val tmp = ResultSetUtils.create2(resultVars, it.asJava)
+    val tmp = ResultSetUtils.createUsingVars(resultVars, it.asJava)
     val result = new ResultSetCloseable(tmp)
     result
   }

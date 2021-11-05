@@ -39,7 +39,7 @@
 
     <modules>
         <module>sansa-rdf-common</module>
-        <module>sansa-rdf-flink</module>
+        <!-- <module>sansa-rdf-flink</module> -->
         <module>sansa-rdf-spark</module>
     </modules>
 

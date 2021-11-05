@@ -55,7 +55,7 @@
 
     <modules>
         <module>sansa-query-common</module>
-        <module>sansa-query-flink</module>
+        <!-- <module>sansa-query-flink</module> -->
         <module>sansa-query-spark</module>
         <module>sansa-query-tests</module>
     </modules>
