@@ -33,8 +33,7 @@ For this resource we provide the following:
 #### Code to Modules:
 This release majorly provides the modules:
 * [SimE4KG](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/similarityEstimationModels/DaSimEstimator.scala)
-* [SmartVectorAssembler](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/featureExtraction/SmartVectorAssembler.scala)
-* [ML2Graph](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/ML2Graph.scala)
+
 
 ### DistRDF2ML
 
