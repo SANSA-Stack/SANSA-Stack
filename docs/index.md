@@ -18,6 +18,24 @@ The SANSA project is structured in the following five layers developed in their 
 ## Paper Specific Documentation
 For recently published papers, we provide here a fast entry point to the provided modules. All of those modules are as well accessible over the standard documentation
 
+### SimE4KG
+The SimE4KG is an extension to the SANSA framework which provides scalable and distributed similarity estimations for multi modal RDF Knowledge Graphs. The results and meta data semantification supports an increase of its reusablity, reproducability and explainaility.
+#### Docs
+For this resource we provide the following:
+- [Github release](https://github.com/SANSA-Stack/SANSA-Stack/releases)
+- [Sample Notebooks of SimE4KG pipelines]
+- [Readme documentation] (https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
+- [Scala Docs](TODO)
+- [Unit Tests](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/similarity/DaSimEstimatorTest.scala)
+- [Sample Files](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/test/resources/similarity/sampleMovieDB.nt)
+- [Evaluation experiments](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/SimE4KG/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/Similarity)
+
+#### Code to Modules:
+This release majorly provides the modules:
+* [SimE4KG](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/similarityEstimationModels/DaSimEstimator.scala)
+* [SmartVectorAssembler](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/featureExtraction/SmartVectorAssembler.scala)
+* [ML2Graph](https://github.com/SANSA-Stack/SANSA-Stack/blob/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/utils/ML2Graph.scala)
+
 ### DistRDF2ML
 
 #### Release
