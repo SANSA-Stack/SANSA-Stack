@@ -23,9 +23,9 @@ The SimE4KG is an extension to the SANSA framework which provides scalable and d
 #### Docs
 For this resource we provide the following:
 - [Github release](https://github.com/SANSA-Stack/SANSA-Stack/releases)
-- [Sample Notebooks of SimE4KG pipelines](TODO)
-- [Readme documentation] (https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
-- [Scala Docs](TODO)
+- [Sample Notebooks of SimE4KG pipelines](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
+- [Readme documentation](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
+- [Scala Docs](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml)
 - [Unit Tests](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/similarity/DaSimEstimatorTest.scala)
 - [Sample Files](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/SimE4KG/sansa-ml/sansa-ml-spark/src/test/resources/similarity/sampleMovieDB.nt)
 - [Evaluation experiments](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/SimE4KG/sansa-examples/sansa-examples-spark/src/main/scala/net/sansa_stack/examples/spark/ml/Similarity)
