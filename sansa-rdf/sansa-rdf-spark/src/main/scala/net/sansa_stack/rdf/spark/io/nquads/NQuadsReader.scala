@@ -10,7 +10,7 @@ import net.sansa_stack.rdf.common.io.riot.error.{CustomErrorHandler, ErrorParseM
 import net.sansa_stack.rdf.common.io.riot.lang.LangNQuadsSkipBad
 import net.sansa_stack.rdf.common.io.riot.tokens.TokenizerTextForgiving
 import org.apache.jena.atlas.io.PeekReader
-import org.apache.jena.atlas.iterator.IteratorResourceClosing
+import org.apache.jena.atlas.iterator.Iter
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.riot.RIOT
 import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
@@ -167,7 +167,7 @@ object NQuadReader {
           // filter out null values
           Iterators.filter(it, Predicates.notNull[Quad]())
         }
-      new IteratorResourceClosing[Quad](it, input).asScala
+      Iter.onCloseIO(it, input).asScala
     })
   }
 

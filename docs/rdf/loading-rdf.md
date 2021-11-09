@@ -55,13 +55,13 @@ triples.take(5).foreach(println(_))
 
 ## Java
 
-The main class for loading RDDs with Java is  `net.sansa_stack.rdf.spark.io.input.impl.RdfSourceFactoryImpl`:
+The main class for loading RDDs with Java is  `net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl`:
 
 <details open>
   <summary markdown="span">Java</summary>
 
 ```java
-import net.sansa_stack.rdf.spark.io.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 
 SparkSession sparkSession = SparkSession.builder().config(sparkConf).getOrCreate();
 

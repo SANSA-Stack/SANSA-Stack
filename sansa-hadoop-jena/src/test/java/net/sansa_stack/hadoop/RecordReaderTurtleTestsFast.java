@@ -1,8 +1,8 @@
 package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.jena.rdf.turtle.FileInputFormatRdfTurtleTriple;
-import net.sansa_stack.hadoop.jena.rdf.turtle.RecordReaderRdfTurtleTriple;
+import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
+import net.sansa_stack.hadoop.format.jena.turtle.RecordReaderRdfTurtleTriple;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;

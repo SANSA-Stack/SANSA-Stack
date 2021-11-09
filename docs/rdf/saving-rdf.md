@@ -9,7 +9,7 @@ nav_order: 2
 
 ## Java
 
-The class `net.sansa_stack.rdf.spark.io.RddRdfSaver` provides a fluent API to the combined functionality of spark and Jena.
+The class `net.sansa_stack.spark.io.rdf.output.RddRdfSaver` provides a fluent API to the combined functionality of spark and Jena.
 
 ```java
 RDD<Dataset> rdd = ...;

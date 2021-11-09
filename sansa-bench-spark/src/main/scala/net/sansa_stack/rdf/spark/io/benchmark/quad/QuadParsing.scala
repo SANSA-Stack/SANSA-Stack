@@ -5,8 +5,9 @@ import java.net.URI
 import com.ibm.sparktc.sparkbench.utils.GeneralFunctions._
 import com.ibm.sparktc.sparkbench.utils.{SaveModes, SparkBenchException}
 import com.ibm.sparktc.sparkbench.workload.{Workload, WorkloadDefaults}
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatRdfTrigDataset
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
 import net.sansa_stack.rdf.spark.io.nquads.NQuadReader
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg
 import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -48,7 +49,7 @@ case class QuadParsingWorkload(input: Option[String] = None,
         case "trig" =>
           val hadoopConf = spark.sparkContext.hadoopConfiguration
           spark.sparkContext.newAPIHadoopFile(input.get, classOf[FileInputFormatRdfTrigDataset],
-            classOf[LongWritable], classOf[Dataset], hadoopConf)
+            classOf[LongWritable], classOf[DatasetOneNg], hadoopConf)
             .map(_._2)
             .flatMap(_.asDatasetGraph().find().asScala)
         case other: String => throw SparkBenchException(s"Unsupported data format for quads: $other")
