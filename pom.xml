@@ -1471,7 +1471,6 @@
                                 <checkMultipleScalaVersions>true</checkMultipleScalaVersions>
                                 <!--failOnMultipleScalaVersions>true</failOnMultipleScalaVersions-->
                                 <recompileMode>incremental</recompileMode>
-                                <useZincServer>true</useZincServer>
                                 <args>
                                     <arg>-target:jvm-1.8</arg>
                                     <arg>-unchecked</arg>
