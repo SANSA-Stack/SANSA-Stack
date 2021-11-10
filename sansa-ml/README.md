@@ -15,7 +15,7 @@ The current stack provides:
 - [ML2Graph](#ml2graph)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 - [Sparql Transformer](#sparql-transformer)
-
+- [DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml#distad-distributed-anomaly-detection)
 
 ### Literal2Feature AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
