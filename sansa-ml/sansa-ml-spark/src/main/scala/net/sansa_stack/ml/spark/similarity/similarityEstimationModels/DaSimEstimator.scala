@@ -44,6 +44,9 @@ class DaSimEstimator {
   // general
   var _parameterVerboseProcess = false
 
+  // eval
+  var _seedLimit: Int = -1
+
   /**
    * candidate filtering sparql
    * with this parameter you can reduce the list of of candidates by use use of a sparql query
@@ -145,6 +148,11 @@ class DaSimEstimator {
    */
   def setImportance(importance: Map[String, Double]): this.type = {
     pImportance = importance
+    this
+  }
+
+  def setLimitSeeds(seedLimit: Int): this.type = {
+    _seedLimit = seedLimit
     this
   }
 
@@ -987,9 +995,15 @@ class DaSimEstimator {
   def transform(dataset: Dataset[Triple]): DataFrame = {
     // gather seeds
     println("gather seeds")
-    val seeds: DataFrame = gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
-      .limit(1000) // TODO only tmp for debug and first try outs
-      .cache()
+    val seeds: DataFrame = if (_seedLimit == -1) {
+      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+        .cache()
+    }
+    else {
+      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+        .limit(_seedLimit) // TODO only tmp for debug and first try outs
+        .cache()
+    }
     seeds
       .show(false)
     // gather cadidate pairs by DistSim
