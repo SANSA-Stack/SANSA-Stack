@@ -14,10 +14,15 @@ object SmartFeatureExtractorEvaluation {
   def main(args: Array[String]): Unit = {
 
     val path = args(0)
-    val mode = args(1)
 
-    val objectFilter = "http://data.linkedmdb.org/movie/film"
-    val sparqlFilter = "SELECT ?seed WHERE {?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .}"
+    val modeF = args(1)
+    val modeE = args(2)
+
+    val filter = args(3)
+    val extraction = args(4)
+
+    // val objectFilter = "http://data.linkedmdb.org/movie/film"
+    // val sparqlFilter = "SELECT ?seed WHERE {?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .}"
 
     var currentTime: Long = System.nanoTime
 
@@ -56,19 +61,19 @@ object SmartFeatureExtractorEvaluation {
     currentTime = System.nanoTime
 
     val seeds: DataFrame = {
-      if (objectFilter != null) {
+      if (modeF == "o") {
         println("filter by object")
         dataset
-          .filter(t => ((t.getObject.toString().equals(objectFilter))))
+          .filter(t => ((t.getObject.toString().equals(filter))))
           .rdd
           .toDF()
           .select("s")
           .withColumnRenamed("s", "seed")
       }
-      else if (sparqlFilter != null) {
+      else if (modeF == "s") {
         println("filter by sparql")
         val sf = new SparqlFrame()
-          .setSparqlQuery(sparqlFilter)
+          .setSparqlQuery(filter)
         val tmpDf: DataFrame = sf
           .transform(dataset)
         val cn: Array[String] = tmpDf.columns
@@ -134,14 +139,14 @@ object SmartFeatureExtractorEvaluation {
       .map(_._2)
     val tmpOB = tmpS1
       .map(t => ("OPTIONAL {?seed <" + t._1 + "> " + t._2.toString + " .}"))
-    val tmpSP = "SELECT ?seed " + tmpPV.mkString(" ") + " \nWHERE {\n?seed ?p <" + objectFilter + "> .\n" + tmpOB.mkString(" \n") + "}"
+    val tmpSP = "SELECT ?seed " + tmpPV.mkString(" ") + " \nWHERE {\n?seed ?p <" + filter + "> .\n" + tmpOB.mkString(" \n") + "}"
     println(tmpSP)
 
     println("now we do feature extraction")
     currentTime = System.nanoTime
 
     val featureDf = {
-      if (mode == "SparqlFrame") {
+      if (modeE == "SparqlFrame") {
         println("DaSimEstimator: Feature Extraction by SparqlFrame")
         val sf = new SparqlFrame()
           .setSparqlQuery(tmpSP)
