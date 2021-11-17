@@ -9,12 +9,20 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 
 ## Current Modules
 The current stack provides:
+- [SmartFeatureExtractor](#smart-feature-extractor)
 - [Literal2Feature - AutoSparql Generation for Feature Extraction](#literal2feature-autosparql-generation-for-feature-extraction)
 - [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
 - [Smart Vector Assembler](#smart-vector-assembler)
 - [ML2Graph](#ml2graph)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
+- [SimE4KG Transformer](#simE4KG-transformer)
 - [Sparql Transformer](#sparql-transformer)
+
+### SmartFeatureExtractor
+This feature extractor creates out of a Apache Spark Dataset of Apache Jena Triple a Dataframe which contains entity feature information for further machine learning approaches.
+With an initial entity selecting method, for all the specified URIs all features are collected by the pivot function of Spark.
+The resulting feature columns are collapsed s.t. for each entity we have later one row in the dataframe.
+If the extracted feature is of type Literal, the column is casted to the assigned literal data type: e.g. StringType, DoubleType, Timestamp, ...
 
 
 ### Literal2Feature AutoSparql Generation for Feature Extraction
