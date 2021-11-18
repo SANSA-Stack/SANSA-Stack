@@ -25,7 +25,7 @@ class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 
-  private val dataPath = this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
+  private val dataPath = this.getClass.getClassLoader.getResource("similarity/sampleMovieDB.nt").getPath
   private def getData() = {
     import net.sansa_stack.rdf.spark.io._
     import net.sansa_stack.rdf.spark.model._
@@ -41,20 +41,38 @@ class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
     spark.sparkContext.setLogLevel("ERROR")
   }
 
-  test("Test SparqlFrame query extracting two features with sparqlify") {
+  test("Test SmartFeatureExtractor") {
     val dataset = getData()
-    val df = dataset.rdd.toDF()
+    // val df = dataset.rdd.toDF()
 
     val sfe = new SmartFeatureExtractor()
       .setEntityColumnName("s")
+      // .setObjectFilter("http://data.linkedmdb.org/movie/film")
 
     val feDf = sfe
-      .transform(df)
+      .transform(dataset)
     feDf
       .show(false)
-    feDf
-      .printSchema()
 
-    assert(feDf.columns.toSeq.toSet == Set("s", "age", "hasParent", "hasSpouse", "name", "22-rdf-syntax-ns#type"))
+    val sfe1 = new SmartFeatureExtractor()
+      .setEntityColumnName("s")
+      .setObjectFilter("http://data.linkedmdb.org/movie/film")
+
+    val feDf1 = sfe1
+      .transform(dataset)
+    feDf1
+      .show(false)
+
+
+    val sfe2 = new SmartFeatureExtractor()
+      .setEntityColumnName("s")
+      .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
+
+    val feDf2 = sfe2
+      .transform(dataset)
+    feDf2
+      .show(false)
+
+    // assert(feDf.columns.toSeq.toSet == Set("s", "age", "hasParent", "hasSpouse", "name", "22-rdf-syntax-ns#type"))
   }
 }
