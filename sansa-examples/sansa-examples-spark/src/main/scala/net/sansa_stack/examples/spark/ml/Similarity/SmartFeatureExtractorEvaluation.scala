@@ -96,7 +96,6 @@ object SmartFeatureExtractorEvaluation {
         )
       }
     }
-      .limit(10)
 
     println("seeds count: ", seeds.count())
 
