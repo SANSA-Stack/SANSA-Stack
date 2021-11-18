@@ -28,21 +28,76 @@ class SmartFeatureExtractor extends Transformer {
 
   var entityColumnNameString = "s"
 
+  // filter
+  var objectFilter: String = ""
+  var sparqlFilter: String = ""
+
   def setEntityColumnName(colName: String): this.type = {
     entityColumnNameString = colName
     this
   }
 
-  def transform(dataset: Dataset[_]): DataFrame = {
+  def setObjectFilter(filter: String): this.type = {
+    objectFilter = filter
+    this
+  }
 
+  def setSparqlFilter(filter: String): this.type = {
+    sparqlFilter = filter
+    this
+  }
+
+  def transform(dataset: Dataset[_]): DataFrame = {
     implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
+
+    val filteredDataset: Dataset[Triple] = {
+      if (objectFilter != "") {
+        val seeds: DataFrame = dataset
+          .map(_.asInstanceOf[Triple])
+          .filter(t => ((t.getObject.toString().equals(objectFilter))))
+          .rdd
+          .toDF()
+          .select("s")
+          .withColumnRenamed("s", "seed")
+        val seedList: Array[String] = seeds.collect().map(_.getAs[String](0))
+
+        dataset
+          .map(_.asInstanceOf[Triple])
+          .filter(r => seedList.contains(r.getSubject.toString())).map(_.asInstanceOf[Triple])
+          .rdd
+          .map(_.asInstanceOf[Triple])
+          .toDS()
+      }
+      else if (sparqlFilter != "") {
+        val sf = new SparqlFrame()
+          .setSparqlQuery(sparqlFilter)
+        val seeds: DataFrame = sf
+          .transform(dataset)
+        val seedList: Array[String] = seeds.collect().map(_.getAs[String](0))
+
+        dataset
+          .map(_.asInstanceOf[Triple])
+          .filter(r => seedList.contains(r.getSubject.toString()))
+          .map(_.asInstanceOf[Triple])
+          .rdd
+          .map(_.asInstanceOf[Triple])
+          .toDS()
+      }
+      else {
+        dataset
+          .rdd
+          // .map(_.asInstanceOf[Triple])
+          .asInstanceOf[RDD[org.apache.jena.graph.Triple]]
+          .toDS()
+      }
+    }
 
     /**
      * expand initial DF to its features by one hop
      */
-    val pivotFeatureDF = dataset
+    val pivotFeatureDF = filteredDataset
       .rdd
-      .map(_.asInstanceOf[Triple])
+      .asInstanceOf[RDD[org.apache.jena.graph.Triple]]
       .toDF() // make a DF out of dataset
       .groupBy("s")
       .pivot("p") // create columns for each predicate as kind of respective features
