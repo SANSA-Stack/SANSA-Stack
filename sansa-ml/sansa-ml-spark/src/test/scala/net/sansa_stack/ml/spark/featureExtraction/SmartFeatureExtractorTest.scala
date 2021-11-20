@@ -3,10 +3,11 @@ package net.sansa_stack.ml.spark.featureExtraction
 import com.holdenkarau.spark.testing.SharedSparkContext
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.rdf.spark.model.TripleOperations
+import org.apache.jena.graph
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.types.{DecimalType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.scalatest.FunSuite
 
 
@@ -42,36 +43,38 @@ class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
   }
 
   test("Test SmartFeatureExtractor") {
-    val dataset = getData()
-    // val df = dataset.rdd.toDF()
+    val dataset: Dataset[graph.Triple] = getData()
 
-    val sfe = new SmartFeatureExtractor()
-      .setEntityColumnName("s")
+    /** Smart Feature Extractor */
+    val sfeNoFilter = new SmartFeatureExtractor()
+      // .setEntityColumnName("s")
       // .setObjectFilter("http://data.linkedmdb.org/movie/film")
+      // .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
 
-    val feDf = sfe
+    /** Feature Extracted DataFrame */
+    val feDf = sfeNoFilter
       .transform(dataset)
     feDf
       .show(false)
 
-    val sfe1 = new SmartFeatureExtractor()
-      .setEntityColumnName("s")
+    val sfeObjectFilter = new SmartFeatureExtractor()
+      // .setEntityColumnName("s")
       .setObjectFilter("http://data.linkedmdb.org/movie/film")
 
-    val feDf1 = sfe1
+    val feDf1 = sfeObjectFilter
       .transform(dataset)
     feDf1
       .show(false)
 
 
-    val sfe2 = new SmartFeatureExtractor()
-      .setEntityColumnName("s")
+    val sfeSparqlFilter = new SmartFeatureExtractor()
+      // .setEntityColumnName("s")
       .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
 
-    val feDf2 = sfe2
+    val feDf2 = sfeSparqlFilter
       .transform(dataset)
     feDf2
-      .show(false)
+      .show()
 
     // assert(feDf.columns.toSeq.toSet == Set("s", "age", "hasParent", "hasSpouse", "name", "22-rdf-syntax-ns#type"))
   }
