@@ -82,9 +82,8 @@ class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
 
     // resultSimDf.show(false)
 
-    val metagraph = dse.semantification(
-      resultDf = resultSimDf,
-      entityCols = resultSimDf.columns.slice(0, 2),
+    val metagraph = dse.semantification(resultSimDf)
+      /* entityCols = resultSimDf.columns.slice(0, 2),
       finalValCol = "overall_similarity_score",
       similarityCols = resultSimDf.columns.slice(2, resultSimDf.columns.length - 1),
       availability = dse.pAvailability,
@@ -93,7 +92,9 @@ class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
       distSimFeatureExtractionMethod = dse._pDistSimFeatureExtractionMethod,
       initialFilter = if (dse._pInitialFilterByObject != null) dse._pInitialFilterByObject else dse._pInitialFilterBySPARQL,
       featureExtractionMethod = if (dse.pSparqlFeatureExtractionQuery != null) dse.pSparqlFeatureExtractionQuery else "SmartFeatureExtractor"
-    )
+
+
+    ) */
     metagraph.foreach(println(_))
   }
 }
