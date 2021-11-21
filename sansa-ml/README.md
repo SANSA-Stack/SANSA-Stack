@@ -9,7 +9,7 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 
 ## Current Modules
 The current stack provides:
-- [SmartFeatureExtractor](#smart-feature-extractor)
+- [SmartFeatureExtractor](#smartfeatureextractor)
 - [Literal2Feature - AutoSparql Generation for Feature Extraction](#literal2feature-autosparql-generation-for-feature-extraction)
 - [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
 - [Smart Vector Assembler](#smart-vector-assembler)
