@@ -595,7 +595,7 @@ class DaSimEstimator {
         }
       }
     )
-    similarityEstimations
+    similarityEstimations.na.fill(0.0)
 
   }
 
