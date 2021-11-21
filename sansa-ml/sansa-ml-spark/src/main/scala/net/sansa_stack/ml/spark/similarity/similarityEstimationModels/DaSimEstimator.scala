@@ -17,6 +17,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{abs, array, coalesce, col, collect_list, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
+import scala.collection.mutable
+
 class DaSimEstimator {
 
   // parameter
@@ -34,6 +36,9 @@ class DaSimEstimator {
 
   // similarity calculation
   var pSimilarityCalculationExecutionOrder: Array[String] = null
+
+  // calc availability based on feature DF
+  var _calcAvailability = true
 
   // final value aggregation
   var pValueStreching: Boolean = true
@@ -594,6 +599,29 @@ class DaSimEstimator {
 
   }
 
+  def calculateAvailability(extractedFeaturesDF: DataFrame): mutable.Map[String, Double] = {
+    val cols = extractedFeaturesDF.columns
+    val entityCol: String = cols(0)
+    val featureCols: Array[String] = cols.drop(1)
+
+    val extractedFeaturesDfSize = extractedFeaturesDF.count().toDouble
+
+    var availabilityMap: mutable.Map[String, Double] = mutable.Map()
+
+    for (co <- featureCols) {
+      val av = extractedFeaturesDF
+        .select(co)
+        .filter(col(co).isNull)
+        .count
+        .toDouble
+      availabilityMap += (co + "_sim" -> (extractedFeaturesDfSize - av)/extractedFeaturesDfSize)
+    }
+
+    // availabilityMap.foreach(println(_))
+
+    availabilityMap
+  }
+
   /**
    * optional method to normalize similarity columns
    * @param df similarity scored dataframe which needs to be normalized
@@ -1044,6 +1072,11 @@ class DaSimEstimator {
 
     println("(optional) sim norm columns")
     val aggregatableDf = if (pValueStreching) normSimColumns(similarityEstimations) else similarityEstimations
+
+    if (_calcAvailability) {
+      val av = calculateAvailability(featureDf)
+      pAvailability = av.toMap
+    }
 
     println("final similarity aggregation")
     val aggregatedSimilarityScoreDf: DataFrame = aggregateSimilarityScore(
