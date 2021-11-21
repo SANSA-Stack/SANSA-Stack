@@ -1,5 +1,6 @@
 package net.sansa_stack.ml.spark.similarity
 
+import com.holdenkarau.spark.testing.SharedSparkContext
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.ml.spark.similarity.similarityEstimationModels._
 import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
@@ -13,14 +14,37 @@ import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.scalactic.TolerantNumerics
 import org.scalatest.FunSuite
 
-class DaSimEstimatorTest extends FunSuite with DataFrameSuiteBase {
+class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
+
+  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+
+  lazy val spark = SparkSession.builder()
+    .appName(s"SimE4KG Unit Test")
+    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
+    .config("spark.kryo.registrator", String.join(
+      ", ",
+      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+    .config("spark.sql.crossJoin.enabled", true)
+    .getOrCreate()
+
+  private val dataPath = this.getClass.getClassLoader.getResource("similarity/sampleMovieDB.nt").getPath
+  private def getData() = {
+    import net.sansa_stack.rdf.spark.io._
+    import net.sansa_stack.rdf.spark.model._
+
+    val df: DataFrame = spark.read.rdf(Lang.TURTLE)(dataPath).cache()
+    val dataset = df.toDS()
+    dataset
+  }
 
   // define inputpath if it is not parameter
-  private val inputPath = this.getClass.getClassLoader.getResource("similarity/sampleMovieDB.nt").getPath
+  // private val inputPath = this.getClass.getClassLoader.getResource("similarity/sampleMovieDB.nt").getPath
 
   // var triplesDf: DataFrame = spark.read.rdf(Lang.NTRIPLES)(inputPath).cache()
 
@@ -31,18 +55,20 @@ class DaSimEstimatorTest extends FunSuite with DataFrameSuiteBase {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-
     JenaSystem.init()
+    spark.sparkContext.setLogLevel("ERROR")
   }
 
   test("Test DaSimEstimator Modules") {
 
-    val lang = Lang.TURTLE
-    val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/sampleMovieDB.nt").persist()
+    /* val lang = Lang.TURTLE
+    val originalDataRDD = spark.rdf(lang)("similarity/sampleMovieDB.nt").persist()
 
     val dataset: Dataset[Triple] = originalDataRDD
       .toDS()
-      .cache()
+      .cache() */
+
+    val dataset: Dataset[graph.Triple] = getData()
 
     val dse = new DaSimEstimator()
       // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
