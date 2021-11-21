@@ -235,6 +235,8 @@ val resultSimDf = dse
   .transform(dataset)
 
 resultSimDf.show(false)
+
+val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
 ```
 
 ### Sparql Transformer

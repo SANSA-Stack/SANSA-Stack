@@ -82,7 +82,7 @@ class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
 
     // resultSimDf.show(false)
 
-    val metagraph = dse.semantification(resultSimDf)
+    val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
       /* entityCols = resultSimDf.columns.slice(0, 2),
       finalValCol = "overall_similarity_score",
       similarityCols = resultSimDf.columns.slice(2, resultSimDf.columns.length - 1),
