@@ -2,6 +2,7 @@ package net.sansa_stack.ml.spark.similarity.similarityEstimationModels
 
 import java.util.{Calendar, Date}
 
+import org.apache.spark.broadcast.Broadcast
 import net.sansa_stack.ml.spark.featureExtraction.{SmartFeatureExtractor, SparqlFrame}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
 import net.sansa_stack.rdf.spark.io.RDFReader
@@ -51,6 +52,17 @@ class DaSimEstimator {
 
   // eval
   var _seedLimit: Int = -1
+
+  // semantification
+  var _sem_entityCols: Broadcast[Array[String]] = null
+  var _sem_finalValCol: Broadcast[String] = null
+  var _sem_similarityCols: Broadcast[Array[String]] = null
+  var _sem_availability: Broadcast[Map[String, Double]] = null
+  var _sem_reliability: Broadcast[Map[String, Double]] = null
+  var _sem_importance: Broadcast[Map[String, Double]] = null
+  var _sem_distSimFeatureExtractionMethod: Broadcast[String] = null
+  var _sem_initialFilter: Broadcast[String] = null
+  var _sem_featureExtractionMethod: Broadcast[String] = null
 
   /**
    * candidate filtering sparql
@@ -733,16 +745,16 @@ class DaSimEstimator {
   }
 
   def semantification(
-      resultDf: DataFrame,
-      entityCols: Array[String],
-      finalValCol: String,
-      similarityCols: Array[String],
-      availability: Map[String, Double],
-      reliability: Map[String, Double],
-      importance: Map[String, Double],
-      distSimFeatureExtractionMethod: String,
-      initialFilter: String,
-      featureExtractionMethod: String
+      resultDf: DataFrame
+      // entityCols: Array[String] = null,
+      // finalValCol: String = null,
+      // similarityCols: Array[String] = null,
+      // availability: Map[String, Double] = null,
+      // reliability: Map[String, Double] = null,
+      // importance: Map[String, Double] = null,
+      // distSimFeatureExtractionMethod: String = null,
+      // initialFilter: String = null,
+      // featureExtractionMethod: String = null
     ): RDD[Triple] = {
 
       val spark = SparkSession.builder.getOrCreate()
@@ -802,7 +814,7 @@ class DaSimEstimator {
       val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
 
       // now hyperparameters
-      // println("hyperparameer semantification")
+      println("hyperparameer semantification")
       val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
         // hyperparameterInitialFilter
         Triple.create(
@@ -823,7 +835,7 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterInitialFilter,
           valueNodeP,
-          NodeFactory.createLiteral(initialFilter)
+          NodeFactory.createLiteral(_sem_initialFilter.value)
         ),
 
         // distsim feature extraction
@@ -845,7 +857,7 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterDistSimFeatureExtractionNode,
           valueNodeP,
-          NodeFactory.createLiteral(distSimFeatureExtractionMethod)
+          NodeFactory.createLiteral(_sem_distSimFeatureExtractionMethod.value)
         ),
 
         // hyperparameterFeatureExtractionStrategy
@@ -867,7 +879,7 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterFeatureExtractionStrategy,
           valueNodeP,
-          NodeFactory.createLiteral(featureExtractionMethod)
+          NodeFactory.createLiteral(_sem_featureExtractionMethod.value)
         ),
         // hyperparameterAvailability
         Triple.create(
@@ -888,7 +900,7 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterAvailability,
           valueNodeP,
-          NodeFactory.createLiteral(availability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+          NodeFactory.createLiteral(_sem_availability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
         ),
         // hyperparameterReliability
         Triple.create(
@@ -909,7 +921,7 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterReliability,
           valueNodeP,
-          NodeFactory.createLiteral(reliability.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+          NodeFactory.createLiteral(_sem_reliability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
         ),
         // hyperparameterImportance
         Triple.create(
@@ -930,21 +942,34 @@ class DaSimEstimator {
         Triple.create(
           hyperparameterImportance,
           valueNodeP,
-          NodeFactory.createLiteral(importance.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+          NodeFactory.createLiteral(_sem_importance.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
         )
       ))
 
-      // now semantic representation of dimilsrity results
-      // println("semantification of similarity values")
-      val semanticResult = resultDf.rdd.flatMap(row => {
-        val uriA = row.getAs[String](entityCols(0))
-        val uriB = row.getAs[String](entityCols(1))
+    // now semantic representation of dimilsrity results
+    val tmp_finalValCol = _sem_finalValCol.value
+    val tmp_entityCols = _sem_entityCols.value
+    val tmp_similarityCols = _sem_similarityCols.value
 
-        val overall_similarity_score = row.getAs[Double]("overall_similarity_score")
+    // resultDf.rdd.map(row => row.getAs[Double](tmp_finalValCol)).foreach(println(_))
+
+    /* resultDf.rdd.flatMap(row => {
+      val uriA: String = row.getAs[String](tmp_entityCols(0))
+      val uriB: String = row.getAs[String](tmp_entityCols(1))
+      Array(uriA, uriB)
+    }).foreach(println(_)) */
+
+      // println("ent cols:", _sem_entityCols.mkString(", "))
+      println("semantification of similarity values")
+      val semanticResult = resultDf.rdd.flatMap(row => {
+        val uriA: String = row.getAs[String](tmp_entityCols(0))
+        val uriB: String = row.getAs[String](tmp_entityCols(1))
+
+        val overall_similarity_score: Double = row.getAs[Double](tmp_finalValCol)
 
         // now we need to get most important factor
 
-        val simScores: Array[(String, Double)] = similarityCols
+        val simScores: Array[(String, Double)] = tmp_similarityCols
           .map(sc => (sc, row.getAs[Double](sc)))
 
         val bestSimScore = simScores
@@ -957,7 +982,7 @@ class DaSimEstimator {
         val listMostRelevant = simScores
           .filter(ss => (bestSimScore - ss._2) < epsilon)
 
-        (uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+        println(uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
 
         val entityNodes = Array(
           NodeFactory.createURI(uriA),
@@ -1088,6 +1113,18 @@ class DaSimEstimator {
     )
     aggregatedSimilarityScoreDf
       .show(false)
+
+    val spark = SparkSession.builder().getOrCreate()
+
+    _sem_entityCols = spark.sparkContext.broadcast(aggregatedSimilarityScoreDf.columns.slice(0, 2))
+    _sem_finalValCol = spark.sparkContext.broadcast("overall_similarity_score")
+    _sem_similarityCols = spark.sparkContext.broadcast(aggregatedSimilarityScoreDf.columns.slice(2, aggregatedSimilarityScoreDf.columns.length - 1))
+    _sem_availability = spark.sparkContext.broadcast(pAvailability)
+    _sem_reliability = spark.sparkContext.broadcast(pReliability)
+    _sem_importance = spark.sparkContext.broadcast(pImportance)
+    _sem_distSimFeatureExtractionMethod = spark.sparkContext.broadcast(_pDistSimFeatureExtractionMethod)
+    _sem_initialFilter = spark.sparkContext.broadcast({if (_pInitialFilterByObject != null) _pInitialFilterByObject else if (_pInitialFilterBySPARQL != null) _pInitialFilterBySPARQL else "no initial filter"})
+    _sem_featureExtractionMethod = spark.sparkContext.broadcast(if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else "SmartFeatureExtractor")
 
     aggregatedSimilarityScoreDf
   }
