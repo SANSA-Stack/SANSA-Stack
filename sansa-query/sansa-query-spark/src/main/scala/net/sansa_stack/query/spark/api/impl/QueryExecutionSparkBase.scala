@@ -4,11 +4,11 @@ package net.sansa_stack.query.spark.api.impl
 import java.util
 
 import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
-import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, ResultSetCloseable}
+import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
 import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.apache.jena.graph
-import org.apache.jena.query.{Query, QueryExecution}
+import org.apache.jena.query.{Query, QueryExecution, ResultSetCloseable}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.modify.TemplateLib
@@ -26,7 +26,7 @@ abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionF
 
     val tmp = ResultSetUtils.createUsingVars(query.getProjectVars, bindings.asJava)
 
-    new ResultSetCloseable(tmp)
+    new ResultSetCloseable(tmp, this)
   }
 
   override def execConstructTriples(): util.Iterator[graph.Triple] = {

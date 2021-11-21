@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-parent_2.12</artifactId>
-    <version>0.8.0-RC2-SNAPSHOT</version>
+    <version>0.8.0_jena-4.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - Parent</name>
 
@@ -1360,6 +1360,19 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.30</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-ext</artifactId>
+                <version>1.7.30</version>
+		<exclusions>
+			<exclusion>
+                <groupId>ch.qos.cal10n</groupId>
+                <artifactId>cal10n-api</artifactId>
+ 
+			</exclusion>
+		</exclusions>
             </dependency>
 
             <dependency>
