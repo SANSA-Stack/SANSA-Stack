@@ -80,7 +80,7 @@ class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
     val resultSimDf = dse
       .transform(dataset)
 
-    resultSimDf.show(false)
+    // resultSimDf.show(false)
 
     val metagraph = dse.semantification(
       resultDf = resultSimDf,
