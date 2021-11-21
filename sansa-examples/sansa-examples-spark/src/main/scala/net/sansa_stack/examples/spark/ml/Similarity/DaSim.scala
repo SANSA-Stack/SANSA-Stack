@@ -101,7 +101,7 @@ object DaSim {
       // .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film")) & (t.getPredicate.toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))))
       // .filter(t => ((t.getObject.toString().equals("http://dbpedia.org/ontology/Person"))))
       .filter(t => ((t.getObject.toString().equals("http://data.linkedmdb.org/movie/film"))))
-      .limit(10)
+      // .limit(10)
       .rdd
       .toDF()
       .select("s")

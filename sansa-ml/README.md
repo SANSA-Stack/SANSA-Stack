@@ -9,14 +9,11 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 
 ## Current Modules
 The current stack provides:
-- [SmartFeatureExtractor](#smartfeatureextractor)
 - [Literal2Feature - AutoSparql Generation for Feature Extraction](#literal2feature-autosparql-generation-for-feature-extraction)
 - [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
 - [Smart Vector Assembler](#smart-vector-assembler)
 - [ML2Graph](#ml2graph)
-- [SimE4KG - Similarity Estimation for Knowledge Graphs](#sime4kg)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
-- [SimE4KG Transformer](#simE4KG-transformer)
 - [Sparql Transformer](#sparql-transformer)
 
 ### SmartFeatureExtractor
@@ -68,6 +65,7 @@ The results looks like this:
 |https://sansa.sam...|[https://sansa.sa...| 1999-01-01 00:00:00|  189.0|http://data.linke...| http://data.linke...|          Green Mile|[https://sansa.sa...|
 +--------------------+--------------------+--------------------+-------+--------------------+---------------------+--------------------+--------------------+
 ```
+- [DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml#distad-distributed-anomaly-detection)
 
 ### Literal2Feature AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
@@ -209,34 +207,6 @@ val ml2Graph = new ML2Graph()
 
 val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
 metagraph.take(10).foreach(println(_))
-```
-### SimE4KG
-This modules provides a sementic similarity estimation Transformer. It needs a dataset of triple as input.
-Then you specify which seeds you want to consider. Either you do this over a sparwl or over the object filter.
-next we reuse the DistSim similarity estimation to gather candidate pairs. 
-Based on this candidate pairs, the multi modal simialrity estimation is calculated.
-The features of this are extracted by the SmartFeatureExtractor.
-```scala
-val lang = Lang.TURTLE
-val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/sampleMovieDB.nt").persist()
-
-val dataset: Dataset[Triple] = originalDataRDD
-  .toDS()
-  .cache()
-
-val dse = new DaSimEstimator()
-  // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
-  .setObjectFilter("http://data.linkedmdb.org/movie/film")
-  .setDistSimFeatureExtractionMethod("os")
-  .setSimilarityValueStreching(false)
-  .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
-
-val resultSimDf = dse
-  .transform(dataset)
-
-resultSimDf.show(false)
-
-val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
 ```
 
 ### Sparql Transformer
