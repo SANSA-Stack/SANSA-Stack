@@ -617,7 +617,7 @@ class DaSimEstimator {
       availabilityMap += (co + "_sim" -> (extractedFeaturesDfSize - av)/extractedFeaturesDfSize)
     }
 
-    // availabilityMap.foreach(println(_))
+    println("availability weighting (automatically calculated): ", availabilityMap.mkString(", "))
 
     availabilityMap
   }
