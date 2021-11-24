@@ -2122,8 +2122,8 @@
             </releases>
         </repository>
 
-        <!--
-            <repository>
+        
+        <repository>
                 <id>apache-snapshot</id>
                 <name>Apache repository (snapshots)</name>
                 <url>https://repository.apache.org/content/repositories/snapshots/</url>
@@ -2134,7 +2134,7 @@
                     <enabled>false</enabled>
                 </releases>
         </repository>
-        -->
+        
         <repository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
