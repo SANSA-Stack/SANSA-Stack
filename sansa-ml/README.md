@@ -242,6 +242,7 @@ metagraph.take(10).foreach(println(_))
 
  val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
  ```
+ Apart of the code snippets here, we also provide a sample [Dataricks Notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1243120961280565/8524188481975304/latest.html)
 
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):
