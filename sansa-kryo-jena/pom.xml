@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC2-SNAPSHOT</version>
+        <version>0.8.0_jena-4.3.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-kryo-jena</artifactId>
@@ -26,8 +26,28 @@
         </dependency>
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-io-core</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-relations</artifactId>
+        </dependency>
+
+<!--         <dependency> -->
+<!--             <groupId>org.aksw.jenax</groupId> -->
+<!--             <artifactId>jenax-arq-utils</artifactId> -->
+<!--         </dependency> -->
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rdfnode-in-dataset</artifactId>
         </dependency>
 
         <!--

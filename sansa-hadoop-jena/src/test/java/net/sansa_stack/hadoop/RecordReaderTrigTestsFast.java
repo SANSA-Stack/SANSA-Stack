@@ -1,8 +1,9 @@
 package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset;
-import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.query.Dataset;
 import org.junit.runner.RunWith;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 @RunWith(Parameterized.class)
 public class RecordReaderTrigTestsFast
-    extends RecordReaderRdfTestBase<Dataset>
+    extends RecordReaderRdfTestBase<DatasetOneNg>
 {
     /**
      * Test case parameters
@@ -38,12 +39,12 @@ public class RecordReaderTrigTestsFast
     }
 
     @Override
-    public InputFormat<?, Dataset> createInputFormat() {
-        return new FileInputFormatTrigDataset();
+    public InputFormat<?, DatasetOneNg> createInputFormat() {
+        return new FileInputFormatRdfTrigDataset();
     }
 
     @Override
-    public void accumulate(Dataset target, Dataset contrib) {
+    public void accumulate(Dataset target, DatasetOneNg contrib) {
         DatasetGraphUtils.addAll(target.asDatasetGraph(), contrib.asDatasetGraph());
     }
 }

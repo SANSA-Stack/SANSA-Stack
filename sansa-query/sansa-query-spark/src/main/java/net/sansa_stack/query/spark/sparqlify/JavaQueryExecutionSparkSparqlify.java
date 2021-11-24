@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify;
 
 import net.sansa_stack.query.spark.api.impl.JavaQueryExecutionSparkBase;
-import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactory;
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite;
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter;
 import org.apache.jena.query.Query;

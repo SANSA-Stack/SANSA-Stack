@@ -8,6 +8,7 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 
@@ -27,6 +28,7 @@ public class GenericNodeSerializerCustom
     public static final int TYPE_BNODE   = 0x20;
     public static final int TYPE_LITERAL = 0x30;
     public static final int TYPE_VAR     = 0x40;
+    public static final int TYPE_TRIPLE  = 0x50;
 
     public static final int SUBTYPE_MASK = 0x0f;
     public static final int LITERAL_HAS_LANG = 0x01;
@@ -70,6 +72,9 @@ public class GenericNodeSerializerCustom
         } else if (node.isVariable()) {
             output.writeByte(TYPE_VAR);
             output.writeString(node.getName());
+        } else if (node.isNodeTriple()) {
+            output.writeByte(TYPE_TRIPLE);
+            kryo.writeObject(output, node.getTriple());
         } else {
             throw new RuntimeException("Unknown node type: " + node);
         }
@@ -79,6 +84,7 @@ public class GenericNodeSerializerCustom
     public Node read(Kryo kryo, Input input, Class<Node> cls) {
         Node result;
         String v1, v2;
+        Triple t;
 
         byte type = input.readByte();
 
@@ -117,6 +123,10 @@ public class GenericNodeSerializerCustom
             case TYPE_VAR:
                 v1 = input.readString();
                 result = Var.alloc(v1); // NodeFactory.createVariable ?
+                break;
+            case TYPE_TRIPLE:
+                t = kryo.readObject(input, Triple.class);
+                result = NodeFactory.createTripleNode(t);
                 break;
             default:
                 throw new RuntimeException("Unknown node type: " + typeVal);

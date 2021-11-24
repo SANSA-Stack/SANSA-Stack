@@ -1,13 +1,10 @@
 package net.sansa_stack.rdf.spark.io
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.aksw.jena_sparql_api.utils.GraphUtils
-import org.apache.jena.graph.GraphUtil
 import org.apache.jena.query.{QueryExecutionFactory, ResultSetFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.Model
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.resultset.ResultSetCompare
-import org.apache.jena.sparql.util.compose.DatasetLib.Collectors
 import org.apache.spark.storage.StorageLevel
 import org.scalatest.FunSuite
 
