@@ -40,7 +40,7 @@ feDf
   .show(false)
 ```
 here is an example with an initial filter by object
-```
+```scala
 val sfeObjectFilter = new SmartFeatureExtractor()
   // .setEntityColumnName("s")
   .setObjectFilter("http://data.linkedmdb.org/movie/film")
@@ -51,7 +51,7 @@ feDf1
   .show(false)
 ```
 and finally an example with an initial sparql filter
-
+```scala
 val sfeSparqlFilter = new SmartFeatureExtractor()
   // .setEntityColumnName("s")
   .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
