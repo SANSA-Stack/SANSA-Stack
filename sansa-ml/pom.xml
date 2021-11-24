@@ -32,7 +32,7 @@
 
 	<modules>
 		<module>sansa-ml-common</module>
-		<module>sansa-ml-flink</module>
+		<!-- <module>sansa-ml-flink</module> -->
 		<module>sansa-ml-spark</module>
 	</modules>
 

@@ -3,19 +3,19 @@ package net.sansa_stack.query.spark.api.impl
 
 import java.util
 
-import scala.collection.JavaConverters._
-
-import org.aksw.jena_sparql_api.core.{QueryExecutionBaseSelect, QueryExecutionFactory, ResultSetCloseable}
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
+import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
+import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
+import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.apache.jena.graph
-import org.apache.jena.query.{Query, QueryExecution}
+import org.apache.jena.query.{Query, QueryExecution, ResultSetCloseable}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.modify.TemplateLib
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
+import scala.collection.JavaConverters._
 
 abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionFactory, spark: SparkSession)
   extends QueryExecutionBaseSelect(query, subFactory)
@@ -24,9 +24,9 @@ abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionF
   override def executeCoreSelect(query: Query): ResultSetCloseable = {
     val bindings = execSelectSpark().getBindings.collect().iterator
 
-    val tmp = ResultSetUtils.create2(query.getProjectVars, bindings.asJava)
+    val tmp = ResultSetUtils.createUsingVars(query.getProjectVars, bindings.asJava)
 
-    new ResultSetCloseable(tmp)
+    new ResultSetCloseable(tmp, this)
   }
 
   override def execConstructTriples(): util.Iterator[graph.Triple] = {

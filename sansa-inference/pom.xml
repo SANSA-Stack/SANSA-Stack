@@ -31,7 +31,7 @@
 
     <modules>
         <module>sansa-inference-common</module>
-        <module>sansa-inference-flink</module>
+        <!--<module>sansa-inference-flink</module> -->
         <module>sansa-inference-spark</module>
         <module>sansa-inference-tests</module>
     </modules>

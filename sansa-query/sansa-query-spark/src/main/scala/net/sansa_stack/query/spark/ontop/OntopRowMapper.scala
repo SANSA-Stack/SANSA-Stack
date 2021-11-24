@@ -2,28 +2,19 @@ package net.sansa_stack.query.spark.ontop
 
 import java.util.Properties
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable
-
-import com.esotericsoftware.kryo.io.Output
-import it.unibz.inf.ontop.answering.reformulation.input.{ConstructQuery, ConstructTemplate}
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
-import it.unibz.inf.ontop.model.`type`.TypeFactory
 import it.unibz.inf.ontop.model.term._
 import it.unibz.inf.ontop.substitution.SubstitutionFactory
-import it.unibz.inf.ontop.substitution.impl.ImmutableSubstitutionImpl
-import org.apache.jena.datatypes.TypeMapper
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.rdf.model.Model
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.types.{StructField, StructType}
-import org.eclipse.rdf4j.model.{IRI, Literal}
-import org.eclipse.rdf4j.query.algebra.{ProjectionElem, ValueConstant, ValueExpr}
+import org.apache.spark.sql.types.StructField
 import org.semanticweb.owlapi.model.OWLOntology
+
+import scala.collection.JavaConverters._
 
 /**
  * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...
@@ -74,7 +65,7 @@ class OntopRowMapper(sessionId: String,
 
   def toBinding(row: Row): Binding = { // println(row)
     val startTime = System.currentTimeMillis()
-    val binding = BindingFactory.create()
+    val bb = BindingFactory.builder
 
     val builder = ImmutableMap.builder[Variable, Constant]
 
@@ -94,13 +85,13 @@ class OntopRowMapper(sessionId: String,
     })
 
     ontopBindings.foreach {
-      case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
+      case (v, Some(term)) => bb.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
     // if (ctx.isDefined) println(s"binding generated at { Stage: $stageId, Partition: $partId, Host: $hostname, Task: $taskId } in ${System.currentTimeMillis() - startTime} ms")
 
 //    println(s"row: $row --- binding: $binding")
-    binding
+    bb.build()
   }
 
   val datatypeMappings = DatatypeMappings(typeFactory)
@@ -110,7 +101,7 @@ class OntopRowMapper(sessionId: String,
 
   def toBinding(row: InternalRow, schema: Array[StructField]): Binding = { // println(row)
     val startTime = System.currentTimeMillis()
-    val binding = BindingFactory.create()
+    val bb = BindingFactory.builder
 
     val builder = ImmutableMap.builder[Variable, Constant]
 
@@ -130,7 +121,7 @@ class OntopRowMapper(sessionId: String,
     })
 
     ontopBindings.foreach {
-      case (v, Some(term)) => binding.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
+      case (v, Some(term)) => bb.add(Var.alloc(v.getName), OntopUtils.toNode(term, typeFactory))
       case _ =>
     }
     if (ctx.isDefined) {
@@ -138,7 +129,7 @@ class OntopRowMapper(sessionId: String,
     }
 
     //    println(s"row: $row --- binding: $binding")
-    binding
+    bb.build
   }
 
   def close(): Unit = {}

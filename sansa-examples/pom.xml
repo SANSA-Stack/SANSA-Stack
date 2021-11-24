@@ -30,7 +30,7 @@
 
 
 	<modules>
-		<module>sansa-examples-flink</module>
+		<!-- <module>sansa-examples-flink</module> -->
 		<module>sansa-examples-spark</module>
 	</modules>
 

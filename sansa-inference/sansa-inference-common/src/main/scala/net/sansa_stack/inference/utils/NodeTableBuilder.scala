@@ -3,9 +3,8 @@ package net.sansa_stack.inference.utils
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.tdb.base.file.Location
 import org.apache.jena.tdb.setup.DatasetBuilderStd
-import org.apache.jena.tdb.store.DatasetGraphTDB
-import tdb.bulkloader2.CmdNodeTableBuilder
 import tdb.cmdline.CmdTDB
+import tdb.xloader.CmdNodeTableBuilder
 
 /**
   * @author Lorenz Buehmann

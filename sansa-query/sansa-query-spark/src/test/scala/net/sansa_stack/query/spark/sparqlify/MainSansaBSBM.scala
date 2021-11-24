@@ -6,12 +6,11 @@ import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import benchmark.testdriver.{LocalSPARQLParameterPool, SPARQLConnection2, TestDriver}
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
-import org.aksw.jena_sparql_api.core.connection.SparqlQueryConnectionJsa
+import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.jena.query.{Query, QueryFactory}
-import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.{Row, SparkSession}
 
 
@@ -60,8 +59,8 @@ object MainSansaBSBM {
     // it.foreach { x => println("GOT: " + (if(x.getObject.isLiteral) x.getObject.getLiteralLanguage else "-")) }
     val tripleRdd = sparkSession.sparkContext.parallelize(it)
 
-    import net.sansa_stack.rdf.spark.partition._
     import net.sansa_stack.query.spark._
+    import net.sansa_stack.rdf.spark.partition._
 
     val qef = tripleRdd.verticalPartition(RdfPartitionerDefault).sparqlify()
     // val map = graphRdd.partitionGraphByPredicates
@@ -154,7 +153,7 @@ object MainSansaBSBM {
   }
 
   def rowToBinding(row: Row): Binding = {
-    val result = new BindingHashMap()
+    val result = BindingFactory.builder
 
     val fieldNames = row.schema.fieldNames
     row.toSeq.zipWithIndex.foreach {
@@ -164,7 +163,7 @@ object MainSansaBSBM {
         RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v)
     }
 
-    result
+    result.build
   }
 
 }

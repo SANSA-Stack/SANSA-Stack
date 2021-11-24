@@ -26,8 +26,28 @@
         </dependency>
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-io-core</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-relations</artifactId>
+        </dependency>
+
+<!--         <dependency> -->
+<!--             <groupId>org.aksw.jenax</groupId> -->
+<!--             <artifactId>jenax-arq-utils</artifactId> -->
+<!--         </dependency> -->
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rdfnode-in-dataset</artifactId>
         </dependency>
 
         <!--
