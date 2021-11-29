@@ -27,6 +27,8 @@ class DaSimEstimator {
   // initial filter
   var _pInitialFilterBySPARQL: String = null
   var _pInitialFilterByObject: String = null
+  var _pInitialFilterByPredicate: String = null
+
 
   // DistSIm candidate gathering
   var _pDistSimFeatureExtractionMethod = "or"
@@ -83,6 +85,17 @@ class DaSimEstimator {
    */
   def setObjectFilter(objectFilter: String): this.type = {
     _pInitialFilterByObject = objectFilter
+    this
+  }
+
+  /**
+   * FIlter init KG by spo object
+   * Filter the KG by the predicate of spo structure, so an alternative and faster compared to sparql
+   * @param predicateFilter string representing the object for spo filter
+   * @return adjusted transformer
+   */
+  def setPredicateFilter(predicateFilter: String): this.type = {
+    _pInitialFilterByObject = predicateFilter
     this
   }
 
@@ -180,14 +193,19 @@ class DaSimEstimator {
    * @param objectFilter gilter init kg by spo object
    * @return dataframe with one column containing string representation of seed URIs
    */
-  def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null): DataFrame = {
+  def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null, predicateFilter: String = null): DataFrame = {
 
     val spark = SparkSession.builder.getOrCreate()
 
     val seeds: DataFrame = {
-    if (objectFilter!= null) {
-      ds
-        .filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
+    if (objectFilter!= null || predicateFilter!= null) {
+      val tmpF = {
+        if (objectFilter!= null && predicateFilter!= null) ds.filter (t => ((t.getObject.toString ().equals (objectFilter) ) && (t.getPredicate.toString ().equals (predicateFilter) ) ) )
+        else if (objectFilter != null && predicateFilter == null) ds.filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
+        else ds.filter (t => (t.getPredicate.toString ().equals (predicateFilter) ) )
+      }
+      tmpF
+        // .filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
         .rdd
         .toDF()
         .select("s")
@@ -356,7 +374,7 @@ class DaSimEstimator {
    * @param sparqlFeatureExtractionQuery optional, but if set we use sparql frame and not smartfeatureextractor
    * @return dataframe with columns corresponding to the features and the uri identifier
    */
-  def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null): DataFrame = {
+  def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null, predicateFilter: String = "", objectFilter: String = ""): DataFrame = {
     val featureDf = {
       if (sparqlFeatureExtractionQuery != null) {
         println("DaSimEstimator: Feature Extraction by SparqlFrame")
@@ -390,6 +408,8 @@ class DaSimEstimator {
 
         val sfe = new SmartFeatureExtractor()
           .setEntityColumnName("s")
+          .setPredicateFilter(predicateFilter)
+          .setObjectFilter(objectFilter)
         val feDf = sfe
           .transform(filteredDS)
         feDf
@@ -1049,11 +1069,11 @@ class DaSimEstimator {
     // gather seeds
     println("gather seeds")
     val seeds: DataFrame = if (_seedLimit == -1) {
-      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+      gatherSeeds(dataset, sparqlFilter = _pInitialFilterBySPARQL, predicateFilter = _pInitialFilterByPredicate, objectFilter = _pInitialFilterByObject)
         .cache()
     }
     else {
-      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+      gatherSeeds(dataset, sparqlFilter = _pInitialFilterBySPARQL, predicateFilter = _pInitialFilterByPredicate, objectFilter = _pInitialFilterByObject)
         .limit(_seedLimit) // TODO only tmp for debug and first try outs
         .cache()
     }
@@ -1079,7 +1099,7 @@ class DaSimEstimator {
       candidateList,
       sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null)
       .cache()
-    featureDf.show(false)
+    featureDf.show()
 
     println(s"We have ${featureDf.count()} entries in feature DF pairs")
 
