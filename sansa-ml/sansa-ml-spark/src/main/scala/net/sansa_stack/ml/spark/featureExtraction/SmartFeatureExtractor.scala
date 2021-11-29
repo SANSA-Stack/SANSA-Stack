@@ -30,6 +30,7 @@ class SmartFeatureExtractor extends Transformer {
 
   // filter
   var objectFilter: String = ""
+  var predicateFilter: String = ""
   var sparqlFilter: String = ""
 
   def setEntityColumnName(colName: String): this.type = {
@@ -42,6 +43,11 @@ class SmartFeatureExtractor extends Transformer {
     this
   }
 
+  def setPredicateFilter(filter: String): this.type = {
+    predicateFilter = filter
+    this
+  }
+
   def setSparqlFilter(filter: String): this.type = {
     sparqlFilter = filter
     this
@@ -50,15 +56,31 @@ class SmartFeatureExtractor extends Transformer {
   def transform(dataset: Dataset[_]): DataFrame = {
     implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
 
+    val ds = dataset.asInstanceOf[Dataset[Triple]]
+
     val filteredDataset: Dataset[Triple] = {
-      if (objectFilter != "") {
-        val seeds: DataFrame = dataset
+      if (objectFilter != "" || predicateFilter != "") {
+
+        val seeds: DataFrame = {
+          val tmpF = {
+            if (objectFilter != "" && predicateFilter != "") ds.filter(t => ((t.getObject.toString().equals(objectFilter)) && (t.getPredicate.toString().equals(predicateFilter))))
+            else if (objectFilter != "" && predicateFilter == "") ds.filter(t => ((t.getObject.toString().equals(objectFilter))))
+            else ds.filter(t => (t.getPredicate.toString().equals(predicateFilter)))
+          }
+          tmpF
+            .rdd
+            .toDF()
+            .select("s")
+            .withColumnRenamed("s", "seed")
+        }
+
+        /* val seeds: DataFrame = dataset
           .map(_.asInstanceOf[Triple])
           .filter(t => ((t.getObject.toString().equals(objectFilter))))
           .rdd
           .toDF()
           .select("s")
-          .withColumnRenamed("s", "seed")
+          .withColumnRenamed("s", "seed") */
         val seedList: Array[String] = seeds.collect().map(_.getAs[String](0))
 
         dataset
@@ -103,12 +125,16 @@ class SmartFeatureExtractor extends Transformer {
       .pivot("p") // create columns for each predicate as kind of respective features
       .agg(collect_list("o")) // collect these features in list
 
+    // pivotFeatureDF.show()
+
     // need to rename cols so internal SQL does not have issues
     val newColNames: Array[String] = pivotFeatureDF
       .columns
       .map(_.replace(".", "_"))
     val df = pivotFeatureDF
       .toDF(newColNames: _*)
+
+    // df.show()
 
     /**
      * these are the feature columns we iterate over
@@ -137,11 +163,19 @@ class SmartFeatureExtractor extends Transformer {
         .pivot("litType") // now expand by lit type s.t. we have for each featrutre maybe multiple cols if they are corresponding to different lit types
         .agg(collect_list("value")) // collect back again these features
 
+      // println("featureColumn: ", featureColumn)
+      // tmpDf.show(false)
+
       val currentFeatureCols: Array[String] = tmpDf
         .columns
         .drop(1)
 
-      currentFeatureCols.foreach(f = cn => {
+      // currentFeatureCols.foreach(println(_))
+
+      // val castedDf = tmpDf.select(entityColumnNameString)
+
+      currentFeatureCols.foreach(cn => {
+        // println("cn", cn)
         val castType: String = cn.toLowerCase() match {
           case "string" => "string"
           case "integer" => "double"
@@ -152,13 +186,14 @@ class SmartFeatureExtractor extends Transformer {
           case "timestamp" => "timestamp"
           case _ => "string"
         }
-        val newFC: String = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType
+        val newFC: String = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType // if (currentFeatureCols.size == 1) Array(featureColumn + _ + cn) else currentFeatureCols.map(_ + "_" + castType)
+        // println("newFC", newFC)
         tmpDf = tmpDf
           .withColumn(newFC, col(cn).cast("array<" + castType + ">")) // cast the respective cols to their identified feature cols
           .drop(cn) // drop the old col
 
         val maxNumberElements = tmpDf
-          .select(col(entityColumnNameString), explode(col(featureColumn.split("/").last)))
+          .select(col(entityColumnNameString), explode(col(newFC)))
           .select(entityColumnNameString)
           .groupBy(entityColumnNameString)
           .count()
@@ -168,9 +203,18 @@ class SmartFeatureExtractor extends Transformer {
           .getLong(0)
 
         if (maxNumberElements == 1) {
-          tmpDf = tmpDf.select(col(entityColumnNameString), explode(col(tmpDf.columns.last)).as(tmpDf.columns.last))
+          tmpDf = tmpDf
+            .withColumnRenamed(newFC, "oldCol")
+            .withColumn(newFC, col("oldCol")(0))
+            .drop("oldCol")
+            // .select(col(entityColumnNameString), explode(col(tmpDf.columns.last)).as(tmpDf.columns.last))
         }
+        // castedDf.join(tmpDf, Seq(entityColumnNameString), "left")
       })
+
+      // println("casted and renamed sub df")
+      // tmpDf
+        // .show()
 
       joinDf = joinDf
         .join(tmpDf, Seq(entityColumnNameString), "left")
