@@ -112,6 +112,24 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
+		<!--HermiT-->
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+			<artifactId>org.semanticweb.hermit</artifactId>
+			<version>1.4.5.519</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>woodstox-core-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.sourceforge.owlapi</groupId>
+					<artifactId>owlapi-distribution</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
