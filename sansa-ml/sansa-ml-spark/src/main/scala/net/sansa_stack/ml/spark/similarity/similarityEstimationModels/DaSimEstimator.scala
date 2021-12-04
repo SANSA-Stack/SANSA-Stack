@@ -15,7 +15,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{abs, array, coalesce, col, collect_list, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
+import org.apache.spark.sql.functions.{abs, array, avg, coalesce, col, collect_list, explode, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
 import scala.collection.mutable
@@ -487,6 +487,33 @@ class DaSimEstimator {
 
             myScaledData
           }
+          else if (twoColFeDf.schema(1).dataType == ArrayType(DoubleType)) {
+            println("whohoo new mode")
+
+            val entityColName = twoColFeDf.schema(0).name
+
+            val tmpTwoColDf = twoColFeDf.select(col(entityColName), explode(col(featureName)).as(featureName))
+
+            twoColFeDf.show()
+            tmpTwoColDf.show()
+
+            val min_max = tmpTwoColDf.agg(min(featureName), max(featureName)).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = tmpTwoColDf
+              // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+              .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
+              .groupBy(entityColName)
+              .agg(
+                avg("scaled").alias("preparedFeature"))
+              .select(entityColName, "preparedFeature")
+
+            myScaledData.show()
+
+            myScaledData
+          }
           else if (twoColFeDf.schema(1).dataType == ArrayType(StringType)) {
             val hashingTF = new HashingTF()
               .setInputCol(featureName)
@@ -545,14 +572,15 @@ class DaSimEstimator {
           else {
             println("you should never end up here")
 
-
             twoColFeDf.withColumnRenamed(featureName, "preparedFeature")
           }
         }
 
         val DfPairWithFeature = candidatePairsDataFrame
           .join(
-            featureDfNormalized.select("s", "preparedFeature").withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
+            featureDfNormalized
+              .select("s", "preparedFeature")
+              .withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
             candidatePairsDataFrame("uriA") === extractedFeatureDataframe("s"),
             "inner")
           .drop("s")
@@ -608,7 +636,7 @@ class DaSimEstimator {
         }
 
         /**
-         * categorical feature overlap calculation
+         * numeric feature overlap calculation
          */
         else if ((twoColFeDf.schema(1).dataType == TimestampType) || twoColFeDf.schema(1).dataType == DoubleType) {
 
