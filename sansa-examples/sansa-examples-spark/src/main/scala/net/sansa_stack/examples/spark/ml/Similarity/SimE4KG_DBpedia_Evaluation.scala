@@ -10,7 +10,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
-object SimE4KG_DBpedia_Evaluation {
+object SimE4KG_DBpedia_Evaluation { // TODO this object is under development
   def main(args: Array[String]): Unit = {
 
     val path = args(0)
