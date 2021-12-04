@@ -488,14 +488,14 @@ class DaSimEstimator {
             myScaledData
           }
           else if (twoColFeDf.schema(1).dataType == ArrayType(DoubleType)) {
-            println("whohoo new mode")
+            // println("whohoo new mode")
 
             val entityColName = twoColFeDf.schema(0).name
 
             val tmpTwoColDf = twoColFeDf.select(col(entityColName), explode(col(featureName)).as(featureName))
 
-            twoColFeDf.show()
-            tmpTwoColDf.show()
+            // twoColFeDf.show()
+            // tmpTwoColDf.show()
 
             val min_max = tmpTwoColDf.agg(min(featureName), max(featureName)).head()
             val col_min = min_max.getDouble(0)
@@ -510,7 +510,44 @@ class DaSimEstimator {
                 avg("scaled").alias("preparedFeature"))
               .select(entityColName, "preparedFeature")
 
-            myScaledData.show()
+            // myScaledData.show()
+
+            myScaledData
+          }
+          else if (twoColFeDf.schema(1).dataType == ArrayType(TimestampType)) {
+            // println("whohoo new mode")
+
+            val entityColName = twoColFeDf.schema(0).name
+
+            val tmpTwoColDf = twoColFeDf
+              .select(col(entityColName), explode(col(featureName)).as(featureName))
+              .withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
+              .select(entityColName, "unixTimestamp")
+              .withColumnRenamed("unixTimestamp", featureName)
+              .select(entityColName, featureName)
+
+            // twoColFeDf.show()
+            // tmpTwoColDf.show()
+
+            // val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
+
+            // unixTimeStampDf.show()
+            // unixTimeStampDf.printSchema()
+
+            val min_max = tmpTwoColDf.agg(min(featureName), max(featureName)).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = tmpTwoColDf
+              // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+              .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
+              .groupBy(entityColName)
+              .agg(
+                avg("scaled").alias("preparedFeature"))
+              .select(entityColName, "preparedFeature")
+
+            // myScaledData.show()
 
             myScaledData
           }
