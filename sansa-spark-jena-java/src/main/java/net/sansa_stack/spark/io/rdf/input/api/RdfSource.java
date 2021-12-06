@@ -5,6 +5,7 @@ import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 
@@ -33,6 +34,9 @@ import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
  *
  */
 public interface RdfSource {
+    /** Get the language of the source; typically probed for by the RdfSourceFactory */
+    Lang getLang();
+
     RDD<Triple> asTriples();
     RDD<Quad> asQuads();
     RDD<Model> asModels();

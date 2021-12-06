@@ -348,6 +348,9 @@ class SparqlFrame extends Transformer{
     val resultSet = qef.createQueryExecution(_query)
       .execSelectSpark()
 
+    System.out.println("ResultSet:")
+    resultSet.getBindings.toLocalIterator.foreach(System.out.println)
+
     val schemaMapping = RddOfBindingsToDataFrameMapper
       .configureSchemaMapper(resultSet)
       .createSchemaMapping()
