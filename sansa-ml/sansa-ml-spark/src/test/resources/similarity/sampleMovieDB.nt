@@ -2,6 +2,8 @@
 <https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/runtime> "142"^^<http://www.w3.org/2001/XMLSchema#int> .
 <https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "161"^^<http://www.w3.org/2001/XMLSchema#int> .
 <https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "165"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "192"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "196"^^<http://www.w3.org/2001/XMLSchema#int> .
 <https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/1> .
 <https://sansa.sample-stack.net/actor/1> <http://www.w3.org/2000/01/rdf-schema#label> "Morgan Freeman" .
 <https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/writer> <http://data.linkedmdb.org/writer/1> .
