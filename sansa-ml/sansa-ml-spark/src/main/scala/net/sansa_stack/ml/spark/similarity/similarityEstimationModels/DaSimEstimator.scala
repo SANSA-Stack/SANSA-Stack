@@ -15,7 +15,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{abs, array, avg, coalesce, col, collect_list, explode, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
+import org.apache.spark.sql.functions.{abs, aggregate, array, avg, coalesce, col, collect_list, explode, first, lit, max, min, size, sort_array, struct, sum, udf, unix_timestamp, when}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
 import scala.collection.mutable
@@ -682,13 +682,38 @@ class DaSimEstimator {
         }
 
         /**
-         * numeric feature overlap calculation
+         * single numeric feature overlap calculation
          */
         else if ((twoColFeDf.schema(1).dataType == TimestampType) || twoColFeDf.schema(1).dataType == DoubleType) {
 
           val tmpDf = DfPairWithFeature
             .withColumn(featureName + "_sim", lit(1.0) - abs(col(featureName + "_prepared_uriA") - col(featureName + "_prepared_uriB")))
           // .select("uriA", "uriB", featureName + "_sim")
+          if (_parameterVerboseProcess) tmpDf.show(false)
+
+          similarityEstimations = similarityEstimations
+            .join(
+              tmpDf.select("uriA", "uriB", featureName + "_sim"),
+              Seq("uriA", "uriB"),
+              // similarityEstimations("uriA") === tmpDf("uriA") && similarityEstimations("uriB") === tmpDf("uriB"),
+              "inner"
+            )
+        }
+
+        /**
+         * lists of numeric features overlap calculation
+         */
+        else if (/* (twoColFeDf.schema(1).dataType == ArrayType(TimestampType)) || */ twoColFeDf.schema(1).dataType == ArrayType(DoubleType)) {
+
+          val tmpDf = DfPairWithFeature
+            .withColumn("uASum", aggregate(col(featureName + "_prepared_uriA"), lit(0.0), (x, y) => (x + y)))
+            .withColumn("uBSum", aggregate(col(featureName + "_prepared_uriB"), lit(0.0), (x, y) => (x + y)))
+            .withColumn("uASize", size(col(featureName + "_prepared_uriA")))
+            .withColumn("uBSize", size(col(featureName + "_prepared_uriB")))
+            .withColumn(featureName + "_sim", abs((col("uASum") / col("uASize")) - (col("uBSum") / col("uBSize"))))
+
+          // .select("uriA", "uriB", featureName + "_sim")
+          tmpDf.show(false)
           if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
