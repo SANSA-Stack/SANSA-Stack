@@ -472,6 +472,8 @@ class DaSimEstimator {
           }
           else if (twoColFeDf.schema(1).dataType == TimestampType) {
 
+            val entityColName = twoColFeDf.schema(0).name
+
             val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
 
             // unixTimeStampDf.show()
@@ -483,7 +485,9 @@ class DaSimEstimator {
             val col_max = min_max.getDouble(1)
             val range = if ((col_max - col_min) != 0) col_max - col_min else 1
 
-            val myScaledData = unixTimeStampDf.withColumn("preparedFeature", (col("unixTimestamp") - lit(col_min)) / lit(range))
+            val myScaledData = unixTimeStampDf
+              .withColumn("preparedFeature", (col("unixTimestamp") - lit(col_min)) / lit(range))
+              .select(entityColName, "preparedFeature")
 
             myScaledData
           }
@@ -506,8 +510,9 @@ class DaSimEstimator {
               // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
               .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
               .groupBy(entityColName)
-              .agg(
-                avg("scaled").alias("preparedFeature"))
+              .agg(collect_list("scaled") as "preparedFeature")
+              // .agg(
+              //  avg("scaled").alias("preparedFeature"))
               .select(entityColName, "preparedFeature")
 
             // myScaledData.show()
@@ -543,8 +548,9 @@ class DaSimEstimator {
               // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
               .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
               .groupBy(entityColName)
-              .agg(
-                avg("scaled").alias("preparedFeature"))
+              .agg(collect_list("scaled") as "preparedFeature")
+              // .agg(
+              //  avg("scaled").alias("preparedFeature"))
               .select(entityColName, "preparedFeature")
 
             // myScaledData.show()
@@ -612,6 +618,9 @@ class DaSimEstimator {
             twoColFeDf.withColumnRenamed(featureName, "preparedFeature")
           }
         }
+
+        println(featureName)
+        featureDfNormalized.show(false)
 
         val DfPairWithFeature = candidatePairsDataFrame
           .join(
