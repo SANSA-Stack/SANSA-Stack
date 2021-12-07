@@ -112,7 +112,7 @@ class SmartFeatureExtractor extends Transformer {
           .asInstanceOf[RDD[org.apache.jena.graph.Triple]]
           .toDS()
       }
-    }
+    }.cache()
 
     /**
      * expand initial DF to its features by one hop
@@ -133,6 +133,7 @@ class SmartFeatureExtractor extends Transformer {
       .map(_.replace(".", "_"))
     val df = pivotFeatureDF
       .toDF(newColNames: _*)
+      .cache()
 
     // df.show()
 
@@ -145,7 +146,9 @@ class SmartFeatureExtractor extends Transformer {
     /**
      * This is the dataframe where we join the casted columns
      */
-    var joinDf = df.select(entityColumnNameString)
+    var joinDf = df
+      .select(entityColumnNameString)
+      .cache()
 
     // iterate over each feature column
     for (featureColumn <- featureColumns) {
