@@ -186,6 +186,11 @@ class DaSimEstimator {
     this
   }
 
+  def setVerbose(verbose: Boolean): this.type = {
+    _parameterVerboseProcess = verbose
+    this
+  }
+
   /**
    * internal method that collects seeds by either sparql or object filter
    * @param ds dataset of triples representing input kg
@@ -331,7 +336,7 @@ class DaSimEstimator {
         .select("uri", "vectorizedFeatures")
         .cache()
 
-      countVectorizedFeaturesDataFrame.show(false)
+      // countVectorizedFeaturesDataFrame.show(false)
 
       val simModel = new JaccardModel()
         .setInputCol("vectorizedFeatures")
@@ -619,8 +624,8 @@ class DaSimEstimator {
           }
         }
 
-        println(featureName)
-        featureDfNormalized.show(false)
+        // println(featureName)
+        // featureDfNormalized.show(false)
 
         val DfPairWithFeature = candidatePairsDataFrame
           .join(
@@ -713,7 +718,6 @@ class DaSimEstimator {
             .withColumn(featureName + "_sim", abs((col("uASum") / col("uASize")) - (col("uBSum") / col("uBSize"))))
 
           // .select("uriA", "uriB", featureName + "_sim")
-          tmpDf.show(false)
           if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
@@ -727,7 +731,6 @@ class DaSimEstimator {
       }
     )
     similarityEstimations.na.fill(0.0)
-
   }
 
   def calculateAvailability(extractedFeaturesDF: DataFrame): mutable.Map[String, Double] = {
