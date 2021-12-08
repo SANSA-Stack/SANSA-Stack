@@ -15,7 +15,7 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, HashingTF, IDF, MinHashLSH}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{abs, array, coalesce, col, collect_list, first, lit, max, min, sort_array, struct, udf, unix_timestamp}
+import org.apache.spark.sql.functions.{abs, aggregate, array, avg, coalesce, col, collect_list, explode, first, lit, max, min, size, sort_array, struct, sum, udf, unix_timestamp, when}
 import org.apache.spark.sql.types.{ArrayType, DoubleType, StringType, StructField, StructType, TimestampType}
 
 import scala.collection.mutable
@@ -27,6 +27,8 @@ class DaSimEstimator {
   // initial filter
   var _pInitialFilterBySPARQL: String = null
   var _pInitialFilterByObject: String = null
+  var _pInitialFilterByPredicate: String = null
+
 
   // DistSIm candidate gathering
   var _pDistSimFeatureExtractionMethod = "or"
@@ -83,6 +85,17 @@ class DaSimEstimator {
    */
   def setObjectFilter(objectFilter: String): this.type = {
     _pInitialFilterByObject = objectFilter
+    this
+  }
+
+  /**
+   * FIlter init KG by spo object
+   * Filter the KG by the predicate of spo structure, so an alternative and faster compared to sparql
+   * @param predicateFilter string representing the object for spo filter
+   * @return adjusted transformer
+   */
+  def setPredicateFilter(predicateFilter: String): this.type = {
+    _pInitialFilterByObject = predicateFilter
     this
   }
 
@@ -173,6 +186,11 @@ class DaSimEstimator {
     this
   }
 
+  def setVerbose(verbose: Boolean): this.type = {
+    _parameterVerboseProcess = verbose
+    this
+  }
+
   /**
    * internal method that collects seeds by either sparql or object filter
    * @param ds dataset of triples representing input kg
@@ -180,14 +198,19 @@ class DaSimEstimator {
    * @param objectFilter gilter init kg by spo object
    * @return dataframe with one column containing string representation of seed URIs
    */
-  def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null): DataFrame = {
+  def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null, predicateFilter: String = null): DataFrame = {
 
     val spark = SparkSession.builder.getOrCreate()
 
     val seeds: DataFrame = {
-    if (objectFilter!= null) {
-      ds
-        .filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
+    if (objectFilter!= null || predicateFilter!= null) {
+      val tmpF = {
+        if (objectFilter!= null && predicateFilter!= null) ds.filter (t => ((t.getObject.toString ().equals (objectFilter) ) && (t.getPredicate.toString ().equals (predicateFilter) ) ) )
+        else if (objectFilter != null && predicateFilter == null) ds.filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
+        else ds.filter (t => (t.getPredicate.toString ().equals (predicateFilter) ) )
+      }
+      tmpF
+        // .filter (t => ((t.getObject.toString ().equals (objectFilter) ) ) )
         .rdd
         .toDF()
         .select("s")
@@ -313,7 +336,7 @@ class DaSimEstimator {
         .select("uri", "vectorizedFeatures")
         .cache()
 
-      countVectorizedFeaturesDataFrame.show(false)
+      // countVectorizedFeaturesDataFrame.show(false)
 
       val simModel = new JaccardModel()
         .setInputCol("vectorizedFeatures")
@@ -356,7 +379,7 @@ class DaSimEstimator {
    * @param sparqlFeatureExtractionQuery optional, but if set we use sparql frame and not smartfeatureextractor
    * @return dataframe with columns corresponding to the features and the uri identifier
    */
-  def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null): DataFrame = {
+  def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null, predicateFilter: String = "", objectFilter: String = ""): DataFrame = {
     val featureDf = {
       if (sparqlFeatureExtractionQuery != null) {
         println("DaSimEstimator: Feature Extraction by SparqlFrame")
@@ -390,6 +413,8 @@ class DaSimEstimator {
 
         val sfe = new SmartFeatureExtractor()
           .setEntityColumnName("s")
+          .setPredicateFilter(predicateFilter)
+          .setObjectFilter(objectFilter)
         val feDf = sfe
           .transform(filteredDS)
         feDf
@@ -452,6 +477,8 @@ class DaSimEstimator {
           }
           else if (twoColFeDf.schema(1).dataType == TimestampType) {
 
+            val entityColName = twoColFeDf.schema(0).name
+
             val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
 
             // unixTimeStampDf.show()
@@ -463,7 +490,75 @@ class DaSimEstimator {
             val col_max = min_max.getDouble(1)
             val range = if ((col_max - col_min) != 0) col_max - col_min else 1
 
-            val myScaledData = unixTimeStampDf.withColumn("preparedFeature", (col("unixTimestamp") - lit(col_min)) / lit(range))
+            val myScaledData = unixTimeStampDf
+              .withColumn("preparedFeature", (col("unixTimestamp") - lit(col_min)) / lit(range))
+              .select(entityColName, "preparedFeature")
+
+            myScaledData
+          }
+          else if (twoColFeDf.schema(1).dataType == ArrayType(DoubleType)) {
+            // println("whohoo new mode")
+
+            val entityColName = twoColFeDf.schema(0).name
+
+            val tmpTwoColDf = twoColFeDf.select(col(entityColName), explode(col(featureName)).as(featureName))
+
+            // twoColFeDf.show()
+            // tmpTwoColDf.show()
+
+            val min_max = tmpTwoColDf.agg(min(featureName), max(featureName)).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = tmpTwoColDf
+              // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+              .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
+              .groupBy(entityColName)
+              .agg(collect_list("scaled") as "preparedFeature")
+              // .agg(
+              //  avg("scaled").alias("preparedFeature"))
+              .select(entityColName, "preparedFeature")
+
+            // myScaledData.show()
+
+            myScaledData
+          }
+          else if (twoColFeDf.schema(1).dataType == ArrayType(TimestampType)) {
+            // println("whohoo new mode")
+
+            val entityColName = twoColFeDf.schema(0).name
+
+            val tmpTwoColDf = twoColFeDf
+              .select(col(entityColName), explode(col(featureName)).as(featureName))
+              .withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
+              .select(entityColName, "unixTimestamp")
+              .withColumnRenamed("unixTimestamp", featureName)
+              .select(entityColName, featureName)
+
+            // twoColFeDf.show()
+            // tmpTwoColDf.show()
+
+            // val unixTimeStampDf = twoColFeDf.withColumn("unixTimestamp", unix_timestamp(col(featureName)).cast("double"))
+
+            // unixTimeStampDf.show()
+            // unixTimeStampDf.printSchema()
+
+            val min_max = tmpTwoColDf.agg(min(featureName), max(featureName)).head()
+            val col_min = min_max.getDouble(0)
+            val col_max = min_max.getDouble(1)
+            val range = if ((col_max - col_min) > 0) col_max - col_min else 1
+
+            val myScaledData = tmpTwoColDf
+              // .withColumn("preparedFeature", (col(featureName) - lit(col_min)) / lit(range))
+              .withColumn("scaled", (col(featureName) - lit(col_min)) / lit(range))
+              .groupBy(entityColName)
+              .agg(collect_list("scaled") as "preparedFeature")
+              // .agg(
+              //  avg("scaled").alias("preparedFeature"))
+              .select(entityColName, "preparedFeature")
+
+            // myScaledData.show()
 
             myScaledData
           }
@@ -525,14 +620,18 @@ class DaSimEstimator {
           else {
             println("you should never end up here")
 
-
             twoColFeDf.withColumnRenamed(featureName, "preparedFeature")
           }
         }
 
+        // println(featureName)
+        // featureDfNormalized.show(false)
+
         val DfPairWithFeature = candidatePairsDataFrame
           .join(
-            featureDfNormalized.select("s", "preparedFeature").withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
+            featureDfNormalized
+              .select("s", "preparedFeature")
+              .withColumnRenamed("preparedFeature", featureName + "_prepared_uriA"),
             candidatePairsDataFrame("uriA") === extractedFeatureDataframe("s"),
             "inner")
           .drop("s")
@@ -588,7 +687,7 @@ class DaSimEstimator {
         }
 
         /**
-         * categorical feature overlap calculation
+         * single numeric feature overlap calculation
          */
         else if ((twoColFeDf.schema(1).dataType == TimestampType) || twoColFeDf.schema(1).dataType == DoubleType) {
 
@@ -605,10 +704,33 @@ class DaSimEstimator {
               "inner"
             )
         }
+
+        /**
+         * lists of numeric features overlap calculation
+         */
+        else if (/* (twoColFeDf.schema(1).dataType == ArrayType(TimestampType)) || */ twoColFeDf.schema(1).dataType == ArrayType(DoubleType)) {
+
+          val tmpDf = DfPairWithFeature
+            .withColumn("uASum", aggregate(col(featureName + "_prepared_uriA"), lit(0.0), (x, y) => (x + y)))
+            .withColumn("uBSum", aggregate(col(featureName + "_prepared_uriB"), lit(0.0), (x, y) => (x + y)))
+            .withColumn("uASize", size(col(featureName + "_prepared_uriA")))
+            .withColumn("uBSize", size(col(featureName + "_prepared_uriB")))
+            .withColumn(featureName + "_sim", abs((col("uASum") / col("uASize")) - (col("uBSum") / col("uBSize"))))
+
+          // .select("uriA", "uriB", featureName + "_sim")
+          if (_parameterVerboseProcess) tmpDf.show(false)
+
+          similarityEstimations = similarityEstimations
+            .join(
+              tmpDf.select("uriA", "uriB", featureName + "_sim"),
+              Seq("uriA", "uriB"),
+              // similarityEstimations("uriA") === tmpDf("uriA") && similarityEstimations("uriB") === tmpDf("uriB"),
+              "inner"
+            )
+        }
       }
     )
     similarityEstimations.na.fill(0.0)
-
   }
 
   def calculateAvailability(extractedFeaturesDF: DataFrame): mutable.Map[String, Double] = {
@@ -1049,11 +1171,11 @@ class DaSimEstimator {
     // gather seeds
     println("gather seeds")
     val seeds: DataFrame = if (_seedLimit == -1) {
-      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+      gatherSeeds(dataset, sparqlFilter = _pInitialFilterBySPARQL, predicateFilter = _pInitialFilterByPredicate, objectFilter = _pInitialFilterByObject)
         .cache()
     }
     else {
-      gatherSeeds(dataset, _pInitialFilterBySPARQL, _pInitialFilterByObject)
+      gatherSeeds(dataset, sparqlFilter = _pInitialFilterBySPARQL, predicateFilter = _pInitialFilterByPredicate, objectFilter = _pInitialFilterByObject)
         .limit(_seedLimit) // TODO only tmp for debug and first try outs
         .cache()
     }
@@ -1079,7 +1201,7 @@ class DaSimEstimator {
       candidateList,
       sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null)
       .cache()
-    featureDf.show(false)
+    featureDf.show()
 
     println(s"We have ${featureDf.count()} entries in feature DF pairs")
 
