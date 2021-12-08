@@ -879,287 +879,268 @@ class DaSimEstimator {
       // featureExtractionMethod: String = null
     ): RDD[Triple] = {
 
-      val spark = SparkSession.builder.getOrCreate()
+    val spark = SparkSession.builder.getOrCreate()
 
-      // strings for URIs
-      var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
-      var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
-      var _commentPropertyURIasString: String = "sansa-stack/sansaVocab/comment"
-      var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
-      var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+    // strings for URIs
+    var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
+    var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
+    var _commentPropertyURIasString: String = "sansa-stack/sansaVocab/comment"
+    var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+    var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
-      var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+    var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
 
-      val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
-      // val typeNode = NodeFactory.createURI(_experimentTypePropertyURIasString)
-      val nodeLabel = NodeFactory.createURI("rdfs/label")
+    val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+    // val typeNode = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    val nodeLabel = NodeFactory.createURI("rdfs/label")
 
-      // create reused nodes
-      val typeNodeP = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    // create reused nodes
+    val typeNodeP = NodeFactory.createURI(_experimentTypePropertyURIasString)
 
-      val valueNodeP = NodeFactory.createURI(_valuePropertyURIasString)
+    val valueNodeP = NodeFactory.createURI(_valuePropertyURIasString)
 
-      val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
-
-
-      // create experiment node
-      val metagraphDatetime: Date = Calendar.getInstance().getTime()
-      val experimentHash: String = metagraphDatetime.toString.hashCode.toString
-      val experimentNode: Node = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash)
-
-      val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
-      val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
-      val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
-      val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
+    val elementPropertyNode: Node = NodeFactory.createURI(_elementPropertyURIasString)
 
 
+    // create experiment node
+    val metagraphDatetime: Date = Calendar.getInstance().getTime()
+    val experimentHash: String = metagraphDatetime.toString.hashCode.toString
+    val experimentNode: Node = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash)
 
-      // overall annotation
-      // Create all inforamtion for this central node
+    val experimentTypePropertyNode: Node = NodeFactory.createURI(_experimentTypePropertyURIasString)
+    val experimentTypeNode: Node = NodeFactory.createURI(_experimentTypeURIasString)
+    val predictionPropertyNode: Node = NodeFactory.createURI(_predictionPropertyURIasString)
+    val valuePropertyURINode: Node = NodeFactory.createURI(_valuePropertyURIasString)
+
+    // overall annotation
+    // Create all inforamtion for this central node
     if (_parameterVerboseProcess) println("central node triples")
-      val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
-        Triple.create(
-          experimentNode,
-          experimentTypePropertyNode,
-          experimentTypeNode
-        )
-      ))
+    val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+      Triple.create(
+        experimentNode,
+        experimentTypePropertyNode,
+        experimentTypeNode
+      )
+    ))
 
-      centralNodeTriples foreach println
+    if (_parameterVerboseProcess) centralNodeTriples foreach println
+
+    // distsim feature extraction
+    val hyperparameterInitialFilter = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/initialFilter")
+    val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction")
+    val hyperparameterFeatureExtractionStrategy = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/featureExtractionStrategy")
+    val hyperparameterAvailability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/availability")
+    val hyperparameterReliability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/reliability")
+    val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
+
+    // now hyperparameters
+    if (_parameterVerboseProcess) println("hyperparameer semantification")
+    val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
+      // hyperparameterInitialFilter
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterInitialFilter
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        nodeLabel,
+        NodeFactory.createLiteral("initial filter")
+      ),
+      Triple.create(
+        hyperparameterInitialFilter,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_initialFilter.value)
+      ),
 
       // distsim feature extraction
-      val hyperparameterInitialFilter = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/initialFilter")
-      val hyperparameterDistSimFeatureExtractionNode = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/distSimFeatureExtraction")
-      val hyperparameterFeatureExtractionStrategy = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/featureExtractionStrategy")
-      val hyperparameterAvailability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/availability")
-      val hyperparameterReliability = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/reliability")
-      val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterDistSimFeatureExtractionNode
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        nodeLabel,
+        NodeFactory.createLiteral("DistSim feature extraction strategy")
+      ),
+      Triple.create(
+        hyperparameterDistSimFeatureExtractionNode,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_distSimFeatureExtractionMethod.value)
+      ),
 
-      // now hyperparameters
-      if (_parameterVerboseProcess) println("hyperparameer semantification")
-      val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
-        // hyperparameterInitialFilter
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterInitialFilter
-        ),
-        Triple.create(
-          hyperparameterInitialFilter,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterInitialFilter,
-          nodeLabel,
-          NodeFactory.createLiteral("initial filter")
-        ),
-        Triple.create(
-          hyperparameterInitialFilter,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_initialFilter.value)
-        ),
+      // hyperparameterFeatureExtractionStrategy
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterFeatureExtractionStrategy
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        nodeLabel,
+        NodeFactory.createLiteral("feature extraction strategy")
+      ),
+      Triple.create(
+        hyperparameterFeatureExtractionStrategy,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_featureExtractionMethod.value)
+      ),
+      // hyperparameterAvailability
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterAvailability
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        nodeLabel,
+        NodeFactory.createLiteral("availability")
+      ),
+      Triple.create(
+        hyperparameterAvailability,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_availability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      ),
+      // hyperparameterReliability
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterReliability
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        nodeLabel,
+        NodeFactory.createLiteral("reliability")
+      ),
+      Triple.create(
+        hyperparameterReliability,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_reliability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      ),
+      // hyperparameterImportance
+      Triple.create(
+        experimentNode,
+        hyperparameterNodeP,
+        hyperparameterImportance
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        typeNodeP,
+        hyperparameterNodeP
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        nodeLabel,
+        NodeFactory.createLiteral("importance")
+      ),
+      Triple.create(
+        hyperparameterImportance,
+        valueNodeP,
+        NodeFactory.createLiteral(_sem_importance.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
+      )
+    ))
 
-        // distsim feature extraction
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterDistSimFeatureExtractionNode
-        ),
-        Triple.create(
-          hyperparameterDistSimFeatureExtractionNode,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterDistSimFeatureExtractionNode,
-          nodeLabel,
-          NodeFactory.createLiteral("DistSim feature extraction strategy")
-        ),
-        Triple.create(
-          hyperparameterDistSimFeatureExtractionNode,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_distSimFeatureExtractionMethod.value)
-        ),
-
-        // hyperparameterFeatureExtractionStrategy
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterFeatureExtractionStrategy
-        ),
-        Triple.create(
-          hyperparameterFeatureExtractionStrategy,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterFeatureExtractionStrategy,
-          nodeLabel,
-          NodeFactory.createLiteral("feature extraction strategy")
-        ),
-        Triple.create(
-          hyperparameterFeatureExtractionStrategy,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_featureExtractionMethod.value)
-        ),
-        // hyperparameterAvailability
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterAvailability
-        ),
-        Triple.create(
-          hyperparameterAvailability,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterAvailability,
-          nodeLabel,
-          NodeFactory.createLiteral("availability")
-        ),
-        Triple.create(
-          hyperparameterAvailability,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_availability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
-        ),
-        // hyperparameterReliability
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterReliability
-        ),
-        Triple.create(
-          hyperparameterReliability,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterReliability,
-          nodeLabel,
-          NodeFactory.createLiteral("reliability")
-        ),
-        Triple.create(
-          hyperparameterReliability,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_reliability.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
-        ),
-        // hyperparameterImportance
-        Triple.create(
-          experimentNode,
-          hyperparameterNodeP,
-          hyperparameterImportance
-        ),
-        Triple.create(
-          hyperparameterImportance,
-          typeNodeP,
-          hyperparameterNodeP
-        ),
-        Triple.create(
-          hyperparameterImportance,
-          nodeLabel,
-          NodeFactory.createLiteral("importance")
-        ),
-        Triple.create(
-          hyperparameterImportance,
-          valueNodeP,
-          NodeFactory.createLiteral(_sem_importance.value.map(m => m._1 + ": " + m._2.toString).mkString("; "))
-        )
-      ))
+    // hyperparameterTriples foreach println
 
     // now semantic representation of dimilsrity results
     val tmp_finalValCol = _sem_finalValCol.value
     val tmp_entityCols = _sem_entityCols.value
     val tmp_similarityCols = _sem_similarityCols.value
 
-    // resultDf.rdd.map(row => row.getAs[Double](tmp_finalValCol)).foreach(println(_))
+      // resultDf.rdd.map(row => row.getAs[Double](tmp_finalValCol)).foreach(println(_))
 
-    /* resultDf.rdd.flatMap(row => {
-      val uriA: String = row.getAs[String](tmp_entityCols(0))
-      val uriB: String = row.getAs[String](tmp_entityCols(1))
-      Array(uriA, uriB)
-    }).foreach(println(_)) */
-
-      // println("ent cols:", _sem_entityCols.mkString(", "))
-      if (_parameterVerboseProcess) println("semantification of similarity values")
-      val semanticResult = resultDf.rdd.flatMap(row => {
+      /* resultDf.rdd.flatMap(row => {
         val uriA: String = row.getAs[String](tmp_entityCols(0))
         val uriB: String = row.getAs[String](tmp_entityCols(1))
+        Array(uriA, uriB)
+      }).foreach(println(_)) */
 
-        val overall_similarity_score: Double = row.getAs[Double](tmp_finalValCol)
+      // println("ent cols:", _sem_entityCols.mkString(", "))
+    if (_parameterVerboseProcess) println("semantification of similarity values")
 
-        // now we need to get most important factor
-
-        val simScores: Array[(String, Double)] = tmp_similarityCols
-          .map(sc => (sc, row.getAs[Double](sc)))
-
-        val bestSimScore = simScores
-          .sortBy(_._2)
-          .last
-          ._2
-
-        val epsilon = 0.001
-
-        val listMostRelevant = simScores
-          .filter(ss => (bestSimScore - ss._2) < epsilon)
-
-        if (_parameterVerboseProcess) println(uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
-
-        val entityNodes = Array(
-          NodeFactory.createURI(uriA),
-          NodeFactory.createURI(uriB)
-        )
-
-        val valueNode = NodeFactory.createLiteralByValue(overall_similarity_score, XSDDatatype.XSDdouble)
-
-        val commentNodeP = NodeFactory.createLiteral(_commentPropertyURIasString)
-        val mostRelevantNode = NodeFactory.createURI("most relevant:" + listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
-
-        // now semantification
-        val predictionNode: Node = NodeFactory.createURI(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
-
-        // entity nodes to prediction blank node
-        val entityNodeTriples: Array[Triple] = entityNodes.map(
-          entityNode =>
-            Triple.create(
-              predictionNode,
-              elementPropertyNode,
-              entityNode
-            )
-        )
-
-        // prediction blank node to overall experiment
-        val valueExperimentTriples: Array[Triple] = Array(
-          Triple.create(
-            experimentNode,
-            predictionPropertyNode,
-            predictionNode
-          ),
+    val semanticResult = resultDf.rdd.flatMap(row => {
+      val uriA: String = row.getAs[String](tmp_entityCols(0))
+      val uriB: String = row.getAs[String](tmp_entityCols(1))
+      val overall_similarity_score: Double = row.getAs[Double](tmp_finalValCol)
+      val simScores: Array[(String, Double)] = tmp_similarityCols
+        .map(sc => (sc, row.getAs[Double](sc)))
+      val bestSimScore: Double = simScores
+        .sortBy(_._2)
+        .last
+        ._2
+      val epsilon = 0.001
+      val listMostRelevant: Array[(String, Double)] = simScores
+        .filter(ss => (bestSimScore - ss._2) < epsilon)
+      // println(uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+      val entityNodes = Array(
+        NodeFactory.createURI(uriA),
+        NodeFactory.createURI(uriB)
+      )
+      val valueNode = NodeFactory.createLiteralByValue(overall_similarity_score, XSDDatatype.XSDdouble)
+      val commentNodeP = NodeFactory.createLiteral(_commentPropertyURIasString)
+      val mostRelevantNode = NodeFactory.createURI("most relevant:" + listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+      // now semantification
+      val predictionNode: Node = NodeFactory.createURI(experimentHash + entityNodes.map(_.getURI).mkString("").hashCode)
+      // entity nodes to prediction blank node
+      val entityNodeTriples: Array[Triple] = entityNodes.map(
+        entityNode =>
           Triple.create(
             predictionNode,
-            valuePropertyURINode,
-            valueNode
-          ),
-          /* Triple.create(
-            predictionNode,
-            valuePropertyURINode,
-            valueNode
-          ), */
-          Triple.create(
-            predictionNode,
-            commentNodeP,
-            mostRelevantNode
+            elementPropertyNode,
+            entityNode
           )
+      )
+      // prediction blank node to overall experiment
+      val valueExperimentTriples: Array[Triple] = Array(
+        Triple.create(
+          experimentNode,
+          predictionPropertyNode,
+          predictionNode
+        ),
+        Triple.create(
+          predictionNode,
+          valuePropertyURINode,
+          valueNode
+        ),
+        Triple.create(
+          predictionNode,
+          commentNodeP,
+          mostRelevantNode
         )
-        entityNodeTriples ++ valueExperimentTriples
-      })
-
-      // semanticResult foreach println
-
-      // now we need to merge central node, hyperparamters and semantic result
-      centralNodeTriples.union(semanticResult).union(hyperparameterTriples)
+      )
+      entityNodeTriples ++ valueExperimentTriples
     }
+    )
+
+    // now we need to merge central node, hyperparamters and semantic result
+    centralNodeTriples.union(semanticResult).union(hyperparameterTriples)
+  }
 
   /**
    * transforms da kg to a similarity score dataframe based on parameters
@@ -1200,7 +1181,7 @@ class DaSimEstimator {
       candidateList,
       sparqlFeatureExtractionQuery = if (pSparqlFeatureExtractionQuery != null) pSparqlFeatureExtractionQuery else null)
       .cache()
-    featureDf.show()
+    if (_parameterVerboseProcess) featureDf.show()
 
     if (_parameterVerboseProcess) println(s"We have ${featureDf.count()} entries in feature DF pairs")
 
