@@ -675,7 +675,7 @@ class DaSimEstimator {
           val tmpDf = DfPairWithFeature
             .withColumn(featureName + "_sim", jaccard(col(featureName + "_prepared_uriA"), col(featureName + "_prepared_uriB")))
           // .select("uriA", "uriB", featureName + "_sim")
-          if (_parameterVerboseProcess) tmpDf.show(false)
+          // if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
             .join(
@@ -694,7 +694,7 @@ class DaSimEstimator {
           val tmpDf = DfPairWithFeature
             .withColumn(featureName + "_sim", lit(1.0) - abs(col(featureName + "_prepared_uriA") - col(featureName + "_prepared_uriB")))
           // .select("uriA", "uriB", featureName + "_sim")
-          if (_parameterVerboseProcess) tmpDf.show(false)
+          // if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
             .join(
@@ -718,7 +718,7 @@ class DaSimEstimator {
             .withColumn(featureName + "_sim", abs((col("uASum") / col("uASize")) - (col("uBSum") / col("uBSize"))))
 
           // .select("uriA", "uriB", featureName + "_sim")
-          if (_parameterVerboseProcess) tmpDf.show(false)
+          // if (_parameterVerboseProcess) tmpDf.show(false)
 
           similarityEstimations = similarityEstimations
             .join(
@@ -1179,8 +1179,7 @@ class DaSimEstimator {
         .limit(_seedLimit) // TODO only tmp for debug and first try outs
         .cache()
     }
-    seeds
-      .show(false)
+    if (_parameterVerboseProcess) seeds.show()
     // gather cadidate pairs by DistSim
     println("gather candidate pairs")
     val candidatePairs: DataFrame = gatherCandidatePairs(dataset, seeds, _pDistSimFeatureExtractionMethod, _pDistSimThreshold = _pDistSimThreshold)
@@ -1189,11 +1188,11 @@ class DaSimEstimator {
 
     println(s"We have ${candidatePairs.count()} candidate pairs")
 
-    candidatePairs.show(false)
+    if (_parameterVerboseProcess) candidatePairs.show()
     // unique candidates
     println("unique candidates")
     val candidateList = listDistinctCandidates(candidatePairs).cache()
-    candidateList.show(false)
+    if (_parameterVerboseProcess) candidateList.show()
     // feature extraction
     println("feature extraction")
     val featureDf: DataFrame = gatherFeatures(
@@ -1214,8 +1213,7 @@ class DaSimEstimator {
     )
       .cache()
 
-    similarityEstimations
-      .show(false)
+    if (_parameterVerboseProcess) similarityEstimations.show()
 
     println("(optional) sim norm columns")
     val aggregatableDf = if (pValueStreching) normSimColumns(similarityEstimations) else similarityEstimations
@@ -1233,8 +1231,7 @@ class DaSimEstimator {
       pImportance,
       pReliability
     )
-    aggregatedSimilarityScoreDf
-      .show(false)
+    if (_parameterVerboseProcess) aggregatedSimilarityScoreDf.show()
 
     val spark = SparkSession.builder().getOrCreate()
 
