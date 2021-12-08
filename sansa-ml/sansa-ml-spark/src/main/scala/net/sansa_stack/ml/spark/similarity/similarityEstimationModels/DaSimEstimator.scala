@@ -275,7 +275,7 @@ class DaSimEstimator {
       .transform(triplesDf)
 
     val candidates = if (fastNotDistSim) {
-      println("Fast method to gather candidate pairs")
+      if (_parameterVerboseProcess) println("Fast method to gather candidate pairs")
 
       // extractedFeaturesDataFrame.show(false)
 
@@ -320,7 +320,7 @@ class DaSimEstimator {
       filteredTmpDf
     } else {
       // minHash similarity estimation
-      println("DistSim method to gather candidate pairs")
+      if (_parameterVerboseProcess) println("DistSim method to gather candidate pairs")
 
       // count Vectorization
       val cvModel: CountVectorizerModel = new CountVectorizer()
@@ -382,7 +382,7 @@ class DaSimEstimator {
   def gatherFeatures(ds: Dataset[Triple], candidates: DataFrame, sparqlFeatureExtractionQuery: String = null, predicateFilter: String = "", objectFilter: String = ""): DataFrame = {
     val featureDf = {
       if (sparqlFeatureExtractionQuery != null) {
-        println("DaSimEstimator: Feature Extraction by SparqlFrame")
+        if (_parameterVerboseProcess) println("DaSimEstimator: Feature Extraction by SparqlFrame")
         val sf = new SparqlFrame()
           .setSparqlQuery(sparqlFeatureExtractionQuery)
         val tmpDf = sf
@@ -390,7 +390,7 @@ class DaSimEstimator {
         tmpDf
       }
       else {
-        println("DaSimEstimator: Feature Extraction by SmartFeatureExtractor")
+        if (_parameterVerboseProcess) println("DaSimEstimator: Feature Extraction by SmartFeatureExtractor")
 
         implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
         import net.sansa_stack.rdf.spark.model.TripleOperations
@@ -751,7 +751,7 @@ class DaSimEstimator {
       availabilityMap += (co + "_sim" -> (extractedFeaturesDfSize - av)/extractedFeaturesDfSize)
     }
 
-    println("availability weighting (automatically calculated): ", availabilityMap.mkString(", "))
+    if (_parameterVerboseProcess) println("availability weighting (automatically calculated): ", availabilityMap.mkString(", "))
 
     availabilityMap
   }
@@ -802,7 +802,7 @@ class DaSimEstimator {
     val allCols = simDf.columns
     val sim_columns = allCols.slice(2, allCols.size)
 
-    println(sim_columns.mkString(", "))
+    if (_parameterVerboseProcess) println(sim_columns.mkString(", "))
 
     val epsilon = 0.01
 
@@ -916,7 +916,7 @@ class DaSimEstimator {
 
       // overall annotation
       // Create all inforamtion for this central node
-      println("central node triples")
+    if (_parameterVerboseProcess) println("central node triples")
       val centralNodeTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
         Triple.create(
           experimentNode,
@@ -936,7 +936,7 @@ class DaSimEstimator {
       val hyperparameterImportance = NodeFactory.createURI(_experimentTypeURIasString + "/" + experimentHash + "/hyperparameter/importance")
 
       // now hyperparameters
-      println("hyperparameer semantification")
+      if (_parameterVerboseProcess) println("hyperparameer semantification")
       val hyperparameterTriples: RDD[Triple] = spark.sqlContext.sparkContext.parallelize(List(
         // hyperparameterInitialFilter
         Triple.create(
@@ -1082,7 +1082,7 @@ class DaSimEstimator {
     }).foreach(println(_)) */
 
       // println("ent cols:", _sem_entityCols.mkString(", "))
-      println("semantification of similarity values")
+      if (_parameterVerboseProcess) println("semantification of similarity values")
       val semanticResult = resultDf.rdd.flatMap(row => {
         val uriA: String = row.getAs[String](tmp_entityCols(0))
         val uriB: String = row.getAs[String](tmp_entityCols(1))
@@ -1104,7 +1104,7 @@ class DaSimEstimator {
         val listMostRelevant = simScores
           .filter(ss => (bestSimScore - ss._2) < epsilon)
 
-        println(uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
+        if (_parameterVerboseProcess) println(uriA, uriB, overall_similarity_score, listMostRelevant.map(sc => sc._1 + ": " + sc._2.toString).mkString("; "))
 
         val entityNodes = Array(
           NodeFactory.createURI(uriA),
@@ -1169,7 +1169,7 @@ class DaSimEstimator {
    */
   def transform(dataset: Dataset[Triple]): DataFrame = {
     // gather seeds
-    println("gather seeds")
+    if (_parameterVerboseProcess) println("gather seeds")
     val seeds: DataFrame = if (_seedLimit == -1) {
       gatherSeeds(dataset, sparqlFilter = _pInitialFilterBySPARQL, predicateFilter = _pInitialFilterByPredicate, objectFilter = _pInitialFilterByObject)
         .cache()
@@ -1181,20 +1181,20 @@ class DaSimEstimator {
     }
     if (_parameterVerboseProcess) seeds.show()
     // gather cadidate pairs by DistSim
-    println("gather candidate pairs")
+    if (_parameterVerboseProcess) println("gather candidate pairs")
     val candidatePairs: DataFrame = gatherCandidatePairs(dataset, seeds, _pDistSimFeatureExtractionMethod, _pDistSimThreshold = _pDistSimThreshold)
       // .limit(100)
       .cache()
 
-    println(s"We have ${candidatePairs.count()} candidate pairs")
+    if (_parameterVerboseProcess) println(s"We have ${candidatePairs.count()} candidate pairs")
 
     if (_parameterVerboseProcess) candidatePairs.show()
     // unique candidates
-    println("unique candidates")
+    if (_parameterVerboseProcess) println("unique candidates")
     val candidateList = listDistinctCandidates(candidatePairs).cache()
     if (_parameterVerboseProcess) candidateList.show()
     // feature extraction
-    println("feature extraction")
+    if (_parameterVerboseProcess) println("feature extraction")
     val featureDf: DataFrame = gatherFeatures(
       dataset,
       candidateList,
@@ -1202,11 +1202,11 @@ class DaSimEstimator {
       .cache()
     featureDf.show()
 
-    println(s"We have ${featureDf.count()} entries in feature DF pairs")
+    if (_parameterVerboseProcess) println(s"We have ${featureDf.count()} entries in feature DF pairs")
 
 
     // dasim similarity estimation calculation
-    println("column wise similarity calculation")
+    if (_parameterVerboseProcess) println("column wise similarity calculation")
     val similarityEstimations: DataFrame = calculateDaSimSimilarities(
       candidatePairs,
       featureDf
@@ -1215,7 +1215,7 @@ class DaSimEstimator {
 
     if (_parameterVerboseProcess) similarityEstimations.show()
 
-    println("(optional) sim norm columns")
+    if (_parameterVerboseProcess) println("(optional) sim norm columns")
     val aggregatableDf = if (pValueStreching) normSimColumns(similarityEstimations) else similarityEstimations
 
     if (_calcAvailability) {
@@ -1223,7 +1223,7 @@ class DaSimEstimator {
       pAvailability = av.toMap
     }
 
-    println("final similarity aggregation")
+    if (_parameterVerboseProcess) println("final similarity aggregation")
     val aggregatedSimilarityScoreDf: DataFrame = aggregateSimilarityScore(
       aggregatableDf,
       pValueStreching,
