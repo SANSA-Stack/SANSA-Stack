@@ -809,31 +809,31 @@ class DaSimEstimator {
     // if these parameters are not set we calculate them as equally distributed ones
     if (pAvailability == null) {
       pAvailability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
-      println("DaSimEstimator: availability parameter is not set so it is automatically equally distributed: " + pAvailability)
+      if (_parameterVerboseProcess) println("DaSimEstimator: availability parameter is not set so it is automatically equally distributed: " + pAvailability)
     }
     if (pImportance == null) {
       pImportance = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
-      println("DaSimEstimator: importance parameter is not set so it is automatically equally distributed: " + pImportance)
+      if (_parameterVerboseProcess) println("DaSimEstimator: importance parameter is not set so it is automatically equally distributed: " + pImportance)
     }
     if (pReliability == null) {
       pReliability = sim_columns.map(c => (c -> 1.0/sim_columns.length)).toMap
-      println("DaSimEstimator: reliability parameter is not set so it is automatically equally distributed: " + pReliability)
+      if (_parameterVerboseProcess) println("DaSimEstimator: reliability parameter is not set so it is automatically equally distributed: " + pReliability)
     }
 
     if (sim_columns.toSet.diff(pImportance.map(_._1).toSet).size > 0) {
       val tmp = sim_columns.toSet.diff(pImportance.map(_._1).toSet).map(sc => (sc, 0.0))
       pImportance = pImportance ++ tmp
-      println(s"only some columns got Importance values, all others (${tmp.mkString(", ")}) are now set to 0.0")
+      if (_parameterVerboseProcess) println(s"only some columns got Importance values, all others (${tmp.mkString(", ")}) are now set to 0.0")
     }
     if (sim_columns.toSet.diff(pAvailability.map(_._1).toSet).size > 0) {
       val tmp = sim_columns.toSet.diff(pAvailability.map(_._1).toSet).map(sc => (sc, 0.0))
       pAvailability = pAvailability ++ tmp
-      println(s"only some columns got Availability values, all others (${tmp.mkString(", ")}) are now set to 0.0")
+      if (_parameterVerboseProcess) println(s"only some columns got Availability values, all others (${tmp.mkString(", ")}) are now set to 0.0")
     }
     if (sim_columns.toSet.diff(pReliability.map(_._1).toSet).size > 0) {
       val tmp = sim_columns.toSet.diff(pReliability.map(_._1).toSet).map(sc => (sc, 0.0))
       pReliability = pReliability ++ tmp
-      println(s"only some columns got Importance values, all others (${tmp.mkString(", ")})  are now set to 0.0")
+      if (_parameterVerboseProcess) println(s"only some columns got Importance values, all others (${tmp.mkString(", ")})  are now set to 0.0")
     }
 
     // now we calculate weighted sum
