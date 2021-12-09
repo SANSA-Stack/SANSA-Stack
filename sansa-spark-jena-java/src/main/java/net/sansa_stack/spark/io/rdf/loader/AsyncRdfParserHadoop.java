@@ -75,7 +75,7 @@ public class AsyncRdfParserHadoop {
 
         public Builder<T> applyDefaults() {
             if (executorServiceRef == null) {
-                executorServiceRef = () -> RefImpl.create2(ExecutorServiceUtils.newBlockingThreadPoolExecutor(), (Object) null, ExecutorService::shutdownNow);
+                executorServiceRef = () -> RefImpl.create2(ExecutorServiceUtils.newBlockingThreadPoolExecutor(), null, ExecutorService::shutdownNow);
             }
 
             return this;

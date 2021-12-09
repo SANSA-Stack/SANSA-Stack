@@ -50,6 +50,7 @@ class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
     // serializableConfig = nonSerializeConfig.asResource()
 
     // The broadcast is a workaround
+    // The .asResource() is crucial here: It unproxies the config object (derived from Resource) into a plain ResourceImpl
     val conf = spark.sparkContext.broadcast(nonSerializeConfig.asResource())
 
     in => {
