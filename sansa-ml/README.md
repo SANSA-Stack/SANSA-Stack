@@ -9,13 +9,68 @@ The functionalities are covered by Scala unit tests and are documented within Sc
 
 ## Current Modules
 The current stack provides:
+- [SmartFeatureExtractor](#smartfeatureextractor)
 - [Literal2Feature - AutoSparql Generation for Feature Extraction](#literal2feature-autosparql-generation-for-feature-extraction)
 - [SparqlFrame Feature Extractor](#sparqlframe-feature-extractor)
 - [Smart Vector Assembler](#smart-vector-assembler)
 - [ML2Graph](#ml2graph)
+- [SimE4KG - Similarity Estimation for Knowledge Graphs](#sime4kg-transformer)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 - [Sparql Transformer](#sparql-transformer)
 - [DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml#distad-distributed-anomaly-detection)
+
+### SmartFeatureExtractor
+This feature extractor creates out of a Apache Spark Dataset of Apache Jena Triple a Dataframe which contains entity feature information for further machine learning approaches.
+With an initial entity selecting method, for all the specified URIs all features are collected by the pivot function of Spark.
+The resulting feature columns are collapsed s.t. for each entity we have later one row in the dataframe.
+If the extracted feature is of type Literal, the column is casted to the assigned literal data type: e.g. StringType, DoubleType, Timestamp, ...
+```scala
+val dataset: Dataset[graph.Triple] = getData()
+
+/** Smart Feature Extractor */
+val sfeNoFilter = new SmartFeatureExtractor()
+  // .setEntityColumnName("s")
+  // .setObjectFilter("http://data.linkedmdb.org/movie/film")
+  // .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
+
+/** Feature Extracted DataFrame */
+val feDf = sfeNoFilter
+  .transform(dataset)
+feDf
+  .show(false)
+```
+here is an example with an initial filter by object
+```scala
+val sfeObjectFilter = new SmartFeatureExtractor()
+  // .setEntityColumnName("s")
+  .setObjectFilter("http://data.linkedmdb.org/movie/film")
+
+val feDf1 = sfeObjectFilter
+  .transform(dataset)
+feDf1
+  .show(false)
+```
+and finally an example with an initial sparql filter
+```scala
+val sfeSparqlFilter = new SmartFeatureExtractor()
+  // .setEntityColumnName("s")
+  .setSparqlFilter("SELECT ?s WHERE { ?s ?p <http://data.linkedmdb.org/movie/film> }")
+
+val feDf2 = sfeSparqlFilter
+  .transform(dataset)
+feDf2
+  .show()
+```
+The results looks like this:
+```
++--------------------+--------------------+--------------------+-------+--------------------+---------------------+--------------------+--------------------+
+|                   s|               actor|initial_release_date|runtime|              writer|22-rdf-syntax-ns#type|    rdf-schema#label|               genre|
++--------------------+--------------------+--------------------+-------+--------------------+---------------------+--------------------+--------------------+
+|https://sansa.sam...|[https://sansa.sa...| 2002-01-01 00:00:00|  141.0|http://data.linke...| http://data.linke...| Catch Me If You Can|[https://sansa.sa...|
+|https://sansa.sam...|[https://sansa.sa...| 1994-01-01 00:00:00|  142.0|http://data.linke...| http://data.linke...|The Shawshank Red...|[https://sansa.sa...|
+|https://sansa.sam...|[https://sansa.sa...| 1999-01-01 00:00:00|  189.0|http://data.linke...| http://data.linke...|          Green Mile|[https://sansa.sa...|
++--------------------+--------------------+--------------------+-------+--------------------+---------------------+--------------------+--------------------+
+```
 
 ### Literal2Feature AutoSparql Generation for Feature Extraction
 [AutoSparql Generation for Feature Extraction](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/FeatureExtractingSparqlGenerator$.html):
@@ -158,6 +213,36 @@ val ml2Graph = new ML2Graph()
 val metagraph: RDD[Triple] = ml2Graph.transform(predictions)
 metagraph.take(10).foreach(println(_))
 ```
+
+### SimE4KG Transformer
+ This modules provides a sementic similarity estimation Transformer. It needs a dataset of triple as input.
+ Then you specify which seeds you want to consider. Either you do this over a sparwl or over the object filter.
+ next we reuse the DistSim similarity estimation to gather candidate pairs. 
+ Based on this candidate pairs, the multi modal simialrity estimation is calculated.
+ The features of this are extracted by the SmartFeatureExtractor.
+ ```scala
+ val lang = Lang.TURTLE
+ val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/sampleMovieDB.nt").persist()
+
+ val dataset: Dataset[Triple] = originalDataRDD
+   .toDS()
+   .cache()
+
+ val dse = new DaSimEstimator()
+   // .setSparqlFilter("SELECT ?o WHERE { ?s <https://sansa.sample-stack.net/genre> ?o }")
+   .setObjectFilter("http://data.linkedmdb.org/movie/film")
+   .setDistSimFeatureExtractionMethod("os")
+   .setSimilarityValueStreching(false)
+   .setImportance(Map("initial_release_date_sim" -> 0.2, "rdf-schema#label_sim" -> 0.0, "runtime_sim" -> 0.2, "writer_sim" -> 0.1, "22-rdf-syntax-ns#type_sim" -> 0.0, "actor_sim" -> 0.3, "genre_sim" -> 0.2))
+
+ val resultSimDf = dse
+   .transform(dataset)
+
+ resultSimDf.show(false)
+
+ val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
+ ```
+ Apart of the code snippets here, we also provide a sample [Dataricks Notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1243120961280565/8524188481975304/latest.html)
 
 ### Sparql Transformer
 [Sparql Transformer](https://sansa-stack.github.io/SANSA-Stack/scaladocs/0.8.0/net/sansa_stack/ml/spark/utils/SPARQLQuery.html):

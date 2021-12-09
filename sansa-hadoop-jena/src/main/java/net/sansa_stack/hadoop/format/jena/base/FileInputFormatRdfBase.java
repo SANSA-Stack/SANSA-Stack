@@ -21,12 +21,14 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFBase;
+import org.apache.jena.shared.PrefixMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.List;
 
 /**
@@ -141,5 +143,22 @@ public abstract class FileInputFormatRdfBase<T>
         }
 
         return splits;
+    }
+
+    /** Extract a Model from a hadoop conf using {@link FileInputFormatRdfBase#PREFIXES_KEY} */
+    public static Model getModel(Configuration conf) {
+        return getModel(conf, FileInputFormatRdfBase.PREFIXES_KEY);
+    }
+
+    /** Extract a Model from a hadoop conf. Result is never null;
+     *  empty if there was no entry for the key or exception on parse error. */
+    public static Model getModel(Configuration conf, String key) {
+        String str = conf.get(key);
+        // Model *isa* PrefixMapping
+        Model result = ModelFactory.createDefaultModel();
+        if (str != null) {
+            RDFDataMgr.read(result, new StringReader(str), null, Lang.TURTLE);
+        }
+        return result;
     }
 }

@@ -2,6 +2,7 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -29,7 +30,7 @@ public class RecordReaderTrigTestsSlow
         map.put("../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2",
                 Range.closed(1, 5));
 
-        return createParameters(map);
+        return FileSplitUtils.createTestParameters(map);
     }
 
 
