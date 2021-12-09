@@ -35,6 +35,10 @@ public class RdfSourceImpl
         this.lang = lang;
     }
 
+    @Override
+    public Lang getLang() {
+        return lang;
+    }
 
     @Override
     public RDD<Triple> asTriples() {

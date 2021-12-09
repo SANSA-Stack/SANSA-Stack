@@ -1,11 +1,11 @@
 package net.sansa_stack.spark.io.rdf.output;
 
 
-import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 import org.aksw.commons.io.util.FileMerger;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
+import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
@@ -31,7 +31,6 @@ import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -39,6 +38,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.rdd.RDD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
@@ -51,6 +51,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+
 
 /**
  * A fluent API for configuration of how to save an RDD of RDF data to disk.
@@ -66,10 +68,7 @@ public class RddRdfWriter<T>
 {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
-    // Static bindings for the generic 'T'
-    protected BiConsumer<T, StreamRDF> sendRecordToStreamRDF;
-    protected JavaRddFunction<T, Triple> convertToTriple;
-    protected JavaRddFunction<T, Quad> convertToQuad;
+    protected RddRdfDispatcherImpl<T> dispatcher;
 
     // Cached attributes from the given RDD
     protected JavaSparkContext sparkContext;
@@ -78,14 +77,9 @@ public class RddRdfWriter<T>
 
     protected Configuration hadoopConfiguration;
 
-    public RddRdfWriter(
-            BiConsumer<T, StreamRDF> sendRecordToStreamRDF,
-            JavaRddFunction<T, Triple> convertToTriple,
-            JavaRddFunction<T, Quad> convertToQuad) {
+    public RddRdfWriter(RddRdfDispatcherImpl<T> dispatcher) {
         super();
-        this.sendRecordToStreamRDF = sendRecordToStreamRDF;
-        this.convertToTriple = convertToTriple;
-        this.convertToQuad = convertToQuad;
+        this.dispatcher = dispatcher;
     }
 
     public RddRdfWriter<T> setRdd(JavaRDD<? extends T> rdd) {
@@ -163,7 +157,7 @@ public class RddRdfWriter<T>
             // val it = effectiveRdd.collect
             Iterator<? extends T> it = rdd.toLocalIterator();
             it.forEachRemaining(item -> {
-                sendRecordToStreamRDF.accept(item, writer);
+                dispatcher.sendRecordToStreamRDF.accept(item, writer);
             });
             writer.finish();
             out.flush();
@@ -234,10 +228,10 @@ public class RddRdfWriter<T>
             Objects.requireNonNull(String.format("Could not determine language from path %s ", effPartitionFolder));
 
             if (RDFLanguages.isTriples(lang)) {
-                JavaRDD<Triple> triples = convertToTriple.apply(effectiveRdd);
+                JavaRDD<Triple> triples = dispatcher.convertToTriple.apply(effectiveRdd);
                 saveUsingElephas(triples, effPartitionFolder, lang, TripleWritable::new);
             } else if (RDFLanguages.isQuads(lang)) {
-                JavaRDD<Quad> quads = convertToQuad.apply(effectiveRdd);
+                JavaRDD<Quad> quads = dispatcher.convertToQuad.apply(effectiveRdd);
                 saveUsingElephas(quads, effPartitionFolder, lang, QuadWritable::new);
             } else {
                 throw new IllegalStateException(String.format("Language %s is neiter triples nor quads", lang));
@@ -249,7 +243,7 @@ public class RddRdfWriter<T>
             //     allow extension of prefixes
             PrefixMapping pmap = isPartitionsAsIndependentFiles() ? null : globalPrefixMapping;
 
-            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, mapQuadsToTriplesForTripleLangs, pmap, this.sendRecordToStreamRDF);
+            saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, mapQuadsToTriplesForTripleLangs, pmap, this.dispatcher.sendRecordToStreamRDF);
         }
 
         if (targetFile != null) {
@@ -565,73 +559,28 @@ public class RddRdfWriter<T>
                 hadoopConfiguration);
     }
 
-
-    /**
-     * Create method.
-     * Note that the 'sendRecordToSTreamRDF' parameter must be serializable
-     * because it is used within mapPartitions.
-     *
-     * The convertToTriple and convertToQuad arguments are applied on the
-     * driver while preparing the spark operations.
-     *
-     * @param sendRecordToStreamRDF
-     * @param convertToTriple
-     * @param convertToQuad
-     * @param <T>
-     * @return
-     */
-    public static <T> RddRdfWriter create(
-            SerializableBiConsumer<T, StreamRDF> sendRecordToStreamRDF,
-            JavaRddFunction<T, Triple> convertToTriple,
-            JavaRddFunction<T, Quad> convertToQuad) {
-        return new RddRdfWriter<>(
-                sendRecordToStreamRDF, convertToTriple, convertToQuad);
-    }
-
     public static RddRdfWriter<Triple> createForTriple() {
-        return RddRdfWriter.<Triple>create(
-                (triple, streamRDF) -> streamRDF.triple(triple),
-                x -> x,
-                x -> x.map(triple -> Quad.create(Quad.defaultGraphNodeGenerated, triple)));
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForTriple());
     }
 
     public static RddRdfWriter<Quad> createForQuad() {
-        return RddRdfWriter.<Quad>create(
-                (quad, streamRDF) -> streamRDF.quad(quad),
-                x -> x.map(Quad::asTriple),
-                x -> x);
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForQuad());
     }
 
     public static RddRdfWriter<Graph> createForGraph() {
-        return RddRdfWriter.<Graph>create(
-                (graph, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(graph), streamRDF),
-                x -> x.flatMap(Graph::find),
-                x -> x.flatMap(graph -> graph.find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
-        );
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForGraph());
     }
 
     public static RddRdfWriter<DatasetGraph> createForDatasetGraph() {
-        return RddRdfWriter.<DatasetGraph>create(
-                (dg, streamRDF) -> StreamRDFOps.sendDatasetToStream(dg, streamRDF),
-                x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
-                x -> x.flatMap(DatasetGraph::find)
-        );
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForDatasetGraph());
     }
 
     public static RddRdfWriter<Model> createForModel() {
-        return RddRdfWriter.<Model>create(
-                (model, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(model.getGraph()), streamRDF),
-                x -> x.flatMap(model -> model.getGraph().find()),
-                x -> x.flatMap(model -> model.getGraph().find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t)))
-        );
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForModel());
     }
 
     public static RddRdfWriter<Dataset> createForDataset() {
-        return RddRdfWriter.<Dataset>create(
-                (ds, streamRDF) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), streamRDF),
-                x -> x.flatMap(ds -> WrappedIterator.create(ds.asDatasetGraph().find()).mapWith(Quad::asTriple)),
-                x -> x.flatMap(ds -> ds.asDatasetGraph().find())
-        );
+        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForDataset());
     }
 
 
@@ -650,4 +599,22 @@ public class RddRdfWriter<T>
 //            }
 //        }
     }
+
+    public static <T> void sendToStreamRDF(
+            JavaRDD<T> javaRdd,
+            SerializableBiConsumer<T, StreamRDF> sendRecordToStreamRDF,
+            SerializableSupplier<StreamRDF> streamRdfSupplier) {
+
+        javaRdd.foreachPartition(it -> {
+            StreamRDF streamRdf = streamRdfSupplier.get();
+            streamRdf.start();
+            while (it.hasNext()) {
+                T item = it.next();
+                sendRecordToStreamRDF.accept(item, streamRdf);
+            }
+            streamRdf.finish();
+        });
+    }
+
+
 }

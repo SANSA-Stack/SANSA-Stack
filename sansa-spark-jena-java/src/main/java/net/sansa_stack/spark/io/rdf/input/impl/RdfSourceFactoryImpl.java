@@ -1,5 +1,6 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -47,15 +48,37 @@ public class RdfSourceFactoryImpl
         Path resolvedPath = fileSystem.resolvePath(path);
 
         if (lang == null) {
-            EntityInfo entityInfo;
-            try (InputStream in = fileSystem.open(resolvedPath)) {
-                entityInfo = RDFDataMgrEx.probeEntityInfo(in, RDFDataMgrEx.DEFAULT_PROBE_LANGS);
-            }
-            lang = RDFLanguages.contentTypeToLang(entityInfo.getContentType());
-
-            Objects.requireNonNull(lang, "Could not obtain lang for " + entityInfo.getContentType() + " from " + path);
+            lang = probeLang(resolvedPath, fileSystem);
         }
 
         return new RdfSourceImpl(sparkSession, resolvedPath, lang);
+    }
+
+    public static Lang probeLang(Path path, FileSystem fileSystem) throws IOException {
+        if (fileSystem == null) {
+            fileSystem = Objects.requireNonNull(getDefaultFileSystem(), "Failed to obtain the default file system");
+        }
+
+        EntityInfo entityInfo;
+        try (InputStream in = fileSystem.open(path)) {
+            entityInfo = RDFDataMgrEx.probeEntityInfo(in, RDFDataMgrEx.DEFAULT_PROBE_LANGS);
+        }
+
+        Lang result = null;
+
+        if (entityInfo != null) {
+            result = RDFLanguages.contentTypeToLang(entityInfo.getContentType());
+            Objects.requireNonNull(result, "Could not obtain lang for " + entityInfo.getContentType() + " from " + path);
+        }
+
+        return result;
+    }
+
+    public static FileSystem getDefaultFileSystem() throws IOException {
+        Configuration conf = new Configuration(false);
+        conf.set("fs.defaultFS", "file:///");
+
+        FileSystem result = FileSystem.get(conf);
+        return result;
     }
 }

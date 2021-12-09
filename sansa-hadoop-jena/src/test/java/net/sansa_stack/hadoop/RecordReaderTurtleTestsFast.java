@@ -3,6 +3,7 @@ package net.sansa_stack.hadoop;
 import com.google.common.collect.Range;
 import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
 import net.sansa_stack.hadoop.format.jena.turtle.RecordReaderRdfTurtleTriple;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
@@ -32,7 +33,7 @@ public class RecordReaderTurtleTestsFast
         map.put("../sansa-query/sansa-query-tests/src/main/resources/sparql11/data-r2/basic/manifest.ttl",
                 Range.closed(1, 5));
 
-        return createParameters(map);
+        return FileSplitUtils.createTestParameters(map);
     }
 
 

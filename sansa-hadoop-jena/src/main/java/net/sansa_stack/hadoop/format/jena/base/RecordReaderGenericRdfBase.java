@@ -10,6 +10,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.shared.PrefixMapping;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,15 +56,11 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
 
         baseIri = job.get(baseIriKey);
 
-        String str = context.getConfiguration().get(headerBytesKey);
-        Model model = ModelFactory.createDefaultModel();
-        if (str != null) RDFDataMgr.read(model, new StringReader(str), null, Lang.TURTLE);
-
+        Model model = FileInputFormatRdfBase.getModel(job, headerBytesKey);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
         // val prefixBytes = baos.toByteArray
         preambleBytes = baos.toByteArray();
-
     }
 
 }
