@@ -1,10 +1,13 @@
 package net.sansa_stack.spark.io.rdf.loader;
 
-import net.sansa_stack.hadoop.format.jena.base.FileInputFormatRdfBase;
-import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
-import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
-import net.sansa_stack.hadoop.util.FileSplitUtils;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
 import org.aksw.commons.util.concurrent.ExecutorServiceUtils;
 import org.aksw.commons.util.ref.Ref;
 import org.aksw.commons.util.ref.RefImpl;
@@ -23,17 +26,19 @@ import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
+import net.sansa_stack.hadoop.format.jena.base.FileInputFormatRdfBase;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
+import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 
 /** Async parsing RDF on a single node using hadoop */
 public class AsyncRdfParserHadoop {
+
+    private static final Logger logger = LoggerFactory.getLogger(AsyncRdfParserHadoop.class);
 
     public static class Builder<T>
             implements Cloneable {
@@ -173,6 +178,14 @@ public class AsyncRdfParserHadoop {
         FileStatus fileStatus = fileSystem.getFileStatus(inputFile);
         long fileTotalLength = fileStatus.getLen();
 
+        int numCores = Runtime.getRuntime().availableProcessors();
+        long splitSize = numCores <= 0 ? 0 : fileTotalLength / numCores;
+
+        if (splitSize < 1000000) {
+            splitSize = 1000000;
+        }
+        conf.set("mapreduce.input.fileinputformat.split.maxsize", Long.toString(splitSize));
+
         // "mapreduce.input.fileinputformat.split.maxsize"
 
         Job job = Job.getInstance(conf);
@@ -182,6 +195,8 @@ public class AsyncRdfParserHadoop {
 
         // call once to compute the prefixes
         List<InputSplit> splits = inputFormat.getSplits(job);
+        logger.info(String.format("Created %d splits from %s", splits.size(), inputFile));
+
         if (!splits.isEmpty()) {
             // long splitSize = splits.get(0).getLength();
 
