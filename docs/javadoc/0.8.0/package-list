@@ -1,0 +1,11 @@
+net.sansa_stack.datalake.spark
+net.sansa_stack.datalake.spark.model
+net.sansa_stack.query.spark.ontop
+net.sansa_stack.query.spark.sparqlify
+net.sansa_stack.rdf.benchmark.io
+net.sansa_stack.rdf.common.annotation
+net.sansa_stack.rdf.common.io.riot.lang
+net.sansa_stack.rdf.common.io.riot.tokens
+net.sansa_stack.rdf.spark.kryo.jena
+net.sansa_stack.rdf.spark.kryo.sparqlify
+net.sansa_stack.rdf.spark.utils.kryo.io

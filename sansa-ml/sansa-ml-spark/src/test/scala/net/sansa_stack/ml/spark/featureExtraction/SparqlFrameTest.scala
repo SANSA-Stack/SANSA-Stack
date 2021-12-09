@@ -49,9 +49,10 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
     JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")
   }
+
   test("Test SparqlFrame query extracting two features with sparqlify") {
     val dataset = getData()
-    val queryString = """
+    var queryString = """
                         |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasSpouse__down_name
                         |
                         |WHERE {
@@ -71,6 +72,7 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
     val sparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
       .setQueryExcecutionEngine(SPARQLEngine.Sparqlify)
+      .setCollapsByKey(false)
     val res: DataFrame = sparqlFrame.transform(dataset)
 
     res.show(false)
@@ -91,60 +93,48 @@ class SparqlFrameTest extends FunSuite with SharedSparkContext{
     assert(res.schema == expectedSchema)
     assert(res.columns.toSeq.toSet == Set("seed", "seed__down_age", "seed__down_name", "seed__down_hasSpouse__down_name"))
 
-  }
-
-  /* test("Test SparqlFrame query extracting two features with sparqlify") {
-    val dataset = getData()
-    val queryString = """
-                        |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasSpouse__down_name
-                        |
-                        |WHERE {
-                        |	?seed a <http://dig.isi.edu/Person> .
-                        |
-                        |	OPTIONAL {
-                        |		?seed <http://dig.isi.edu/age> ?seed__down_age .
-                        |	}
-                        |	OPTIONAL {
-                        |		?seed <http://dig.isi.edu/name> ?seed__down_name .
-                        |	}
-                        |}""".stripMargin
-
-    /* println("Usage of Sparqlify for Query Execution")
-    val query = QueryFactory.create(queryString)
-    implicit val tripleEncoder = Encoders.kryo(classOf[Triple])
-    val partitions = RdfPartitionUtilsSpark.partitionGraph(dataset.as[Triple].rdd)
-    val rewriter = SparqlifyUtils3.createSparqlSqlRewriter(spark, partitions)
-    val qef: QueryExecutionFactorySparqlifySpark = new QueryExecutionFactorySparqlifySpark(spark, rewriter)
-    val qe: QueryExecutionSparqlifySpark = qef.createQueryExecution(query)
-
-    val sparkResultSet = qe.execSelectSpark() // SparkResultSet is a pair of result vars + rdd
-    val resultVars : java.util.List[Var] = sparkResultSet.getResultVars
-    val javaRdd: JavaRDD[Binding] = sparkResultSet.getRdd
-    val scalaRdd : RDD[Binding] = javaRdd.rdd
-
-    scalaRdd.foreach(println(_))
-
-     */
-
-    val sparqlFrame = new SparqlFrame()
+    // now we test collapsing SparqlFrame
+    queryString = """
+        |SELECT ?seed ?seed__down_age ?seed__down_name ?seed__down_hasParent__down_name ?seed__down_hasParent__down_age
+        |
+        |WHERE {
+        |	?seed a <http://dig.isi.edu/Person> .
+        |
+        |	OPTIONAL {
+        |		?seed <http://dig.isi.edu/age> ?seed__down_age .
+        |	}
+        |	OPTIONAL {
+        |		?seed <http://dig.isi.edu/name> ?seed__down_name .
+        |	}
+        | OPTIONAL {
+        |		?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .
+        |		?seed__down_hasParent <http://dig.isi.edu/name> ?seed__down_hasParent__down_name .
+        |	}
+        | OPTIONAL {
+        |		?seed <http://dig.isi.edu/hasParent> ?seed__down_hasParent .
+        |		?seed__down_hasParent <http://dig.isi.edu/age> ?seed__down_hasParent__down_age .
+        |	}
+        |}""".stripMargin
+    val collapsingSparqlFrame = new SparqlFrame()
       .setSparqlQuery(queryString)
-      .setQueryExcecutionEngine("ontop")
-    val res: DataFrame = sparqlFrame.transform(dataset)
-    assert(res.columns.toSeq.toSet == Set("seed", "seed__down_age", "seed__down_name", "seed__down_hasSpouse__down_name"))
-    val ages = res.select("seed__down_age").rdd.map(r => r(0)).collect()
-    val names = res.select("seed__down_name").rdd.map(r => r(0)).collect()
-    val spouseNames = res.select("seed__down_hasSpouse__down_name").rdd.map(r => r(0)).collect()
-    assert(spouseNames.toSeq.toSet.filter(_ != null) == Set("John", "Mary"))
-    assert(ages.toSeq.toSet == Set(2, 25, 28))
-    assert(names.toSeq.toSet == Set("Mary", "John", "John Jr."))
-    val expectedSchema = StructType(Seq(StructField("seed", StringType, true),
-      StructField("seed__down_age", IntegerType, true),
-      StructField("seed__down_name", StringType, true),
-      StructField("seed__down_hasSpouse__down_name", StringType, true)
-    ))
-    assert(res.schema == expectedSchema)
+      .setCollapsByKey(true)
+
+    val collapsedDf = collapsingSparqlFrame
+      .transform(dataset)
+
+    println("collapsed df")
+    collapsedDf.show(false)
+
+    val featureTypes = collapsingSparqlFrame.getFeatureDescriptions()
+    println("Feature Description")
+    featureTypes.foreach(println(_))
+
+    assert(collapsedDf.columns.toSet == Set("seed", "seed__down_age(Single_NonCategorical_Decimal)", "seed__down_name(Single_NonCategorical_String)", "seed__down_hasParent__down_name(ListOf_NonCategorical_String)", "seed__down_hasParent__down_age(ListOf_NonCategorical_Decimal)"))
+    assert(featureTypes("seed__down_hasParent__down_age")("isListOfEntries") == true)
+    assert(featureTypes("seed__down_hasParent__down_name")("datatype") == StringType)
+
+    collapsingSparqlFrame
+      .getSemanticTransformerDescription()
+      .foreach(println(_))
   }
-
-   */
-
 }

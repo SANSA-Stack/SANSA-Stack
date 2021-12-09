@@ -1,39 +1,23 @@
 package net.sansa_stack.integration.test;
 
-import com.github.dockerjava.api.model.ContainerNetwork;
 import com.google.common.io.ByteSource;
-import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.aksw.commons.util.healthcheck.HealthcheckRunner;
-import org.aksw.jena_sparql_api.core.utils.QueryExecutionUtils;
-import org.aksw.jena_sparql_api.delay.extra.Delayer;
-import org.aksw.jena_sparql_api.delay.extra.DelayerDefault;
-import org.aksw.jena_sparql_api.rx.SparqlRx;
+import org.aksw.jenax.sparql.query.rx.SparqlRx;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.jena.atlas.test.Gen;
-import org.apache.jena.query.*;
-import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionFactory;
-import org.apache.jena.riot.system.stream.StreamManager;
-import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
-import org.apache.spark.SparkContext;
-import org.apache.spark.deploy.SparkSubmit;
-import org.apache.spark.sql.SparkSession;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
 import org.junit.*;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.ContainerState;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -47,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 public class SansaIT {
     private static final Logger logger = LoggerFactory.getLogger(SansaIT.class);

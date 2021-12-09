@@ -1,9 +1,9 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import org.aksw.jena_sparql_api.core.ResultSetCloseable
-import org.aksw.jena_sparql_api.utils.ResultSetUtils
+import org.aksw.jenax.arq.util.binding.ResultSetUtils
+import org.aksw.jenax.arq.util.execution.QueryExecutionAdapter
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
-import org.apache.jena.query.Query
+import org.apache.jena.query.{Query, ResultSetCloseable}
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -36,8 +36,8 @@ object QueryExecutionSpark {
     val it = rdd.toLocalIterator.asJava
     val resultVars = rewrite.getProjectionOrder()
 
-    val tmp = ResultSetUtils.create2(resultVars, it)
-    new ResultSetCloseable(tmp)
+    val tmp = ResultSetUtils.createUsingVars(resultVars, it)
+    new ResultSetCloseable(tmp, new QueryExecutionAdapter)
   }
 
 }

@@ -47,11 +47,15 @@
 
     <properties>
         <maven.version>3.1</maven.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <java.version>1.8</java.version>
+        <maven.compiler.release>11</maven.compiler.release>
+
+
+        <!--
+            <maven.compiler.source>1.8</maven.compiler.source>
+            <maven.compiler.target>1.8</maven.compiler.target>
+        -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <scala.version>2.12.11</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
@@ -68,10 +72,10 @@
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.9.0</aksw-commons.version>
-        <jena.version>3.17.0</jena.version>
-        <jsa.subversion>1</jsa.subversion>
-        <jsa.version>${jena.version}-${jsa.subversion}</jsa.version>
+        <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
+        <jena.version>4.3.0-SNAPSHOT</jena.version>
+        <jsa.version>4.3.0-1-SNAPSHOT</jsa.version>
+        <r2rml-jena-api.version>0.9.1-SNAPSHOT</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -111,6 +115,7 @@
     <modules>
         <module>sansa-hadoop-jena</module>
         <module>sansa-kryo-jena</module>
+        <module>sansa-spark-jena-java</module>
 
         <module>sansa-test-resources</module>
         <module>sansa-resource-metadata</module>
@@ -126,7 +131,7 @@
         <module>sansa-spark-cli</module>
         <module>sansa-debian-spark-cli</module>
         <module>sansa-bench-spark</module>
-	<module>sansa-stack</module>
+        <module>sansa-stack</module>
     </modules>
 
 
@@ -165,6 +170,12 @@
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
                 <version>4.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -356,8 +367,39 @@
 
             <!-- Attempt to use hdt instead of thrift -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-io-hdt</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-hdt</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-analytics-core</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-utils</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-relations</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-datasets-orderaware</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+
+            <!-- Experimental model extensions; may be dropped if not useful -->
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-rdfnode-in-dataset</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
@@ -376,13 +418,13 @@
             <dependency>
                 <groupId>org.aksw.r2rml</groupId>
                 <artifactId>r2rml-jena-plugin</artifactId>
-                <version>0.9.0</version>
+                <version>${r2rml-jena-api.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.aksw.r2rml</groupId>
                 <artifactId>r2rml-jena-sql-transforms</artifactId>
-                <version>0.9.0</version>
+                <version>${r2rml-jena-api.version}</version>
             </dependency>
 
 
@@ -398,7 +440,14 @@
             <!-- Our exception utils -->
             <dependency>
                 <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-util</artifactId>
+                <artifactId>aksw-commons-utils</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-lambdas-serializable</artifactId>
                 <version>${aksw-commons.version}</version>
             </dependency>
 
@@ -417,8 +466,8 @@
 
             <!-- web server component for use with sparqlify in sansa-query -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-server-standalone</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-server-standalone</artifactId>
                 <version>${jsa.version}</version>
                 <exclusions>
                     <exclusion>
@@ -434,7 +483,7 @@
             </dependency>
 
 
-	    <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
+            <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
                 <artifactId>jaxb-core</artifactId>
@@ -448,54 +497,72 @@
             </dependency>
 
 
-            <!-- Jena-SPARQL-API -->
+            <!-- jenax -->
+            <!--
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-core</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-core</artifactId>
+                <version>${jsa.version}</version>
+            </dependency>
+            -->
+
+            <!-- rxjava ideomatic SPARQL fluents
+                 Similar to Java8 Streams but with resource management and back pressure handling  -->
+            <dependency>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-rx</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
-            <!-- rxjava ideomatic SPARQL fluents
-                 Ssimilar to Java8 Streams but with resource management and back pressure handling  -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-rx</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-rx-dataaccess</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
+
+            <!--
+                        <dependency>
+                            <groupId>org.aksw.jenax</groupId>
+                            <artifactId>jenax-rx-io</artifactId>
+                            <version>${jsa.version}</version>
+                        </dependency>
+            -->
 
             <!-- Io package; used for the distributed trig reader hadoop plugin -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-io-core</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-io-core</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
             <!-- Annotations for auto-generating implementations of custom Jena Resources -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-mapper-annotations</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-annotations-reprogen</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
             <!-- The annotation processor that auto-generates implementations of custom Jena Resources -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-mapper-proxy</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-reprogen-core</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
             <!-- Legacy dependency; mainly used because of a dedicated HealthCheck runner for SPARQL endpoints
             TODO Mark for removal -->
+            <!--
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-virtuoso</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-virtuoso</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
+            -->
 
             <!-- Algebra and query optimization package; features transformers not part of jena -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-algebra</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-arq-algebra</artifactId>
                 <version>${jsa.version}</version>
                 <exclusions>
                     <!-- Conflict with ontop's ancient jgrapht version; since jgrapht 1.2 most subclasses of Graph (such as DirectedGraph) were removed in favor of a capabilites pattern; more drastice changes happened with 1.3 -->
@@ -506,17 +573,19 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-views</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
+            <!--
+                        <dependency>
+                            <groupId>org.aksw.jenax</groupId>
+                            <artifactId>jenax-views</artifactId>
+                            <version>${jsa.version}</version>
+                        </dependency>
+            -->
 
             <!-- Used for result set analysis such as used datatypes and prefixs -->
             <!-- Parallelizable aggregation builder framework + tuple/binding analysers -->
             <dependency>
-                <groupId>org.aksw.jena-sparql-api</groupId>
-                <artifactId>jena-sparql-api-analytics</artifactId>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-analytics-core</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
 
@@ -774,6 +843,14 @@
                 </exclusions>
                 -->
             </dependency>
+
+            <!-- Univocity csv/tsv parsers are used in spark-sql but also sansa-hadoop-jena; versions should be aligned -->
+            <dependency>
+                <groupId>com.univocity</groupId>
+                <artifactId>univocity-parsers</artifactId>
+                <version>2.9.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
@@ -950,7 +1027,7 @@
             <dependency>
                 <groupId>org.aksw.sparqlify</groupId>
                 <artifactId>sparqlify-core</artifactId>
-                <version>0.9.0</version>
+                <version>0.9.1-SNAPSHOT</version>
                 <exclusions>
                     <!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId>
                         </exclusion> -->
@@ -998,7 +1075,8 @@
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>jena-elephas-io</artifactId>
-                <version>${jena.version}</version>
+                <!-- <version>${jena.version}</version> -->
+                <version>3.17.0</version>
             </dependency>
 
             <!-- Used in query layer apparently -->
@@ -1150,7 +1228,7 @@
             <dependency>
                 <groupId>org.aksw.bsbm</groupId>
                 <artifactId>bsbm-core</artifactId>
-                <version>3.1.4</version>
+                <version>3.1.6-SNAPSHOT</version>
                 <scope>test</scope>
             </dependency>
 
@@ -1288,6 +1366,19 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.30</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-ext</artifactId>
+                <version>1.7.30</version>
+		<exclusions>
+			<exclusion>
+                <groupId>ch.qos.cal10n</groupId>
+                <artifactId>cal10n-api</artifactId>
+ 
+			</exclusion>
+		</exclusions>
             </dependency>
 
             <dependency>
@@ -1480,7 +1571,7 @@
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>4.4.0</version>
+                    <version>4.5.3</version>
                     <configuration>
                         <forceAggregate>true</forceAggregate>
                         <aggregateDirectOnly>false</aggregateDirectOnly>
@@ -1499,7 +1590,6 @@
                                 <checkMultipleScalaVersions>true</checkMultipleScalaVersions>
                                 <!--failOnMultipleScalaVersions>true</failOnMultipleScalaVersions-->
                                 <recompileMode>incremental</recompileMode>
-                                <useZincServer>true</useZincServer>
                                 <args>
                                     <arg>-target:jvm-1.8</arg>
                                     <arg>-unchecked</arg>
@@ -1533,12 +1623,15 @@
                                 <goal>testCompile</goal>
                             </goals>
                         </execution>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>doc-jar</goal>
-                            </goals>
-                        </execution>
+                        <!-- FIXME This doc-jar goal breaks the build ~ 2021-06-29 Claus -->
+                        <!--
+                                                <execution>
+                                                    <id>attach-javadocs</id>
+                                                    <goals>
+                                                        <goal>doc-jar</goal>
+                                                    </goals>
+                                                </execution>
+                        -->
                     </executions>
                 </plugin>
 
@@ -1547,8 +1640,11 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
+                        <release>${maven.compiler.release}</release>
+                        <!--
+                                    <source>${maven.compiler.source}</source>
+                                    <target>${maven.compiler.target}</target>
+                        -->
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
@@ -1557,7 +1653,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>2.22.2</version>
 
                     <configuration>
                         <useFile>false</useFile>
@@ -1566,10 +1662,10 @@
                         <!-- If you have classpath issue like NoDefClassError,... -->
                         <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
                         <includes>
-                            <include>**/*Test.*</include>
+                            <include>**/*Test*.*</include>
                             <include>**/*Suite.*</include>
                         </includes>
-                        <skipTests>true</skipTests>
+                        <!-- <skipTests>false</skipTests> -->
                     </configuration>
                 </plugin>
 
@@ -1738,7 +1834,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.2.1</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -2053,8 +2149,8 @@
             </releases>
         </repository>
 
-        <!--
-            <repository>
+        
+        <repository>
                 <id>apache-snapshot</id>
                 <name>Apache repository (snapshots)</name>
                 <url>https://repository.apache.org/content/repositories/snapshots/</url>
@@ -2065,7 +2161,7 @@
                     <enabled>false</enabled>
                 </releases>
         </repository>
-        -->
+        
         <repository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>

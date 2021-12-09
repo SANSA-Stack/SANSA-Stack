@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import org.apache.jena.atlas.io.IndentedLineBuffer;
 import org.apache.jena.graph.Node;
+import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.out.NodeFormatter;
@@ -24,7 +25,7 @@ import org.apache.jena.sparql.ARQConstants;
 public class GenericNodeSerializerViaRiot extends Serializer<Node> {
 
     /** A {@link PrefixMap} (rather than {@link org.apache.jena.shared.PrefixMapping}) of standard prefixes */
-    private static final PrefixMap pmap = PrefixMapFactory.createForInput();
+    private static final PrefixMap pmap = PrefixMapFactory.create();
 
     static {
         pmap.add("rdf", ARQConstants.rdfPrefix);
@@ -76,7 +77,10 @@ public class GenericNodeSerializerViaRiot extends Serializer<Node> {
     protected ParserProfile setupInternalParserProfile() {
         LabelToNode labelToNode = LabelToNode.createUseLabelEncoded();
         FactoryRDF factoryRDF = RiotLib.factoryRDF(labelToNode);
-        ParserProfile result = new ParserProfileStd(factoryRDF, errorHandler, IRIResolver.create(), pmap, RIOT.getContext().copy(), true, false);
+
+        // Permissive resolver that allows for relative IRIs
+        IRIxResolver iriXResolver = IRIxResolver.create().noBase().allowRelative(true).build();
+        ParserProfile result = new ParserProfileStd(factoryRDF, errorHandler, iriXResolver, pmap, RIOT.getContext().copy(), true, false);
         return result;
     }
 }

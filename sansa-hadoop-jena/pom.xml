@@ -56,14 +56,21 @@
             <artifactId>aksw-commons-collectors</artifactId>
         </dependency>
 
+
+	<!-- For the rx operators for grouping consecutive triples/quads/items -->
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-rx</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-rx</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-io-core</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-datasets-orderaware</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-core</artifactId>
         </dependency>
 
 <!--
@@ -76,6 +83,12 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-elephas-io</artifactId>
         </dependency>
+
+            <dependency>
+                <groupId>com.univocity</groupId>
+                <artifactId>univocity-parsers</artifactId>
+            </dependency>
+
 
         <dependency>
             <groupId>org.apache.jena</groupId>

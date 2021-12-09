@@ -1,8 +1,9 @@
 package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.jena.rdf.turtle.FileInputFormatTurtleTriple;
-import net.sansa_stack.hadoop.jena.rdf.turtle.RecordReaderTurtleTriple;
+import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
+import net.sansa_stack.hadoop.format.jena.turtle.RecordReaderRdfTurtleTriple;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.graph.Triple;
@@ -32,7 +33,7 @@ public class RecordReaderTurtleTestsFast
         map.put("../sansa-query/sansa-query-tests/src/main/resources/sparql11/data-r2/basic/manifest.ttl",
                 Range.closed(1, 5));
 
-        return createParameters(map);
+        return FileSplitUtils.createTestParameters(map);
     }
 
 
@@ -43,12 +44,12 @@ public class RecordReaderTurtleTestsFast
     @Override
     public void configureHadoop(Configuration conf) {
         super.configureHadoop(conf);
-        conf.set(RecordReaderTurtleTriple.RECORD_PROBECOUNT_KEY, "10");
+        conf.set(RecordReaderRdfTurtleTriple.RECORD_PROBECOUNT_KEY, "10");
     }
 
     @Override
     public InputFormat<?, Triple> createInputFormat() {
-        return new FileInputFormatTurtleTriple();
+        return new FileInputFormatRdfTurtleTriple();
     }
 
     @Override

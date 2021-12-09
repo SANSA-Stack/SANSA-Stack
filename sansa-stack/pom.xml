@@ -14,7 +14,7 @@
 
     <modules>
         <module>sansa-stack-spark</module>
-        <module>sansa-stack-flink</module>
+        <!-- <module>sansa-stack-flink</module> -->
     </modules>
 
 </project>

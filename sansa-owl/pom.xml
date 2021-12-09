@@ -44,7 +44,7 @@
 	</developers>
 
 	<modules>
-		<module>sansa-owl-flink</module>
+		<!-- <module>sansa-owl-flink</module> -->
 		<module>sansa-owl-spark</module>
 		<module>sansa-owl-common</module>
 	</modules>
