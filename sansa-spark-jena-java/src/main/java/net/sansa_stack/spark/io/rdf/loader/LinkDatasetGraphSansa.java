@@ -15,8 +15,15 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Transactional;
 
 
-// TODO This class essentially just has to configure an RddRdfWriter
-//  The writer has to be backed by an StreamRDF that writes to a sparql endpoint
+/**
+ * A {@link LinkDatasetGraph} implementation that loads files via the sansa
+ * parser and sends the data (triples and quads) to a sink.
+ * The sink typically batches the data and sends them as sparql update requests
+ * to a {@link LinkSparqlUpdate}.
+ *
+ * @author raven
+ *
+ */
 public class LinkDatasetGraphSansa
     implements LinkDatasetGraph, TransactionalDelegate
 {

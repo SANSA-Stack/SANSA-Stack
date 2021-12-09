@@ -192,7 +192,7 @@ public class AsyncRdfParserHadoop {
             // long numSplits = fileTotalLength / splitSize + Long.signum(fileTotalLength % splitSize);
 
             // FileSplitUtils.streamFileSplits(inputFile, fileTotalLength, numSplits)
-            CompletableFuture[] futures = splits.stream()
+            CompletableFuture<?>[] futures = splits.stream()
                     .map(split ->
                         CompletableFuture.runAsync(() -> {
                                     FileSplitUtils.createFlow(job, inputFormat, split)
