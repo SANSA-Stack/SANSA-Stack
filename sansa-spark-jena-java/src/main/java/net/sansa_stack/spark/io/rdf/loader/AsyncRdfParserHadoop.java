@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.util.concurrent.CompletionTracker;
 import org.aksw.commons.util.concurrent.ExecutorServiceUtils;
 import org.aksw.commons.util.ref.Ref;
 import org.aksw.commons.util.ref.RefImpl;
@@ -149,7 +150,7 @@ public class AsyncRdfParserHadoop {
      * @param inputFile
      * @param conf
      * @param inputFormat
-     * @param executorService
+     * @param executorService The Executorservice must be closed externally.
      * @param sink
      * @param sendRecordToStreamRDF
      * @param <T>
@@ -207,16 +208,29 @@ public class AsyncRdfParserHadoop {
             // long numSplits = fileTotalLength / splitSize + Long.signum(fileTotalLength % splitSize);
 
             // FileSplitUtils.streamFileSplits(inputFile, fileTotalLength, numSplits)
-            CompletableFuture<?>[] futures = splits.stream()
-                    .map(split ->
-                        CompletableFuture.runAsync(() -> {
-                                    FileSplitUtils.createFlow(job, inputFormat, split)
-                                            .forEach(record -> sendRecordToStreamRDF.accept(record, sink));
-                                }, executorService))
-                    .collect(Collectors.toList())
-                    .toArray(new CompletableFuture[0]);
+            CompletionTracker completionTracker = CompletionTracker.from(executorService);
 
-            CompletableFuture.allOf(futures).get();
+            for (InputSplit split : splits) {
+                completionTracker.execute(() -> {
+                    FileSplitUtils.createFlow(job, inputFormat, split)
+                        .forEach(record -> sendRecordToStreamRDF.accept(record, sink));
+                });
+            }
+
+            completionTracker.shutdown();
+            completionTracker.awaitTermination();
+
+
+//            CompletableFuture<?>[] futures = splits.stream()
+//                    .map(split ->
+//                        CompletableFuture.runAsync(() -> {
+//                                    FileSplitUtils.createFlow(job, inputFormat, split)
+//                                            .forEach(record -> sendRecordToStreamRDF.accept(record, sink));
+//                                }, executorService))
+//                    .collect(Collectors.toList())
+//                    .toArray(new CompletableFuture[0]);
+//
+//            CompletableFuture.allOf(futures).get();
         }
     }
 }
