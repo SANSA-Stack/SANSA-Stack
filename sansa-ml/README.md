@@ -25,7 +25,7 @@ With an initial entity selecting method, for all the specified URIs all features
 The resulting feature columns are collapsed s.t. for each entity we have later one row in the dataframe.
 If the extracted feature is of type Literal, the column is casted to the assigned literal data type: e.g. StringType, DoubleType, Timestamp, ...
 ```scala
-val dataset: Dataset[graph.Triple] = getData()
+val dataset: Dataset[graph.Triple] = [...]
 
 /** Smart Feature Extractor */
 val sfeNoFilter = new SmartFeatureExtractor()
@@ -222,7 +222,7 @@ metagraph.take(10).foreach(println(_))
  The features of this are extracted by the SmartFeatureExtractor.
  ```scala
  val lang = Lang.TURTLE
- val originalDataRDD = spark.rdf(lang)("/Users/carstendraschner/Datasets/sampleMovieDB.nt").persist()
+ val originalDataRDD = spark.rdf(lang)("/Users/.../Datasets/sampleMovieDB.nt").persist()
 
  val dataset: Dataset[Triple] = originalDataRDD
    .toDS()
@@ -240,7 +240,8 @@ metagraph.take(10).foreach(println(_))
 
  resultSimDf.show(false)
 
- val metagraph: RDD[Triple] = dse.semantification(resultSimDf)
+ val metagraph: RDD[Triple] = dse
+    .semantification(resultSimDf)
  ```
  Apart of the code snippets here, we also provide a sample [Dataricks Notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1243120961280565/8524188481975304/latest.html)
 
