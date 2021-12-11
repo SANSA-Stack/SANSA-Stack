@@ -73,7 +73,7 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.3.0-SNAPSHOT</jena.version>
+        <jena.version>4.3.0</jena.version>
         <jsa.version>4.3.0-1-SNAPSHOT</jsa.version>
         <r2rml-jena-api.version>0.9.1-SNAPSHOT</r2rml-jena-api.version>
 
@@ -85,7 +85,7 @@
         <!-- <mortbay.jetty.version>6.1.26</mortbay.jetty.version> -->
 
         <!-- origin: sansa-query -->
-        <httpcomponents.version>4.5.12</httpcomponents.version>
+        <httpcomponents.version>4.5.13</httpcomponents.version>
 
 
         <owlapi.version>5.1.17</owlapi.version>
@@ -412,7 +412,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
-                <version>1.20</version>
+                <version>1.21</version>
             </dependency>
 
             <dependency>
