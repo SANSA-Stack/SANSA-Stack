@@ -15,8 +15,15 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Transactional;
 
 
-// TODO This class essentially just has to configure an RddRdfWriter
-//  The writer has to be backed by an StreamRDF that writes to a sparql endpoint
+/**
+ * A {@link LinkDatasetGraph} implementation that loads files via the sansa
+ * parser and sends the data (triples and quads) to a sink.
+ * The sink typically batches the data and sends them as sparql update requests
+ * to a {@link LinkSparqlUpdate}.
+ *
+ * @author raven
+ *
+ */
 public class LinkDatasetGraphSansa
     implements LinkDatasetGraph, TransactionalDelegate
 {
@@ -34,7 +41,7 @@ public class LinkDatasetGraphSansa
     }
 
     public static LinkDatasetGraphSansa create(Configuration conf, SerializableSupplier<LinkSparqlUpdate> link) {
-        SerializableSupplier<StreamRDF> sinkFatory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
+        SerializableSupplier<StreamRDF> sinkFactory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
            LinkSparqlUpdate update = link.get();
            try {
                update.update(updateRequest);
@@ -43,7 +50,7 @@ public class LinkDatasetGraphSansa
            }
         });
 
-        return new LinkDatasetGraphSansa(conf, sinkFatory, null);
+        return new LinkDatasetGraphSansa(conf, sinkFactory, null);
     }
 
     @Override
@@ -57,7 +64,8 @@ public class LinkDatasetGraphSansa
     public void load(String s) {
         try {
             StreamRDF sink = sinkFactory.get();
-            AsyncRdfParserHadoop.parse(new Path(s), conf, sink);
+            Path path = new Path(s);
+            AsyncRdfParserHadoop.parse(path, conf, sink);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
