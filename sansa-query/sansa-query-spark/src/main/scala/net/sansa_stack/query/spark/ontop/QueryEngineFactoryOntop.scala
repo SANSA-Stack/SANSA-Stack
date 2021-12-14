@@ -7,6 +7,7 @@ import org.aksw.commons.sql.codec.api.SqlCodec
 import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.apache.jena.graph
 import org.apache.jena.rdf.model.Model
+import org.apache.sedona.sql.utils.SedonaSQLRegistrator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model.OWLOntology
@@ -16,7 +17,7 @@ import org.semanticweb.owlapi.model.OWLOntology
  *
  * @author Lorenz Buehmann
  */
-class QueryEngineFactoryOntop(spark: SparkSession)
+class QueryEngineFactoryOntop(spark: SparkSession, enableGeospatialSupport: Boolean = false)
   extends QueryEngineFactoryBase(spark, new RdfPartitionerComplex()) {
 
   // partitioner: RdfPartitioner[RdfPartitionStateDefault],
@@ -24,6 +25,11 @@ class QueryEngineFactoryOntop(spark: SparkSession)
                                                 explodeLanguageTags: Boolean,
                                                 sqlCodec: SqlCodec,
                                                 escapeIdentifiers: Boolean): QueryExecutionFactorySpark = {
+    // we have to register the Sedona Kryo serializers
+    if (enableGeospatialSupport) {
+      SedonaSQLRegistrator.registerAll(spark)
+    }
+
     super.createWithPartitioning(triples,
       explodeLanguageTags = true,
       SqlCodecUtils.createSqlCodecDefault,
@@ -38,7 +44,7 @@ class QueryEngineFactoryOntop(spark: SparkSession)
     require(database != null, "database must non be null. Use None for absence.")
     require(mappingModel != null, "mappings must not be null.")
 
-    val ontop: QueryEngineOntop = QueryEngineOntop(spark, database, mappingModel, Option(ontology))
+    val ontop: QueryEngineOntop = QueryEngineOntop(spark, database, mappingModel, Option(ontology), enableGeospatialSupport)
 
     new QueryExecutionFactorySparkOntop(spark, database, ontop)
   }

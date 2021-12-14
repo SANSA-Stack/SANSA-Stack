@@ -118,7 +118,8 @@ class OntopSPARQL2SQLRewriter(ontopSessionId: String,
 class QueryEngineOntop(val spark: SparkSession,
                        val database: Option[String],
                        val mappingsModel: Model,
-                       var ontology: Option[OWLOntology]) {
+                       var ontology: Option[OWLOntology],
+                       val enableGeospatialSupport: Boolean = false) {
   require(spark != null, "Spark session must not be null.")
   require(!mappingsModel.isEmpty, "Mappings model must not be empty.")
 
@@ -292,7 +293,9 @@ class QueryEngineOntop(val spark: SparkSession,
       logger.info(s"SQL query:\n$sql")
 
       // geo workaround for odd String cast
-      sql = geoRewrite(sql)
+      if (enableGeospatialSupport) {
+        sql = geoRewrite(sql)
+      }
 
       // execute SQL query
       val resultRaw = spark.sql(sql)
@@ -464,13 +467,14 @@ object QueryEngineOntop {
   def apply(spark: SparkSession,
             databaseName: Option[String],
             mappingsModel: Model,
-            ontology: Option[OWLOntology]): QueryEngineOntop = {
+            ontology: Option[OWLOntology],
+            enableGeospatialSupport: Boolean = false): QueryEngineOntop = {
     // expand shortcuts of R2RML model
     val expandedMappingsModel = ModelFactory.createDefaultModel()
     expandedMappingsModel.add(mappingsModel)
     R2rmlLib.streamTriplesMaps(expandedMappingsModel).forEach(tm => R2rmlLib.expandShortcuts(tm))
 
-    new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology)
+    new QueryEngineOntop(spark, databaseName, expandedMappingsModel, ontology, enableGeospatialSupport)
   }
 
 }

@@ -30,8 +30,6 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    SedonaSQLRegistrator.registerAll(spark)
-
 //    GeometryDatatype.registerDatatypes()
 
     val model = ModelFactory.createDefaultModel()
@@ -54,7 +52,7 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
 //  """.stripMargin).show(false)
 
 
-    qef = new QueryEngineFactoryOntop(spark).create(triples)
+    qef = new QueryEngineFactoryOntop(spark, enableGeospatialSupport = true).create(triples)
 
     val t = spark.catalog.listTables().filter(_.name.endsWith("aswkt_geosparqlp23wktliteral")).head()
     spark.table(s"${t.name}").show(false)
@@ -107,7 +105,7 @@ class GeoSPARQLTests extends FunSuite with DataFrameSuiteBase {
         |WHERE {
         |	?s1 geo:hasGeometry ?s1Geo .
         |	?s1Geo geo:asWKT ?geo1 .
-        |	FILTER(geof:sfIntersects(?geo1, "POLYGON ((0.0 0.0, 90.0 0.0, 90.0 77.94970848221368, 0.0 77.94970848221368, 0.0 0.0))"^^geo:wktLiteral)) .
+        |	FILTER(geof:sfIntersects(?geo1, "POLYGON((-87.43839246372724 38.212152318808016,-87.83390027622724 30.873791964989213,-82.16495496372724 30.911502789997847,-80.75870496372724 38.315665464524635,-87.43839246372724 38.212152318808016))"^^geo:wktLiteral)) .
         |}
         |""".stripMargin
     runQuery(query)
