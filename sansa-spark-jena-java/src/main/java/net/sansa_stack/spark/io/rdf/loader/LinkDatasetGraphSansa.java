@@ -44,6 +44,7 @@ public class LinkDatasetGraphSansa
         SerializableSupplier<StreamRDF> sinkFactory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
            LinkSparqlUpdate update = link.get();
            try {
+               // System.out.println("Update: " + Thread.currentThread() + " " + updateRequest.toString().length());
                update.update(updateRequest);
            } finally {
                update.close();
