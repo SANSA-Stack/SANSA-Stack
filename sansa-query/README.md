@@ -252,10 +252,90 @@ With Ontop integrated and used as SPARQL to SQL rewriter we do cover the followi
 | [17.6 Extensible Value Testing](https://www.w3.org/TR/sparql11-query/#extensionFunctions)                  | ~~user defined functions~~                                                                                                               | 0        |
 
 #### Limitations
-- In the implementation of function `langMatches`, the second argument has to a be a constant: allowing variables will have a negative impact on the performance in our framework.
-#
+- In the implementation of function `langMatches`, the second argument has to be a constant: allowing variables will have a negative impact on the performance in our framework.
 
 ¹ taken from the original Ontop web site at: https://ontop-vkg.org/guide/compliance.html#sparql-1-1 
+
+### GeoSPARQL Support
+We do provide preliminary GeoSPARQL support when using Ontop as SPARQL-to-SQL rewriter and Apache Sedona as
+a geospatial API on top of Apache Spark.
+
+#### XML Namespaces
+The following XML namespace prefixes are used throughout this section.
+
+| `geo:`  |     http://www.opengis.net/ont/geosparql#      |
+|-------|------------------------------------------------|
+| `geof:` | http://www.opengis.net/def/function/geosparql/ |
+
+#### Usage
+All you have to do is to 1) add the Apache Sedona Kryo registrator to your Spark session and 2) enable the geospatial support in the
+query engine factory:
+
+```scala
+val queryEngineFactory = new QueryEngineFactoryOntop(spark, )
+```
+
+
+
+#### Features
+
+Given that we combine two APIs to process GeoSPARQL queries, the set of supported features is obviously what
+both APIs have in common. 
+For Ontop the supported features are documented [here](https://ontop-vkg.org/guide/compliance.html#geosparql-1-0).
+
+For Apache Sedona, the features are mainly documented across the [constructors](https://sedona.apache.org/api/sql/Constructor/),
+[functions](https://sedona.apache.org/api/sql/Function/), and [predicates](https://sedona.apache.org/api/sql/Predicate/)
+documentation.
+
+A summary of features that should work is
+
+
+|                   Section in OGC GeoSPARQL 1.0                    | Features                                                                                                                                                                  |
+|-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 8.5. WKT Serialization                                            | `geo:wktLiteral`, `geo:asWKT`                                                                                                                                             |
+| 8.7. Non-Topological Query Functions                              | `geof:distance`, `geof:buffer`, `geof:convexHull` , `geof:intersection`, `geof:union`, `geof:difference`, `geof:symDifference`, `geof:envelope`, `geof:boundary`, `geof:getSRID` |
+| 9.2. Common Query Functions                                       | `geof:relate`                                                                                                                                                             |
+| 9.3. Topological Simple Features Relation Family Query Functions  | `geof:sfEquals`, `geof:sfDisjoint`, `geof:sfIntersects`, `geof:sfTouches`, `geof:sfCrosses`, `geof:sfWithin`, `geof:sfContains`, `geof:sfOverlaps`                                  |
+
+
+
+
+#### Limitations
+Currently, only WKT literals are supported, i.e. we neither support GML nor do we handle WGS84 lat/long as spatial entities.
+
+You also cannot use the simplification provided in section "7. Topology Vocabulary Extensions - Properties" of the GeoSPARQL specs,
+i.e. you cannot use the functions as predicates in triple patterns directly on geospatial feature or geometry objects.
+Instead, you always have to use  the `FILTER` expression variant on the geospatial literals. For example
+
+allowed:
+```sparql
+SELECT * WHERE {
+   ?c1 a :City ;
+      geo:hasGeometry/geo:asWKT ?geo1.
+   ?c2 a :City ;
+      geo:hasGeometry/geo:asWKT ?geo2.
+       
+     FILTER(geof:sfIntersects(?geo1, ?geo2))
+}
+```
+not allowed:
+```sparql
+SELECT * WHERE {
+   ?c1 a :City ;
+      geo:hasGeometry ?geo1.
+   ?c2 a :City ;
+      geo:hasGeometry ?geo2.
+   ?geo1 geo:sfIntersects ?geo2 .
+}
+```
+
+Regarding optimizations, we leave it up to the user how Apache Sedona is making use its spatial index and query optimization,
+so please read their [docs](https://sedona.apache.org/api/sql/Parameter/).
+
+
+
+## Others
+
 
 An overview is given in the [FAQ section of the SANSA project page](http://sansa-stack.net/faq/#sparql-queries). Further documentation about the builder objects can also be found on the [ScalaDoc page](http://sansa-stack.net/scaladocs/).
 
