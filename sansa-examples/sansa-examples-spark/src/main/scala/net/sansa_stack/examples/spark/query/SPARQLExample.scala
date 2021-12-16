@@ -9,6 +9,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.sedona.core.serde.SedonaKryoRegistrator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
@@ -28,7 +29,8 @@ object SPARQLExample {
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
         "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+          classOf[SedonaKryoRegistrator].getName)) // this registrator is needed for GeoSPARQL support
       .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
       .getOrCreate()
 
@@ -41,7 +43,7 @@ object SPARQLExample {
 
     // create the main query engine
     // we do provide two different SPARQL-to-SQL rewriter backends, Sparqlify and Ontop
-    val queryEngineFactory = new QueryEngineFactoryOntop(spark) // Ontop
+    val queryEngineFactory = new QueryEngineFactoryOntop(spark, enableGeospatialSupport = true) // Ontop (here with GeoSPARQL support enabled)
     // or
     // val queryEngineFactory = new QueryEngineFactorySparqlify(spark) // Sparqlify
 
