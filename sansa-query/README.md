@@ -283,7 +283,7 @@ val spark = SparkSession.builder
           classOf[SedonaKryoRegistrator].getName))
         .config("spark.sql.crossJoin.enabled", true) // needs to be enabled if your SPARQL query does make use of cartesian product Note: in Spark 3.x it's enabled by default
         .getOrCreate()
-val queryEngineFactory = new QueryEngineFactoryOntop(spark, enableGeospatialSuprt = true)
+val queryEngineFactory = new QueryEngineFactoryOntop(spark, enableGeospatialSupport = true)
 ```
 
 
