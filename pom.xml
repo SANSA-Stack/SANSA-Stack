@@ -73,14 +73,14 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.3.1</jena.version>
-        <jsa.version>4.3.1-1-SNAPSHOT</jsa.version>
+        <jena.version>4.3.2</jena.version>
+        <jsa.version>4.3.2-1-SNAPSHOT</jsa.version>
         <r2rml-jena-api.version>0.9.1-SNAPSHOT</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
 	<slf4j.version>1.8.0-beta4</slf4j.version>
-	<log4j.version>2.15.0</log4j.version>
+	<log4j.version>2.17.0</log4j.version>
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
         <!-- <jetty.version>9.4.9.4.18.v20190429</jetty.version> -->
