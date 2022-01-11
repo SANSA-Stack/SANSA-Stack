@@ -74,8 +74,7 @@ object DistADUtil {
       .config("spark.sql.crossJoin.enabled", value = true)
       .config("spark.sql.shuffle.partitions", 2000)
       .config("spark.kryoserializer.buffer.max", 2047)
-      .config("spark.sql.pivotMaxValues", 100000)
-      .master("local[6]")
+      .config("spark.sql.pivotMaxValues", 100000)      
       .getOrCreate()
 
     Logger.getLogger("org").setLevel(Level.ERROR)
