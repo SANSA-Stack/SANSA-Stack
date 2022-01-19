@@ -14,27 +14,24 @@ import org.semanticweb.HermiT.Reasoner
 
 
 /*
- * Class for the induction of Terminological Decision Tree
+ * Class for the induction of Distributed Terminological Decision Tree
  */
 
-object TDTInducer {
+object DistTDTInducer {
   // var stream: PrintStream = _
 
-  class TDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) extends Serializable{
+  class DistTDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) extends Serializable{
 
     // for each query concept induce an ensemble
     var trees: Array[DLTree] = new Array[DLTree](nConcepts)
 
     var cl: TDTClassifiers = new TDTClassifiers(kb, sc)
-    var pos: RDD[String] = _
-    var neg: RDD[String] = _
-    var und: RDD[String] = _
-
 
     /*
      * Function for training the algorithm
      */
-    def training(results: RDD[(OWLClassExpression, OWLIndividual, Int)], trainingExs: RDD[OWLIndividual],
+    def training(results: RDD[((OWLClassExpression, OWLIndividual), Int)],
+                 trainingExs: RDD[OWLIndividual],
                  testConcepts: Array[OWLClassExpression],
                  negTestConcepts: Array[OWLClassExpression]): Unit = {
 
@@ -50,12 +47,13 @@ object TDTInducer {
 
         println("\n--- Query Concept # " + (c + 1))
 
-        // These instances should be divided into negative instances, positive and uncertain
+        // These instances should be divided into negative, positive and uncertain instances
         // split._1 = posExs,    split._2 = negExs,  split._3 = undExs
         val split = splitting(trainingExs, results, testConcepts(c))
 
-        var prPos: Double = split._1.count.toDouble / trainingExs.count.toInt
-        var prNeg: Double = split._2.count.toDouble / trainingExs.count.toInt
+        var prPos = split._1.count / trainingExs.count.toDouble
+        var prNeg = split._2.count / trainingExs.count.toDouble
+        
         println("Training set composition: " + split._1.count() + " - " + split._2.count() + " - " + split._3.count())
 
         val Sum: Double = prPos + prNeg
@@ -77,15 +75,32 @@ object TDTInducer {
      * Function for splitting the training examples into positive, negative and undefined examples
      */
 
+//    def splitting(trainingExs: RDD[OWLIndividual],
+//                  classifications: RDD[((OWLClassExpression, OWLIndividual), Int)],
+//                  c: OWLClassExpression): (RDD[String], RDD[String], RDD[String]) = {
+//
+//      pos = classifications.filter(_._1._1 == c).filter(_._2 == +1).map(_._2.toString()).cache()
+//      neg = classifications.filter(_._1._1 == c).filter(_._2 == -1).map(_._2.toString()).cache()
+//      und = classifications.filter(_._1._1 == c).filter(_._2 == 0).map(_._2.toString())
+//      (pos, neg, und)
+//    }
+  
+  
     def splitting(trainingExs: RDD[OWLIndividual],
-                  classifications: RDD[(OWLClassExpression, OWLIndividual, Int)],
-                  c: OWLClassExpression): (RDD[String], RDD[String], RDD[String]) = {
-
-      pos = classifications.filter(_._1 == c).filter(_._3 == +1).map(_._2.toString()).cache()
-      neg = classifications.filter(_._1 == c).filter(_._3 == -1).map(_._2.toString()).cache()
-      und = classifications.filter(_._1 == c).filter(_._3 == 0).map(_._2.toString())
+                  classifications: RDD[((OWLClassExpression, OWLIndividual), Int)],
+                  c: OWLClassExpression): (RDD[OWLIndividual], RDD[OWLIndividual], RDD[OWLIndividual]) = {
+  
+      val tr = trainingExs.map(t => ((c, t), 1))
+      val pos = classifications.filter(_._2 == 1).join(tr).map(_._1._2)
+      val neg = classifications.filter(_._2 == -1).join(tr).map(_._1._2)
+      val und = classifications.filter(_._2 == 0).join(tr).map(_._1._2)
+  
       (pos, neg, und)
     }
+    
+
+
+
 
     //    var BINARYCLASSIFICATION : Boolean = false
 
