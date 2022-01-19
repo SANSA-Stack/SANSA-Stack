@@ -2,17 +2,16 @@ package net.sansa_stack.ml.spark.classification.decisionTrees
 
 import java.util.ArrayList
 
-import net.sansa_stack.ml.spark.classification.decisionTrees.KB
 import net.sansa_stack.ml.spark.classification.decisionTrees.ClassMembership.ClassMembership
+import net.sansa_stack.ml.spark.classification.decisionTrees.KB
 import net.sansa_stack.ml.spark.classification.decisionTrees.TDTClassifiers.TDTClassifiers
-import net.sansa_stack.ml.spark.classification.decisionTrees.TDTInducer.TDTInducer
+import net.sansa_stack.ml.spark.classification.decisionTrees.DistTDTInducer.DistTDTInducer
 import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.rdd.RDD
-import org.semanticweb.owlapi.model.OWLClassExpression
-import org.semanticweb.owlapi.model.OWLIndividual
+import org.semanticweb.owlapi.model._
 
 import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
@@ -52,10 +51,10 @@ object TermDecisionTrees {
     // Call owl axiom builder to read the classes and object properties and print
     val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
 
-    val kb: KB = new KB(input, rdd, sparkSession)
+    val kb: KB = new KB(input, rdd)
     val ClassM = new ClassMembership(kb, sparkSession)
-    val ClassName = TDTInducer.toString()
-  //  ClassM.bootstrap(10, ClassName, sparkSession)
+//    val ClassName = TDTInducer.toString()
+    ClassM.bootstrap(10, sparkSession)
  //   val c = new TDTInducer(kb, kb.concepts.count().toInt, sparkSession)
 
 //        val PosExamples = sparkSession.sparkContext.parallelize(
