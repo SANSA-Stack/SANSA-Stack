@@ -44,7 +44,7 @@ object TDTClassifiers {
       */
 
     def induceDLTree(father: OWLClassExpression,
-                     posExs: RDD[String], negExs: RDD[String], undExs: RDD[String],
+                     posExs: RDD[OWLIndividual], negExs: RDD[OWLIndividual], undExs: RDD[OWLIndividual],
                      nRefs: Int, prPos: Double, prNeg: Double): DLTree = {
 
       val THRESHOLD: Double = 0.05
@@ -76,8 +76,8 @@ object TDTClassifiers {
       else {
         return tree
       }
-      println("\nnew per Pos: " + perPos)
-      println("new per Neg: " + perNeg)
+      println("\nnew per Pos: " + f"$perPos%1.2f")
+      println("new per Neg: " + f"$perNeg%1.2f")
 
       if (perNeg == 0 && perPos > THRESHOLD) { // no negative
         tree.setRoot(k.getDataFactory.getOWLThing) // set positive leaf
@@ -182,8 +182,8 @@ object TDTClassifiers {
     private def generateRefs(know: KB,
                              concept: OWLClassExpression,
                              dim: Int,
-                             posExs: RDD[String],
-                             negExs: RDD[String]): RDD[OWLClassExpression] = {
+                             posExs: RDD[OWLIndividual],
+                             negExs: RDD[OWLIndividual]): RDD[OWLClassExpression] = {
 
       println("\nGenerating node concepts: \n ")
       val rConcepts: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](dim)
@@ -296,9 +296,9 @@ object TDTClassifiers {
 
     def selectBestConcept(know: KB,
                           concepts: RDD[OWLClassExpression],
-                          posExs: RDD[String],
-                          negExs: RDD[String],
-                          undExs: RDD[String],
+                          posExs: RDD[OWLIndividual],
+                          negExs: RDD[OWLIndividual],
+                          undExs: RDD[OWLIndividual],
                           prPos: Double, prNeg: Double): OWLClassExpression = {
 
       var bestConceptIndex: Int = 0
@@ -448,9 +448,9 @@ object TDTClassifiers {
 
     private def getSplitCounts(know: KB,
                                concept: OWLClassExpression,
-                               posExs: RDD[String],
-                               negExs: RDD[String],
-                               undExs: RDD[String]): Array[Int] = {
+                               posExs: RDD[OWLIndividual],
+                               negExs: RDD[OWLIndividual],
+                               undExs: RDD[OWLIndividual]): Array[Int] = {
 
       val counts: Array[Int] = Array.ofDim[Int](6)
 
@@ -475,20 +475,20 @@ object TDTClassifiers {
       */
     private def splitGroup(know: KB,
                            concept: OWLClassExpression,
-                           nodeExamples: RDD[String]): (RDD[String], RDD[String]) = {
+                           nodeExamples: RDD[OWLIndividual]): (RDD[OWLIndividual], RDD[OWLIndividual]) = {
 
       /* println("\nNode examples: \n ----------")
       nodeExamples.take(nodeExamples.count.toInt).foreach(println(_)) */
 
       val negConcept: OWLClassExpression = know.getDataFactory.getOWLObjectComplementOf(concept)
 
-      var Left = new ArrayList[String]()
-      var Right = new ArrayList[String]()
+      var Left = new ArrayList[OWLIndividual]()
+      var Right = new ArrayList[OWLIndividual]()
 
       for (e <- 0 until nodeExamples.count.toInt) {
 
-        val nodeEx = nodeExamples.take(e + 1).apply(e)
-        val nodeInd = know.getDataFactory.getOWLNamedIndividual(nodeEx).asInstanceOf[OWLIndividual]
+        val nodeEx = nodeExamples.take(e + 1).apply(e).asInstanceOf[OWLNamedIndividual]
+        val nodeInd = know.getDataFactory.getOWLNamedIndividual(nodeEx)
 
         if (know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, nodeInd))) {
           Left.add(nodeEx)
@@ -547,8 +547,8 @@ object TDTClassifiers {
 
     private def split(know: KB,
                       concept: OWLClassExpression,
-                      posExs: RDD[String], negExs: RDD[String], undExs: RDD[String]):
-    ((RDD[String], RDD[String]), (RDD[String], RDD[String]), (RDD[String], RDD[String])) = {
+                      posExs: RDD[OWLIndividual], negExs: RDD[OWLIndividual], undExs: RDD[OWLIndividual]):
+    ((RDD[OWLIndividual], RDD[OWLIndividual]), (RDD[OWLIndividual], RDD[OWLIndividual]), (RDD[OWLIndividual], RDD[OWLIndividual])) = {
 
       val Pos = splitGroup(know, concept, posExs)
       val Neg = splitGroup(know, concept, negExs)
