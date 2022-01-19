@@ -95,7 +95,7 @@ The result after pivoting will be:
 |dbr:Angela_Merkel|1954-07-17   |dbr:Hamburg   |
 +-----------------+-------------+--------------+
 ```
-[Literal2Feature](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml#literal2feature-autosparql-generation-for-feature-extraction) is a generic, distributed, and
+[Literal2Feature](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml#literal2feature-autosparql-generation-for-feature-extraction) is a generic, distributed, and
 a scalable software framework that can automatically transform a given RDF dataset to a standard feature matrix by deep traversing the RDF graph and extracting literals to a given depth. The result of Literal2Feature is a SPARQL query that extracts the features. This option helps the user to extract features that are not in the direct vicinity of an entity for the outlier detection purpose.
 
 #### depth

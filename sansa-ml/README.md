@@ -17,7 +17,7 @@ The current stack provides:
 - [SimE4KG - Similarity Estimation for Knowledge Graphs](#sime4kg-transformer)
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 - [Sparql Transformer](#sparql-transformer)
-- [DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml#distad-distributed-anomaly-detection)
+- [DistAD](#distad-distributed-anomaly-detection)
 
 ### SmartFeatureExtractor
 This feature extractor creates out of a Apache Spark Dataset of Apache Jena Triple a Dataframe which contains entity feature information for further machine learning approaches.
@@ -275,7 +275,7 @@ val resultNodes: Array[Node] = res.as[Node].collect()
 this sample is taken from a [Scala unit test](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/test/scala/net/sansa_stack/ml/spark/utils/SPARQLQueryTest.scala)
 
 ### DistAD Distributed Anomaly Detection
-[DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection): This module is a generic, scalable, and distributed framework for anomaly detection on large RDF knowledge graphs. DistAD provides a great granularity for the end-users to select from a vast number of different algorithms, methods, and (hyper-)parameters to detect outliers.
+[DistAD](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection): This module is a generic, scalable, and distributed framework for anomaly detection on large RDF knowledge graphs. DistAD provides a great granularity for the end-users to select from a vast number of different algorithms, methods, and (hyper-)parameters to detect outliers.
 The framework performs anomaly detection by extracting semantic features from entities for calculating similarity, applying clustering on the entities, and running multiple anomaly detection algorithms to detect the outliers on the different levels and granularity. The output of DistAD will be the list of anomalous RDF triples. DistAD needs a config file which looks like as follows:
 ```groovy
 verbose=true
@@ -315,7 +315,7 @@ AnomalyDetectionDispatcher.main(Array(configFilePath))
 Moreover, DistAD offers options to select between different algorithms, and hyperparameters and prepare a customized pipeline for anomaly detection. The following table shows all the possibilities:
 ![](distad.png)
 
-For more information about DistAD visit [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/feature/distad/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection).
+For more information about DistAD visit [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection).
 
 ### Feature Based Semantic Similarity Estimations
 [DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
