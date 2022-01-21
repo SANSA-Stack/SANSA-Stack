@@ -10,6 +10,7 @@ The orginal papers can be found here:
 - [DistRDF2ML: Scalable Distributed In-Memory Machine Learning Pipelines for RDF Knowledge Graphs](https://dl.acm.org/doi/abs/10.1145/3459637.3481999)
 - [DistAD *in Progress*]()
 - [SimE4KG - *in Progress*]()
+
 # Paper Specific Documentation
 For recently published papers, we provide here a fast entry point to the provided modules. All of those modules are as well accessible over the standard documentation
 
