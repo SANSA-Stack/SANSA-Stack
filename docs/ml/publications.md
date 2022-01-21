@@ -1,5 +1,5 @@
 ---
-parent: ML
+parent: Machine Learning
 title: Publications
 nav_order: 2
 ---
