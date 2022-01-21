@@ -1,5 +1,5 @@
 ---
-parent: ML
+parent: Machine Learning
 title: Modules
 nav_order: 1
 ---
