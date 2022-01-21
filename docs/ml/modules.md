@@ -1,6 +1,6 @@
 ---
 parent: ML
-title: Scientific Publications
+title: Modules
 has_children: true
 nav_order: 1
 ---

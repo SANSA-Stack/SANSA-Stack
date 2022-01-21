@@ -1,6 +1,6 @@
 ---
-parent: ML
-title: Scientific Publications
+parent: Scientific Publications
+title: DistAD
 nav_order: 3
 ---
 
