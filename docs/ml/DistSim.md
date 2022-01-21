@@ -1,5 +1,5 @@
 ---
-parent: Scientific Publications
+parent: Publications
 title: DistSim
 nav_order: 1
 ---

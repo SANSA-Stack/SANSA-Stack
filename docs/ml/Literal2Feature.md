@@ -1,5 +1,5 @@
 ---
-parent: Scientific Publications
+parent: Publications
 title: Literal2Feature
 nav_order: 4
 ---

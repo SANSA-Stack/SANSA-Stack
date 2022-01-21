@@ -1,6 +1,7 @@
 ---
 parent: ML
-title: Scientific Publications
+title: Publications
 has_children: true
 nav_order: 2
 ---
+# Scientific Publications

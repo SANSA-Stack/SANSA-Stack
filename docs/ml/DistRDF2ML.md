@@ -1,5 +1,5 @@
 ---
-parent: Scientific Publications
+parent: Publications
 title: DistRDF2ML
 nav_order: 2
 ---

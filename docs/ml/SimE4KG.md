@@ -1,5 +1,5 @@
 ---
-parent: Scientific Publications
+parent: Publications
 title: SimE4KG
 nav_order: 5
 ---
