@@ -1,5 +1,5 @@
 ---
-title: ML
+title: Machine Learning
 has_children: true
 nav_order: 4
 ---
