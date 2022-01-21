@@ -4,6 +4,13 @@ title: Publications
 has_children: true
 nav_order: 2
 ---
+# Paper List
+The orginal papers can be found here:
+- [DistSim: Scalable Distributed in-Memory Semantic Similarity Estimation for RDF Knowledge Graphs](https://ieeexplore.ieee.org/abstract/document/9364473)
+- [Literal2Feature: An Automatic Scalable RDF Graph Feature Extractor](https://ebooks.iospress.nl/pdf/doi/10.3233/SSW210036)
+- [DistRDF2ML-Scalable Distributed In-Memory Machine Learning Pipelines for RDF Knowledge Graphs](https://dl.acm.org/doi/abs/10.1145/3459637.3481999)
+- [DistAD - in Progress]()
+- [SimE4KG - in Progress]()
 # Paper Specific Documentation
 For recently published papers, we provide here a fast entry point to the provided modules. All of those modules are as well accessible over the standard documentation
 
