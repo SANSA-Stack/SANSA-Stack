@@ -58,12 +58,12 @@ class ML2Graph {
 
 
     // strings for URIs
-    var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
-    var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
-    var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+    var _elementPropertyURIasString: String = "https://sansa-stack/sansaVocab/element"
+    var _valuePropertyURIasString: String = "https://sansa-stack/sansaVocab/value"
+    var _predictionPropertyURIasString: String = "https://sansa-stack/sansaVocab/prediction"
     var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
-    var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+    var _experimentTypeURIasString: String = "https://sansa-stack/sansaVocab/experiment"
 
     // create experiment node
     val metagraphDatetime: Date = Calendar.getInstance().getTime()
