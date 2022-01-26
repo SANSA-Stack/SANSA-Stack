@@ -38,6 +38,12 @@ To showcase in a hands on session the usage of SimE4KG modules, we introduce mul
 The Notebooks can be found here:
 - [SimE4KG Databricks Notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1243120961280565/8524188481975304/latest.html) for sample pipeline building including outputs
 - [SmartFeatureExtractor Databricks Notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/3559605473631626/8524188481975304/latest.html) for multi modal feature extraction with the novel Smart Feature Extrator
+#### Use Cases
+We developed some sample pipelines implementing use cases which are besed on the downstream pipelines of SimE4KG like:
+- [SimE4KG Recommendation (in progress)](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1154834077816675/8524188481975304/latest.html)
+- [SimE4KG Classification (in progress)](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1154834077816702/8524188481975304/latest.html)
+- [SimE4KG Entity Alignment (in progress)](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/6924783690087984/1154834077816729/8524188481975304/latest.html)
+
 
 ### ReadMe
 The novel modules of SimE4KG are documented within the SANSA ML ReadMe. For quick links especially to the high level SimE4KG Transformer and the SmartFeatureExtractor, you can use these two links:
