@@ -882,17 +882,17 @@ class DaSimEstimator {
     val spark = SparkSession.builder.getOrCreate()
 
     // strings for URIs
-    var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"
-    var _valuePropertyURIasString: String = "sansa-stack/sansaVocab/value"
-    var _commentPropertyURIasString: String = "sansa-stack/sansaVocab/comment"
-    var _predictionPropertyURIasString: String = "sansa-stack/sansaVocab/prediction"
+    var _elementPropertyURIasString: String = "https://sansa-stack/sansaVocab/element"
+    var _valuePropertyURIasString: String = "https://sansa-stack/sansaVocab/value"
+    var _commentPropertyURIasString: String = "https://sansa-stack/sansaVocab/comment"
+    var _predictionPropertyURIasString: String = "https://sansa-stack/sansaVocab/prediction"
     var _experimentTypePropertyURIasString: String = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
-    var _experimentTypeURIasString: String = "sansa-stack/sansaVocab/experiment"
+    var _experimentTypeURIasString: String = "https://sansa-stack/sansaVocab/experiment"
 
-    val hyperparameterNodeP = NodeFactory.createURI("sansa-stack/sansaVocab/hyperparameter")
+    val hyperparameterNodeP = NodeFactory.createURI("https://sansa-stack/sansaVocab/hyperparameter")
     // val typeNode = NodeFactory.createURI(_experimentTypePropertyURIasString)
-    val nodeLabel = NodeFactory.createURI("rdfs/label")
+    val nodeLabel = NodeFactory.createURI("https://rdfs/label")
 
     // create reused nodes
     val typeNodeP = NodeFactory.createURI(_experimentTypePropertyURIasString)
