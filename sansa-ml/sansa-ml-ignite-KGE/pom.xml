@@ -1,0 +1,229 @@
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+	<artifactId>TransE</artifactId>
+	<groupId>org.xhulja</groupId>
+	<version>0.0.1</version>
+	<name>TransE</name>
+	<description>Scala implementation of TransE</description>
+    <inceptionYear>2019</inceptionYear>
+    <repositories>
+        <repository>
+            <id>artima</id>
+            <name>Artima Maven Repository</name>
+            <url>https://repo.artima.com/releases</url>
+        </repository>
+	<repository>
+	      <id>central maven repo</id>
+	      <name>central maven repo https</name>
+	      <url>https://repo.maven.apache.org/maven2</url>
+	    </repository>
+    </repositories>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <spark.version>2.3.4</spark.version>
+        <scala.version>2.11.12</scala.version>
+        <scala.compat.version>2.11.12</scala.compat.version>
+    </properties>
+    <dependencies>
+	<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+	<dependency>
+	    <groupId>org.scala-lang</groupId>
+	    <artifactId>scala-library</artifactId>
+	    <version>2.11.12</version>
+	</dependency>
+	<dependency>
+        <groupId>org.apache.ignite</groupId>
+        <artifactId>ignite-indexing</artifactId>
+        <version>2.8.0</version>
+    </dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.ignite/ignite-core -->
+	<dependency>
+	    <groupId>org.apache.ignite</groupId>
+	    <artifactId>ignite-core</artifactId>
+	    <version>2.8.0</version>
+	</dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.ignite/ignite-scalar -->
+	<dependency>
+	    <groupId>org.apache.ignite</groupId>
+	    <artifactId>ignite-scalar_2.10</artifactId>
+	    <version>2.8.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.ignite/ignite-spring -->
+	<dependency>
+	    <groupId>org.apache.ignite</groupId>
+	    <artifactId>ignite-spring</artifactId>
+	    <version>2.8.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.ignite/ignite-ml -->
+	<dependency>
+	    <groupId>org.apache.ignite</groupId>
+	    <artifactId>ignite-ml</artifactId>
+	    <version>2.8.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.scalanlp/breeze -->
+	<dependency>
+	    <groupId>org.scalanlp</groupId>
+	    <artifactId>breeze_2.11</artifactId>
+	    <version>1.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.apache.ignite/ignite-kubernetes -->
+	<dependency>
+	    <groupId>org.apache.ignite</groupId>
+	    <artifactId>ignite-kubernetes</artifactId>
+	    <version>2.8.0</version>
+	</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.google.cloud.tools/jib-maven-plugin -->
+
+    </dependencies>
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+	<testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+	 <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-assembly-plugin</artifactId>
+		<version>3.2.0</version>
+		<configuration>
+		<descriptorRefs>
+		    <descriptorRef>jar-with-dependencies</descriptorRef>
+		</descriptorRefs>
+		</configuration>
+		<executions>
+		<execution>
+		    <id>assemble-all</id>
+		    <phase>package</phase>
+		    <goals>
+			<goal>single</goal>
+		    </goals>
+		</execution>
+		</executions>
+	</plugin>
+            <plugin>
+                <!-- see https://davidb.github.com/scala-maven-plugin -->
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.3.1</version>
+                    <configuration>
+                        <compilerPlugins>
+                            <compilerPlugin>
+                                <groupId>com.artima.supersafe</groupId>
+                                <artifactId>supersafe_${scala.version}</artifactId>
+                                <version>1.1.10</version>
+                            </compilerPlugin>
+                        </compilerPlugins>
+                    </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <arg>-feature</arg>
+                                <arg>-deprecation</arg>
+                                <arg>-dependencyfile</arg>
+                                <arg>${project.build.directory}/.scala_dependencies</arg>
+                            </args>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+	    
+	    <!-- disable surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.18.1</version>
+                <configuration>
+		    <skipTests>true</skipTests>
+                    <useFile>false</useFile>
+                    <disableXmlReport>true</disableXmlReport>
+                    <includes>
+                        <include>**/*Test.*</include>
+                        <include>**/*Suite.*</include>
+                    </includes>
+                </configuration>
+            </plugin>
+ <!-- jib-maven-plugin -->
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+    		<version>2.1.0</version>
+                 <configuration>
+	          <to><image>transe</image></to>
+		  <from>
+		    <image>gcr.io/distroless/java:debug</image>
+		  </from>
+			 <container>
+				<volumes>
+			      	<volume>/vol/transe-results</volume>
+			    	</volumes>
+			    <mainClass>TransE_C</mainClass>
+ 			    <environment>
+			        <IGNITE_HOME>/ignite</IGNITE_HOME>
+			    </environment>
+			</container>
+		</configuration>
+
+            </plugin>
+
+
+           
+            <!-- Use the shade plugin to remove all the provided artifacts (such as spark itself) from the jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <!-- Remove signed keys to prevent security exceptions on uber jar -->
+                    <!-- See https://stackoverflow.com/a/6743609/7245239 -->
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>net.martinprobson.spark.SparkTest</mainClass>
+                        </transformer>
+                    </transformers>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>javax.servlet:*</exclude>
+                            <exclude>org.apache.hadoop:*</exclude>
+                            <exclude>org.apache.maven.plugins:*</exclude>
+                            <exclude>org.apache.spark:*</exclude>
+                            <exclude>org.apache.avro:*</exclude>
+                            <exclude>org.apache.parquet:*</exclude>
+                        </excludes>
+                    </artifactSet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

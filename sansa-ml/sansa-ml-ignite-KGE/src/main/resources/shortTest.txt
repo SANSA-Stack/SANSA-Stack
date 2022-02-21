@@ -1,0 +1,10 @@
+/m/01qscs	/m/02x8n1n	/award/award_nominee/award_nominations./award/award_nomination/award
+/m/040db	/m/0148d	/base/activism/activist/area_of_activism
+/m/08966	/m/05lf_	/travel/travel_destination/climate./travel/travel_destination_monthly_climate/month
+/m/01hww_	/m/01q99h	/music/performance_role/regular_performances./music/group_membership/group
+/m/0c1pj	/m/019f4v	/award/award_nominee/award_nominations./award/award_nomination/award
+/m/0ddd9	/m/07dnx	/award/award_category/nominees./award/award_nomination/award_nominee
+/m/09v3jyg	/m/0f8l9c	/film/film/release_date_s./film/film_regional_release_date/film_release_region
+/m/02jx1	/m/013t85	/location/location/contains
+/m/02jx1	/m/0m0bj	/location/location/contains
+/m/02bfmn	/m/04ghz4m	/film/actor/film./film/performance/film
