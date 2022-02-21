@@ -315,7 +315,7 @@ AnomalyDetectionDispatcher.main(Array(configFilePath))
 Moreover, DistAD offers options to select between different algorithms, and hyperparameters and prepare a customized pipeline for anomaly detection. The following table shows all the possibilities:
 ![](distad.png)
 
-For more information about DistAD visit [here](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/anomalydetection).
+For more information about DistAD visit [here](http://sansa-stack.github.io/SANSA-Stack/ml/publications.html).
 
 ### Feature Based Semantic Similarity Estimations
 [DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
