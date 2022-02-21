@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
 import net.sansa_stack.hadoop.util.FileSplitUtils;
 import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
+import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -83,7 +84,8 @@ public abstract class RecordReaderRdfTestBase<T> {
         Path testPath = referencePath;
 
         Dataset expectedDataset = createDataset();
-        RDFDataMgr.read(expectedDataset, referencePath.toString());
+        // RDFDataMgr.read(expectedDataset, referencePath.toString());
+        RDFDataMgrEx.readAsGiven(expectedDataset, referencePath.toString());
 
         long fileLengthTotal = Files.size(testPath);
 
