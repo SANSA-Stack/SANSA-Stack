@@ -407,7 +407,7 @@ tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFea
 * Domain Aware Semantic Similarity Estimation
 * KGE
 
-Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
+Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](https://jens-lehmann.org/profile/) if you are interested in contributing algorithms to SANSA-ML.
 
 ## Research and Experimental Projects
 In recent research projects further experimental approaches have been implemented.
