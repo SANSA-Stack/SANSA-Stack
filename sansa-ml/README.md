@@ -362,6 +362,7 @@ tverskyModel.similarityJoin(countVectorizedFeaturesDataFrame, countVectorizedFea
 
 ## Module Roadmap
 * Domain Aware Semantic Similarity Estimation
+* Anomaly Detection
 * KGE
 
 Several further algorithms are in development. Please create a pull request and/or contact [Jens Lehmann](http://jens-lehmann.org) if you are interested in contributing algorithms to SANSA-ML.
