@@ -66,7 +66,7 @@ object DaSimRecommendation {
 
     /** Merge KGs */
     println("Enriched KG")
-    val enrichedKG = dataset.union(metagraph.filter(! _.getPredicate().isLiteral))
+    val enrichedKG = dataset.union(metagraph)
     println("original kg size: " + dataset.collect.size + ", the semantified result has: " + metagraph.collect.size + ", and the merged KG has size of: " + enrichedKG.collect.size)
 
     enrichedKG.foreach(println(_))
