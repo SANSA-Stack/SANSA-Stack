@@ -27,7 +27,7 @@ object DaSim {
   def main(args: Array[String]): Unit = {
 
     val _parameter_distSimFeatureExtractionMethod = "os"
-    val _parameterVerboseProcess = false
+    val _parameterVerboseProcess = true
 
     // readIn
     val input: String = args(0) // http://www.cs.toronto.edu/~oktie/linkedmdb/linkedmdb-18-05-2009-dump.nt
@@ -232,7 +232,7 @@ object DaSim {
     // sfe.transform()
 
     val feDf = sfe
-      .transform(triplesDfCan)
+      .transform(candidatesKG)
     if (_parameterVerboseProcess) feDf.show(false)
 
     if (_parameterVerboseProcess) feDf.printSchema()
