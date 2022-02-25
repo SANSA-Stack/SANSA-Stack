@@ -112,6 +112,13 @@
 			<artifactId>scopt_${scala.binary.version}</artifactId>
 		</dependency>
 
+		<!-- Isolation Forest -->
+		<dependency>
+			<groupId>com.linkedin.isolation-forest</groupId>
+			<artifactId>isolation-forest_3.0.0_2.12</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
