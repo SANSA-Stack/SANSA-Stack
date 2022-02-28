@@ -1,63 +1,85 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import collection.JavaConverters._
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.Set
 import net.sansa_stack.ml.spark.classification.decisionTrees.ConceptsGenerator._
-// import net.sansa_stack.ml.spark.classification.decisionTrees.KB
 import net.sansa_stack.ml.spark.classification.decisionTrees.DistTDTInducer.DistTDTInducer
+import net.sansa_stack.ml.spark.classification.decisionTrees.PerformanceMetrics.MetricsComputation
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model.OWLClassExpression
 import org.semanticweb.owlapi.model.OWLIndividual
-import scala.util.Random
 
 object ClassMembership {
-
+  
   /**
-    * Implementing class-membership
-    */
+   *  Implementing class-membership
+   *
+   *  @param k Knowledgebase
+   *  @param sc Spark Session
+   */
 
   class ClassMembership (k: KB, sc: SparkSession) {
 
-    val kb: KB = k
-    val allExamples: RDD[OWLIndividual] = kb.getIndividuals
-    val cg: ConceptsGenerator = new ConceptsGenerator(kb)
-    val testConcepts: Array[OWLClassExpression] = cg.generateQueryConcepts(1, sc)
-    val negTestConcepts: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](testConcepts.length)
-
-    var c: Int = 0
-    for (c <- testConcepts.indices)
-      negTestConcepts(c) = kb.getDataFactory.getOWLObjectComplementOf(testConcepts(c))
-
-    // Classification w.r.t. all query concepts
-    val classification: RDD[((OWLClassExpression, OWLIndividual), Int)] =
-                  kb.KB.getClassMembershipResult(testConcepts, negTestConcepts, allExamples)
+   /**
+     *  Bootstrap function divides the individuals into training and testing ones
+     *  then apply training and testing phases
+     *
+     *  @param noFolds number of folds
+     *  @param spark Spark Session
+     */
 
     def bootstrap(noFolds: Int, spark: SparkSession): Unit = {
+  
+      var seed = 2
+      val kb: KB = k
+      val allExamples: RDD[OWLIndividual] = kb.getIndividuals
+      val cg: ConceptsGenerator = new ConceptsGenerator(kb)
+      val testConcepts: Array[OWLClassExpression] = cg.generateQueryConcepts(1, sc)
+      val negTestConcepts: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](testConcepts.length)
+  
+      for (c <- testConcepts.indices)
+        negTestConcepts(c) = kb.getDataFactory.getOWLObjectComplementOf(testConcepts(c))
+  
+      // Classification w.r.t. all query concepts
+      val classification = kb.KB.getClassMembershipResult(testConcepts, negTestConcepts, allExamples)
+        
+      println("******************************************************* ")
+      println("    BOOTSTRAP Experiment of " + noFolds + "-folds")
+      println("******************************************************* ")
       
-      println("\nBOOTSTRAP Experiment of " + noFolds + "folds")
+      val noConcepts: Int =
+        if (testConcepts != null) testConcepts.length
+        else 1
       
-      for (f <- 0 until noFolds) {
-        println("\nFold #" + (f + 1))
-        println(" *********************************")
-        val split: Array[RDD[OWLIndividual]] = allExamples.randomSplit(Array(0.7, 0.3), 1L)
+      val performanceMetrics = new MetricsComputation(noConcepts, noFolds)
+      
+      for (f <- 1 to noFolds) {
+        
+        println("\n**************** Fold #" + f + "  ****************")
+   
+        val split: Array[RDD[OWLIndividual]] = allExamples.randomSplit(Array(0.7, 0.3), seed)
         val trainData: RDD[OWLIndividual] = split(0)
         val testData: RDD[OWLIndividual] = split(1)
-  
+        
         val cl : DistTDTInducer = new DistTDTInducer(kb, kb.concepts.count().toInt, spark)
   
         // training phase: using all examples but those in the f-th partition
         println("Training is starting...")
         
         val result = kb.getClassMembershipResults
+        
         cl.training(result, trainData, testConcepts, negTestConcepts)
-    
+        
+        val testing = cl.test(f, testData, testConcepts)
+        
+        seed += 1
+ 
+        performanceMetrics.computeMetricsPerFold(f, testing, classification, testData)
       } // fold Loop
-    }
-
-    
+      
+      performanceMetrics.computeOverAllResults(noConcepts)
+    } // bootstrap
+  } // class
+}
     
     //    def bootstrap(nFolds: Int, spark: SparkSession): Unit = {
 //
@@ -128,6 +150,3 @@ object ClassMembership {
 //      }// for loop
 //
 //    }  // bootstrap function
-
-  } // class
-}
