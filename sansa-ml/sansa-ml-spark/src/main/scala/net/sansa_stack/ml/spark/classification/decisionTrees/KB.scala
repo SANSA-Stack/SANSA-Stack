@@ -1,28 +1,18 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import collection.JavaConverters._
 import java.io.File
-// import java.io.Serializable
 import java.util.Random
 import java.util.stream.Collectors
+
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.json4s.JsonDSL.int2jvalue
-import org.semanticweb.HermiT.Configuration
-import org.semanticweb.HermiT.Reasoner
+import org.semanticweb.HermiT.{Configuration, Reasoner}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
-import org.semanticweb.owlapi.reasoner.OWLReasoner
-import org.semanticweb.owlapi.reasoner.OWLReasonerFactory
-import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory
 import org.semanticweb.owlapi.util.SimpleIRIMapper
-
 import scala.collection.JavaConverters._
-import scala.compat.java8.StreamConverters._
 
-import net.sansa_stack.ml.spark.classification.decisionTrees._
-/*
+/**
 * The class to define the Knowledgebase elements
 */
 
@@ -30,10 +20,9 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
   
   val d: Double = 0.3
   var generator: Random = new Random(2)
+  val parallelism: Int = 30     // Degree of parallelism
   
   var ontology: OWLOntology = initKB()
-//  @transient var reasoner: OWLReasoner = _
-//  @transient var hermit: Reasoner = _
   var manager: OWLOntologyManager = _
   var concepts: RDD[OWLClass] = _
   var dataFactory: OWLDataFactory = _
@@ -44,7 +33,6 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
   var dataPropertiesValue: RDD[RDD[OWLLiteral]] = _
   var dataProperties: RDD[OWLDataProperty] = _
   var domain: RDD[OWLIndividual] = _
-  //  var classifications: Array[Array[Int]] = _
   var classifications: RDD[((OWLClassExpression, OWLIndividual), Int)] = _
   var choiceDataP: Random = new Random(1)
   var choiceObjectP: Random = new Random(1)
@@ -82,53 +70,37 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
     concepts = rdd.flatMap {
       case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
       case _ => null
-    }.filter(_ != null).distinct()
+    }.filter(_ != null).distinct(parallelism)
     
-    //      println("\n\nConcepts\n-------\n")
-    //      concepts.take(20).foreach(println(_))
+//   println("\n\nConcepts\n-------\n")
+//   concepts.foreach(println(_))
     
-    //     val nConcepts : Int = concepts.count.toInt
-    //      println("\nNumber of concepts: " + nConcepts)
+//     val nConcepts: Int = concepts.count.toInt
+//     println("\nNumber of concepts: " + nConcepts)
     
     // --------- Object Properties Extraction -----------------
     
-    objectProperties = rdd.map {
-      case axiom: HasProperty[OWLObjectProperty] => axiom.getProperty
+    objectProperties = rdd.flatMap {
+      case axiom: HasObjectPropertiesInSignature => axiom.getObjectPropertiesInSignature.iterator().asScala
       case _ => null
-    }.filter(_ != null).distinct()
+    }.filter(_ != null).distinct(parallelism)
     
-    //      println("\nObject Properties\n----------")
-    //      objectProperties.take(10).foreach(println(_))
-    
-    //     val nObjProperties : Int = objectProperties.count.toInt
-    //      println("\nNumber of object properties: " + nObjProperties)
-    
+   
     // -------- Data Properties Extraction --------
     
     dataProperties = rdd.flatMap {
       case axiom: HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
       case _ => null
-    }.filter(_ != null).distinct()
+    }.filter(_ != null).distinct(parallelism)
     
-    //      println("\nData Properties\n----------")
-    //      dataProperties.take(10).foreach(println(_))
-    
-    //     val nDataProperties : Int = dataProperties.count.toInt
-    //    println("\nNumber of data properties: " + nDataProperties)
-    
+ 
     // --------- Individual Extraction ------------
     
     Examples = rdd.flatMap {
       case axiom: HasIndividualsInSignature => axiom.individualsInSignature().collect(Collectors.toSet()).asScala
       case _ => null
-    }.filter(null != _).distinct()
+    }.filter(null != _).distinct(parallelism)
       .asInstanceOf[RDD[OWLIndividual]]
-    
-    //      println("\nIndividuals\n-----------")
-    //      Examples.take(50).foreach(println(_))
-    
-    //      val nEx : Int = Examples.count.toInt
-    //      println("\nNumber of Individuals: " + nEx)
     
     println("\nKB loaded. \n")
     ontology
@@ -151,16 +123,15 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
   def getReasoner: Reasoner = {
     // Reasoner configuration
     val con: Configuration = new Configuration()
-    @transient val reasonerFactory: OWLReasonerFactory = new StructuralReasonerFactory()
+    val hermit = new Reasoner(con, ontology) with Serializable
   
+    hermit
+
+    //    @transient val reasonerFactory: OWLReasonerFactory = new StructuralReasonerFactory()
     //  var reasoner: OWLReasoner = _
     //  @transient var hermit: Reasoner = _
-    val reasoner = reasonerFactory.createReasoner(ontology)
-  
-    val hermit = new Reasoner(con, ontology) with Serializable
-    
-    hermit
-  }
+    //    val reasoner = reasonerFactory.createReasoner(ontology)
+   }
   
   def getClassMembershipResults: RDD[((OWLClassExpression, OWLIndividual), Int)] = classifications
   
@@ -168,17 +139,16 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
   
   object KB extends Serializable {
   
-  
-    def getClassMembershipResult(testConcepts: Array[OWLClassExpression], negTestConcepts: Array[OWLClassExpression],
+    def getClassMembershipResult(testConcepts: Array[OWLClassExpression],
+                                 negTestConcepts: Array[OWLClassExpression],
                                  examples: RDD[OWLIndividual]): RDD[((OWLClassExpression, OWLIndividual), Int)] = {
-      
-      println("\nClassifying all individuals \n ------------ ")
-      
-      println("Processed concepts (" + testConcepts.length + "): \n")
-      
+  
       val flag: Boolean = false
       
-      for (c <- 0 until testConcepts.length) {
+      println("Classifying all individuals \n ------------ ")
+      println("Processed concepts (" + testConcepts.length + "): \n")
+      
+      for (c <- testConcepts.indices) {
         
         classifications = examples.map(e => ((testConcepts(c), e), 0))
         
@@ -201,14 +171,12 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
               }
             }
           }
+        }
   
-        }
-        val elements = classifications.map(c => (c._2, 1)).reduceByKey(_ + _)
-        elements.foreach(println(_))
+//        val elements = classifications.map(c => (c._2, 1)).reduceByKey(_ + _)
+//        elements.foreach(println(_))
       
         }
-      classifications.cache() // The classifications rdd will be used frequently
-      
       classifications
     }
   }
