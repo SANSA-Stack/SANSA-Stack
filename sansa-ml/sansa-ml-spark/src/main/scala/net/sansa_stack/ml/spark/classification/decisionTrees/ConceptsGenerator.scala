@@ -1,13 +1,12 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import java.util.HashSet
+import java.util
 
-import net.sansa_stack.ml.spark.classification.decisionTrees.KB
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.semanticweb.HermiT.Reasoner
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.reasoner.OWLReasoner
+
 
 object ConceptsGenerator{
 
@@ -16,10 +15,18 @@ object ConceptsGenerator{
     protected var reasoner: OWLReasoner = kb.getReasoner
     protected var dataFactory: OWLDataFactory = kb.getDataFactory
     protected var allExamples: RDD[OWLIndividual] = kb.getIndividuals
-
+    
+    /**
+     *  A function to generate the query concepts
+     *
+     *  @param numConceptsToGenerate The number of concepts to be generated
+     *  @param sc Spark Session
+     *  @return Array of the generated query concepts
+     */
+   
     def generateQueryConcepts(numConceptsToGenerate: Int, sc: SparkSession): Array[OWLClassExpression] = {
 
-      println("\nGenerate Query Concepts\n-----------\n")
+      println("Generate Query Concepts\n-----------")
       val queryConcept: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](numConceptsToGenerate)
 
       val minOfSubConcepts: Int = 2
@@ -50,7 +57,7 @@ object ConceptsGenerator{
           j = 1
           while (j < numOfSubConcepts) {
 
-            val newConcepts: HashSet[OWLClassExpression] = new HashSet[OWLClassExpression]()
+            val newConcepts = new util.HashSet[OWLClassExpression]()
 
             newConcepts.add(partialConcept)
 
@@ -71,9 +78,9 @@ object ConceptsGenerator{
           numNegInst = reasoner.getInstances(complementPartialConcept, false).getFlattened.size()
 
           println(partialConcept)
-          print("\npos: " + numPosInst)
+          print("  pos: " + numPosInst)
           print("  neg: " + numNegInst)
-          print("  und: " + (nEx - numNegInst - numPosInst))
+          print("  und: " + (nEx - numNegInst - numPosInst) + "\n")
           println()
 
           //     partialConcept = kb.getRandomConcept
