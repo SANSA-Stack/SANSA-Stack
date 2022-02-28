@@ -73,8 +73,8 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.3.0-SNAPSHOT</jena.version>
-        <jsa.version>4.3.0-1-SNAPSHOT</jsa.version>
+        <jena.version>4.3.2</jena.version>
+        <jsa.version>4.3.2-1-SNAPSHOT</jsa.version>
         <r2rml-jena-api.version>0.9.1-SNAPSHOT</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
@@ -110,6 +110,8 @@
         <hadoop.deps.scope>compile</hadoop.deps.scope>
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <modules>
@@ -372,11 +374,11 @@
                 <version>${jsa.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.aksw.jenax</groupId>
-                <artifactId>jenax-analytics-core</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.aksw.jenax</groupId>-->
+<!--                <artifactId>jenax-analytics-core</artifactId>-->
+<!--                <version>${jsa.version}</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
@@ -1993,6 +1995,7 @@
                         <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
                         <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
                         <!-- we use a central config located in the root directory -->
+                        <!--suppress UnresolvedMavenProperty-->
                         <configLocation>${scalastyle.config.path}</configLocation>
                         <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
                         <outputEncoding>UTF-8</outputEncoding>
