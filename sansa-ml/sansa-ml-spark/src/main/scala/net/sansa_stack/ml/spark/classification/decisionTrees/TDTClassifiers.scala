@@ -1,22 +1,23 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import collection.JavaConverters._
-import java.util.ArrayList
-import java.util.HashSet
-import net.sansa_stack.ml.spark.classification.decisionTrees.KB
+
+import java.util._
+
+import net.sansa_stack.ml.spark.classification.decisionTrees.DLTree.DLTree
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.model._
-import scala.util.control.Breaks._
 
 
-/*
- * Terminological Decision Tree Classifier
- */
+  /**
+   * Terminological Decision Tree Classifier
+   */
 
 object TDTClassifiers {
 
-  /* L for the left branch and R for the right branch
+  /**
+   * L for the left branch and R for the right branch
    * P, N, U for positive, negative and unlabeled respectively
    */
 
@@ -27,12 +28,11 @@ object TDTClassifiers {
   val NR: Int = 4
   val UR: Int = 5
 
-  class TDTClassifiers(var k: KB, var sc: SparkSession) {
+  class TDTClassifiers(var k: KB, var sc: SparkSession) extends Serializable {
 
     /**
       * TDT induction algorithm implementation
       *
-//      * @param know Learning knowledge
       * @param father father concept
       * @param posExs positive examples
       * @param negExs negative examples
@@ -40,12 +40,16 @@ object TDTClassifiers {
       * @param nRefs number of candidate references
       * @param prPos prior majority positive examples
       * @param prNeg prior majority negative examples
-      * @return
+      * @return Learning Tree
       */
 
     def induceDLTree(father: OWLClassExpression,
-                     posExs: RDD[OWLIndividual], negExs: RDD[OWLIndividual], undExs: RDD[OWLIndividual],
-                     nRefs: Int, prPos: Double, prNeg: Double): DLTree = {
+                     posExs: RDD[OWLIndividual],
+                     negExs: RDD[OWLIndividual],
+                     undExs: RDD[OWLIndividual],
+                     nRefs: Int,
+                     prPos: Double,
+                     prNeg: Double): DLTree = {
 
       val THRESHOLD: Double = 0.05
       val tree: DLTree = new DLTree()
@@ -53,11 +57,11 @@ object TDTClassifiers {
       if (posExs.count == 0 && negExs.count == 0) // There is no examples
         if (prPos >= prNeg) { // prior majority of positives
           tree.setRoot(k.getDataFactory.getOWLThing) // set positive leaf
-          println("-----\nPositive leaf (prior1)")
+          println("\nPositive leaf (prior1)")
           return tree
         } else { // prior majority of negatives
           tree.setRoot(k.getDataFactory.getOWLNothing) // set negative leaf
-          println("-----\nNegative leaf (prior1)")
+          println("\nNegative leaf (prior1)")
           return tree
         }
 
@@ -76,24 +80,24 @@ object TDTClassifiers {
       else {
         return tree
       }
-      println("\nnew per Pos: " + f"$perPos%1.2f")
+      println("new per Pos: " + f"$perPos%1.2f")
       println("new per Neg: " + f"$perNeg%1.2f")
 
       if (perNeg == 0 && perPos > THRESHOLD) { // no negative
         tree.setRoot(k.getDataFactory.getOWLThing) // set positive leaf
-        println("-----\nPositive leaf (prior2)")
+        println("\nPositive leaf (prior2)")
         return tree
       }
       else if (perPos == 0 && perNeg > THRESHOLD) { // no positive
         tree.setRoot(k.getDataFactory.getOWLNothing) // set negative leaf
-        println("-----\nNegative leaf (prior2)\n")
+        println("\nNegative leaf (prior2)\n")
         return tree
       }
 
       // else (a non-leaf node)
       // generate set of concepts
       val Con: RDD[OWLClassExpression] = generateRefs(k, father, nRefs, posExs, negExs)
-      Con.take(50).foreach(println(_))
+//      Con.take(50).foreach(println(_))
 
       // select best partitioning node concept
       val bestConcept: OWLClassExpression = selectBestConcept(k, Con, posExs, negExs, undExs, prPos, prNeg)
@@ -108,14 +112,15 @@ object TDTClassifiers {
         // sNode._1._1 = PosEL, sNode._2._1 = NegEL, sNode._3._1 =  undEL
         // sNode._1._2 = PosER, sNode._2._2 = NegER, sNode._3._2 =  undER
 
-
         // build subtrees
 
-        println("\nStart Positive tree \n----------")
-        tree.setPosTree(induceDLTree(bestConcept, sNode._1._1, sNode._2._1, sNode._3._1, nRefs, prPos, prNeg))
+        println("Start Positive tree \n----------")
+        tree.setPosTree(induceDLTree(bestConcept, sNode._1._1, sNode._2._1,
+                                     sNode._3._1, nRefs, prPos, prNeg))
 
-        println("\nStart Negative tree \n----------")
-        tree.setNegTree(induceDLTree(bestConcept.getComplementNNF, sNode._1._2, sNode._2._2, sNode._3._2, nRefs, prPos, prNeg))
+        println("Start Negative tree \n----------")
+        tree.setNegTree(induceDLTree(bestConcept.getComplementNNF, sNode._1._2,
+                                     sNode._2._2, sNode._3._2, nRefs, prPos, prNeg))
 
         tree
       }
@@ -132,42 +137,47 @@ object TDTClassifiers {
       */
     def classify(ind: OWLIndividual, tree: DLTree): Int = {
 
-      val rootClass: OWLClassExpression = tree.getRoot()
-      println("\nrootClass " + rootClass)
-
+      val rootClass: OWLClassExpression = tree.getRoot
       val negRootClass: OWLClassExpression = k.getDataFactory.getOWLObjectComplementOf(rootClass)
-      println("negRootClass " + negRootClass)
 
-      if (rootClass.equals(k.getDataFactory.getOWLThing)) return +1
+      if (rootClass.equals(k.getDataFactory.getOWLThing)) return 1
       if (rootClass.equals(k.getDataFactory.getOWLNothing)) return -1
 
       var r1: Int = 0
       var r2: Int = 0
+      var result: Int = 0
 
       if (k.getReasoner.isEntailed(k.getDataFactory.getOWLClassAssertionAxiom(rootClass, ind))) {
-        r1 = classify(ind, tree.getPosSubTree())
+        r1 = classify(ind, tree.getPosSubTree)
       }
       else if (k.getReasoner.isEntailed(k.getDataFactory.getOWLClassAssertionAxiom(negRootClass, ind))) {
-        r2 = classify(ind, tree.getNegSubTree())
+        r2 = classify(ind, tree.getNegSubTree)
+      }
+      else {
+        r1 = 0
+        r2 = 0
       }
 
-      var cP: Int = 0
-      var cn: Int = 0
+//      var cP: Int = 0
+//      var cn: Int = 0
 
-      if (r1 + r2 == 0) {
-        val missingVForTDT = false
+      if ((r1 + r2) == 0) { result = 0
+//        val missingVForTDT = false
 
-        if (missingVForTDT) {
-          cP += classify(ind, tree.getPosSubTree())
-          cn -= classify(ind, tree.getNegSubTree())
-
-          if (cP > (-1 * cn)) +1
-          else if (cP < (-1 * cn)) -1
-          else 0
-        } else 0
-      } else if (r1 * r2 == 1) r1
-      else if (r1 != 0) r1
-      else r2
+//        if (missingVForTDT) {
+//          cP += classify(ind, tree.getPosSubTree)
+//          cn -= classify(ind, tree.getNegSubTree)
+//
+//          if (cP > (-1 * cn)) +1
+//          else if (cP < (-1 * cn)) -1
+//          else 0
+//        } else 0
+      } else if (r1 * r2 == 1) result = r1
+      else {
+        if (r1 != 0) result = r1
+        else result = r2
+      }
+      result
     }
 
 
@@ -185,7 +195,7 @@ object TDTClassifiers {
                              posExs: RDD[OWLIndividual],
                              negExs: RDD[OWLIndividual]): RDD[OWLClassExpression] = {
 
-      println("\nGenerating node concepts: \n ")
+      print("\nGenerating node concepts: ")
       val rConcepts: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](dim)
       var newConcept: OWLClassExpression = null
       var refinement: OWLClassExpression = null
@@ -199,12 +209,12 @@ object TDTClassifiers {
       for (c <- 0 until dim) {
 
         do {
-          emptyIntersection = false // true
-          val Concepts: HashSet[OWLClassExpression] = new HashSet[OWLClassExpression]()
+          
+          
+          val Concepts = new HashSet[OWLClassExpression]()
 
           if (concept.equals(know.getDataFactory.getOWLThing)) {
             refinement = new RefinementOperator(know).getRandomConcept(know)
-       //     println("\nrefinement " + c + " is " + refinement)
           }
           else {
             refinement = new RefinementOperator(know).getSubsumedRandomConcept(concept)
@@ -217,6 +227,24 @@ object TDTClassifiers {
           }
           else emptyIntersection = false
 
+          if (newConcept != null) {
+            emptyIntersection = !know.getReasoner.isSatisfiable(newConcept)
+          } else emptyIntersection = false
+  
+        } while (emptyIntersection)
+  
+        rConcepts(c) =
+          if (newConcept != null) newConcept
+          else concept
+        
+        print(" " + c)
+  
+      }
+      val Refs: RDD[OWLClassExpression] = sc.sparkContext.parallelize(rConcepts)
+//      val nRef = Refs.distinct().count
+//      println("\nNo. of generated concepts: " + nRef)
+      Refs.distinct()
+    }
 
 
           /* val con: OWLEquivalentClassesAxiom = know.dataFactory.getOWLEquivalentClassesAxiom(concept)
@@ -261,23 +289,7 @@ object TDTClassifiers {
 //            }
 //          }
       //    println("\n*****new concept " + newConcept)
-          if (newConcept != null) {
-                 emptyIntersection = !know.getReasoner.isSatisfiable(newConcept)
-          }
-          else emptyIntersection = false
-
-        } while (emptyIntersection )
-
-        rConcepts(c) =
-          if (newConcept != null) newConcept
-          else concept
-
-      }
-      val Refs: RDD[OWLClassExpression] = sc.sparkContext.parallelize(rConcepts)
-      val nRef = Refs.distinct().count
-      println("\nNo. of generated concepts: " + nRef)
-      Refs.distinct()
-    }
+      
 
     // val iterator: Iterator[OWLIndividual] = know.getReasoner().getInstances(newConcept, false).entities().iterator().asInstanceOf[Iterator[OWLIndividual]]
     // val nextInd : OWLIndividual = iterator.next()
@@ -303,36 +315,33 @@ object TDTClassifiers {
 
       var bestConceptIndex: Int = 0
 
-      println("\nThe First concept is: " + concepts.first())
       var counts: Array[Int] = getSplitCounts(know, concepts.first(), posExs, negExs, undExs)
-
-      println("\nPL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
-        ",\tNR:" + counts(4) + ",\tUR:" + counts(5))
 
       // var bestGain: Double = gain(counts,  prPos, prNeg)
       var bestGain: Double = gain(counts)
-      println("\nCurrent gain: " + bestGain)
 
-      for (c <- 1 until concepts.count.toInt) {
+      println("\n#0" + " \tPL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
+        ",\tNR:" + counts(4) + ",\tUR:" + counts(5) + ",\t gain: " + f"$bestGain%8.3f")
 
-        var nConcept = concepts.take(concepts.count.toInt).apply(c)
-        println("\nConcept " + (c + 1) + " is: " + nConcept)
+      val noOfConcepts = concepts.count.toInt
+      for (c <- 1 until noOfConcepts) {
 
+        val nConcept = concepts.take(noOfConcepts).apply(c)
         counts = getSplitCounts(know, nConcept, posExs, negExs, undExs)
-        println("\nPL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
-          ",\tNR:" + counts(4) + ",\tUR:" + counts(5))
-
-        // var thisGain: Double = gain(counts, prPos, prNeg)
-        var thisGain: Double = gain(counts)
-        println("\nCurrent gain: " + thisGain)
+  
+        // val thisGain: Double = gain(counts, prPos, prNeg)
+        val thisGain: Double = gain(counts)
 
         if (thisGain > bestGain) {
           bestConceptIndex = c
           bestGain = thisGain
         }
+  
+        println("#" + c + "  \tPL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
+          ",\tNR:" + counts(4) + ",\tUR:" + counts(5) + ",\t gain: " + f"$thisGain%8.3f")
       }
 
-      val nCpt = concepts.take(concepts.count.toInt).apply(bestConceptIndex)
+      val nCpt = concepts.take(noOfConcepts).apply(bestConceptIndex)
 
       if (bestGain == 0.0)  {
         null
@@ -353,21 +362,21 @@ object TDTClassifiers {
         //      nCpt
       }
       else {
-        println("\n --------\nBest gain: " + bestGain + " \t Split index: " + bestConceptIndex)
-        println("\nPL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
+        println("\n --------\nBest gain: " + f"$bestGain%8.3f " + " \t Split index: " + bestConceptIndex
+        + ", \t PL:" +counts(0) +",\t NL:" + counts(1) + ",\t UL:" + counts(2) + ",\tPR:" + counts(3) +
           ",\tNR:" + counts(4) + ",\tUR:" + counts(5))
 
-        println("\n Best concept is: " + nCpt)
+        println("\nBest concept is: " + nCpt)
         nCpt
       }
     }
 
     /**
-      * @param counts
+      * @param counts, array containg the number of +ve, -ve and undcertain examples for each branch
       * @return The calculated Gain
       */
 
-    /*
+    /**
      * Function to calculate the gain
      */
 
@@ -391,51 +400,6 @@ object TDTClassifiers {
       gain
 
     }
-//
-//
-//    /**
-//      * @param counts
-//      * @param prPos
-//      * @param prNeg
-//      * @return The calculated Gain
-//      */
-
-    /*
-     * Function to calculate the gain based on gini index
-     */
-
-    /* def gain(counts: Array[Int], prPos: Double, prNeg: Double): Double = {
-
-      val Trsize: Double = counts(0) + counts(1)
-      val Flsize: Double = counts(3) + counts(4)
-      val Usize: Double = counts(2) + counts(5)// + counts(6) + counts(7)
-
-      val size: Double =  Trsize + Flsize + Usize
-
-      val startImpurity : Double = 	gini(counts(0) + counts(3), counts(1) + counts(4), prPos, prNeg)
-
-      val TrImpurity = gini(counts(0), counts(1), prPos, prNeg)
-      val FlImpurity = gini(counts(3), counts(4), prPos, prNeg)
-      val UImpurity = gini(counts(2) , counts(5), prPos, prNeg) //counts(2)+ counts(6),  counts(5) + counts(7)
-
-      val Gainval = startImpurity - (Trsize/size)*TrImpurity - (Flsize/size)*FlImpurity - -(Usize/size)*UImpurity
-
-      Gainval
-    }
-
-    def gini(nPos: Double, nNeg: Double, prPos: Double, prNeg: Double): Double = {
-
-      val estimatProp : Int = 3
-      val total: Double = nPos + nNeg
-
-      val p1 : Double = (nPos*estimatProp*prPos)/(total+estimatProp)
-      val p2: Double = (nNeg*estimatProp*prNeg)/(total+estimatProp)
-
-      val ginival = 1.0-p1*p1-p2*p2
-      ginival
-    } */
-
-
 
     /**
       * @param know knowledgebase
@@ -467,7 +431,7 @@ object TDTClassifiers {
 
       counts
     }
-
+  
     /**
       * @param know knowledgebase
       * @param concept Concept
@@ -476,73 +440,30 @@ object TDTClassifiers {
     private def splitGroup(know: KB,
                            concept: OWLClassExpression,
                            nodeExamples: RDD[OWLIndividual]): (RDD[OWLIndividual], RDD[OWLIndividual]) = {
-
-      /* println("\nNode examples: \n ----------")
-      nodeExamples.take(nodeExamples.count.toInt).foreach(println(_)) */
-
+  
+      nodeExamples.persist(StorageLevel.MEMORY_AND_DISK)
       val negConcept: OWLClassExpression = know.getDataFactory.getOWLObjectComplementOf(concept)
-
-      var Left = new ArrayList[OWLIndividual]()
-      var Right = new ArrayList[OWLIndividual]()
-
-      for (e <- 0 until nodeExamples.count.toInt) {
-
-        val nodeEx = nodeExamples.take(e + 1).apply(e).asInstanceOf[OWLNamedIndividual]
-        val nodeInd = know.getDataFactory.getOWLNamedIndividual(nodeEx)
-
-        if (know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, nodeInd))) {
-          Left.add(nodeEx)
-
-        } else if (know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(negConcept, nodeInd))) {
-          Right.add(nodeEx)
-
-        } else {
-          Left.add(nodeEx)
-          Right.add(nodeEx)
-        }
+  
+      val leftRDD = nodeExamples.filter { indv =>
+        val nodeInd = know.getDataFactory.getOWLNamedIndividual(indv.asOWLNamedIndividual())
+        know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, nodeInd))
       }
-
-      val leftRDD = sc.sparkContext.parallelize(Left.asScala)
-      val rightRDD = sc.sparkContext.parallelize(Right.asScala)
-
-      /* println("\nleft ex: ")
-      leftRDD.take(20).foreach(println(_))
-
-      println("\nright ex: ")
-      rightRDD.take(20).foreach(println(_)) */
-
+  
+      val rightRDD = nodeExamples.filter { indv =>
+        val nodeInd = know.getDataFactory.getOWLNamedIndividual(indv.asOWLNamedIndividual())
+        know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(negConcept, nodeInd))
+      }
+  
+      nodeExamples.unpersist()
       (leftRDD, rightRDD)
-
-
-      // val propName: RDD[String] = know.getIndividuals().map( ind => ind.asOWLNamedIndividual().getIRI.getShortForm)
-      //  println("\n nodeEx = " + nodeEx )
-      // val Filtered = know.getIndividuals().filter(_ == nodeInd)
-      // println("\n filtered = " )
-      // Filtered.take(10).foreach(println(_))
-      // val exIndex = ex.lookup(e)
-      // println("the element: ")
-      // exInd.take(1).foreach(println(_))
-      // val ind  = know.getDataFactory().getOWLNamedIndividual(IRI.create(nodeEx)).asInstanceOf[OWLIndividual]
-      // println("newexample  " + ind )
-
-      // val x = know.getIndividuals().take(nodeExamples.count.toInt).apply(e)
-      // val x = know.getIndividuals().filter( _ == neew).first()
-
-      // x.take(20).foreach(println(_))
-
-      // val r =know.getReasoner().isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, ind))
-      // println("\n r = " + r)
-
-      // val l =know.getReasoner().isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(negConcept, ind))
-      // println("\n l = " + l)
     }
 
     /**
-      * @param know
-      * @param concept
-      * @param posExs
-      * @param negExs
-      * @param undExs
+      * @param know   , knowledge base
+      * @param concept, the splitting concept
+      * @param posExs , rdd of positive examples
+      * @param negExs , rdd of negative examples
+      * @param undExs , rdd of uncertain examples
       */
 
     private def split(know: KB,
@@ -558,8 +479,7 @@ object TDTClassifiers {
     }
 
   } // class
-
-
+} // object
 
 
 //
@@ -666,4 +586,95 @@ object TDTClassifiers {
      EntropyValue
    } */
 
-} // object
+//
+//
+//    /**
+//      * @param counts
+//      * @param prPos
+//      * @param prNeg
+//      * @return The calculated Gain
+//      */
+
+/*
+ * Function to calculate the gain based on gini index
+ */
+
+/* def gain(counts: Array[Int], prPos: Double, prNeg: Double): Double = {
+
+  val Trsize: Double = counts(0) + counts(1)
+  val Flsize: Double = counts(3) + counts(4)
+  val Usize: Double = counts(2) + counts(5)// + counts(6) + counts(7)
+
+  val size: Double =  Trsize + Flsize + Usize
+
+  val startImpurity : Double = 	gini(counts(0) + counts(3), counts(1) + counts(4), prPos, prNeg)
+
+  val TrImpurity = gini(counts(0), counts(1), prPos, prNeg)
+  val FlImpurity = gini(counts(3), counts(4), prPos, prNeg)
+  val UImpurity = gini(counts(2) , counts(5), prPos, prNeg) //counts(2)+ counts(6),  counts(5) + counts(7)
+
+  val Gainval = startImpurity - (Trsize/size)*TrImpurity - (Flsize/size)*FlImpurity - -(Usize/size)*UImpurity
+
+  Gainval
+}
+
+def gini(nPos: Double, nNeg: Double, prPos: Double, prNeg: Double): Double = {
+
+  val estimatProp : Int = 3
+  val total: Double = nPos + nNeg
+
+  val p1 : Double = (nPos*estimatProp*prPos)/(total+estimatProp)
+  val p2: Double = (nNeg*estimatProp*prNeg)/(total+estimatProp)
+
+  val ginival = 1.0-p1*p1-p2*p2
+  ginival
+} */
+
+//
+//      for (e <- 0 until nodeExamples.count.toInt) {
+//
+//        val nodeEx = nodeExamples.take(e + 1).apply(e).asInstanceOf[OWLNamedIndividual]
+//        val nodeInd = know.getDataFactory.getOWLNamedIndividual(nodeEx)
+//
+//        if (know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, nodeInd))) {
+//          Left.add(nodeEx)
+//
+//        } else if (know.getReasoner.isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(negConcept, nodeInd))) {
+//          Right.add(nodeEx)
+//
+//        } else {
+//          Left.add(nodeEx)
+//          Right.add(nodeEx)
+//        }
+//      }
+
+//      val leftRDD = sc.sparkContext.parallelize(Left.asScala)
+//      val rightRDD = sc.sparkContext.parallelize(Right.asScala)
+
+/* println("\nleft ex: ")
+leftRDD.take(20).foreach(println(_))
+
+println("\nright ex: ")
+rightRDD.take(20).foreach(println(_)) */
+
+// val propName: RDD[String] = know.getIndividuals().map( ind => ind.asOWLNamedIndividual().getIRI.getShortForm)
+//  println("\n nodeEx = " + nodeEx )
+// val Filtered = know.getIndividuals().filter(_ == nodeInd)
+// println("\n filtered = " )
+// Filtered.take(10).foreach(println(_))
+// val exIndex = ex.lookup(e)
+// println("the element: ")
+// exInd.take(1).foreach(println(_))
+// val ind  = know.getDataFactory().getOWLNamedIndividual(IRI.create(nodeEx)).asInstanceOf[OWLIndividual]
+// println("newexample  " + ind )
+
+// val x = know.getIndividuals().take(nodeExamples.count.toInt).apply(e)
+// val x = know.getIndividuals().filter( _ == neew).first()
+
+// x.take(20).foreach(println(_))
+
+// val r =know.getReasoner().isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(concept, ind))
+// println("\n r = " + r)
+
+// val l =know.getReasoner().isEntailed(know.getDataFactory.getOWLClassAssertionAxiom(negConcept, ind))
+// println("\n l = " + l)
