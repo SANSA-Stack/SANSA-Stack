@@ -1,0 +1,2235 @@
+Prefix(:=<http://acl/BMV#>)
+Prefix(BMV:=<http://acl/BMV#>)
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+Prefix(swrl:=<http://www.w3.org/2003/11/swrl#>)
+Prefix(owl111:=<http://www.w3.org/2006/12/owl11#>)
+Prefix(swrlb:=<http://www.w3.org/2003/11/swrlb#>)
+Prefix(owl11xml:=<http://www.w3.org/2006/12/owl11-xml#>)
+
+
+Ontology(<http://acl/BMV>
+
+Declaration(Class(BMV:ACTChemoTam))
+Declaration(Class(BMV:AbsoluteRisk))
+Declaration(Class(BMV:Abstract))
+Declaration(Class(BMV:AdjuvantTreatment))
+Declaration(Class(BMV:Adults))
+Declaration(Class(BMV:Aged50Plus))
+Declaration(Class(BMV:AgedUnder50))
+Declaration(Class(BMV:Amenorrheic))
+Declaration(Class(BMV:AnastrazoleRegimeTypes))
+Declaration(Class(BMV:AnthracyclineChemoTxRegimeTypes))
+Declaration(Class(BMV:BMD))
+Declaration(Class(BMV:BiologicalLevelBasedOutcomes))
+Declaration(Class(BMV:BiologicalLevels))
+Declaration(Class(BMV:BreastAdenoCa))
+Declaration(Class(BMV:BreastCancer))
+Declaration(Class(BMV:CMFRegimeTypes))
+Declaration(Class(BMV:CMFTChemoTam))
+Declaration(Class(BMV:CancerTypes))
+Declaration(Class(BMV:CardiacDisease))
+Declaration(Class(BMV:Cataracts))
+Declaration(Class(BMV:ChangeBMD))
+Declaration(Class(BMV:ChangeBrCaDFS))
+Declaration(Class(BMV:ChangeBrCaDSS))
+Declaration(Class(BMV:ChangeCardiacDSS))
+Declaration(Class(BMV:ChangeCholesterol))
+Declaration(Class(BMV:ChangeEndoCaDFS))
+Declaration(Class(BMV:ChangeEndoCaDSS))
+Declaration(Class(BMV:ChangeLDL))
+Declaration(Class(BMV:ChangeLumbarBMD))
+Declaration(Class(BMV:ChangeOverallSurvival))
+Declaration(Class(BMV:ChangePlasmaFibrinogenLevel))
+Declaration(Class(BMV:ChangePlasmaPlatelet))
+Declaration(Class(BMV:ChangeRadialBMD))
+Declaration(Class(BMV:ChangeRiskBreastCancer))
+Declaration(Class(BMV:ChangeRiskCardiacDisease))
+Declaration(Class(BMV:ChangeRiskCataracts))
+Declaration(Class(BMV:ChangeRiskColorectalCancer))
+Declaration(Class(BMV:ChangeRiskEndometrialAbnormality))
+Declaration(Class(BMV:ChangeRiskEndometrialCancer))
+Declaration(Class(BMV:ChangeRiskFatalMI))
+Declaration(Class(BMV:ChangeRiskGastricCancer))
+Declaration(Class(BMV:ChangeRiskHotFlushes))
+Declaration(Class(BMV:ChangeRiskOvarianCyst))
+Declaration(Class(BMV:ChangeRiskPersistentSideEffects))
+Declaration(Class(BMV:ChangeRiskRetinopathy))
+Declaration(Class(BMV:ChangeRiskSideEffects))
+Declaration(Class(BMV:ChangeRiskVenousThrombosis))
+Declaration(Class(BMV:ChangesInRisk))
+Declaration(Class(BMV:ChangesInSurvival))
+Declaration(Class(BMV:ChemoTamRegimeTypes))
+Declaration(Class(BMV:ChemoTxRegimeTypes))
+Declaration(Class(BMV:ClonidineRegime))
+Declaration(Class(BMV:ColorectalCancer))
+Declaration(Class(BMV:DecreasedBrCaDFS))
+Declaration(Class(BMV:DecreasedCardiacDSS))
+Declaration(Class(BMV:DecreasedCholesterol))
+Declaration(Class(BMV:DecreasedEndoCaDFS))
+Declaration(Class(BMV:DecreasedEndoCaDSS))
+Declaration(Class(BMV:DecreasedLDL))
+Declaration(Class(BMV:DecreasedLumbarBMD))
+Declaration(Class(BMV:DecreasedOS))
+Declaration(Class(BMV:DecreasedPlasmaFibrinogenLevel))
+Declaration(Class(BMV:DecreasedPlasmaPlateletCount))
+Declaration(Class(BMV:DecreasedRadialBMD))
+Declaration(Class(BMV:DecreasedRiskBreastCancer))
+Declaration(Class(BMV:DecreasedRiskCardiacDisease))
+Declaration(Class(BMV:DecreasedRiskCataracts))
+Declaration(Class(BMV:DecreasedRiskColorectalCancer))
+Declaration(Class(BMV:DecreasedRiskEndometrialAbnormality))
+Declaration(Class(BMV:DecreasedRiskEndometrialCancer))
+Declaration(Class(BMV:DecreasedRiskFatalMI))
+Declaration(Class(BMV:DecreasedRiskHotFlushes))
+Declaration(Class(BMV:DecreasedRiskOvarianCyst))
+Declaration(Class(BMV:DecreasedRiskPersistentSideEffects))
+Declaration(Class(BMV:DecreasedRiskRetinopathy))
+Declaration(Class(BMV:DecreasedRiskSideEffects))
+Declaration(Class(BMV:DecreasedRiskVenousThrombosis))
+Declaration(Class(BMV:DeltaRisk))
+Declaration(Class(BMV:DiseaseStage))
+Declaration(Class(BMV:DiseaseTypes))
+Declaration(Class(BMV:DrugRegimeTypes))
+Declaration(Class(BMV:ECMFRegimeType))
+Declaration(Class(BMV:ERNeg))
+Declaration(Class(BMV:ERPos))
+Declaration(Class(BMV:ERUnknown))
+Declaration(Class(BMV:EarlyBreastCancer))
+Declaration(Class(BMV:EarlyCMFTChemoTam))
+Declaration(Class(BMV:EndometrialAbnormality))
+Declaration(Class(BMV:EndometrialCancer))
+Declaration(Class(BMV:FatalMI))
+Declaration(Class(BMV:GastricCancer))
+Declaration(Class(BMV:HRPos))
+Declaration(Class(BMV:HRStatus))
+Declaration(Class(BMV:HormoneRARegimeTypes))
+Declaration(Class(BMV:HotFlushes))
+Declaration(Class(BMV:IncreasedBrCaDFS))
+Declaration(Class(BMV:IncreasedBrCaDSS))
+Declaration(Class(BMV:IncreasedCardiacDSS))
+Declaration(Class(BMV:IncreasedCholesterol))
+Declaration(Class(BMV:IncreasedEndoCaDFS))
+Declaration(Class(BMV:IncreasedEndoCaDSS))
+Declaration(Class(BMV:IncreasedLDL))
+Declaration(Class(BMV:IncreasedLumbarBMD))
+Declaration(Class(BMV:IncreasedOS))
+Declaration(Class(BMV:IncreasedPlasmaFibrinogenLevel))
+Declaration(Class(BMV:IncreasedPlasmaPlateletCount))
+Declaration(Class(BMV:IncreasedRadialBMD))
+Declaration(Class(BMV:IncreasedRiskCardiacDisease))
+Declaration(Class(BMV:IncreasedRiskCataracts))
+Declaration(Class(BMV:IncreasedRiskColorectalCancer))
+Declaration(Class(BMV:IncreasedRiskEndometrialAbnormality))
+Declaration(Class(BMV:IncreasedRiskEndometrialCancer))
+Declaration(Class(BMV:IncreasedRiskFatalMI))
+Declaration(Class(BMV:IncreasedRiskGastricCancer))
+Declaration(Class(BMV:IncreasedRiskHotFlushes))
+Declaration(Class(BMV:IncreasedRiskOvarianCyst))
+Declaration(Class(BMV:IncreasedRiskPersistentSideEffects))
+Declaration(Class(BMV:IncreasedRiskRetinopathy))
+Declaration(Class(BMV:IncreasedRiskSideEffects))
+Declaration(Class(BMV:IncreasedRiskVenousThrombosis))
+Declaration(Class(BMV:LNNeg))
+Declaration(Class(BMV:LNPos))
+Declaration(Class(BMV:LNStatus))
+Declaration(Class(BMV:LateCMFTChemoTam))
+Declaration(Class(BMV:LumbarBMD))
+Declaration(Class(BMV:MFTChemoTam))
+Declaration(Class(BMV:MI))
+Declaration(Class(BMV:MedicalIntervention))
+Declaration(Class(BMV:MedicalThings))
+Declaration(Class(BMV:Men))
+Declaration(Class(BMV:MenopausalStatus))
+Declaration(Class(BMV:NoChangeBrCaDFS))
+Declaration(Class(BMV:NoChangeBrCaDSS))
+Declaration(Class(BMV:NoChangeCardiacDSS))
+Declaration(Class(BMV:NoChangeCholesterol))
+Declaration(Class(BMV:NoChangeEndoCaDFS))
+Declaration(Class(BMV:NoChangeEndoCaDSS))
+Declaration(Class(BMV:NoChangeLDL))
+Declaration(Class(BMV:NoChangeLumbarBMD))
+Declaration(Class(BMV:NoChangeOS))
+Declaration(Class(BMV:NoChangePlasmaFibrinogenLevel))
+Declaration(Class(BMV:NoChangePlasmaPlateletCount))
+Declaration(Class(BMV:NoChangeRadialBMD))
+Declaration(Class(BMV:NoChangeRiskCardiacDisease))
+Declaration(Class(BMV:NoChangeRiskCataracts))
+Declaration(Class(BMV:NoChangeRiskColorectalCancer))
+Declaration(Class(BMV:NoChangeRiskEndometrialAbnormality))
+Declaration(Class(BMV:NoChangeRiskEndometrialCancer))
+Declaration(Class(BMV:NoChangeRiskFatalMI))
+Declaration(Class(BMV:NoChangeRiskGastricCancer))
+Declaration(Class(BMV:NoChangeRiskHotFlushes))
+Declaration(Class(BMV:NoChangeRiskOvarianCyst))
+Declaration(Class(BMV:NoChangeRiskPersistentSideEffects))
+Declaration(Class(BMV:NoChangeRiskRetiopathy))
+Declaration(Class(BMV:NoChangeRiskSideEffects))
+Declaration(Class(BMV:NoChangeVenousRiskThrombosis))
+Declaration(Class(BMV:NonAnthracyclineChemoTxRegimeTypes))
+Declaration(Class(BMV:NonFatalMI))
+Declaration(Class(BMV:Outcomes))
+Declaration(Class(BMV:OvarianCyst))
+Declaration(Class(BMV:PAFTChemoTam))
+Declaration(Class(BMV:PFTChemoTam))
+Declaration(Class(BMV:Pathological_Grade))
+Declaration(Class(BMV:PersistentSideEffects))
+Declaration(Class(BMV:PlasmaCholesterol))
+Declaration(Class(BMV:PolyChemoTxRegimeTypes))
+Declaration(Class(BMV:PoorPrognosis))
+Declaration(Class(BMV:Postmenopausal))
+Declaration(Class(BMV:Premenopausal))
+Declaration(Class(BMV:RadialBMD))
+Declaration(Class(BMV:ReducedBrCaDSS))
+Declaration(Class(BMV:ReducedRiskGastricCancer))
+Declaration(Class(BMV:References))
+Declaration(Class(BMV:Retinopathy))
+Declaration(Class(BMV:Risk))
+Declaration(Class(BMV:RiskCancer))
+Declaration(Class(BMV:RiskCataracts))
+Declaration(Class(BMV:RiskEndometrialAbnormality))
+Declaration(Class(BMV:RiskEndometrialCa))
+Declaration(Class(BMV:RiskOvarianCyst))
+Declaration(Class(BMV:RiskRetinopathy))
+Declaration(Class(BMV:Stroke))
+Declaration(Class(BMV:SymptomTypes))
+Declaration(Class(BMV:Tamoxifen))
+Declaration(Class(BMV:Tamoxifen20mg))
+Declaration(Class(BMV:Tamoxifen2YrCourse))
+Declaration(Class(BMV:Tamoxifen30mg))
+Declaration(Class(BMV:Tamoxifen40mg))
+Declaration(Class(BMV:Tamoxifen5YrCourse))
+Declaration(Class(BMV:TamoxifenByDose))
+Declaration(Class(BMV:TamoxifenByLength))
+Declaration(Class(BMV:TamoxifenMore5YrCourse))
+Declaration(Class(BMV:TherapeuticType))
+Declaration(Class(BMV:VascularDisease))
+Declaration(Class(BMV:VenousThrombosis))
+Declaration(Class(BMV:Women))
+Declaration(ObjectProperty(BMV:Disease_Attributes))
+Declaration(ObjectProperty(BMV:hasDeltaLevel))
+Declaration(ObjectProperty(BMV:hasDeltaRisk))
+Declaration(ObjectProperty(BMV:hasDisease))
+Declaration(ObjectProperty(BMV:hasGrade))
+Declaration(ObjectProperty(BMV:hasHRStatus))
+Declaration(ObjectProperty(BMV:hasLNStatus))
+Declaration(ObjectProperty(BMV:hasMenopausalStatus))
+Declaration(ObjectProperty(BMV:hasNegIntent))
+Declaration(ObjectProperty(BMV:hasOutcome))
+Declaration(ObjectProperty(BMV:hasPathologicalType))
+Declaration(ObjectProperty(BMV:hasPosIntent))
+Declaration(ObjectProperty(BMV:hasPrognosis))
+Declaration(ObjectProperty(BMV:hasRisk))
+Declaration(ObjectProperty(BMV:hasStage))
+Declaration(ObjectProperty(BMV:hasSymptoms))
+Declaration(ObjectProperty(BMV:hasTreatment))
+Declaration(ObjectProperty(BMV:hasTreatmentComponent))
+Declaration(ObjectProperty(BMV:notHasPrognosis))
+Declaration(ObjectProperty(BMV:notHasTreatment))
+Declaration(ObjectProperty(BMV:refersDisease))
+Declaration(ObjectProperty(BMV:refersSubstance))
+Declaration(DataProperty(BMV:hasAge))
+Declaration(DataProperty(BMV:hasDuration))
+Declaration(DataProperty(BMV:hasValue))
+Declaration(NamedIndividual(BMV:DecreasedBrCaDFS05))
+Declaration(NamedIndividual(BMV:DecreasedBrCaDFS08))
+Declaration(NamedIndividual(BMV:DecreasedCholesterol088))
+Declaration(NamedIndividual(BMV:DecreasedEndoCaDFS066))
+Declaration(NamedIndividual(BMV:DecreasedEndoCaDSS066))
+Declaration(NamedIndividual(BMV:DecreasedLDL088))
+Declaration(NamedIndividual(BMV:DecreasedLumbarBMD0986))
+Declaration(NamedIndividual(BMV:DecreasedLumbarBMD0993))
+Declaration(NamedIndividual(BMV:DecreasedPlasmaFibrinogenLevel085))
+Declaration(NamedIndividual(BMV:DecreasedPlasmaPlateletCount092))
+Declaration(NamedIndividual(BMV:DecreasedRadialBMD_NOS))
+Declaration(NamedIndividual(BMV:DecreasedRiskBrCa001))
+Declaration(NamedIndividual(BMV:DecreasedRiskBrCa055))
+Declaration(NamedIndividual(BMV:DecreasedRiskBrCa06))
+Declaration(NamedIndividual(BMV:DecreasedRiskCardiacDisease068))
+Declaration(NamedIndividual(BMV:DecreasedRiskFatalMI037))
+Declaration(NamedIndividual(BMV:DecreasedRiskHotFlushes08))
+Declaration(NamedIndividual(BMV:ECMFTypeInstance))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS105))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS11))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS12))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS121))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS13))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS15))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS17))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFS1x))
+Declaration(NamedIndividual(BMV:IncreasedBrCaDFSREF))
+Declaration(NamedIndividual(BMV:IncreasedCardiacDSS152))
+Declaration(NamedIndividual(BMV:IncreasedLumbarBMD1006))
+Declaration(NamedIndividual(BMV:IncreasedLumbarBMD1008))
+Declaration(NamedIndividual(BMV:IncreasedLumbarBMD1012))
+Declaration(NamedIndividual(BMV:IncreasedOS102))
+Declaration(NamedIndividual(BMV:IncreasedOS103))
+Declaration(NamedIndividual(BMV:IncreasedOS11))
+Declaration(NamedIndividual(BMV:IncreasedOS12))
+Declaration(NamedIndividual(BMV:IncreasedRiskCRC19))
+Declaration(NamedIndividual(BMV:IncreasedRiskCataracts114))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer23))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer253))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer41))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer60))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer64))
+Declaration(NamedIndividual(BMV:IncreasedRiskEndometrialCancer75))
+Declaration(NamedIndividual(BMV:IncreasedRiskGastricCa30))
+Declaration(NamedIndividual(BMV:IncreasedRiskGastricCa32))
+Declaration(NamedIndividual(BMV:IncreasedRiskPersistentSideEffects23))
+Declaration(NamedIndividual(BMV:IncreasedRiskRetinopathy152))
+Declaration(NamedIndividual(BMV:IncreasedRiskSideEffects23))
+Declaration(NamedIndividual(BMV:IncreasedRiskVenousThrombosis34))
+Declaration(NamedIndividual(BMV:LumbarBMDLevel))
+Declaration(NamedIndividual(BMV:MsJones))
+Declaration(NamedIndividual(BMV:NoChangeBrCaDFS1))
+Declaration(NamedIndividual(BMV:NoChangeRadialBMD10))
+Declaration(NamedIndividual(BMV:NoChangeRiskEndometrialAbnormality1))
+Declaration(NamedIndividual(BMV:PersistentSideEffectsInst))
+Declaration(NamedIndividual(BMV:PlasmaCholesterolInst))
+Declaration(NamedIndividual(BMV:PlasmaFibrinogen))
+Declaration(NamedIndividual(BMV:PlasmaLDL))
+Declaration(NamedIndividual(BMV:PlasmaPlatelet))
+Declaration(NamedIndividual(BMV:ProtoACT))
+Declaration(NamedIndividual(BMV:ProtoClonidine))
+Declaration(NamedIndividual(BMV:ProtoColorectalCa))
+Declaration(NamedIndividual(BMV:ProtoERNeg))
+Declaration(NamedIndividual(BMV:ProtoERNegLNNegStage1BrCa))
+Declaration(NamedIndividual(BMV:ProtoERNegLNNegStage2BrCa))
+Declaration(NamedIndividual(BMV:ProtoERNegLNPosStage1BrCa))
+Declaration(NamedIndividual(BMV:ProtoERNegLNPosStage2BrCa))
+Declaration(NamedIndividual(BMV:ProtoERPos))
+Declaration(NamedIndividual(BMV:ProtoERPosLNNegStage1BrCa))
+Declaration(NamedIndividual(BMV:ProtoERPosLNNegStage2BrCa))
+Declaration(NamedIndividual(BMV:ProtoERPosLNPosStage1BrCa))
+Declaration(NamedIndividual(BMV:ProtoERPosLNPosStage2BrCa))
+Declaration(NamedIndividual(BMV:ProtoEarlyCMFTChemoTam))
+Declaration(NamedIndividual(BMV:ProtoEndoAbnormality))
+Declaration(NamedIndividual(BMV:ProtoEndoCa))
+Declaration(NamedIndividual(BMV:ProtoEndometrialAbnormality))
+Declaration(NamedIndividual(BMV:ProtoFatalMI))
+Declaration(NamedIndividual(BMV:ProtoGastricCa))
+Declaration(NamedIndividual(BMV:ProtoHotFlushes))
+Declaration(NamedIndividual(BMV:ProtoLNNeg))
+Declaration(NamedIndividual(BMV:ProtoLNPos))
+Declaration(NamedIndividual(BMV:ProtoLateCMFTChemTam))
+Declaration(NamedIndividual(BMV:ProtoMFTChemoTam))
+Declaration(NamedIndividual(BMV:ProtoNoChangeOS))
+Declaration(NamedIndividual(BMV:ProtoNonFatalMI))
+Declaration(NamedIndividual(BMV:ProtoPAFTChemoTam))
+Declaration(NamedIndividual(BMV:ProtoPFTChemoTam))
+Declaration(NamedIndividual(BMV:ProtoPRNeg))
+Declaration(NamedIndividual(BMV:ProtoPRPos))
+Declaration(NamedIndividual(BMV:ProtoPoorPrognosis))
+Declaration(NamedIndividual(BMV:ProtoPostmenopausal))
+Declaration(NamedIndividual(BMV:ProtoPremenopausal))
+Declaration(NamedIndividual(BMV:ProtoRetinopathy))
+Declaration(NamedIndividual(BMV:ProtoStage1))
+Declaration(NamedIndividual(BMV:ProtoStage2))
+Declaration(NamedIndividual(BMV:ProtoStage3))
+Declaration(NamedIndividual(BMV:ProtoStage4))
+Declaration(NamedIndividual(BMV:ProtoStroke))
+Declaration(NamedIndividual(BMV:ProtoVenousThrombosis))
+Declaration(NamedIndividual(BMV:RadialBMDLevel))
+Declaration(NamedIndividual(BMV:RiskCataracts014))
+Declaration(NamedIndividual(BMV:RiskEndometrialAbnormality39))
+Declaration(NamedIndividual(BMV:RiskEndometrialCa0005))
+Declaration(NamedIndividual(BMV:RiskOvarianCyst006))
+Declaration(NamedIndividual(BMV:RiskOvarianCyst011))
+Declaration(NamedIndividual(BMV:RiskRetinopathy012))
+Declaration(NamedIndividual(BMV:Tam30mg))
+Declaration(NamedIndividual(BMV:TamA20mg))
+Declaration(NamedIndividual(BMV:TamC40mg))
+Declaration(NamedIndividual(BMV:TamD2Yr))
+Declaration(NamedIndividual(BMV:TamE5Yr))
+Declaration(NamedIndividual(BMV:TamFgt5Yr))
+Declaration(AnnotationProperty(owl:disjointObjectProperties))
+
+############################
+#   Object Properties
+############################
+
+# Object Property: BMV:Disease_Attributes (BMV:Disease_Attributes)
+
+ObjectPropertyDomain(BMV:Disease_Attributes BMV:DiseaseTypes)
+
+# Object Property: BMV:hasDeltaLevel (BMV:hasDeltaLevel)
+
+ObjectPropertyDomain(BMV:hasDeltaLevel BMV:Adults)
+ObjectPropertyRange(BMV:hasDeltaLevel BMV:BiologicalLevelBasedOutcomes)
+
+# Object Property: BMV:hasDeltaRisk (BMV:hasDeltaRisk)
+
+ObjectPropertyDomain(BMV:hasDeltaRisk BMV:Adults)
+
+# Object Property: BMV:hasDisease (BMV:hasDisease)
+
+ObjectPropertyRange(BMV:hasDisease BMV:DiseaseTypes)
+
+# Object Property: BMV:hasGrade (BMV:hasGrade)
+
+SubObjectPropertyOf(BMV:hasGrade BMV:Disease_Attributes)
+ObjectPropertyDomain(BMV:hasGrade BMV:DiseaseTypes)
+ObjectPropertyRange(BMV:hasGrade BMV:Pathological_Grade)
+
+# Object Property: BMV:hasHRStatus (BMV:hasHRStatus)
+
+FunctionalObjectProperty(BMV:hasHRStatus)
+ObjectPropertyDomain(BMV:hasHRStatus BMV:BreastAdenoCa)
+ObjectPropertyRange(BMV:hasHRStatus BMV:HRStatus)
+
+# Object Property: BMV:hasLNStatus (BMV:hasLNStatus)
+
+FunctionalObjectProperty(BMV:hasLNStatus)
+ObjectPropertyDomain(BMV:hasLNStatus BMV:DiseaseTypes)
+ObjectPropertyRange(BMV:hasLNStatus BMV:LNStatus)
+
+# Object Property: BMV:hasMenopausalStatus (BMV:hasMenopausalStatus)
+
+FunctionalObjectProperty(BMV:hasMenopausalStatus)
+
+# Object Property: BMV:hasNegIntent (BMV:hasNegIntent)
+
+ObjectPropertyDomain(BMV:hasNegIntent BMV:Adults)
+ObjectPropertyRange(BMV:hasNegIntent BMV:TherapeuticType)
+
+# Object Property: BMV:hasOutcome (BMV:hasOutcome)
+
+ObjectPropertyDomain(BMV:hasOutcome BMV:Adults)
+
+# Object Property: BMV:hasPathologicalType (BMV:hasPathologicalType)
+
+SubObjectPropertyOf(BMV:hasPathologicalType BMV:Disease_Attributes)
+FunctionalObjectProperty(BMV:hasPathologicalType)
+ObjectPropertyDomain(BMV:hasPathologicalType BMV:DiseaseTypes)
+
+# Object Property: BMV:hasPosIntent (BMV:hasPosIntent)
+
+FunctionalObjectProperty(BMV:hasPosIntent)
+ObjectPropertyDomain(BMV:hasPosIntent BMV:Adults)
+ObjectPropertyRange(BMV:hasPosIntent BMV:TherapeuticType)
+
+# Object Property: BMV:hasRisk (BMV:hasRisk)
+
+ObjectPropertyDomain(BMV:hasRisk BMV:Adults)
+ObjectPropertyRange(BMV:hasRisk BMV:Risk)
+
+# Object Property: BMV:hasStage (BMV:hasStage)
+
+SubObjectPropertyOf(BMV:hasStage BMV:Disease_Attributes)
+FunctionalObjectProperty(BMV:hasStage)
+ObjectPropertyDomain(BMV:hasStage BMV:DiseaseTypes)
+ObjectPropertyRange(BMV:hasStage BMV:DiseaseStage)
+
+# Object Property: BMV:hasSymptoms (BMV:hasSymptoms)
+
+ObjectPropertyDomain(BMV:hasSymptoms BMV:Adults)
+ObjectPropertyRange(BMV:hasSymptoms BMV:PersistentSideEffects)
+
+# Object Property: BMV:hasTreatment (BMV:hasTreatment)
+
+FunctionalObjectProperty(BMV:hasTreatment)
+ObjectPropertyDomain(BMV:hasTreatment BMV:Adults)
+ObjectPropertyRange(BMV:hasTreatment BMV:TherapeuticType)
+
+# Object Property: BMV:hasTreatmentComponent (BMV:hasTreatmentComponent)
+
+ObjectPropertyDomain(BMV:hasTreatmentComponent BMV:TherapeuticType)
+
+# Object Property: BMV:notHasTreatment (BMV:notHasTreatment)
+
+ObjectPropertyDomain(BMV:notHasTreatment BMV:Adults)
+ObjectPropertyRange(BMV:notHasTreatment BMV:TherapeuticType)
+
+# Object Property: BMV:refersDisease (BMV:refersDisease)
+
+ObjectPropertyDomain(BMV:refersDisease BMV:Outcomes)
+ObjectPropertyRange(BMV:refersDisease ObjectUnionOf(BMV:DiseaseTypes BMV:SymptomTypes))
+
+
+############################
+#   Data Properties
+############################
+
+# Data Property: BMV:hasAge (BMV:hasAge)
+
+FunctionalDataProperty(BMV:hasAge)
+DataPropertyRange(BMV:hasAge xsd:int)
+
+# Data Property: BMV:hasDuration (BMV:hasDuration)
+
+FunctionalDataProperty(BMV:hasDuration)
+DataPropertyDomain(BMV:hasDuration BMV:TherapeuticType)
+DataPropertyRange(BMV:hasDuration xsd:int)
+
+# Data Property: BMV:hasValue (BMV:hasValue)
+
+FunctionalDataProperty(BMV:hasValue)
+DataPropertyRange(BMV:hasValue xsd:decimal)
+
+
+
+############################
+#   Classes
+############################
+
+# Class: BMV:ACTChemoTam (BMV:ACTChemoTam)
+
+SubClassOf(BMV:ACTChemoTam BMV:ChemoTamRegimeTypes)
+DisjointClasses(BMV:ACTChemoTam BMV:CMFTChemoTam)
+DisjointClasses(BMV:ACTChemoTam BMV:MFTChemoTam)
+DisjointClasses(BMV:ACTChemoTam BMV:PAFTChemoTam)
+DisjointClasses(BMV:ACTChemoTam BMV:PFTChemoTam)
+
+# Class: BMV:AbsoluteRisk (BMV:AbsoluteRisk)
+
+SubClassOf(BMV:AbsoluteRisk BMV:Risk)
+DisjointClasses(BMV:AbsoluteRisk BMV:ChangesInRisk)
+DisjointClasses(BMV:AbsoluteRisk BMV:ChangesInSurvival)
+
+# Class: BMV:Abstract (BMV:Abstract)
+
+SubClassOf(BMV:Abstract BMV:MedicalThings)
+
+# Class: BMV:AdjuvantTreatment (BMV:AdjuvantTreatment)
+
+SubClassOf(BMV:AdjuvantTreatment BMV:TherapeuticType)
+
+# Class: BMV:Adults (BMV:Adults)
+
+DisjointClasses(BMV:Adults BMV:MedicalThings)
+
+# Class: BMV:Aged50Plus (BMV:Aged50Plus)
+
+SubClassOf(BMV:Aged50Plus BMV:Women)
+DisjointClasses(BMV:Aged50Plus BMV:AgedUnder50)
+
+# Class: BMV:AgedUnder50 (BMV:AgedUnder50)
+
+SubClassOf(BMV:AgedUnder50 BMV:Women)
+
+# Class: BMV:Amenorrheic (BMV:Amenorrheic)
+
+SubClassOf(BMV:Amenorrheic BMV:Women)
+
+# Class: BMV:AnastrazoleRegimeTypes (BMV:AnastrazoleRegimeTypes)
+
+SubClassOf(BMV:AnastrazoleRegimeTypes BMV:HormoneRARegimeTypes)
+
+# Class: BMV:AnthracyclineChemoTxRegimeTypes (BMV:AnthracyclineChemoTxRegimeTypes)
+
+SubClassOf(BMV:AnthracyclineChemoTxRegimeTypes BMV:ChemoTxRegimeTypes)
+
+# Class: BMV:BMD (BMV:BMD)
+
+SubClassOf(BMV:BMD BMV:BiologicalLevels)
+DisjointClasses(BMV:BMD BMV:PlasmaCholesterol)
+
+# Class: BMV:BiologicalLevelBasedOutcomes (BMV:BiologicalLevelBasedOutcomes)
+
+SubClassOf(BMV:BiologicalLevelBasedOutcomes BMV:Outcomes)
+DisjointClasses(BMV:BiologicalLevelBasedOutcomes BMV:ChangeOverallSurvival)
+DisjointClasses(BMV:BiologicalLevelBasedOutcomes BMV:PoorPrognosis)
+DisjointClasses(BMV:BiologicalLevelBasedOutcomes BMV:Risk)
+
+# Class: BMV:BiologicalLevels (BMV:BiologicalLevels)
+
+SubClassOf(BMV:BiologicalLevels BMV:References)
+DisjointClasses(BMV:BiologicalLevels BMV:MenopausalStatus)
+DisjointClasses(BMV:BiologicalLevels BMV:Pathological_Grade)
+
+# Class: BMV:BreastAdenoCa (BMV:BreastAdenoCa)
+
+SubClassOf(BMV:BreastAdenoCa BMV:BreastCancer)
+
+# Class: BMV:BreastCancer (BMV:BreastCancer)
+
+SubClassOf(BMV:BreastCancer BMV:CancerTypes)
+DisjointClasses(BMV:BreastCancer BMV:ColorectalCancer)
+DisjointClasses(BMV:BreastCancer BMV:EndometrialCancer)
+DisjointClasses(BMV:BreastCancer BMV:GastricCancer)
+
+# Class: BMV:CMFRegimeTypes (BMV:CMFRegimeTypes)
+
+SubClassOf(BMV:CMFRegimeTypes BMV:NonAnthracyclineChemoTxRegimeTypes)
+SubClassOf(BMV:CMFRegimeTypes BMV:PolyChemoTxRegimeTypes)
+DisjointClasses(BMV:CMFRegimeTypes BMV:ECMFRegimeType)
+
+# Class: BMV:CMFTChemoTam (BMV:CMFTChemoTam)
+
+SubClassOf(BMV:CMFTChemoTam BMV:ChemoTamRegimeTypes)
+DisjointClasses(BMV:CMFTChemoTam BMV:MFTChemoTam)
+DisjointClasses(BMV:CMFTChemoTam BMV:PAFTChemoTam)
+DisjointClasses(BMV:CMFTChemoTam BMV:PFTChemoTam)
+
+# Class: BMV:CancerTypes (BMV:CancerTypes)
+
+SubClassOf(BMV:CancerTypes BMV:DiseaseTypes)
+DisjointClasses(BMV:CancerTypes BMV:Cataracts)
+DisjointClasses(BMV:CancerTypes BMV:EndometrialAbnormality)
+DisjointClasses(BMV:CancerTypes BMV:OvarianCyst)
+DisjointClasses(BMV:CancerTypes BMV:PersistentSideEffects)
+DisjointClasses(BMV:CancerTypes BMV:Retinopathy)
+DisjointClasses(BMV:CancerTypes BMV:VascularDisease)
+DisjointClasses(BMV:CancerTypes BMV:VenousThrombosis)
+
+# Class: BMV:CardiacDisease (BMV:CardiacDisease)
+
+SubClassOf(BMV:CardiacDisease BMV:VascularDisease)
+DisjointClasses(BMV:CardiacDisease BMV:Stroke)
+
+# Class: BMV:Cataracts (BMV:Cataracts)
+
+SubClassOf(BMV:Cataracts BMV:DiseaseTypes)
+DisjointClasses(BMV:Cataracts BMV:EndometrialAbnormality)
+DisjointClasses(BMV:Cataracts BMV:OvarianCyst)
+DisjointClasses(BMV:Cataracts BMV:PersistentSideEffects)
+DisjointClasses(BMV:Cataracts BMV:Retinopathy)
+DisjointClasses(BMV:Cataracts BMV:VascularDisease)
+DisjointClasses(BMV:Cataracts BMV:VenousThrombosis)
+
+# Class: BMV:ChangeBMD (BMV:ChangeBMD)
+
+SubClassOf(BMV:ChangeBMD BMV:BiologicalLevelBasedOutcomes)
+DisjointClasses(BMV:ChangeBMD BMV:ChangeCholesterol)
+DisjointClasses(BMV:ChangeBMD BMV:ChangeLDL)
+DisjointClasses(BMV:ChangeBMD BMV:ChangePlasmaFibrinogenLevel)
+DisjointClasses(BMV:ChangeBMD BMV:ChangePlasmaPlatelet)
+
+# Class: BMV:ChangeBrCaDFS (BMV:ChangeBrCaDFS)
+
+SubClassOf(BMV:ChangeBrCaDFS BMV:ChangesInSurvival)
+SubClassOf(BMV:ChangeBrCaDFS ObjectSomeValuesFrom(BMV:refersDisease BMV:BreastAdenoCa))
+DisjointClasses(BMV:ChangeBrCaDFS BMV:ChangeBrCaDSS)
+DisjointClasses(BMV:ChangeBrCaDFS BMV:ChangeCardiacDSS)
+DisjointClasses(BMV:ChangeBrCaDFS BMV:ChangeEndoCaDFS)
+DisjointClasses(BMV:ChangeBrCaDFS BMV:ChangeEndoCaDSS)
+
+# Class: BMV:ChangeBrCaDSS (BMV:ChangeBrCaDSS)
+
+SubClassOf(BMV:ChangeBrCaDSS BMV:ChangesInSurvival)
+DisjointClasses(BMV:ChangeBrCaDSS BMV:ChangeCardiacDSS)
+DisjointClasses(BMV:ChangeBrCaDSS BMV:ChangeEndoCaDFS)
+DisjointClasses(BMV:ChangeBrCaDSS BMV:ChangeEndoCaDSS)
+
+# Class: BMV:ChangeCardiacDSS (BMV:ChangeCardiacDSS)
+
+SubClassOf(BMV:ChangeCardiacDSS BMV:ChangesInSurvival)
+DisjointClasses(BMV:ChangeCardiacDSS BMV:ChangeEndoCaDFS)
+DisjointClasses(BMV:ChangeCardiacDSS BMV:ChangeEndoCaDSS)
+
+# Class: BMV:ChangeCholesterol (BMV:ChangeCholesterol)
+
+SubClassOf(BMV:ChangeCholesterol BMV:BiologicalLevelBasedOutcomes)
+DisjointClasses(BMV:ChangeCholesterol BMV:ChangeLDL)
+DisjointClasses(BMV:ChangeCholesterol BMV:ChangePlasmaFibrinogenLevel)
+DisjointClasses(BMV:ChangeCholesterol BMV:ChangePlasmaPlatelet)
+
+# Class: BMV:ChangeEndoCaDFS (BMV:ChangeEndoCaDFS)
+
+SubClassOf(BMV:ChangeEndoCaDFS BMV:ChangesInSurvival)
+DisjointClasses(BMV:ChangeEndoCaDFS BMV:ChangeEndoCaDSS)
+
+# Class: BMV:ChangeEndoCaDSS (BMV:ChangeEndoCaDSS)
+
+SubClassOf(BMV:ChangeEndoCaDSS BMV:ChangesInSurvival)
+
+# Class: BMV:ChangeLDL (BMV:ChangeLDL)
+
+SubClassOf(BMV:ChangeLDL BMV:BiologicalLevelBasedOutcomes)
+DisjointClasses(BMV:ChangeLDL BMV:ChangePlasmaFibrinogenLevel)
+DisjointClasses(BMV:ChangeLDL BMV:ChangePlasmaPlatelet)
+
+# Class: BMV:ChangeLumbarBMD (BMV:ChangeLumbarBMD)
+
+SubClassOf(BMV:ChangeLumbarBMD BMV:ChangeBMD)
+DisjointClasses(BMV:ChangeLumbarBMD BMV:ChangeRadialBMD)
+
+# Class: BMV:ChangeOverallSurvival (BMV:ChangeOverallSurvival)
+
+SubClassOf(BMV:ChangeOverallSurvival BMV:Outcomes)
+SubClassOf(BMV:ChangeOverallSurvival DataSomeValuesFrom(BMV:hasValue xsd:decimal))
+DisjointClasses(BMV:ChangeOverallSurvival BMV:PoorPrognosis)
+DisjointClasses(BMV:ChangeOverallSurvival BMV:Risk)
+
+# Class: BMV:ChangePlasmaFibrinogenLevel (BMV:ChangePlasmaFibrinogenLevel)
+
+SubClassOf(BMV:ChangePlasmaFibrinogenLevel BMV:BiologicalLevelBasedOutcomes)
+DisjointClasses(BMV:ChangePlasmaFibrinogenLevel BMV:ChangePlasmaPlatelet)
+
+# Class: BMV:ChangePlasmaPlatelet (BMV:ChangePlasmaPlatelet)
+
+SubClassOf(BMV:ChangePlasmaPlatelet BMV:BiologicalLevelBasedOutcomes)
+
+# Class: BMV:ChangeRadialBMD (BMV:ChangeRadialBMD)
+
+SubClassOf(BMV:ChangeRadialBMD BMV:ChangeBMD)
+
+# Class: BMV:ChangeRiskBreastCancer (BMV:ChangeRiskBreastCancer)
+
+SubClassOf(BMV:ChangeRiskBreastCancer BMV:ChangesInRisk)
+SubClassOf(BMV:ChangeRiskBreastCancer ObjectAllValuesFrom(BMV:refersDisease BMV:BreastCancer))
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskCardiacDisease)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskCataracts)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskColorectalCancer)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskEndometrialCancer)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskBreastCancer BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskCardiacDisease (BMV:ChangeRiskCardiacDisease)
+
+SubClassOf(BMV:ChangeRiskCardiacDisease BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskCataracts)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskColorectalCancer)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskEndometrialCancer)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskCardiacDisease BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskCataracts (BMV:ChangeRiskCataracts)
+
+SubClassOf(BMV:ChangeRiskCataracts BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskColorectalCancer)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskEndometrialCancer)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskCataracts BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskColorectalCancer (BMV:ChangeRiskColorectalCancer)
+
+SubClassOf(BMV:ChangeRiskColorectalCancer BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskEndometrialCancer)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskColorectalCancer BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskEndometrialAbnormality (BMV:ChangeRiskEndometrialAbnormality)
+
+SubClassOf(BMV:ChangeRiskEndometrialAbnormality BMV:ChangesInRisk)
+
+# Class: BMV:ChangeRiskEndometrialCancer (BMV:ChangeRiskEndometrialCancer)
+
+SubClassOf(BMV:ChangeRiskEndometrialCancer BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskEndometrialCancer BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskFatalMI (BMV:ChangeRiskFatalMI)
+
+SubClassOf(BMV:ChangeRiskFatalMI BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskFatalMI BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskGastricCancer (BMV:ChangeRiskGastricCancer)
+
+SubClassOf(BMV:ChangeRiskGastricCancer BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskGastricCancer BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskHotFlushes (BMV:ChangeRiskHotFlushes)
+
+SubClassOf(BMV:ChangeRiskHotFlushes BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskHotFlushes BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:ChangeRiskHotFlushes BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskHotFlushes BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskHotFlushes BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskHotFlushes BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskOvarianCyst (BMV:ChangeRiskOvarianCyst)
+
+SubClassOf(BMV:ChangeRiskOvarianCyst BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskOvarianCyst BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:ChangeRiskOvarianCyst BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskOvarianCyst BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskOvarianCyst BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskPersistentSideEffects (BMV:ChangeRiskPersistentSideEffects)
+
+SubClassOf(BMV:ChangeRiskPersistentSideEffects BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskPersistentSideEffects BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:ChangeRiskPersistentSideEffects BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskPersistentSideEffects BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskRetinopathy (BMV:ChangeRiskRetinopathy)
+
+SubClassOf(BMV:ChangeRiskRetinopathy BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskRetinopathy BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:ChangeRiskRetinopathy BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskSideEffects (BMV:ChangeRiskSideEffects)
+
+SubClassOf(BMV:ChangeRiskSideEffects BMV:ChangesInRisk)
+DisjointClasses(BMV:ChangeRiskSideEffects BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:ChangeRiskVenousThrombosis (BMV:ChangeRiskVenousThrombosis)
+
+SubClassOf(BMV:ChangeRiskVenousThrombosis BMV:ChangesInRisk)
+
+# Class: BMV:ChangesInRisk (BMV:ChangesInRisk)
+
+SubClassOf(BMV:ChangesInRisk BMV:DeltaRisk)
+DisjointClasses(BMV:ChangesInRisk BMV:ChangesInSurvival)
+
+# Class: BMV:ChangesInSurvival (BMV:ChangesInSurvival)
+
+SubClassOf(BMV:ChangesInSurvival BMV:DeltaRisk)
+
+# Class: BMV:ChemoTamRegimeTypes (BMV:ChemoTamRegimeTypes)
+
+SubClassOf(BMV:ChemoTamRegimeTypes BMV:AdjuvantTreatment)
+DisjointClasses(BMV:ChemoTamRegimeTypes BMV:ChemoTxRegimeTypes)
+DisjointClasses(BMV:ChemoTamRegimeTypes BMV:ClonidineRegime)
+DisjointClasses(BMV:ChemoTamRegimeTypes BMV:HormoneRARegimeTypes)
+
+# Class: BMV:ChemoTxRegimeTypes (BMV:ChemoTxRegimeTypes)
+
+SubClassOf(BMV:ChemoTxRegimeTypes BMV:AdjuvantTreatment)
+DisjointClasses(BMV:ChemoTxRegimeTypes BMV:ClonidineRegime)
+DisjointClasses(BMV:ChemoTxRegimeTypes BMV:HormoneRARegimeTypes)
+
+# Class: BMV:ClonidineRegime (BMV:ClonidineRegime)
+
+SubClassOf(BMV:ClonidineRegime BMV:DrugRegimeTypes)
+DisjointClasses(BMV:ClonidineRegime BMV:HormoneRARegimeTypes)
+
+# Class: BMV:ColorectalCancer (BMV:ColorectalCancer)
+
+SubClassOf(BMV:ColorectalCancer BMV:CancerTypes)
+DisjointClasses(BMV:ColorectalCancer BMV:EndometrialCancer)
+DisjointClasses(BMV:ColorectalCancer BMV:GastricCancer)
+
+# Class: BMV:DecreasedBrCaDFS (BMV:DecreasedBrCaDFS)
+
+SubClassOf(BMV:DecreasedBrCaDFS BMV:ChangeBrCaDFS)
+DisjointClasses(BMV:DecreasedBrCaDFS BMV:IncreasedBrCaDFS)
+DisjointClasses(BMV:DecreasedBrCaDFS BMV:NoChangeBrCaDFS)
+
+# Class: BMV:DecreasedCardiacDSS (BMV:DecreasedCardiacDSS)
+
+SubClassOf(BMV:DecreasedCardiacDSS BMV:ChangeCardiacDSS)
+DisjointClasses(BMV:DecreasedCardiacDSS BMV:IncreasedCardiacDSS)
+DisjointClasses(BMV:DecreasedCardiacDSS BMV:NoChangeCardiacDSS)
+
+# Class: BMV:DecreasedCholesterol (BMV:DecreasedCholesterol)
+
+SubClassOf(BMV:DecreasedCholesterol BMV:ChangeCholesterol)
+DisjointClasses(BMV:DecreasedCholesterol BMV:IncreasedCholesterol)
+DisjointClasses(BMV:DecreasedCholesterol BMV:NoChangeCholesterol)
+
+# Class: BMV:DecreasedEndoCaDFS (BMV:DecreasedEndoCaDFS)
+
+SubClassOf(BMV:DecreasedEndoCaDFS BMV:ChangeEndoCaDFS)
+DisjointClasses(BMV:DecreasedEndoCaDFS BMV:IncreasedEndoCaDFS)
+DisjointClasses(BMV:DecreasedEndoCaDFS BMV:NoChangeEndoCaDFS)
+
+# Class: BMV:DecreasedEndoCaDSS (BMV:DecreasedEndoCaDSS)
+
+SubClassOf(BMV:DecreasedEndoCaDSS BMV:ChangeEndoCaDSS)
+DisjointClasses(BMV:DecreasedEndoCaDSS BMV:IncreasedEndoCaDSS)
+DisjointClasses(BMV:DecreasedEndoCaDSS BMV:NoChangeEndoCaDSS)
+
+# Class: BMV:DecreasedLDL (BMV:DecreasedLDL)
+
+SubClassOf(BMV:DecreasedLDL BMV:ChangeLDL)
+DisjointClasses(BMV:DecreasedLDL BMV:IncreasedLDL)
+DisjointClasses(BMV:DecreasedLDL BMV:NoChangeLDL)
+
+# Class: BMV:DecreasedLumbarBMD (BMV:DecreasedLumbarBMD)
+
+SubClassOf(BMV:DecreasedLumbarBMD BMV:ChangeLumbarBMD)
+DisjointClasses(BMV:DecreasedLumbarBMD BMV:IncreasedLumbarBMD)
+DisjointClasses(BMV:DecreasedLumbarBMD BMV:NoChangeLumbarBMD)
+
+# Class: BMV:DecreasedOS (BMV:DecreasedOS)
+
+SubClassOf(BMV:DecreasedOS BMV:ChangeOverallSurvival)
+DisjointClasses(BMV:DecreasedOS BMV:IncreasedOS)
+DisjointClasses(BMV:DecreasedOS BMV:NoChangeOS)
+
+# Class: BMV:DecreasedPlasmaFibrinogenLevel (BMV:DecreasedPlasmaFibrinogenLevel)
+
+SubClassOf(BMV:DecreasedPlasmaFibrinogenLevel BMV:ChangePlasmaFibrinogenLevel)
+DisjointClasses(BMV:DecreasedPlasmaFibrinogenLevel BMV:IncreasedPlasmaFibrinogenLevel)
+DisjointClasses(BMV:DecreasedPlasmaFibrinogenLevel BMV:NoChangePlasmaFibrinogenLevel)
+
+# Class: BMV:DecreasedPlasmaPlateletCount (BMV:DecreasedPlasmaPlateletCount)
+
+SubClassOf(BMV:DecreasedPlasmaPlateletCount BMV:ChangePlasmaPlatelet)
+DisjointClasses(BMV:DecreasedPlasmaPlateletCount BMV:IncreasedPlasmaPlateletCount)
+DisjointClasses(BMV:DecreasedPlasmaPlateletCount BMV:NoChangePlasmaPlateletCount)
+
+# Class: BMV:DecreasedRadialBMD (BMV:DecreasedRadialBMD)
+
+SubClassOf(BMV:DecreasedRadialBMD BMV:ChangeRadialBMD)
+DisjointClasses(BMV:DecreasedRadialBMD BMV:IncreasedRadialBMD)
+DisjointClasses(BMV:DecreasedRadialBMD BMV:NoChangeRadialBMD)
+
+# Class: BMV:DecreasedRiskBreastCancer (BMV:DecreasedRiskBreastCancer)
+
+SubClassOf(BMV:DecreasedRiskBreastCancer BMV:ChangeRiskBreastCancer)
+
+# Class: BMV:DecreasedRiskCardiacDisease (BMV:DecreasedRiskCardiacDisease)
+
+SubClassOf(BMV:DecreasedRiskCardiacDisease BMV:ChangeRiskCardiacDisease)
+DisjointClasses(BMV:DecreasedRiskCardiacDisease BMV:IncreasedRiskCardiacDisease)
+DisjointClasses(BMV:DecreasedRiskCardiacDisease BMV:NoChangeRiskCardiacDisease)
+
+# Class: BMV:DecreasedRiskCataracts (BMV:DecreasedRiskCataracts)
+
+SubClassOf(BMV:DecreasedRiskCataracts BMV:ChangeRiskCataracts)
+DisjointClasses(BMV:DecreasedRiskCataracts BMV:IncreasedRiskCataracts)
+DisjointClasses(BMV:DecreasedRiskCataracts BMV:NoChangeRiskCataracts)
+
+# Class: BMV:DecreasedRiskColorectalCancer (BMV:DecreasedRiskColorectalCancer)
+
+SubClassOf(BMV:DecreasedRiskColorectalCancer BMV:ChangeRiskColorectalCancer)
+DisjointClasses(BMV:DecreasedRiskColorectalCancer BMV:IncreasedRiskColorectalCancer)
+DisjointClasses(BMV:DecreasedRiskColorectalCancer BMV:NoChangeRiskColorectalCancer)
+
+# Class: BMV:DecreasedRiskEndometrialAbnormality (BMV:DecreasedRiskEndometrialAbnormality)
+
+SubClassOf(BMV:DecreasedRiskEndometrialAbnormality BMV:ChangeRiskEndometrialAbnormality)
+DisjointClasses(BMV:DecreasedRiskEndometrialAbnormality BMV:IncreasedRiskEndometrialAbnormality)
+DisjointClasses(BMV:DecreasedRiskEndometrialAbnormality BMV:NoChangeRiskEndometrialAbnormality)
+
+# Class: BMV:DecreasedRiskEndometrialCancer (BMV:DecreasedRiskEndometrialCancer)
+
+SubClassOf(BMV:DecreasedRiskEndometrialCancer BMV:ChangeRiskEndometrialCancer)
+SubClassOf(BMV:DecreasedRiskEndometrialCancer BMV:DecreasedRiskEndometrialAbnormality)
+DisjointClasses(BMV:DecreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer)
+DisjointClasses(BMV:DecreasedRiskEndometrialCancer BMV:NoChangeRiskEndometrialCancer)
+
+# Class: BMV:DecreasedRiskFatalMI (BMV:DecreasedRiskFatalMI)
+
+SubClassOf(BMV:DecreasedRiskFatalMI BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:DecreasedRiskFatalMI BMV:IncreasedRiskFatalMI)
+DisjointClasses(BMV:DecreasedRiskFatalMI BMV:NoChangeRiskFatalMI)
+
+# Class: BMV:DecreasedRiskHotFlushes (BMV:DecreasedRiskHotFlushes)
+
+SubClassOf(BMV:DecreasedRiskHotFlushes BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:DecreasedRiskHotFlushes BMV:IncreasedRiskHotFlushes)
+DisjointClasses(BMV:DecreasedRiskHotFlushes BMV:NoChangeRiskHotFlushes)
+
+# Class: BMV:DecreasedRiskOvarianCyst (BMV:DecreasedRiskOvarianCyst)
+
+SubClassOf(BMV:DecreasedRiskOvarianCyst BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:DecreasedRiskOvarianCyst BMV:IncreasedRiskOvarianCyst)
+DisjointClasses(BMV:DecreasedRiskOvarianCyst BMV:NoChangeRiskOvarianCyst)
+
+# Class: BMV:DecreasedRiskPersistentSideEffects (BMV:DecreasedRiskPersistentSideEffects)
+
+SubClassOf(BMV:DecreasedRiskPersistentSideEffects BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:DecreasedRiskPersistentSideEffects BMV:IncreasedRiskPersistentSideEffects)
+DisjointClasses(BMV:DecreasedRiskPersistentSideEffects BMV:NoChangeRiskPersistentSideEffects)
+
+# Class: BMV:DecreasedRiskRetinopathy (BMV:DecreasedRiskRetinopathy)
+
+SubClassOf(BMV:DecreasedRiskRetinopathy BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:DecreasedRiskRetinopathy BMV:IncreasedRiskRetinopathy)
+DisjointClasses(BMV:DecreasedRiskRetinopathy BMV:NoChangeRiskRetiopathy)
+
+# Class: BMV:DecreasedRiskSideEffects (BMV:DecreasedRiskSideEffects)
+
+SubClassOf(BMV:DecreasedRiskSideEffects BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:DecreasedRiskSideEffects BMV:IncreasedRiskSideEffects)
+DisjointClasses(BMV:DecreasedRiskSideEffects BMV:NoChangeRiskSideEffects)
+
+# Class: BMV:DecreasedRiskVenousThrombosis (BMV:DecreasedRiskVenousThrombosis)
+
+SubClassOf(BMV:DecreasedRiskVenousThrombosis BMV:ChangeRiskVenousThrombosis)
+DisjointClasses(BMV:DecreasedRiskVenousThrombosis BMV:IncreasedRiskVenousThrombosis)
+DisjointClasses(BMV:DecreasedRiskVenousThrombosis BMV:NoChangeVenousRiskThrombosis)
+
+# Class: BMV:DeltaRisk (BMV:DeltaRisk)
+
+SubClassOf(BMV:DeltaRisk BMV:Risk)
+
+# Class: BMV:DiseaseStage (BMV:DiseaseStage)
+
+EquivalentClasses(BMV:DiseaseStage ObjectOneOf(BMV:ProtoStage1 BMV:ProtoStage2 BMV:ProtoStage3 BMV:ProtoStage4))
+SubClassOf(BMV:DiseaseStage BMV:References)
+
+# Class: BMV:DiseaseTypes (BMV:DiseaseTypes)
+
+SubClassOf(BMV:DiseaseTypes BMV:Abstract)
+DisjointClasses(BMV:DiseaseTypes BMV:MedicalIntervention)
+DisjointClasses(BMV:DiseaseTypes BMV:Outcomes)
+DisjointClasses(BMV:DiseaseTypes BMV:References)
+DisjointClasses(BMV:DiseaseTypes BMV:SymptomTypes)
+
+# Class: BMV:DrugRegimeTypes (BMV:DrugRegimeTypes)
+
+SubClassOf(BMV:DrugRegimeTypes BMV:TherapeuticType)
+
+# Class: BMV:ECMFRegimeType (BMV:ECMFRegimeType)
+
+SubClassOf(BMV:ECMFRegimeType BMV:AnthracyclineChemoTxRegimeTypes)
+SubClassOf(BMV:ECMFRegimeType BMV:PolyChemoTxRegimeTypes)
+
+# Class: BMV:ERNeg (BMV:ERNeg)
+
+SubClassOf(BMV:ERNeg BMV:BreastAdenoCa)
+
+# Class: BMV:ERPos (BMV:ERPos)
+
+SubClassOf(BMV:ERPos BMV:BreastAdenoCa)
+SubClassOf(BMV:ERPos BMV:HRPos)
+
+# Class: BMV:ERUnknown (BMV:ERUnknown)
+
+EquivalentClasses(BMV:ERUnknown ObjectIntersectionOf(BMV:BreastAdenoCa ObjectComplementOf(BMV:ERNeg) ObjectComplementOf(BMV:ERPos)))
+
+# Class: BMV:EarlyBreastCancer (BMV:EarlyBreastCancer)
+
+EquivalentClasses(BMV:EarlyBreastCancer ObjectIntersectionOf(BMV:BreastAdenoCa ObjectUnionOf(ObjectHasValue(BMV:hasStage BMV:ProtoStage1) ObjectHasValue(BMV:hasStage BMV:ProtoStage2))))
+
+# Class: BMV:EarlyCMFTChemoTam (BMV:EarlyCMFTChemoTam)
+
+SubClassOf(BMV:EarlyCMFTChemoTam BMV:CMFTChemoTam)
+DisjointClasses(BMV:EarlyCMFTChemoTam BMV:LateCMFTChemoTam)
+
+# Class: BMV:EndometrialAbnormality (BMV:EndometrialAbnormality)
+
+SubClassOf(BMV:EndometrialAbnormality BMV:DiseaseTypes)
+DisjointClasses(BMV:EndometrialAbnormality BMV:OvarianCyst)
+DisjointClasses(BMV:EndometrialAbnormality BMV:PersistentSideEffects)
+DisjointClasses(BMV:EndometrialAbnormality BMV:Retinopathy)
+DisjointClasses(BMV:EndometrialAbnormality BMV:VascularDisease)
+DisjointClasses(BMV:EndometrialAbnormality BMV:VenousThrombosis)
+
+# Class: BMV:EndometrialCancer (BMV:EndometrialCancer)
+
+SubClassOf(BMV:EndometrialCancer BMV:CancerTypes)
+DisjointClasses(BMV:EndometrialCancer BMV:GastricCancer)
+
+# Class: BMV:FatalMI (BMV:FatalMI)
+
+SubClassOf(BMV:FatalMI BMV:MI)
+DisjointClasses(BMV:FatalMI BMV:NonFatalMI)
+
+# Class: BMV:GastricCancer (BMV:GastricCancer)
+
+SubClassOf(BMV:GastricCancer BMV:CancerTypes)
+
+# Class: BMV:HRPos (BMV:HRPos)
+
+SubClassOf(BMV:HRPos BMV:BreastAdenoCa)
+
+# Class: BMV:HRStatus (BMV:HRStatus)
+
+EquivalentClasses(BMV:HRStatus ObjectOneOf(BMV:ProtoERNeg BMV:ProtoERPos BMV:ProtoPRNeg BMV:ProtoPRPos))
+SubClassOf(BMV:HRStatus BMV:References)
+DisjointClasses(BMV:HRStatus BMV:MenopausalStatus)
+DisjointClasses(BMV:HRStatus BMV:Pathological_Grade)
+
+# Class: BMV:HormoneRARegimeTypes (BMV:HormoneRARegimeTypes)
+
+SubClassOf(BMV:HormoneRARegimeTypes BMV:AdjuvantTreatment)
+
+# Class: BMV:HotFlushes (BMV:HotFlushes)
+
+SubClassOf(BMV:HotFlushes BMV:SymptomTypes)
+
+# Class: BMV:IncreasedBrCaDFS (BMV:IncreasedBrCaDFS)
+
+SubClassOf(BMV:IncreasedBrCaDFS BMV:ChangeBrCaDFS)
+DisjointClasses(BMV:IncreasedBrCaDFS BMV:NoChangeBrCaDFS)
+
+# Class: BMV:IncreasedBrCaDSS (BMV:IncreasedBrCaDSS)
+
+SubClassOf(BMV:IncreasedBrCaDSS BMV:ChangeBrCaDSS)
+DisjointClasses(BMV:IncreasedBrCaDSS BMV:NoChangeBrCaDSS)
+DisjointClasses(BMV:IncreasedBrCaDSS BMV:ReducedBrCaDSS)
+
+# Class: BMV:IncreasedCardiacDSS (BMV:IncreasedCardiacDSS)
+
+SubClassOf(BMV:IncreasedCardiacDSS BMV:ChangeCardiacDSS)
+DisjointClasses(BMV:IncreasedCardiacDSS BMV:NoChangeCardiacDSS)
+
+# Class: BMV:IncreasedCholesterol (BMV:IncreasedCholesterol)
+
+SubClassOf(BMV:IncreasedCholesterol BMV:ChangeCholesterol)
+DisjointClasses(BMV:IncreasedCholesterol BMV:NoChangeCholesterol)
+
+# Class: BMV:IncreasedEndoCaDFS (BMV:IncreasedEndoCaDFS)
+
+SubClassOf(BMV:IncreasedEndoCaDFS BMV:ChangeEndoCaDFS)
+DisjointClasses(BMV:IncreasedEndoCaDFS BMV:NoChangeEndoCaDFS)
+
+# Class: BMV:IncreasedEndoCaDSS (BMV:IncreasedEndoCaDSS)
+
+SubClassOf(BMV:IncreasedEndoCaDSS BMV:ChangeEndoCaDSS)
+DisjointClasses(BMV:IncreasedEndoCaDSS BMV:NoChangeEndoCaDSS)
+
+# Class: BMV:IncreasedLDL (BMV:IncreasedLDL)
+
+SubClassOf(BMV:IncreasedLDL BMV:ChangeLDL)
+DisjointClasses(BMV:IncreasedLDL BMV:NoChangeLDL)
+
+# Class: BMV:IncreasedLumbarBMD (BMV:IncreasedLumbarBMD)
+
+SubClassOf(BMV:IncreasedLumbarBMD BMV:ChangeLumbarBMD)
+DisjointClasses(BMV:IncreasedLumbarBMD BMV:NoChangeLumbarBMD)
+
+# Class: BMV:IncreasedOS (BMV:IncreasedOS)
+
+SubClassOf(BMV:IncreasedOS BMV:ChangeOverallSurvival)
+DisjointClasses(BMV:IncreasedOS BMV:NoChangeOS)
+
+# Class: BMV:IncreasedPlasmaFibrinogenLevel (BMV:IncreasedPlasmaFibrinogenLevel)
+
+SubClassOf(BMV:IncreasedPlasmaFibrinogenLevel BMV:ChangePlasmaFibrinogenLevel)
+DisjointClasses(BMV:IncreasedPlasmaFibrinogenLevel BMV:NoChangePlasmaFibrinogenLevel)
+
+# Class: BMV:IncreasedPlasmaPlateletCount (BMV:IncreasedPlasmaPlateletCount)
+
+SubClassOf(BMV:IncreasedPlasmaPlateletCount BMV:ChangePlasmaPlatelet)
+DisjointClasses(BMV:IncreasedPlasmaPlateletCount BMV:NoChangePlasmaPlateletCount)
+
+# Class: BMV:IncreasedRadialBMD (BMV:IncreasedRadialBMD)
+
+SubClassOf(BMV:IncreasedRadialBMD BMV:ChangeRadialBMD)
+DisjointClasses(BMV:IncreasedRadialBMD BMV:NoChangeRadialBMD)
+
+# Class: BMV:IncreasedRiskCardiacDisease (BMV:IncreasedRiskCardiacDisease)
+
+SubClassOf(BMV:IncreasedRiskCardiacDisease BMV:ChangeRiskCardiacDisease)
+DisjointClasses(BMV:IncreasedRiskCardiacDisease BMV:NoChangeRiskCardiacDisease)
+
+# Class: BMV:IncreasedRiskCataracts (BMV:IncreasedRiskCataracts)
+
+SubClassOf(BMV:IncreasedRiskCataracts BMV:ChangeRiskCataracts)
+DisjointClasses(BMV:IncreasedRiskCataracts BMV:NoChangeRiskCataracts)
+
+# Class: BMV:IncreasedRiskColorectalCancer (BMV:IncreasedRiskColorectalCancer)
+
+SubClassOf(BMV:IncreasedRiskColorectalCancer BMV:ChangeRiskColorectalCancer)
+DisjointClasses(BMV:IncreasedRiskColorectalCancer BMV:NoChangeRiskColorectalCancer)
+
+# Class: BMV:IncreasedRiskEndometrialAbnormality (BMV:IncreasedRiskEndometrialAbnormality)
+
+SubClassOf(BMV:IncreasedRiskEndometrialAbnormality BMV:ChangeRiskEndometrialAbnormality)
+DisjointClasses(BMV:IncreasedRiskEndometrialAbnormality BMV:NoChangeRiskEndometrialAbnormality)
+
+# Class: BMV:IncreasedRiskEndometrialCancer (BMV:IncreasedRiskEndometrialCancer)
+
+SubClassOf(BMV:IncreasedRiskEndometrialCancer BMV:ChangeRiskEndometrialCancer)
+SubClassOf(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialAbnormality)
+DisjointClasses(BMV:IncreasedRiskEndometrialCancer BMV:NoChangeRiskEndometrialCancer)
+
+# Class: BMV:IncreasedRiskFatalMI (BMV:IncreasedRiskFatalMI)
+
+SubClassOf(BMV:IncreasedRiskFatalMI BMV:ChangeRiskFatalMI)
+DisjointClasses(BMV:IncreasedRiskFatalMI BMV:NoChangeRiskFatalMI)
+
+# Class: BMV:IncreasedRiskGastricCancer (BMV:IncreasedRiskGastricCancer)
+
+SubClassOf(BMV:IncreasedRiskGastricCancer BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:IncreasedRiskGastricCancer BMV:NoChangeRiskGastricCancer)
+DisjointClasses(BMV:IncreasedRiskGastricCancer BMV:ReducedRiskGastricCancer)
+
+# Class: BMV:IncreasedRiskHotFlushes (BMV:IncreasedRiskHotFlushes)
+
+SubClassOf(BMV:IncreasedRiskHotFlushes BMV:ChangeRiskHotFlushes)
+DisjointClasses(BMV:IncreasedRiskHotFlushes BMV:NoChangeRiskHotFlushes)
+
+# Class: BMV:IncreasedRiskOvarianCyst (BMV:IncreasedRiskOvarianCyst)
+
+SubClassOf(BMV:IncreasedRiskOvarianCyst BMV:ChangeRiskOvarianCyst)
+DisjointClasses(BMV:IncreasedRiskOvarianCyst BMV:NoChangeRiskOvarianCyst)
+
+# Class: BMV:IncreasedRiskPersistentSideEffects (BMV:IncreasedRiskPersistentSideEffects)
+
+SubClassOf(BMV:IncreasedRiskPersistentSideEffects BMV:ChangeRiskPersistentSideEffects)
+DisjointClasses(BMV:IncreasedRiskPersistentSideEffects BMV:NoChangeRiskPersistentSideEffects)
+
+# Class: BMV:IncreasedRiskRetinopathy (BMV:IncreasedRiskRetinopathy)
+
+SubClassOf(BMV:IncreasedRiskRetinopathy BMV:ChangeRiskRetinopathy)
+DisjointClasses(BMV:IncreasedRiskRetinopathy BMV:NoChangeRiskRetiopathy)
+
+# Class: BMV:IncreasedRiskSideEffects (BMV:IncreasedRiskSideEffects)
+
+SubClassOf(BMV:IncreasedRiskSideEffects BMV:ChangeRiskSideEffects)
+DisjointClasses(BMV:IncreasedRiskSideEffects BMV:NoChangeRiskSideEffects)
+
+# Class: BMV:IncreasedRiskVenousThrombosis (BMV:IncreasedRiskVenousThrombosis)
+
+SubClassOf(BMV:IncreasedRiskVenousThrombosis BMV:ChangeRiskVenousThrombosis)
+DisjointClasses(BMV:IncreasedRiskVenousThrombosis BMV:NoChangeVenousRiskThrombosis)
+
+# Class: BMV:LNNeg (BMV:LNNeg)
+
+EquivalentClasses(BMV:LNNeg ObjectHasValue(BMV:hasLNStatus BMV:ProtoLNNeg))
+SubClassOf(BMV:LNNeg BMV:BreastAdenoCa)
+
+# Class: BMV:LNPos (BMV:LNPos)
+
+EquivalentClasses(BMV:LNPos ObjectHasValue(BMV:hasLNStatus BMV:ProtoLNPos))
+SubClassOf(BMV:LNPos BMV:BreastAdenoCa)
+
+# Class: BMV:LNStatus (BMV:LNStatus)
+
+EquivalentClasses(BMV:LNStatus ObjectOneOf(BMV:ProtoLNNeg BMV:ProtoLNPos))
+SubClassOf(BMV:LNStatus BMV:References)
+
+# Class: BMV:LateCMFTChemoTam (BMV:LateCMFTChemoTam)
+
+SubClassOf(BMV:LateCMFTChemoTam BMV:CMFTChemoTam)
+
+# Class: BMV:LumbarBMD (BMV:LumbarBMD)
+
+SubClassOf(BMV:LumbarBMD BMV:BMD)
+DisjointClasses(BMV:LumbarBMD BMV:RadialBMD)
+
+# Class: BMV:MFTChemoTam (BMV:MFTChemoTam)
+
+SubClassOf(BMV:MFTChemoTam BMV:ChemoTamRegimeTypes)
+DisjointClasses(BMV:MFTChemoTam BMV:PAFTChemoTam)
+DisjointClasses(BMV:MFTChemoTam BMV:PFTChemoTam)
+
+# Class: BMV:MI (BMV:MI)
+
+SubClassOf(BMV:MI BMV:CardiacDisease)
+
+# Class: BMV:MedicalIntervention (BMV:MedicalIntervention)
+
+SubClassOf(BMV:MedicalIntervention BMV:Abstract)
+DisjointClasses(BMV:MedicalIntervention BMV:Outcomes)
+DisjointClasses(BMV:MedicalIntervention BMV:References)
+DisjointClasses(BMV:MedicalIntervention BMV:SymptomTypes)
+
+# Class: BMV:Men (BMV:Men)
+
+SubClassOf(BMV:Men BMV:Adults)
+DisjointClasses(BMV:Men BMV:Women)
+
+# Class: BMV:MenopausalStatus (BMV:MenopausalStatus)
+
+EquivalentClasses(BMV:MenopausalStatus ObjectOneOf(BMV:ProtoPostmenopausal BMV:ProtoPremenopausal))
+SubClassOf(BMV:MenopausalStatus BMV:References)
+DisjointClasses(BMV:MenopausalStatus BMV:Outcomes)
+DisjointClasses(BMV:MenopausalStatus BMV:Pathological_Grade)
+
+# Class: BMV:NoChangeBrCaDFS (BMV:NoChangeBrCaDFS)
+
+SubClassOf(BMV:NoChangeBrCaDFS BMV:ChangeBrCaDFS)
+
+# Class: BMV:NoChangeBrCaDSS (BMV:NoChangeBrCaDSS)
+
+SubClassOf(BMV:NoChangeBrCaDSS BMV:ChangeBrCaDSS)
+DisjointClasses(BMV:NoChangeBrCaDSS BMV:ReducedBrCaDSS)
+
+# Class: BMV:NoChangeCardiacDSS (BMV:NoChangeCardiacDSS)
+
+SubClassOf(BMV:NoChangeCardiacDSS BMV:ChangeCardiacDSS)
+
+# Class: BMV:NoChangeCholesterol (BMV:NoChangeCholesterol)
+
+SubClassOf(BMV:NoChangeCholesterol BMV:ChangeCholesterol)
+
+# Class: BMV:NoChangeEndoCaDFS (BMV:NoChangeEndoCaDFS)
+
+SubClassOf(BMV:NoChangeEndoCaDFS BMV:ChangeEndoCaDFS)
+
+# Class: BMV:NoChangeEndoCaDSS (BMV:NoChangeEndoCaDSS)
+
+SubClassOf(BMV:NoChangeEndoCaDSS BMV:ChangeEndoCaDSS)
+
+# Class: BMV:NoChangeLDL (BMV:NoChangeLDL)
+
+SubClassOf(BMV:NoChangeLDL BMV:ChangeLDL)
+
+# Class: BMV:NoChangeLumbarBMD (BMV:NoChangeLumbarBMD)
+
+SubClassOf(BMV:NoChangeLumbarBMD BMV:ChangeLumbarBMD)
+
+# Class: BMV:NoChangeOS (BMV:NoChangeOS)
+
+SubClassOf(BMV:NoChangeOS BMV:ChangeOverallSurvival)
+
+# Class: BMV:NoChangePlasmaFibrinogenLevel (BMV:NoChangePlasmaFibrinogenLevel)
+
+SubClassOf(BMV:NoChangePlasmaFibrinogenLevel BMV:ChangePlasmaFibrinogenLevel)
+
+# Class: BMV:NoChangePlasmaPlateletCount (BMV:NoChangePlasmaPlateletCount)
+
+SubClassOf(BMV:NoChangePlasmaPlateletCount BMV:ChangePlasmaPlatelet)
+
+# Class: BMV:NoChangeRadialBMD (BMV:NoChangeRadialBMD)
+
+SubClassOf(BMV:NoChangeRadialBMD BMV:ChangeRadialBMD)
+
+# Class: BMV:NoChangeRiskCardiacDisease (BMV:NoChangeRiskCardiacDisease)
+
+SubClassOf(BMV:NoChangeRiskCardiacDisease BMV:ChangeRiskCardiacDisease)
+
+# Class: BMV:NoChangeRiskCataracts (BMV:NoChangeRiskCataracts)
+
+SubClassOf(BMV:NoChangeRiskCataracts BMV:ChangeRiskCataracts)
+
+# Class: BMV:NoChangeRiskColorectalCancer (BMV:NoChangeRiskColorectalCancer)
+
+SubClassOf(BMV:NoChangeRiskColorectalCancer BMV:ChangeRiskColorectalCancer)
+
+# Class: BMV:NoChangeRiskEndometrialAbnormality (BMV:NoChangeRiskEndometrialAbnormality)
+
+SubClassOf(BMV:NoChangeRiskEndometrialAbnormality BMV:ChangeRiskEndometrialAbnormality)
+
+# Class: BMV:NoChangeRiskEndometrialCancer (BMV:NoChangeRiskEndometrialCancer)
+
+SubClassOf(BMV:NoChangeRiskEndometrialCancer BMV:ChangeRiskEndometrialCancer)
+SubClassOf(BMV:NoChangeRiskEndometrialCancer BMV:NoChangeRiskEndometrialAbnormality)
+
+# Class: BMV:NoChangeRiskFatalMI (BMV:NoChangeRiskFatalMI)
+
+SubClassOf(BMV:NoChangeRiskFatalMI BMV:ChangeRiskFatalMI)
+
+# Class: BMV:NoChangeRiskGastricCancer (BMV:NoChangeRiskGastricCancer)
+
+SubClassOf(BMV:NoChangeRiskGastricCancer BMV:ChangeRiskGastricCancer)
+DisjointClasses(BMV:NoChangeRiskGastricCancer BMV:ReducedRiskGastricCancer)
+
+# Class: BMV:NoChangeRiskHotFlushes (BMV:NoChangeRiskHotFlushes)
+
+SubClassOf(BMV:NoChangeRiskHotFlushes BMV:ChangeRiskHotFlushes)
+
+# Class: BMV:NoChangeRiskOvarianCyst (BMV:NoChangeRiskOvarianCyst)
+
+SubClassOf(BMV:NoChangeRiskOvarianCyst BMV:ChangeRiskOvarianCyst)
+
+# Class: BMV:NoChangeRiskPersistentSideEffects (BMV:NoChangeRiskPersistentSideEffects)
+
+SubClassOf(BMV:NoChangeRiskPersistentSideEffects BMV:ChangeRiskPersistentSideEffects)
+
+# Class: BMV:NoChangeRiskRetiopathy (BMV:NoChangeRiskRetiopathy)
+
+SubClassOf(BMV:NoChangeRiskRetiopathy BMV:ChangeRiskRetinopathy)
+
+# Class: BMV:NoChangeRiskSideEffects (BMV:NoChangeRiskSideEffects)
+
+SubClassOf(BMV:NoChangeRiskSideEffects BMV:ChangeRiskSideEffects)
+
+# Class: BMV:NoChangeVenousRiskThrombosis (BMV:NoChangeVenousRiskThrombosis)
+
+SubClassOf(BMV:NoChangeVenousRiskThrombosis BMV:ChangeRiskVenousThrombosis)
+
+# Class: BMV:NonAnthracyclineChemoTxRegimeTypes (BMV:NonAnthracyclineChemoTxRegimeTypes)
+
+EquivalentClasses(BMV:NonAnthracyclineChemoTxRegimeTypes ObjectIntersectionOf(BMV:ChemoTxRegimeTypes ObjectComplementOf(BMV:AnthracyclineChemoTxRegimeTypes)))
+
+# Class: BMV:NonFatalMI (BMV:NonFatalMI)
+
+SubClassOf(BMV:NonFatalMI BMV:MI)
+
+# Class: BMV:Outcomes (BMV:Outcomes)
+
+SubClassOf(BMV:Outcomes BMV:Abstract)
+DisjointClasses(BMV:Outcomes BMV:References)
+DisjointClasses(BMV:Outcomes BMV:SymptomTypes)
+
+# Class: BMV:OvarianCyst (BMV:OvarianCyst)
+
+SubClassOf(BMV:OvarianCyst BMV:DiseaseTypes)
+DisjointClasses(BMV:OvarianCyst BMV:PersistentSideEffects)
+DisjointClasses(BMV:OvarianCyst BMV:Retinopathy)
+DisjointClasses(BMV:OvarianCyst BMV:VascularDisease)
+DisjointClasses(BMV:OvarianCyst BMV:VenousThrombosis)
+
+# Class: BMV:PAFTChemoTam (BMV:PAFTChemoTam)
+
+SubClassOf(BMV:PAFTChemoTam BMV:ChemoTamRegimeTypes)
+DisjointClasses(BMV:PAFTChemoTam BMV:PFTChemoTam)
+
+# Class: BMV:PFTChemoTam (BMV:PFTChemoTam)
+
+SubClassOf(BMV:PFTChemoTam BMV:ChemoTamRegimeTypes)
+
+# Class: BMV:Pathological_Grade (BMV:Pathological_Grade)
+
+SubClassOf(BMV:Pathological_Grade BMV:References)
+
+# Class: BMV:PersistentSideEffects (BMV:PersistentSideEffects)
+
+SubClassOf(BMV:PersistentSideEffects BMV:DiseaseTypes)
+DisjointClasses(BMV:PersistentSideEffects BMV:Retinopathy)
+DisjointClasses(BMV:PersistentSideEffects BMV:VascularDisease)
+DisjointClasses(BMV:PersistentSideEffects BMV:VenousThrombosis)
+
+# Class: BMV:PlasmaCholesterol (BMV:PlasmaCholesterol)
+
+SubClassOf(BMV:PlasmaCholesterol BMV:BiologicalLevels)
+
+# Class: BMV:PolyChemoTxRegimeTypes (BMV:PolyChemoTxRegimeTypes)
+
+SubClassOf(BMV:PolyChemoTxRegimeTypes BMV:ChemoTxRegimeTypes)
+
+# Class: BMV:PoorPrognosis (BMV:PoorPrognosis)
+
+SubClassOf(BMV:PoorPrognosis BMV:Outcomes)
+DisjointClasses(BMV:PoorPrognosis BMV:Risk)
+
+# Class: BMV:Postmenopausal (BMV:Postmenopausal)
+
+SubClassOf(BMV:Postmenopausal BMV:Women)
+
+# Class: BMV:Premenopausal (BMV:Premenopausal)
+
+SubClassOf(BMV:Premenopausal BMV:Women)
+
+# Class: BMV:RadialBMD (BMV:RadialBMD)
+
+SubClassOf(BMV:RadialBMD BMV:BMD)
+
+# Class: BMV:ReducedBrCaDSS (BMV:ReducedBrCaDSS)
+
+SubClassOf(BMV:ReducedBrCaDSS BMV:ChangeBrCaDSS)
+
+# Class: BMV:ReducedRiskGastricCancer (BMV:ReducedRiskGastricCancer)
+
+SubClassOf(BMV:ReducedRiskGastricCancer BMV:ChangeRiskGastricCancer)
+
+# Class: BMV:References (BMV:References)
+
+SubClassOf(BMV:References BMV:Abstract)
+DisjointClasses(BMV:References BMV:SymptomTypes)
+
+# Class: BMV:Retinopathy (BMV:Retinopathy)
+
+SubClassOf(BMV:Retinopathy BMV:DiseaseTypes)
+DisjointClasses(BMV:Retinopathy BMV:VascularDisease)
+DisjointClasses(BMV:Retinopathy BMV:VenousThrombosis)
+
+# Class: BMV:Risk (BMV:Risk)
+
+SubClassOf(BMV:Risk BMV:Outcomes)
+
+# Class: BMV:RiskCancer (BMV:RiskCancer)
+
+SubClassOf(BMV:RiskCancer BMV:AbsoluteRisk)
+DisjointClasses(BMV:RiskCancer BMV:RiskCataracts)
+DisjointClasses(BMV:RiskCancer BMV:RiskEndometrialAbnormality)
+DisjointClasses(BMV:RiskCancer BMV:RiskOvarianCyst)
+DisjointClasses(BMV:RiskCancer BMV:RiskRetinopathy)
+
+# Class: BMV:RiskCataracts (BMV:RiskCataracts)
+
+SubClassOf(BMV:RiskCataracts BMV:AbsoluteRisk)
+DisjointClasses(BMV:RiskCataracts BMV:RiskEndometrialAbnormality)
+DisjointClasses(BMV:RiskCataracts BMV:RiskEndometrialCa)
+DisjointClasses(BMV:RiskCataracts BMV:RiskOvarianCyst)
+DisjointClasses(BMV:RiskCataracts BMV:RiskRetinopathy)
+
+# Class: BMV:RiskEndometrialAbnormality (BMV:RiskEndometrialAbnormality)
+
+SubClassOf(BMV:RiskEndometrialAbnormality BMV:AbsoluteRisk)
+DisjointClasses(BMV:RiskEndometrialAbnormality BMV:RiskEndometrialCa)
+DisjointClasses(BMV:RiskEndometrialAbnormality BMV:RiskOvarianCyst)
+DisjointClasses(BMV:RiskEndometrialAbnormality BMV:RiskRetinopathy)
+
+# Class: BMV:RiskEndometrialCa (BMV:RiskEndometrialCa)
+
+SubClassOf(BMV:RiskEndometrialCa BMV:RiskCancer)
+DisjointClasses(BMV:RiskEndometrialCa BMV:RiskOvarianCyst)
+DisjointClasses(BMV:RiskEndometrialCa BMV:RiskRetinopathy)
+
+# Class: BMV:RiskOvarianCyst (BMV:RiskOvarianCyst)
+
+SubClassOf(BMV:RiskOvarianCyst BMV:AbsoluteRisk)
+DisjointClasses(BMV:RiskOvarianCyst BMV:RiskRetinopathy)
+
+# Class: BMV:RiskRetinopathy (BMV:RiskRetinopathy)
+
+SubClassOf(BMV:RiskRetinopathy BMV:AbsoluteRisk)
+
+# Class: BMV:Stroke (BMV:Stroke)
+
+SubClassOf(BMV:Stroke BMV:VascularDisease)
+
+# Class: BMV:SymptomTypes (BMV:SymptomTypes)
+
+SubClassOf(BMV:SymptomTypes BMV:Abstract)
+
+# Class: BMV:Tamoxifen (BMV:Tamoxifen)
+
+SubClassOf(BMV:Tamoxifen BMV:HormoneRARegimeTypes)
+
+# Class: BMV:Tamoxifen20mg (BMV:Tamoxifen20mg)
+
+SubClassOf(BMV:Tamoxifen20mg BMV:TamoxifenByDose)
+DisjointClasses(BMV:Tamoxifen20mg BMV:Tamoxifen30mg)
+DisjointClasses(BMV:Tamoxifen20mg BMV:Tamoxifen40mg)
+
+# Class: BMV:Tamoxifen2YrCourse (BMV:Tamoxifen2YrCourse)
+
+SubClassOf(BMV:Tamoxifen2YrCourse BMV:TamoxifenByLength)
+DisjointClasses(BMV:Tamoxifen2YrCourse BMV:Tamoxifen5YrCourse)
+DisjointClasses(BMV:Tamoxifen2YrCourse BMV:TamoxifenMore5YrCourse)
+
+# Class: BMV:Tamoxifen30mg (BMV:Tamoxifen30mg)
+
+SubClassOf(BMV:Tamoxifen30mg BMV:TamoxifenByDose)
+DisjointClasses(BMV:Tamoxifen30mg BMV:Tamoxifen40mg)
+
+# Class: BMV:Tamoxifen40mg (BMV:Tamoxifen40mg)
+
+SubClassOf(BMV:Tamoxifen40mg BMV:TamoxifenByDose)
+
+# Class: BMV:Tamoxifen5YrCourse (BMV:Tamoxifen5YrCourse)
+
+SubClassOf(BMV:Tamoxifen5YrCourse BMV:TamoxifenByLength)
+DisjointClasses(BMV:Tamoxifen5YrCourse BMV:TamoxifenMore5YrCourse)
+
+# Class: BMV:TamoxifenByDose (BMV:TamoxifenByDose)
+
+SubClassOf(BMV:TamoxifenByDose BMV:Tamoxifen)
+DisjointClasses(BMV:TamoxifenByDose BMV:TamoxifenByLength)
+
+# Class: BMV:TamoxifenByLength (BMV:TamoxifenByLength)
+
+SubClassOf(BMV:TamoxifenByLength BMV:Tamoxifen)
+
+# Class: BMV:TamoxifenMore5YrCourse (BMV:TamoxifenMore5YrCourse)
+
+SubClassOf(BMV:TamoxifenMore5YrCourse BMV:TamoxifenByLength)
+
+# Class: BMV:TherapeuticType (BMV:TherapeuticType)
+
+SubClassOf(BMV:TherapeuticType BMV:MedicalIntervention)
+
+# Class: BMV:VascularDisease (BMV:VascularDisease)
+
+SubClassOf(BMV:VascularDisease BMV:DiseaseTypes)
+DisjointClasses(BMV:VascularDisease BMV:VenousThrombosis)
+
+# Class: BMV:VenousThrombosis (BMV:VenousThrombosis)
+
+SubClassOf(BMV:VenousThrombosis BMV:DiseaseTypes)
+
+# Class: BMV:Women (BMV:Women)
+
+SubClassOf(BMV:Women BMV:Adults)
+
+
+############################
+#   Named Individuals
+############################
+
+# Individual: BMV:DecreasedBrCaDFS05 (BMV:DecreasedBrCaDFS05)
+
+ClassAssertion(BMV:DecreasedBrCaDFS BMV:DecreasedBrCaDFS05)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS05 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedBrCaDFS05 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedBrCaDFS08 (BMV:DecreasedBrCaDFS08)
+
+ClassAssertion(BMV:DecreasedBrCaDFS BMV:DecreasedBrCaDFS08)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedBrCaDFS08 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedBrCaDFS08 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedCholesterol088 (BMV:DecreasedCholesterol088)
+
+ClassAssertion(BMV:DecreasedCholesterol BMV:DecreasedCholesterol088)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:DecreasedCholesterol088 BMV:PlasmaCholesterolInst)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedCholesterol088 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedEndoCaDFS066 (BMV:DecreasedEndoCaDFS066)
+
+ClassAssertion(BMV:DecreasedEndoCaDFS BMV:DecreasedEndoCaDFS066)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedEndoCaDFS066 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedEndoCaDSS066 (BMV:DecreasedEndoCaDSS0.66)
+
+ClassAssertion(BMV:DecreasedEndoCaDSS BMV:DecreasedEndoCaDSS066)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedEndoCaDSS066 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedEndoCaDSS066 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedLDL088 (BMV:DecreasedLDL088)
+
+ClassAssertion(BMV:DecreasedLDL BMV:DecreasedLDL088)
+
+# Individual: BMV:DecreasedLumbarBMD0986 (BMV:DecreasedLumbarBMD0986)
+
+ClassAssertion(BMV:DecreasedLumbarBMD BMV:DecreasedLumbarBMD0986)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedLumbarBMD0986 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedLumbarBMD0993 (BMV:DecreasedLumbarBMD0993)
+
+ClassAssertion(BMV:DecreasedLumbarBMD BMV:DecreasedLumbarBMD0993)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:DecreasedLumbarBMD0993 BMV:LumbarBMDLevel)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedLumbarBMD0993 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedPlasmaFibrinogenLevel085 (BMV:DecreasedPlasmaFibrinogenLevel085)
+
+ClassAssertion(BMV:DecreasedPlasmaFibrinogenLevel BMV:DecreasedPlasmaFibrinogenLevel085)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:DecreasedPlasmaFibrinogenLevel085 BMV:PlasmaFibrinogen)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedPlasmaFibrinogenLevel085 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedPlasmaPlateletCount092 (BMV:DecreasedPlasmaPlateletCount092)
+
+ClassAssertion(BMV:DecreasedPlasmaPlateletCount BMV:DecreasedPlasmaPlateletCount092)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:DecreasedPlasmaPlateletCount092 BMV:PlasmaPlatelet)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedPlasmaPlateletCount092 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRadialBMD_NOS (BMV:DecreasedRadialBMD_NOS)
+
+ClassAssertion(BMV:DecreasedRadialBMD BMV:DecreasedRadialBMD_NOS)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:DecreasedRadialBMD_NOS BMV:RadialBMDLevel)
+
+# Individual: BMV:DecreasedRiskBrCa001 (BMV:DecreasedRiskBrCa001)
+
+ClassAssertion(BMV:DecreasedRiskBreastCancer BMV:DecreasedRiskBrCa001)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa001 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskBrCa001 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRiskBrCa055 (BMV:DecreasedRiskBrCa055)
+
+ClassAssertion(BMV:DecreasedRiskBreastCancer BMV:DecreasedRiskBrCa055)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa055 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskBrCa055 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRiskBrCa06 (BMV:DecreasedRiskBrCa06)
+
+ClassAssertion(BMV:DecreasedRiskBreastCancer BMV:DecreasedRiskBrCa06)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskBrCa06 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskBrCa06 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRiskCardiacDisease068 (BMV:DecreasedRiskCardiacDisease068)
+
+ClassAssertion(BMV:DecreasedRiskCardiacDisease BMV:DecreasedRiskCardiacDisease068)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskCardiacDisease068 BMV:ProtoFatalMI)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskCardiacDisease068 BMV:ProtoNonFatalMI)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskCardiacDisease068 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRiskFatalMI037 (BMV:DecreasedRiskFatalMI037)
+
+ClassAssertion(BMV:DecreasedRiskFatalMI BMV:DecreasedRiskFatalMI037)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskFatalMI037 BMV:ProtoFatalMI)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskFatalMI037 "0.66"^^xsd:decimal)
+
+# Individual: BMV:DecreasedRiskHotFlushes08 (BMV:DecreasedRiskHotFlushes08)
+
+ClassAssertion(BMV:DecreasedRiskHotFlushes BMV:DecreasedRiskHotFlushes08)
+ObjectPropertyAssertion(BMV:refersDisease BMV:DecreasedRiskHotFlushes08 BMV:ProtoHotFlushes)
+DataPropertyAssertion(BMV:hasValue BMV:DecreasedRiskHotFlushes08 "0.66"^^xsd:decimal)
+
+# Individual: BMV:ECMFTypeInstance (BMV:ECMFTypeInstance)
+
+ClassAssertion(BMV:ECMFRegimeType BMV:ECMFTypeInstance)
+
+# Individual: BMV:IncreasedBrCaDFS105 (BMV:IncreasedBrCaDFS105)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS105)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS105 BMV:ProtoERPosLNPosStage2BrCa)
+
+# Individual: BMV:IncreasedBrCaDFS11 (BMV:IncreasedBrCaDFS11)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS11)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS11 BMV:ProtoERPosLNPosStage2BrCa)
+
+# Individual: BMV:IncreasedBrCaDFS12 (BMV:IncreasedBrCaDFS12)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS12)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS12 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedBrCaDFS12 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedBrCaDFS121 (BMV:IncreasedBrCaDFS121)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS121)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS121 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedBrCaDFS121 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedBrCaDFS13 (BMV:IncreasedBrCaDFS13)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS13)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS13 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedBrCaDFS13 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedBrCaDFS15 (BMV:IncreasedBrCaDFS15)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS15)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS15 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedBrCaDFS15 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedBrCaDFS17 (BMV:IncreasedBrCaDFS17)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS17)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS17 BMV:ProtoERPosLNPosStage2BrCa)
+
+# Individual: BMV:IncreasedBrCaDFS1x (BMV:IncreasedBrCaDFS1x)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFS1x)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFS1x BMV:ProtoERPosLNPosStage2BrCa)
+
+# Individual: BMV:IncreasedBrCaDFSREF (BMV:IncreasedBrCaDFSREF)
+
+ClassAssertion(BMV:IncreasedBrCaDFS BMV:IncreasedBrCaDFSREF)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedBrCaDFSREF BMV:ProtoERPosLNPosStage1BrCa)
+
+# Individual: BMV:IncreasedCardiacDSS152 (BMV:IncreasedCardiacDSS152)
+
+ClassAssertion(BMV:IncreasedCardiacDSS BMV:IncreasedCardiacDSS152)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedCardiacDSS152 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedLumbarBMD1006 (BMV:IncreasedLumbarBMD1006)
+
+ClassAssertion(BMV:IncreasedLumbarBMD BMV:IncreasedLumbarBMD1006)
+
+# Individual: BMV:IncreasedLumbarBMD1008 (BMV:IncreasedLumbarBMD1008)
+
+ClassAssertion(BMV:IncreasedLumbarBMD BMV:IncreasedLumbarBMD1008)
+
+# Individual: BMV:IncreasedLumbarBMD1012 (BMV:IncreasedLumbarBMD1012)
+
+ClassAssertion(BMV:IncreasedLumbarBMD BMV:IncreasedLumbarBMD1012)
+
+# Individual: BMV:IncreasedOS102 (BMV:IncreasedOS102)
+
+ClassAssertion(BMV:IncreasedOS BMV:IncreasedOS102)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedOS102 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedOS103 (BMV:IncreasedOS103)
+
+ClassAssertion(BMV:IncreasedOS BMV:IncreasedOS103)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedOS103 "0.66"^^xsd:decimal)
+
+# Individual: BMV:IncreasedOS11 (BMV:IncreasedOS11)
+
+ClassAssertion(BMV:IncreasedOS BMV:IncreasedOS11)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedOS11 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedOS12 (BMV:IncreasedOS12)
+
+ClassAssertion(BMV:IncreasedOS BMV:IncreasedOS12)
+
+# Individual: BMV:IncreasedRiskCRC19 (BMV:IncreasedRiskCRC19)
+
+ClassAssertion(BMV:IncreasedRiskColorectalCancer BMV:IncreasedRiskCRC19)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskCRC19 BMV:ProtoColorectalCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskCRC19 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskCataracts114 (BMV:IncreasedRiskCataracts114)
+
+ClassAssertion(BMV:IncreasedRiskCataracts BMV:IncreasedRiskCataracts114)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer23 (BMV:IncreasedRiskEndometrialCancer23)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer23)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer23 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer23 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer253 (BMV:IncreasedRiskEndometrialCancer253)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer253)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer253 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer253 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer41 (BMV:IncreasedRiskEndometrialCancer41)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer41)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer41 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer41 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer60 (BMV:IncreasedRiskEndometrialCancer60)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer60)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer60 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer60 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer64 (BMV:IncreasedRiskEndometrialCancer64)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer64)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer64 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer64 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskEndometrialCancer75 (BMV:IncreasedRiskEndometrialCancer75)
+
+ClassAssertion(BMV:IncreasedRiskEndometrialCancer BMV:IncreasedRiskEndometrialCancer75)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskEndometrialCancer75 BMV:ProtoEndoCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskEndometrialCancer75 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskGastricCa30 (BMV:IncreasedRiskGastricCa30)
+
+ClassAssertion(BMV:IncreasedRiskGastricCancer BMV:IncreasedRiskGastricCa30)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskGastricCa30 BMV:ProtoGastricCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskGastricCa30 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskGastricCa32 (BMV:IncreasedRiskGastricCa32)
+
+ClassAssertion(BMV:IncreasedRiskGastricCancer BMV:IncreasedRiskGastricCa32)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskGastricCa32 BMV:ProtoGastricCa)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskGastricCa32 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskPersistentSideEffects23 (BMV:IncreasedRiskPersistentSideEffects23)
+
+ClassAssertion(BMV:IncreasedRiskPersistentSideEffects BMV:IncreasedRiskPersistentSideEffects23)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskPersistentSideEffects23 BMV:PersistentSideEffectsInst)
+
+# Individual: BMV:IncreasedRiskRetinopathy152 (BMV:IncreasedRiskRetinopathy152)
+
+ClassAssertion(BMV:IncreasedRiskRetinopathy BMV:IncreasedRiskRetinopathy152)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskRetinopathy152 BMV:ProtoRetinopathy)
+
+# Individual: BMV:IncreasedRiskSideEffects23 (BMV:IncreasedRiskSideEffects23)
+
+ClassAssertion(BMV:IncreasedRiskSideEffects BMV:IncreasedRiskSideEffects23)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskSideEffects23 BMV:PersistentSideEffectsInst)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskSideEffects23 "1.2"^^xsd:decimal)
+
+# Individual: BMV:IncreasedRiskVenousThrombosis34 (BMV:IncreasedRiskVenousThrombosis34)
+
+ClassAssertion(BMV:IncreasedRiskVenousThrombosis BMV:IncreasedRiskVenousThrombosis34)
+ObjectPropertyAssertion(BMV:refersDisease BMV:IncreasedRiskVenousThrombosis34 BMV:ProtoVenousThrombosis)
+DataPropertyAssertion(BMV:hasValue BMV:IncreasedRiskVenousThrombosis34 "0.66"^^xsd:decimal)
+
+# Individual: BMV:LumbarBMDLevel (BMV:LumbarBMDLevel)
+
+ClassAssertion(BMV:LumbarBMD BMV:LumbarBMDLevel)
+
+# Individual: BMV:MsJones (BMV:MsJones)
+
+ClassAssertion(BMV:Aged50Plus BMV:MsJones)
+ClassAssertion(BMV:Postmenopausal BMV:MsJones)
+ClassAssertion(BMV:Women BMV:MsJones)
+ObjectPropertyAssertion(BMV:hasDisease BMV:MsJones BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasAge BMV:MsJones "51"^^xsd:int)
+
+# Individual: BMV:NoChangeBrCaDFS1 (BMV:NoChangeBrCaDFS1)
+
+ClassAssertion(BMV:NoChangeBrCaDFS BMV:NoChangeBrCaDFS1)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeBrCaDFS1 BMV:ProtoERPosLNPosStage2BrCa)
+DataPropertyAssertion(BMV:hasValue BMV:NoChangeBrCaDFS1 "1.2"^^xsd:decimal)
+
+# Individual: BMV:NoChangeRadialBMD10 (BMV:NoChangeRadialBMD10)
+
+ClassAssertion(BMV:NoChangeRadialBMD BMV:NoChangeRadialBMD10)
+ObjectPropertyAssertion(BMV:refersSubstance BMV:NoChangeRadialBMD10 BMV:RadialBMDLevel)
+DataPropertyAssertion(BMV:hasValue BMV:NoChangeRadialBMD10 "1.2"^^xsd:decimal)
+
+# Individual: BMV:NoChangeRiskEndometrialAbnormality1 (BMV:NoChangeRiskEndometrialAbnormality1)
+
+ClassAssertion(BMV:NoChangeRiskEndometrialAbnormality BMV:NoChangeRiskEndometrialAbnormality1)
+ObjectPropertyAssertion(BMV:refersDisease BMV:NoChangeRiskEndometrialAbnormality1 BMV:ProtoEndoAbnormality)
+DataPropertyAssertion(BMV:hasValue BMV:NoChangeRiskEndometrialAbnormality1 "1.2"^^xsd:decimal)
+
+# Individual: BMV:PersistentSideEffectsInst (BMV:PersistentSideEffectsInst)
+
+ClassAssertion(BMV:PersistentSideEffects BMV:PersistentSideEffectsInst)
+
+# Individual: BMV:PlasmaCholesterolInst (BMV:PlasmaCholesterolInst)
+
+ClassAssertion(BMV:PlasmaCholesterol BMV:PlasmaCholesterolInst)
+
+# Individual: BMV:PlasmaFibrinogen (BMV:PlasmaFibrinogen)
+
+ClassAssertion(BMV:BiologicalLevels BMV:PlasmaFibrinogen)
+
+# Individual: BMV:PlasmaLDL (BMV:PlasmaLDL)
+
+ClassAssertion(BMV:BiologicalLevels BMV:PlasmaLDL)
+
+# Individual: BMV:PlasmaPlatelet (BMV:PlasmaPlatelet)
+
+ClassAssertion(BMV:BiologicalLevels BMV:PlasmaPlatelet)
+
+# Individual: BMV:ProtoACT (BMV:ProtoACT)
+
+ClassAssertion(BMV:ACTChemoTam BMV:ProtoACT)
+
+# Individual: BMV:ProtoClonidine (BMV:ProtoClonidine)
+
+ClassAssertion(BMV:ClonidineRegime BMV:ProtoClonidine)
+
+# Individual: BMV:ProtoColorectalCa (BMV:ProtoColorectalCa)
+
+ClassAssertion(BMV:ColorectalCancer BMV:ProtoColorectalCa)
+
+# Individual: BMV:ProtoERNeg (BMV:ProtoERNeg)
+
+ClassAssertion(BMV:HRStatus BMV:ProtoERNeg)
+
+# Individual: BMV:ProtoERNegLNNegStage1BrCa (BMV:ProtoERNegLNNegStage1BrCa)
+
+ClassAssertion(BMV:ERNeg BMV:ProtoERNegLNNegStage1BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERNegLNNegStage1BrCa)
+ClassAssertion(BMV:LNNeg BMV:ProtoERNegLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERNegLNNegStage1BrCa BMV:ProtoERNeg)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERNegLNNegStage1BrCa BMV:ProtoLNNeg)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERNegLNNegStage1BrCa BMV:ProtoStage1)
+
+# Individual: BMV:ProtoERNegLNNegStage2BrCa (BMV:ProtoERNegLNNegStage2BrCa)
+
+ClassAssertion(BMV:ERNeg BMV:ProtoERNegLNNegStage2BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERNegLNNegStage2BrCa)
+ClassAssertion(BMV:LNNeg BMV:ProtoERNegLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERNegLNNegStage2BrCa BMV:ProtoERNeg)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERNegLNNegStage2BrCa BMV:ProtoLNNeg)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERNegLNNegStage2BrCa BMV:ProtoStage2)
+
+# Individual: BMV:ProtoERNegLNPosStage1BrCa (BMV:ProtoERNegLNPosStage1BrCa)
+
+ClassAssertion(BMV:ERNeg BMV:ProtoERNegLNPosStage1BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERNegLNPosStage1BrCa)
+ClassAssertion(BMV:LNPos BMV:ProtoERNegLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERNegLNPosStage1BrCa BMV:ProtoERNeg)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERNegLNPosStage1BrCa BMV:ProtoLNPos)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERNegLNPosStage1BrCa BMV:ProtoStage1)
+
+# Individual: BMV:ProtoERNegLNPosStage2BrCa (BMV:ProtoERNegLNPosStage2BrCa)
+
+ClassAssertion(BMV:ERNeg BMV:ProtoERNegLNPosStage2BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERNegLNPosStage2BrCa)
+ClassAssertion(BMV:LNPos BMV:ProtoERNegLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERNegLNPosStage2BrCa BMV:ProtoERNeg)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERNegLNPosStage2BrCa BMV:ProtoLNPos)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERNegLNPosStage2BrCa BMV:ProtoStage2)
+
+# Individual: BMV:ProtoERPos (BMV:ProtoERPos)
+
+ClassAssertion(BMV:HRStatus BMV:ProtoERPos)
+
+# Individual: BMV:ProtoERPosLNNegStage1BrCa (BMV:ProtoERPosLNNegStage1BrCa)
+
+ClassAssertion(BMV:ERPos BMV:ProtoERPosLNNegStage1BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERPosLNNegStage1BrCa)
+ClassAssertion(BMV:LNNeg BMV:ProtoERPosLNNegStage1BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERPosLNNegStage1BrCa BMV:ProtoERPos)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERPosLNNegStage1BrCa BMV:ProtoLNNeg)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERPosLNNegStage1BrCa BMV:ProtoStage1)
+
+# Individual: BMV:ProtoERPosLNNegStage2BrCa (BMV:ProtoERPosLNNegStage2BrCa)
+
+ClassAssertion(BMV:ERPos BMV:ProtoERPosLNNegStage2BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERPosLNNegStage2BrCa)
+ClassAssertion(BMV:LNNeg BMV:ProtoERPosLNNegStage2BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERPosLNNegStage2BrCa BMV:ProtoERPos)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERPosLNNegStage2BrCa BMV:ProtoLNNeg)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERPosLNNegStage2BrCa BMV:ProtoStage2)
+
+# Individual: BMV:ProtoERPosLNPosStage1BrCa (BMV:ProtoERPosLNPosStage1BrCa)
+
+ClassAssertion(BMV:ERPos BMV:ProtoERPosLNPosStage1BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERPosLNPosStage1BrCa)
+ClassAssertion(BMV:LNPos BMV:ProtoERPosLNPosStage1BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERPosLNPosStage1BrCa BMV:ProtoERPos)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERPosLNPosStage1BrCa BMV:ProtoLNPos)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERPosLNPosStage1BrCa BMV:ProtoStage1)
+
+# Individual: BMV:ProtoERPosLNPosStage2BrCa (BMV:ProtoERPosLNPosStage2BrCa)
+
+ClassAssertion(BMV:ERPos BMV:ProtoERPosLNPosStage2BrCa)
+ClassAssertion(BMV:EarlyBreastCancer BMV:ProtoERPosLNPosStage2BrCa)
+ClassAssertion(BMV:LNPos BMV:ProtoERPosLNPosStage2BrCa)
+ObjectPropertyAssertion(BMV:hasHRStatus BMV:ProtoERPosLNPosStage2BrCa BMV:ProtoERPos)
+ObjectPropertyAssertion(BMV:hasLNStatus BMV:ProtoERPosLNPosStage2BrCa BMV:ProtoLNPos)
+ObjectPropertyAssertion(BMV:hasStage BMV:ProtoERPosLNPosStage2BrCa BMV:ProtoStage2)
+
+# Individual: BMV:ProtoEarlyCMFTChemoTam (BMV:ProtoEarlyCMFTChemoTam)
+
+ClassAssertion(BMV:EarlyCMFTChemoTam BMV:ProtoEarlyCMFTChemoTam)
+
+# Individual: BMV:ProtoEndoAbnormality (BMV:ProtoEndoAbnormality)
+
+ClassAssertion(BMV:EndometrialAbnormality BMV:ProtoEndoAbnormality)
+
+# Individual: BMV:ProtoEndoCa (BMV:ProtoEndoCa)
+
+ClassAssertion(BMV:EndometrialCancer BMV:ProtoEndoCa)
+
+# Individual: BMV:ProtoEndometrialAbnormality (BMV:ProtoEndometrialAbnormality)
+
+ClassAssertion(BMV:EndometrialAbnormality BMV:ProtoEndometrialAbnormality)
+
+# Individual: BMV:ProtoFatalMI (BMV:ProtoFatalMI)
+
+ClassAssertion(BMV:FatalMI BMV:ProtoFatalMI)
+
+# Individual: BMV:ProtoGastricCa (BMV:ProtoGastricCa)
+
+ClassAssertion(BMV:GastricCancer BMV:ProtoGastricCa)
+
+# Individual: BMV:ProtoHotFlushes (BMV:ProtoHotFlushes)
+
+ClassAssertion(BMV:HotFlushes BMV:ProtoHotFlushes)
+
+# Individual: BMV:ProtoLNNeg (BMV:ProtoLNNeg)
+
+ClassAssertion(BMV:LNStatus BMV:ProtoLNNeg)
+
+# Individual: BMV:ProtoLNPos (BMV:ProtoLNPos)
+
+ClassAssertion(BMV:LNStatus BMV:ProtoLNPos)
+
+# Individual: BMV:ProtoLateCMFTChemTam (BMV:ProtoLateCMFTChemTam)
+
+ClassAssertion(BMV:LateCMFTChemoTam BMV:ProtoLateCMFTChemTam)
+
+# Individual: BMV:ProtoMFTChemoTam (BMV:ProtoMFTChemoTam)
+
+ClassAssertion(BMV:MFTChemoTam BMV:ProtoMFTChemoTam)
+
+# Individual: BMV:ProtoNoChangeOS (BMV:ProtoNoChangeOS)
+
+ClassAssertion(BMV:NoChangeOS BMV:ProtoNoChangeOS)
+DataPropertyAssertion(BMV:hasValue BMV:ProtoNoChangeOS "1.2"^^xsd:decimal)
+
+# Individual: BMV:ProtoNonFatalMI (BMV:ProtoNonFatalMI)
+
+ClassAssertion(BMV:NonFatalMI BMV:ProtoNonFatalMI)
+
+# Individual: BMV:ProtoPAFTChemoTam (BMV:ProtoPAFTChemoTam)
+
+ClassAssertion(BMV:PAFTChemoTam BMV:ProtoPAFTChemoTam)
+
+# Individual: BMV:ProtoPFTChemoTam (BMV:ProtoPFTChemoTam)
+
+ClassAssertion(BMV:PFTChemoTam BMV:ProtoPFTChemoTam)
+
+# Individual: BMV:ProtoPRNeg (BMV:ProtoPRNeg)
+
+ClassAssertion(BMV:HRStatus BMV:ProtoPRNeg)
+
+# Individual: BMV:ProtoPRPos (BMV:ProtoPRPos)
+
+ClassAssertion(BMV:HRStatus BMV:ProtoPRPos)
+
+# Individual: BMV:ProtoPoorPrognosis (BMV:ProtoPoorPrognosis)
+
+ClassAssertion(BMV:PoorPrognosis BMV:ProtoPoorPrognosis)
+
+# Individual: BMV:ProtoPostmenopausal (BMV:ProtoPostmenopausal)
+
+ClassAssertion(BMV:MenopausalStatus BMV:ProtoPostmenopausal)
+
+# Individual: BMV:ProtoPremenopausal (BMV:ProtoPremenopausal)
+
+ClassAssertion(BMV:MenopausalStatus BMV:ProtoPremenopausal)
+
+# Individual: BMV:ProtoRetinopathy (BMV:ProtoRetinopathy)
+
+ClassAssertion(BMV:Retinopathy BMV:ProtoRetinopathy)
+
+# Individual: BMV:ProtoStage1 (BMV:ProtoStage1)
+
+ClassAssertion(BMV:DiseaseStage BMV:ProtoStage1)
+
+# Individual: BMV:ProtoStage2 (BMV:ProtoStage2)
+
+ClassAssertion(BMV:DiseaseStage BMV:ProtoStage2)
+
+# Individual: BMV:ProtoStage3 (BMV:ProtoStage3)
+
+ClassAssertion(BMV:DiseaseStage BMV:ProtoStage3)
+
+# Individual: BMV:ProtoStage4 (BMV:ProtoStage4)
+
+ClassAssertion(BMV:DiseaseStage BMV:ProtoStage4)
+
+# Individual: BMV:ProtoStroke (BMV:ProtoStroke)
+
+ClassAssertion(BMV:Stroke BMV:ProtoStroke)
+
+# Individual: BMV:ProtoVenousThrombosis (BMV:ProtoVenousThrombosis)
+
+ClassAssertion(BMV:VenousThrombosis BMV:ProtoVenousThrombosis)
+
+# Individual: BMV:RadialBMDLevel (BMV:RadialBMDLevel)
+
+ClassAssertion(BMV:RadialBMD BMV:RadialBMDLevel)
+
+# Individual: BMV:RiskCataracts014 (BMV:RiskCataracts014)
+
+ClassAssertion(BMV:RiskCataracts BMV:RiskCataracts014)
+
+# Individual: BMV:RiskEndometrialAbnormality39 (BMV:RiskEndometrialAbnormality39)
+
+ClassAssertion(BMV:RiskEndometrialAbnormality BMV:RiskEndometrialAbnormality39)
+ObjectPropertyAssertion(BMV:refersDisease BMV:RiskEndometrialAbnormality39 BMV:ProtoEndoAbnormality)
+
+# Individual: BMV:RiskEndometrialCa0005 (BMV:RiskEndometrialCa0005)
+
+ClassAssertion(BMV:RiskEndometrialCa BMV:RiskEndometrialCa0005)
+DataPropertyAssertion(BMV:hasValue BMV:RiskEndometrialCa0005 "0.66"^^xsd:decimal)
+
+# Individual: BMV:RiskOvarianCyst006 (BMV:RiskOvarianCyst006)
+
+ClassAssertion(BMV:RiskOvarianCyst BMV:RiskOvarianCyst006)
+
+# Individual: BMV:RiskOvarianCyst011 (BMV:RiskOvarianCyst011)
+
+ClassAssertion(BMV:RiskOvarianCyst BMV:RiskOvarianCyst011)
+
+# Individual: BMV:RiskRetinopathy012 (BMV:RiskRetinopathy012)
+
+ClassAssertion(BMV:RiskRetinopathy BMV:RiskRetinopathy012)
+DataPropertyAssertion(BMV:hasValue BMV:RiskRetinopathy012 "1.2"^^xsd:decimal)
+
+# Individual: BMV:Tam30mg (BMV:Tam30mg)
+
+ClassAssertion(BMV:Tamoxifen30mg BMV:Tam30mg)
+
+# Individual: BMV:TamA20mg (BMV:TamA20mg)
+
+ClassAssertion(BMV:Tamoxifen20mg BMV:TamA20mg)
+
+# Individual: BMV:TamC40mg (BMV:TamC40mg)
+
+ClassAssertion(BMV:Tamoxifen40mg BMV:TamC40mg)
+
+# Individual: BMV:TamD2Yr (BMV:TamD2Yr)
+
+ClassAssertion(BMV:Tamoxifen2YrCourse BMV:TamD2Yr)
+
+# Individual: BMV:TamE5Yr (BMV:TamE5Yr)
+
+ClassAssertion(BMV:Tamoxifen5YrCourse BMV:TamE5Yr)
+
+# Individual: BMV:TamFgt5Yr (BMV:TamFgt5Yr)
+
+ClassAssertion(BMV:TamoxifenMore5YrCourse BMV:TamFgt5Yr)
+
+
+AnnotationAssertion(owl:versionInfo owl:Thing "TODO: Sort out LNPos and LNNeg Definitions"^^xsd:string)
+)
