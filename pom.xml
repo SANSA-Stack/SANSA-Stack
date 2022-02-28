@@ -112,6 +112,8 @@
         <hadoop.deps.scope>compile</hadoop.deps.scope>
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <modules>
@@ -374,11 +376,11 @@
                 <version>${jsa.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.aksw.jenax</groupId>
-                <artifactId>jenax-analytics-core</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.aksw.jenax</groupId>-->
+<!--                <artifactId>jenax-analytics-core</artifactId>-->
+<!--                <version>${jsa.version}</version>-->
+<!--            </dependency>-->
 
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
@@ -1995,6 +1997,7 @@
                         <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
                         <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
                         <!-- we use a central config located in the root directory -->
+                        <!--suppress UnresolvedMavenProperty-->
                         <configLocation>${scalastyle.config.path}</configLocation>
                         <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
                         <outputEncoding>UTF-8</outputEncoding>

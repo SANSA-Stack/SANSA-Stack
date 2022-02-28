@@ -117,19 +117,38 @@
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>org.semanticweb.hermit</artifactId>
 			<version>1.4.5.519</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>woodstox-core-asl</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>net.sourceforge.owlapi</groupId>
-					<artifactId>owlapi-distribution</artifactId>
-				</exclusion>
-			</exclusions>
+<!--			<scope>test</scope>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.codehaus.woodstox</groupId>-->
+<!--					<artifactId>woodstox-core-asl</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>net.sourceforge.owlapi</groupId>-->
+<!--					<artifactId>owlapi-distribution</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
 		</dependency>
 
+
+		<!-- fastUtil -->
+<!--		<dependency>-->
+<!--			<groupId>it.unimi.dsi</groupId>-->
+<!--			<artifactId>fastutil</artifactId>-->
+<!--			<version>8.5.8</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.openjdk.jmh</groupId>-->
+<!--			<artifactId>jmh-core</artifactId>-->
+<!--			<version>1.34</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.openjdk.jmh</groupId>-->
+<!--			<artifactId>jmh-generator-annprocess</artifactId>-->
+<!--			<version>1.34</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 	</dependencies>
 
 	<profiles>
@@ -175,7 +194,8 @@
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 											<!--Here we specify "hardcoded" main class. somehow package name plus class name without scala-->
-											<mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass>-->
+											<mainClass>net.sansa_stack.ml.spark.classification.decisionTrees.TermDecisionTrees</mainClass>
+<!--											<mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass>&ndash;&gt;-->
 											<!--									<mainClass>net.sansa_stack.ml.spark.similarity.run.SimilarityPipeline</mainClass>-->
 										</transformer>
 									</transformers>
