@@ -1,21 +1,9 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import java.util.ArrayList
-
 import net.sansa_stack.ml.spark.classification.decisionTrees.ClassMembership.ClassMembership
-import net.sansa_stack.ml.spark.classification.decisionTrees.KB
-import net.sansa_stack.ml.spark.classification.decisionTrees.TDTClassifiers.TDTClassifiers
-import net.sansa_stack.ml.spark.classification.decisionTrees.DistTDTInducer.DistTDTInducer
-import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
-import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.rdd.RDD
-import org.semanticweb.owlapi.model._
-
-import scala.reflect.runtime.universe._
-import scala.collection.JavaConverters._
-import scopt.OptionParser
 
 /**
   * Terminological Decision Trees
@@ -36,28 +24,42 @@ object TermDecisionTrees {
     Logger.getLogger("akka").setLevel(Level.OFF)
 
     val input : String = getClass.getResource("/trains.owl").getPath
-
+//    val input : String = getClass.getResource("/MDM0.732.owl").getPath
+  
+//    val input = args(0)
     println("=============================================")
-    println("| Distributed Terminological Decision Trees |")
+    println("       | Distributed Terminological Decision Trees |")
     println("=============================================")
 
     val sparkSession = SparkSession.builder
+//      .master("spark://172.18.160.16:3090")
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
- //     .config("spark.kryo.registrator", "net.sansa_stack.ml.spark.classification.Registrator")
+      .config("spark.executor.memory", "8g")
+      .config("spark.executor.cores", "5")
       .appName("Terminological Decision Trees")
       .getOrCreate()
 
+    
+    
     // Call owl axiom builder to read the classes and object properties and print
     val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
 
     val kb: KB = new KB(input, rdd)
     val ClassM = new ClassMembership(kb, sparkSession)
 //    val ClassName = TDTInducer.toString()
-    ClassM.bootstrap(10, sparkSession)
- //   val c = new TDTInducer(kb, kb.concepts.count().toInt, sparkSession)
+  
+    val startTime = System.currentTimeMillis()
 
-//        val PosExamples = sparkSession.sparkContext.parallelize(
+    ClassM.bootstrap(10, sparkSession)
+  
+    val time = System.currentTimeMillis() - startTime
+  
+    println("*************************************************************************")
+    println("Bootstrapping done in " + (time/1000) + " sec.")
+    
+    
+ //        val PosExamples = sparkSession.sparkContext.parallelize(
 //          Array("http://example.com/foo#east1",
 //            "http://example.com/foo#east2",
 //            "http://example.com/foo#east3",
