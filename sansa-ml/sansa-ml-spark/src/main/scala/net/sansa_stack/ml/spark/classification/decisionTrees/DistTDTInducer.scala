@@ -1,34 +1,34 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import collection.JavaConverters._
-import java.io.PrintStream
-import java.util.ArrayList
-import java.util.List
-import net.sansa_stack.ml.spark.classification._
-import net.sansa_stack.ml.spark.classification.decisionTrees.KB
+import net.sansa_stack.ml.spark.classification.decisionTrees.DLTree.DLTree
 import net.sansa_stack.ml.spark.classification.decisionTrees.TDTClassifiers.TDTClassifiers
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.model._
-import org.semanticweb.HermiT.Reasoner
 
 
-/*
+/**
  * Class for the induction of Distributed Terminological Decision Tree
  */
 
 object DistTDTInducer {
-  // var stream: PrintStream = _
-
+ 
   class DistTDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) extends Serializable{
 
     // for each query concept induce an ensemble
+    var labels: RDD[((OWLClassExpression, OWLIndividual), Int)] = _
+    var p: RDD[Unit] = _
     var trees: Array[DLTree] = new Array[DLTree](nConcepts)
+    val cl: TDTClassifiers = new TDTClassifiers(kb, sc) with Serializable
 
-    var cl: TDTClassifiers = new TDTClassifiers(kb, sc)
-
-    /*
-     * Function for training the algorithm
+    /**
+     *  Function for training the algorithm
+     *
+     *  @param results The classification results
+     *  @param trainingExs RDD of the training individuals
+     *  @param testConcepts Testing query concepts
+     *  @param negTestConcepts Negative testing query concepts
      */
     def training(results: RDD[((OWLClassExpression, OWLIndividual), Int)],
                  trainingExs: RDD[OWLIndividual],
@@ -40,6 +40,8 @@ object DistTDTInducer {
 //      val allExamples: RDD[OWLIndividual] = kb.getIndividuals
 
       // val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))
+      
+//      trainingExs.persist(StorageLevel.MEMORY_AND_DISK)
 
       val length: Int = if (testConcepts != null) testConcepts.size else 1
 
@@ -56,17 +58,20 @@ object DistTDTInducer {
         
         println("Training set composition: " + split._1.count() + " - " + split._2.count() + " - " + split._3.count())
 
-        val Sum: Double = prPos + prNeg
-        if (Sum == 0) {
+        val total: Double = prPos + prNeg
+        if (total == 0) {
           prPos = 0.5
           prNeg = 0.5
         } else {
-          prPos = prPos / Sum
-          prNeg = prNeg / Sum
+          prPos = prPos / total
+          prNeg = prNeg / total
         }
+
         println("\nNew learning problem prepared " + (c + 1))
-        println("Learning a tree ")
         trees(c) = cl.induceDLTree(kb.getDataFactory.getOWLThing, split._1, split._2, split._3, 50, prPos, prNeg)
+        println("--- Tree " + (c + 1) + " was induced. \n")
+        
+//        trainingExs.unpersist()
 
       }
     }
@@ -84,22 +89,73 @@ object DistTDTInducer {
 //      und = classifications.filter(_._1._1 == c).filter(_._2 == 0).map(_._2.toString())
 //      (pos, neg, und)
 //    }
-  
+    /**
+     *  Function for splitting the individuals into positive, negative and undefined individuals
+     *
+     *  @param trainingExs RDD of the training individuals
+     *  @param classifications The classification results
+     *  @param c The testing OWLClassExpression
+     *  @return (RDD[positive], RDD[negative], RDD[undefined])
+     */
   
     def splitting(trainingExs: RDD[OWLIndividual],
                   classifications: RDD[((OWLClassExpression, OWLIndividual), Int)],
                   c: OWLClassExpression): (RDD[OWLIndividual], RDD[OWLIndividual], RDD[OWLIndividual]) = {
   
+      classifications.persist(StorageLevel.MEMORY_AND_DISK)
+      
+//      val train = trainingExs.map(t => (c, t)).collect.toMap
+//      val trainBC = sc.sparkContext.broadcast(train)
+//
+//      val pos = classifications.filter(cl => cl._2 == 1 && trainBC.value.contains(cl._1._1))
+//                               .map(_._1._2)
+//
+//      val neg = classifications.filter(cl => cl._2 == -1 && trainBC.value.contains(cl._1._1))
+//                               .map(_._1._2)
+//
+//      val und = classifications.filter(cl => cl._2 == 0 && trainBC.value.contains(cl._1._1))
+//                               .map(_._1._2)
+      
       val tr = trainingExs.map(t => ((c, t), 1))
       val pos = classifications.filter(_._2 == 1).join(tr).map(_._1._2)
       val neg = classifications.filter(_._2 == -1).join(tr).map(_._1._2)
       val und = classifications.filter(_._2 == 0).join(tr).map(_._1._2)
+      
+      classifications.unpersist()
   
       (pos, neg, und)
     }
+  
+    /**
+     *  Function for testing the algorithm
+     *
+     *  @param f The current fold number
+     *  @param testExs RDD of testing individuals
+     *  @param testConcepts Array of testing query concepts
+     *  @return RDD[((OWLClassExpression, OWLIndividual), Int)]
+     */
+  
+    def test (f: Int,
+              testExs: RDD[OWLIndividual],
+              testConcepts: Array[OWLClassExpression]): RDD[((OWLClassExpression, OWLIndividual), Int)] = {
     
-
-
+//      testExs.persist(StorageLevel.MEMORY_AND_DISK)
+      val count = testExs.count().toInt
+      
+      // classifier answers for each example and for each concept
+      for (c <- testConcepts.indices) {
+        println(" Testing Examples " + count)
+        labels = testExs.map { indv =>
+          val l = cl.classify(indv, trees(c))
+          ((testConcepts(c), indv), l)
+        }
+      }
+//      testExs.unpersist()
+      labels
+    }
+  
+  }
+}
 
 
     //    var BINARYCLASSIFICATION : Boolean = false
@@ -148,30 +204,28 @@ object DistTDTInducer {
     //    var posExs = sc.sparkContext.parallelize(pos.asScala)
     //    var negExs = sc.sparkContext.parallelize(neg.asScala)
     //    var undExs = sc.sparkContext.parallelize(und.asScala)
-
-
-    /*
-   * Function for testing the algorithm
-   */
-    def test (f: Int, testExs: RDD[OWLIndividual], testConcepts: Array[OWLClassExpression]): Array[Array[Int]] = {
-
-      // classifier answers for each example and for each concept
-      val labels: Array[Array[Int]] = Array.ofDim[Int](testExs.count.toInt, nConcepts)
-
-      for (t <- 0 until testExs.count.toInt) {
-        val indTestEx = testExs.take(t + 1).apply(t)
-        println("\n\nFold #" + (f + 1))
-        println(" ---\n Classifying Example " + (t + 1) + "/" + testExs.count.toInt + " [" + indTestEx + "] ")
-
-        // labels(t) = Array.ofDim[Int](nConcepts)
-
-
-        for (i <- 0 until nConcepts - 1) {
-          labels(t)(i) = cl.classify(indTestEx, trees(i))
-        }
-      }
-      labels
-    }
+  
+  
+   
+//    def test (f: Int, testExs: RDD[OWLIndividual], testConcepts: Array[OWLClassExpression]): Array[Array[Int]] = {
+//
+//      // classifier answers for each example and for each concept
+//      val labels: Array[Array[Int]] = Array.ofDim[Int](testExs.count.toInt, nConcepts)
+//
+//      for (t <- 0 until testExs.count.toInt) {
+//        val indTestEx = testExs.take(t + 1).apply(t)
+//        println("\n\nFold #" + (f + 1))
+//        println(" ---\n Classifying Example " + (t + 1) + "/" + testExs.count.toInt + ": " + indTestEx)
+//
+//        // labels(t) = Array.ofDim[Int](nConcepts)
+//
+//
+// //        for (i <- 0 until nConcepts - 1) {
+// //          labels(t)(i) = cl.classify(indTestEx, trees(i))
+// //        }
+//      }
+//      labels
+//    }
     //    val TList : List[Integer]= new ArrayList[Integer]
     //    var T = sc.sparkContext.parallelize(TList.asScala)
     //
@@ -202,5 +256,3 @@ object DistTDTInducer {
        complexityValue
      } */
 
-  }
-}
