@@ -53,8 +53,8 @@
         </dependency>
 
         <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-kryo-jena</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-kryo</artifactId>
         </dependency>
 
 

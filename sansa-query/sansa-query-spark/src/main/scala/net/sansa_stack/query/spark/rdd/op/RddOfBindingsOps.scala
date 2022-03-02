@@ -18,7 +18,7 @@ import org.apache.jena.sparql.algebra.op.OpService
 import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
-import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingMap, BindingProject}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingProject}
 import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.NodeFactoryExtra

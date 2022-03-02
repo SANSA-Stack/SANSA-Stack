@@ -2,7 +2,7 @@ package net.sansa_stack.rdf.spark.io
 
 import com.esotericsoftware.kryo.Kryo
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.kryo.jena.JenaKryoRegistratorLib
+import org.aksw.jenax.io.kryo.jena.JenaKryoRegistratorLib
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionStateDefault
 import org.apache.spark.serializer.KryoRegistrator
 
