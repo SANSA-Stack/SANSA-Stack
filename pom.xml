@@ -79,8 +79,15 @@
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
+<!--
 	<slf4j.version>1.8.0-beta4</slf4j.version>
 	<log4j.version>2.17.0</log4j.version>
+-->
+
+	<slf4j.version>1.7.30</slf4j.version>
+	<!-- <log4j.version>1</log4j.version> -->
+
+
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
         <!-- <jetty.version>9.4.9.4.18.v20190429</jetty.version> -->
@@ -1377,10 +1384,20 @@
             </dependency>
 
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+
+
+<!--
+            <dependency>
 		<groupId>org.apache.logging.log4j</groupId>
 		<artifactId>log4j-slf4j18-impl</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+-->
 
 
             <dependency>

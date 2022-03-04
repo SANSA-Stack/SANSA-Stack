@@ -20,6 +20,9 @@ public class CsvUtils {
         settings.setAutoClosingEnabled(false);
         settings.setLineSeparatorDetectionEnabled(true);
         settings.setHeaderExtractionEnabled(skipHeaders);
+        settings.trimValues(false);
+        settings.setEmptyValue("");
+        settings.setNullValue("");
         return settings;
     }
 

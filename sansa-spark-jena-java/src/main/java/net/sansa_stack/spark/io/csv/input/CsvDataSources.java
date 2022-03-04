@@ -16,6 +16,7 @@ import org.apache.spark.api.java.function.Function;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class CsvDataSources {
@@ -68,12 +69,18 @@ public class CsvDataSources {
      */
     public static Binding createBinding(List<Var> headings, List<String> strs) {
         BindingBuilder builder = BindingBuilder.create();
-        for (int i = 0; i < headings.size(); ++i) {
-            Var var = headings.get(i);
-            String str = strs.get(i);
+        Iterator<Var> itVar = headings.iterator();
+        Iterator<String> itStr = strs.iterator();
 
-            builder.add(var, NodeFactory.createLiteral(str));
+        while (itVar.hasNext()) {
+            Var var = itVar.next();
+            String str = itStr.hasNext() ? itStr.next() : null;
+
+            if (str != null) {
+                builder.add(var, NodeFactory.createLiteral(str));
+            }
         }
+
         Binding result = builder.build();
         return result;
     }
