@@ -6,7 +6,7 @@
 
 	<parent>
   	    <groupId>net.sansa-stack</groupId>
-    	<artifactId>sansa-pkg_parent_2.12</artifactId>
+    	<artifactId>sansa-pkg-parent_2.12</artifactId>
 	    <version>0.8.0-RC3-SNAPSHOT</version>
 	</parent>
 
