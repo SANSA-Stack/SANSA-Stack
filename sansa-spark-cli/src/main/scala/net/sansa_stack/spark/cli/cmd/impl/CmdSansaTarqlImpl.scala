@@ -69,6 +69,7 @@ object CmdSansaTarqlImpl {
     val sparkSessionBuilder = SparkSession.builder
       .appName(s"Sansa Tarql ( $trigFiles )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.kryoserializer.buffer.max", "1000") // MB
       .config("spark.kryo.registrator", String.join(
         ", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",

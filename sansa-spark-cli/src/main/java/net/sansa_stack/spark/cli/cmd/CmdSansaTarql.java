@@ -25,7 +25,7 @@ public class CmdSansaTarql
 
     @Option(names = { "--of", "--out-format" },
             description = "Output format. Default: ${DEFAULT-VALUE}",
-            defaultValue = "srj")
+            defaultValue = "n-triples")
     public String outFormat = null;
 
     @CommandLine.Option(names = { "--out-folder" },

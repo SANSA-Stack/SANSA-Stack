@@ -137,8 +137,8 @@
         <module>sansa-examples</module>
         <module>sansa-integration-tests</module>
         <module>sansa-spark-cli</module>
-        <module>sansa-debian-spark-cli</module>
         <module>sansa-bench-spark</module>
+        <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
     </modules>
 
