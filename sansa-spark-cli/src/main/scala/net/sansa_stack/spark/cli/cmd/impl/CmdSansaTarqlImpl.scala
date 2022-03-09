@@ -72,7 +72,6 @@ object CmdSansaTarqlImpl {
       .config("spark.kryoserializer.buffer.max", "1000") // MB
       .config("spark.kryo.registrator", String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"))
-      .config("spark.hadoop.mapreduce.input.fileinputformat.split.maxsize", "10000000")
 
     if (System.getProperty("spark.master") == null) {
       logger.info("'spark.master' not set - assuming default local[*]")
