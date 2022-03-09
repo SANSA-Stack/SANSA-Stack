@@ -69,10 +69,10 @@ RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
 RdfSource rdfSource = rdfSourceFactory.get("path");
 
-RDD<Triple> rddOfTrple = rdfSource.asTriples();
-RDD<Quad> rddOfQuad = rdfSource.asQuads();
-RDD<Model> rddOfModel = rdfSource.asModels();
-RDD<Dataset> rddOfDataset = rdfSource.asDatasets();
+RDD<Triple> rddOfTriples = rdfSource.asTriples();
+RDD<Quad> rddOfQuads = rdfSource.asQuads();
+RDD<Model> rddOfModels = rdfSource.asModels();
+RDD<DatasetOneNg> rddOfDatasets = rdfSource.asDatasets();
 
 ```
 
