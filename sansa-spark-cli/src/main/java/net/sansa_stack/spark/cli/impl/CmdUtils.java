@@ -34,8 +34,9 @@ public class CmdUtils {
                         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"));
 
         if (System.getProperty("spark.master") == null) {
-            logger.info("'spark.master' not set - assuming default local[*]");
-            result = result.master("local[*]");
+            String defaultMaster = "local[*]";
+            logger.info("'spark.master' not set - assuming default " + defaultMaster);
+            result = result.master(defaultMaster);
         }
         return result;
     }

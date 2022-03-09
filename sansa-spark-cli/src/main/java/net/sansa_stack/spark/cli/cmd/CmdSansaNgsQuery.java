@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaNgsQueryImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaNgsQueryImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -35,7 +35,7 @@ public class CmdSansaNgsQuery
     public String queryFile = null;
 
     @Parameters(arity = "1..n", description = "Files with consecutive quads in the same graph treated as datasets")
-    public List<String> trigFiles;
+    public List<String> inputFiles;
 
     @Option(names = { "--distinct", "--make-distinct" },
             description = "Start with making all quads across all input files distinct; groups all named graphs by name. Default: ${DEFAULT-VALUE}",

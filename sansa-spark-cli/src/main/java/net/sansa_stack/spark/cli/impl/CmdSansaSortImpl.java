@@ -54,7 +54,6 @@ public class CmdSansaSortImpl {
     boolean isQuads = false;
     List<RdfSource> rdfSources = new ArrayList<>();
     for (String input : cmd.inputFiles) {
-
       RdfSource rdfSource = rdfSourceFactory.get(input);
       Lang lang = rdfSource.getLang();
       if (RDFLanguages.isQuads(lang)) {

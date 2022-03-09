@@ -61,7 +61,6 @@ public class CmdSansaNgsSortImpl {
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 
         RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
-
         List<JavaRDD<DatasetOneNg>> sources = new ArrayList<>();
         for (String input : cmd.inputFiles) {
 

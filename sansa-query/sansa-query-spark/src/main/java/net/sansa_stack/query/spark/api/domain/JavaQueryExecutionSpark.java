@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.api.domain;
 
-import net.sansa_stack.query.spark.sparqlify.JavaResultSetSpark;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.sparql.core.Quad;

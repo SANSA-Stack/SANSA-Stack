@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.binding.engine
+package net.sansa_stack.query.spark.engine
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
