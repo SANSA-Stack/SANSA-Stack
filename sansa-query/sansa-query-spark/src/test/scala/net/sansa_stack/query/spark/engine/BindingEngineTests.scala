@@ -84,7 +84,7 @@ class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
         |   }
         | }
         | GROUP BY ?qec ORDER BY ?qec
-        |""".stripMargin))
+        |""".stripMargin), null)
 
     val actualRs = ResultSetFactory.makeRewindable(ResultSet.adapt(resultSetSpark.collectToTable.toRowSet))
     println("Spark took " + sw2.getTime(TimeUnit.SECONDS))
