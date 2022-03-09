@@ -45,7 +45,7 @@ public class CsvDataSources {
             CSVFormat csvFormat,
             Function<List<String>, Binding> mapper)
     {
-        Configuration conf = new Configuration();
+        Configuration conf = sc.hadoopConfiguration();
         FileInputFormatCsv.setCsvFormat(conf, csvFormat);
 
         JavaRDD<List<String>> rdd;
