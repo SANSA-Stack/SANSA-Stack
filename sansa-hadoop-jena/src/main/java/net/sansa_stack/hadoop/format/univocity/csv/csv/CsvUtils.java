@@ -21,8 +21,8 @@ public class CsvUtils {
         settings.setLineSeparatorDetectionEnabled(true);
         settings.setHeaderExtractionEnabled(skipHeaders);
         settings.trimValues(false);
-        settings.setEmptyValue("");
-        settings.setNullValue("");
+        // settings.setEmptyValue("");
+        // settings.setNullValue("");
         return settings;
     }
 
