@@ -9,6 +9,7 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
@@ -36,7 +37,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Called from the Java class [[CmdSansaTarql]]
+ * Sort / distinctify a collection of named graphs.
+ * A single named graph corresponds to a record and must thus fit into memory
+ *
  */
 public class CmdSansaNgsSortImpl {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaNgsSortImpl.class);
@@ -70,7 +73,7 @@ public class CmdSansaNgsSortImpl {
         StopWatch stopwatch = StopWatch.createStarted();
 
         JavaRDD<DatasetOneNg> rdd = javaSparkContext.union(sources.toArray(new JavaRDD[0]));
-        rdd = RddOfDatasetsOps.groupNamedGraphsByGraphIri(rdd, cmd.sort, cmd.distinct, cmd.numPartitions)
+        rdd = JavaRddOfDatasetsOps.groupNamedGraphsByGraphIri(rdd, cmd.sort, cmd.distinct, cmd.numPartitions);
 
         rddRdfWriterFactory.forDataset(rdd).run();
 

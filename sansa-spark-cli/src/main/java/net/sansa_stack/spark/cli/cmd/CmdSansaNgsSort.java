@@ -7,7 +7,7 @@ import picocli.CommandLine;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "merge",
+@CommandLine.Command(name = "sort",
         description = "Merge data from multiple trig files to make it distinct")
 public class CmdSansaNgsSort
         extends CmdBase
