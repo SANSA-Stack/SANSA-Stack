@@ -11,7 +11,7 @@ import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
 import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
 import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
-import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
+import org.aksw.jena_sparql_api.io.binseach.BufferOverInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -461,7 +461,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
         long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
 
-        BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
+        BufferOverInputStream tailBuffer = BufferOverInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
 
@@ -530,7 +530,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                                     return false;
                                 }));
 
-        BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
+        BufferOverInputStream headBuffer = BufferOverInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
         StopWatch headSw = StopWatch.createStarted();
