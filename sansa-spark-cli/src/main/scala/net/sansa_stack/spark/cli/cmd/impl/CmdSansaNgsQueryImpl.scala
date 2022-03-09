@@ -1,7 +1,6 @@
 package net.sansa_stack.spark.cli.cmd.impl
 
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.spark.cli.cmd.CmdSansaTrigQuery
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.commons.lang3.time.StopWatch
@@ -17,18 +16,19 @@ import java.util.concurrent.TimeUnit
 
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
+import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg
 
 /**
- * Called from the Java class [[CmdSansaTrigQuery]]
+ * Called from the Java class [[CmdSansaNgsQuery]]
  */
-class CmdSansaTrigQueryImpl
-object CmdSansaTrigQueryImpl {
+class CmdSansaNgsQueryImpl
+object CmdSansaNgsQueryImpl {
   private val logger = LoggerFactory.getLogger(getClass)
     // JenaSystem.init()
 
 
-  def run(cmd: CmdSansaTrigQuery): Integer = {
+  def run(cmd: CmdSansaNgsQuery): Integer = {
 
     val resultSetFormats = RDFLanguagesEx.getResultSetFormats
     val outLang = RDFLanguagesEx.findLang(cmd.outFormat, resultSetFormats)

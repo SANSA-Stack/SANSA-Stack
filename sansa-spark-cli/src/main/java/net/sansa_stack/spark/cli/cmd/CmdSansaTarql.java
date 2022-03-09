@@ -1,7 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTarqlImpl;
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaTrigQueryImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -23,24 +22,14 @@ public class CmdSansaTarql
     public String sparkMaster = null;
     */
 
-    @Option(names = { "--of", "--out-format" },
-            description = "Output format. Default: ${DEFAULT-VALUE}",
-            defaultValue = "n-triples")
-    public String outFormat = null;
-
-    @CommandLine.Option(names = { "--out-folder" },
-            description = "Output folder")
-    public String outFolder = null;
-
-    @CommandLine.Option(names = { "--out-file" },
-            description = "Output file; Merge of files created in out-folder")
-    public String outFile = null;
+    @CommandLine.Mixin
+    public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
 
     @Option(names = { "--rq" }, description = "File with a SPARQL query (RDF Query)")
     public String queryFile = null;
 
     @Parameters(arity = "1..n", description = "CSV file(s)")
-    public List<String> trigFiles;
+    public List<String> inputFiles;
 
     @Override
     public Integer call() throws Exception {
