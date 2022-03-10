@@ -24,14 +24,18 @@ public class JavaRddOfQuadsOps {
     }
 
 
-    /** Sort quads by their string representation (relies on {@link NodeFmtLib#str}) */
-    public static JavaRDD<Quad> sort(JavaRDD<Quad> rdd, boolean ascending, boolean distinct, int numPartitions) {
+    /**
+     * Post process RDF data - sort, distinct, repartition
+     * Sort quads by their string representation (relies on {@link NodeFmtLib#str}) */
+    public static JavaRDD<Quad> postProcess(JavaRDD<Quad> rdd, boolean sort, boolean ascending, boolean distinct, int numPartitions) {
 
         if (distinct) {
             rdd = rdd.distinct();
         }
 
-        rdd = rdd.sortBy(NodeFmtLib::str, ascending, numPartitions);
+        if (sort) {
+            rdd = rdd.sortBy(NodeFmtLib::str, ascending, numPartitions);
+        }
 
         return rdd;
     }

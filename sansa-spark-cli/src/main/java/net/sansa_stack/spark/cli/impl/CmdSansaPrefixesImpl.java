@@ -1,14 +1,17 @@
 package net.sansa_stack.spark.cli.impl;
 
+import net.sansa_stack.rdf.spark.rdd.op.RddOfQuadsOps;
 import net.sansa_stack.spark.cli.cmd.CmdMixinSparkPostProcess;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixes;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
+import org.aksw.jenax.arq.analytics.NodeAnalytics;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.graph.Triple;
@@ -26,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Called from the Java class {@link CmdSansaMap}
  */
-public class CmdSansaMapImpl {
-  private static Logger logger = LoggerFactory.getLogger(CmdSansaMapImpl.class);
+public class CmdSansaPrefixesImpl {
+  private static Logger logger = LoggerFactory.getLogger(CmdSansaPrefixesImpl.class);
 
-  public static int run(CmdSansaMap cmd) throws IOException {
+  public static int run(CmdSansaPrefixes cmd) throws IOException {
 
     List<String> inputStrs = cmd.inputFiles;
 
@@ -39,27 +42,29 @@ public class CmdSansaMapImpl {
 
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-    RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
-
     CmdUtils.validatePaths(inputStrs, hadoopConf);
 
     RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
     RdfSourceCollection rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 
-    CmdMixinSparkPostProcess ppc = cmd.postProcessConfig;
-
 
     StopWatch stopwatch = StopWatch.createStarted();
 
+    // TODO FINISH THIS (Annoyingly we need to get the reference prefix set from the input format
+    // so there is a bit of plumbing to do)
+    // Collector<Map<String, String>> prefixCollector = NodeAnalytics.usedPrefixes();
+
     if (rdfSources.containsQuadLangs()) {
-      JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD();
-      rdd = JavaRddOfQuadsOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
-      rddRdfWriterFactory.forQuad(rdd).run();
+
+
+/*
+      JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD()
+              .flatMap(quad -> QuadUtils.quadToList(quad).iterator());
+*/
+
     } else {
       JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
-      rdd = JavaRddOfTriplesOps.sort(rdd, !ppc.reverse, ppc.unique, ppc.numPartitions);
-      rddRdfWriterFactory.forTriple(rdd).run();
     }
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
