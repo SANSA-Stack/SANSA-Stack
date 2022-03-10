@@ -24,7 +24,7 @@ rpm-build: ## build the rpm package (minimal build of only required modules
 	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.12 clean install
 
 rpm-reinstall: ## (re-)install a previously built rpm package
-	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-rpm-cli/target | grep '\.deb$$'`
+	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-rpm-cli/target | grep '\.rpm$$'`
 	sudo rpm -U "$$file"
 
 
