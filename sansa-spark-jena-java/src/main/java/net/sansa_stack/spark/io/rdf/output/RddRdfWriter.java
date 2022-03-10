@@ -8,6 +8,7 @@ import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFUtils;
 import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
@@ -32,6 +33,7 @@ import org.apache.jena.riot.writer.WriterStreamRDFBase;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.graph.PrefixMappingAdapter;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -387,10 +389,14 @@ public class RddRdfWriter<T>
                 WriterStreamRDFBaseUtils.setNodeToLabel(tmp, SyntaxLabels.createNodeToLabelAsGiven());
 
                 if (prefixMapping != null) {
+                    // Inject the trie-based prefix mapping rather than using the default
+                    WriterStreamRDFBaseUtils.setPrefixMap(tmp, new PrefixMapAdapter(prefixMapping));
+                    /*
                     PrefixMap pm = WriterStreamRDFBaseUtils.getPrefixMap(tmp);
                     for (Map.Entry<String, String> e : prefixMapping.getNsPrefixMap().entrySet()) {
                         pm.add(e.getKey(), e.getValue());
                     }
+                    */
 
                     rawWriter = StreamRDFUtils.wrapWithoutPrefixDelegation(rawWriter);
                 }
@@ -498,8 +504,13 @@ public class RddRdfWriter<T>
 
         JavaRDD<String> dataBlocks = javaRdd.mapPartitions(it -> {
             RDFFormat rdfFmt = RDFLanguagesEx.findRdfFormat(rdfFormatStr);
-            PrefixMapping pmap = prefixMappingBc.getValue();
-            Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, mapQuadsToTriplesForTripleLangs, pmap);
+            PrefixMapping rawPmap = prefixMappingBc.getValue();
+
+            // Ensure a trie-backed prefix mapping in order to handle large amounts of prefixes
+            PrefixMapping triePmap = new PrefixMappingTrie();
+            triePmap.setNsPrefixes(rawPmap);
+
+            Function<OutputStream, StreamRDF> streamRDFFactory = createStreamRDFFactory(rdfFmt, mapQuadsToTriplesForTripleLangs, triePmap);
 
             ThrowingFunction<Iterator<T>, Iterator<String>> mapper = partitionMapperRDFStream(
                     streamRDFFactory, sendRecordToStreamRDF);
