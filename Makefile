@@ -12,6 +12,17 @@ help:  ## Show these help instructions
 mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  make mcis ARGS="-X"
 	$(MCIS) $(ARGS)
 
+
+rebuild-examples: ## rebuild and shade examples - they must be present for integration tests
+	$(MCIS) -am -pl :sansa-examples-spark_2.12 $(ARGS)
+	mvn -Pdist package -pl :sansa-examples-spark_2.12
+
+shade-examples: ## only shade the examples - use after manual rebuilt of specific modules
+	mvn -Pdist package -pl :sansa-examples-spark_2.12
+
+integration-tests: ## run the integration tests
+	mvn -pl :sansa-integration-tests_2.12 failsafe:integration-test
+
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 
