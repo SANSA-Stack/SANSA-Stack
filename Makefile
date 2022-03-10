@@ -13,7 +13,7 @@ mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  
 	$(MCIS) $(ARGS)
 
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
-	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12
+	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 
 .ONESHELL:
 deb-reinstall: ## reinstall a previously built deb package
@@ -21,7 +21,7 @@ deb-reinstall: ## reinstall a previously built deb package
 	sudo dpkg -i "$$file"
 
 rpm-rebuild: ## rebuild the rpm package (minimal build of only required modules
-	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.12 clean install
+	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.12 $(ARGS)
 
 rpm-reinstall: ## reinstall a previously built rpm package
 	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-rpm-cli/target | grep '\.rpm$$'`
