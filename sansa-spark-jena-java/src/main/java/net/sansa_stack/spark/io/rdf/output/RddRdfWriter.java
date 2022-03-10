@@ -400,6 +400,7 @@ public class RddRdfWriter<T>
 
                     rawWriter = StreamRDFUtils.wrapWithoutPrefixDelegation(rawWriter);
                 }
+                WriterStreamRDFBaseUtils.updateFormatter(tmp);
             }
 
             if (RDFLanguages.isTriples(rdfFormat.getLang()) && mapQuadsToTriplesForTripleLangs) {
