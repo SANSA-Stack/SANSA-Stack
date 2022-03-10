@@ -9,8 +9,8 @@ MCIS = $(MS) clean install
 help:  ## Show these help instructions
 	@sed -rn 's/^([a-zA-Z_-]+):.*?## (.*)$$/"\1" "\2"/p' < $(MAKEFILE_LIST) | xargs printf "make %-20s# %s\n"
 
-mcis: ## mvn skip clean install (minimal build of all modules)
-	$(MCIS)
+mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  make mcis ARGS="-X"
+	$(MCIS) $(ARGS)
 
 deb-build: ## build the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12
