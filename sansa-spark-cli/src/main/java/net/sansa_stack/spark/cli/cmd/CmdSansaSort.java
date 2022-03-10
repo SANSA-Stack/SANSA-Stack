@@ -28,16 +28,20 @@ public class CmdSansaSort
     @CommandLine.Mixin
     public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
 
-    @CommandLine.Option(names = { "-d", "--distinct" },
-            description = "Make quads distinct")
-    public boolean distinct = false;
+    @CommandLine.Option(names = { "-u", "--unique" },
+            description = "Make quads unique")
+    public boolean unique = false;
+
+    @CommandLine.Option(names = { "-d", "--drop-duplicates" },
+            description = "Drop consecutively repeated items")
+    public boolean dropDuplicates = false;
 
     @CommandLine.Option(names = { "-s", "--sort" },
             description = "Enable sorting of graphs by their IRI")
     public boolean sort = false;
 
     @CommandLine.Option(names = { "-r", "--reverse" },
-            description = "Sort descending")
+            description = "Sort descending (requires --sort)")
     public boolean reverse = false;
 
     @CommandLine.Option(names = { "--repartition" },

@@ -30,8 +30,7 @@ import java.util.stream.Collectors;
  * Called from the Java class [[CmdSansaSort]]
  */
 public class CmdSansaSortImpl {
-  public static Logger logger = LoggerFactory.getLogger(CmdSansaSortImpl.class);
-  // JenaSystem.init()
+  private static Logger logger = LoggerFactory.getLogger(CmdSansaSortImpl.class);
 
   public static int run(CmdSansaSort cmd) throws IOException {
 
@@ -71,7 +70,7 @@ public class CmdSansaSortImpl {
                 .collect(Collectors.toList())
               .toArray(new JavaRDD[0]));
 
-      rdd = JavaRddOfQuadsOps.sort(rdd, !cmd.reverse, cmd.distinct, cmd.numPartitions);
+      rdd = JavaRddOfQuadsOps.sort(rdd, !cmd.reverse, cmd.unique, cmd.numPartitions);
 
       rddRdfWriterFactory.forQuad(rdd).run();
     } else {
@@ -81,7 +80,7 @@ public class CmdSansaSortImpl {
                       .collect(Collectors.toList())
                       .toArray(new JavaRDD[0]));
 
-      rdd = JavaRddOfTriplesOps.sort(rdd, !cmd.reverse, cmd.distinct, cmd.numPartitions);
+      rdd = JavaRddOfTriplesOps.sort(rdd, !cmd.reverse, cmd.unique, cmd.numPartitions);
 
       rddRdfWriterFactory.forTriple(rdd).run();
     }

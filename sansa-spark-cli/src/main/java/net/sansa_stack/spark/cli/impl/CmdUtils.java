@@ -3,6 +3,7 @@ package net.sansa_stack.spark.cli.impl;
 import com.google.common.collect.Sets;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
+import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -42,7 +43,7 @@ public class CmdUtils {
     }
 
     public static RddRdfWriterFactory configureWriter(RdfOutputConfig out) {
-        PrefixMapping prefixes = new PrefixMappingImpl();
+        PrefixMapping prefixes = new PrefixMappingTrie();
 
         if (out.getPrefixSources() != null) {
             for (String prefixSource : out.getPrefixSources()) {
@@ -56,6 +57,7 @@ public class CmdUtils {
                 .setGlobalPrefixMapping(prefixes)
                 .setOutputFormat(out.getOutputFormat())
                 .setMapQuadsToTriplesForTripleLangs(true)
+                .setDeferOutputForUsedPrefixes(out.getPrefixOutputDeferCount())
                 // .setAllowOverwriteFiles(true)
                 .setPartitionFolder(out.getPartitionFolder())
                 .setTargetFile(out.getTargetFile())

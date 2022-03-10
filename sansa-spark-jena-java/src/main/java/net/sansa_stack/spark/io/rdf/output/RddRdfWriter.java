@@ -479,9 +479,18 @@ public class RddRdfWriter<T>
 
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(javaRdd.context());
 
-        String prefixStr = globalPrefixMapping != null && !globalPrefixMapping.hasNoMappings()
-                ? toString(globalPrefixMapping, RDFFormat.TURTLE_PRETTY)
-                : null;
+        Lang lang = rdfFormat.getLang();
+
+        boolean isTurtleOrTrig = Arrays.asList(Lang.TURTLE, Lang.TRIG).contains(lang);
+
+        // TODO Prefixes must generally be handled via StreamRDF
+        String prefixStr = null;
+
+        if (globalPrefixMapping != null && !globalPrefixMapping.hasNoMappings()) {
+            if (isTurtleOrTrig) {
+                prefixStr = toString(globalPrefixMapping, RDFFormat.TURTLE_PRETTY);
+            }
+        }
 
         Broadcast<PrefixMapping> prefixMappingBc = sparkContext.broadcast(globalPrefixMapping);
 
@@ -501,7 +510,6 @@ public class RddRdfWriter<T>
         // If there are prefixes then serialize them into their own partition and prepend them to all
         // the other serialized data partitions.
         // Note that this feature is unstable as it relies on spark retaining order of partitions (which so far it does)
-
 
         if (prefixStr != null) {
             JavaRDD<String> prefixRdd = sparkContext.parallelize(Collections.singletonList(prefixStr));
