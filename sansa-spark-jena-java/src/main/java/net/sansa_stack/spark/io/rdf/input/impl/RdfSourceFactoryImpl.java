@@ -16,6 +16,8 @@ import org.apache.spark.sql.SparkSession;
 
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a source factory based on spark/hadoop.
@@ -26,6 +28,8 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 public class RdfSourceFactoryImpl
     implements RdfSourceFactory
 {
+    private static final Logger logger = LoggerFactory.getLogger(RdfSourceFactoryImpl.class);
+
     protected SparkSession sparkSession;
     // protected FileSystem fileSystem;
 
@@ -51,6 +55,8 @@ public class RdfSourceFactoryImpl
         if (lang == null) {
             lang = probeLang(resolvedPath, fileSystem);
         }
+
+        logger.info("Creating RDF Source: " + path + " -> " + lang);
 
         return new RdfSourceImpl(sparkSession, resolvedPath, lang);
     }
