@@ -101,6 +101,7 @@ public class RdfSourceCollectionImpl
         RDD<T> result = (RDD<T>)jsc.union(
                 members.stream()
                         .map(mapper::apply)
+                        .map(RDD::toJavaRDD)
                         .collect(Collectors.toList())
                         .toArray(new JavaRDD[0])).rdd();
         return result;
