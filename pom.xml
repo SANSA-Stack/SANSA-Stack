@@ -382,12 +382,6 @@
 
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
-                <artifactId>jenax-analytics-core</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-arq-utils</artifactId>
                 <version>${jsa.version}</version>
             </dependency>
