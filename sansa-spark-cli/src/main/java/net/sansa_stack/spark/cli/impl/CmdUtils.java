@@ -1,15 +1,22 @@
 package net.sansa_stack.spark.cli.impl;
 
 import com.google.common.collect.Sets;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
+import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.apache.spark.api.java.JavaRDD;
@@ -111,6 +118,30 @@ public class CmdUtils {
             throw new IllegalArgumentException("The following paths are invalid (do not exist or are not a (readable) file): " + invalidPaths);
         }
     }
+
+    public static RdfSourceCollectionImpl createRdfSourceCollection(RdfSourceFactory rdfSourceFactory,
+                                     Collection<String> inputs,
+                                     RdfInputConfig inputConfig) {
+
+        String inputFormatStr = inputConfig.getInputFormat();
+        Lang lang = inputFormatStr == null ? null : RDFLanguagesEx.findLang(inputFormatStr);
+        if (inputFormatStr != null && lang == null) {
+            throw new IllegalArgumentException("Unknown input format: " + inputFormatStr);
+        }
+
+        RdfSourceCollectionImpl result = new RdfSourceCollectionImpl();
+        for (String input : inputs) {
+            if (lang == null) {
+                lang = RDFLanguages.contentTypeToLang(RDFLanguages.guessContentType(input));
+            }
+
+            RdfSource rdfSource = rdfSourceFactory.get(input, lang);
+            result.add(rdfSource);
+        }
+
+        return result;
+    }
+
 
     public static <T> JavaRDD<T> createUnionRdd(
             JavaSparkContext javaSparkContext,

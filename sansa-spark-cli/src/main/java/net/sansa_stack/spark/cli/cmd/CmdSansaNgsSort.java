@@ -1,7 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
 import net.sansa_stack.spark.cli.impl.CmdSansaNgsSortImpl;
-import net.sansa_stack.spark.cli.impl.CmdSansaSortImpl;
 import picocli.CommandLine;
 
 import java.util.List;

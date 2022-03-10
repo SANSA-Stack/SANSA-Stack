@@ -1,6 +1,5 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -8,7 +7,7 @@ import picocli.CommandLine.Option;
         versionProvider = VersionProviderSansa.class,
         description = "SANSA Command Line Tool",
         subcommands = {
-        CmdSansaSort.class, CmdSansaTarql.class, CmdSansaNgs.class
+        CmdSansaMap.class, CmdSansaTarql.class, CmdSansaNgs.class
 })
 public class CmdSansaMain extends CmdBase {
 
