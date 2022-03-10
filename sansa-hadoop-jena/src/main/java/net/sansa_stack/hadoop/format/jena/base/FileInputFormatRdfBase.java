@@ -49,7 +49,11 @@ public abstract class FileInputFormatRdfBase<T>
 
     public static final String PREFIXES_KEY = "prefixes";
     public static final String BASE_IRI_KEY = "base";
-    public static final long PARSED_PREFIXES_LENGTH_DEFAULT = 10 * 1024; // 10KB
+
+    // A prefix.cc dump with 2500 prefxes required 153KB, so 1MB should be plenty
+    // TODO We could add another property which governs abort of looking for prefixes
+    //  if there is none within 'n' number of seen parsing events (triples, quads)
+    public static final long PARSED_PREFIXES_LENGTH_DEFAULT = 1 * 1024 * 1024;
 
     /**
      * Input language
@@ -100,8 +104,10 @@ public abstract class FileInputFormatRdfBase<T>
             // open input stream from split
             try (InputStream is = FileSplitUtils.getDecodedStreamFromSplit(firstSplit, job.getConfiguration())) {
 
+                long prefixByteCount = job.getConfiguration().getLong(prefixesLengthMaxKey, PARSED_PREFIXES_LENGTH_DEFAULT);
+
                 // Bound the decoded stream for reading out prefixes
-                BoundedInputStream boundedIs = new BoundedInputStream(is, PARSED_PREFIXES_LENGTH_DEFAULT);
+                BoundedInputStream boundedIs = new BoundedInputStream(is, prefixByteCount);
 
                 // A Model *isa* PrefixMap; use Model because it can be easily serialized
                 Model prefixModel = ModelFactory.createDefaultModel();
@@ -126,7 +132,6 @@ public abstract class FileInputFormatRdfBase<T>
 
                 // RDFDataMgr.read(dataset, new ByteArrayInputStream(prefixStr.getBytes), Lang.TRIG)
                 int prefixCount = prefixModel.getNsPrefixMap().size();
-                long prefixByteCount = job.getConfiguration().getLong(prefixesLengthMaxKey, PARSED_PREFIXES_LENGTH_DEFAULT);
 
                 logger.info(String.format("Parsed %d prefixes from first %d bytes", prefixCount, prefixByteCount));
 
