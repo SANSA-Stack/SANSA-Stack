@@ -2,6 +2,7 @@ package net.sansa_stack.spark.cli.impl;
 
 import com.google.common.collect.Sets;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
@@ -119,9 +120,9 @@ public class CmdUtils {
         }
     }
 
-    public static RdfSourceCollectionImpl createRdfSourceCollection(RdfSourceFactory rdfSourceFactory,
-                                     Collection<String> inputs,
-                                     RdfInputConfig inputConfig) {
+    public static RdfSourceCollection createRdfSourceCollection(RdfSourceFactory rdfSourceFactory,
+                                                                Collection<String> inputs,
+                                                                RdfInputConfig inputConfig) {
 
         String inputFormatStr = inputConfig.getInputFormat();
         Lang lang = inputFormatStr == null ? null : RDFLanguagesEx.findLang(inputFormatStr);
@@ -129,7 +130,7 @@ public class CmdUtils {
             throw new IllegalArgumentException("Unknown input format: " + inputFormatStr);
         }
 
-        RdfSourceCollectionImpl result = new RdfSourceCollectionImpl();
+        RdfSourceCollection result = rdfSourceFactory.newRdfSourceCollection();
         for (String input : inputs) {
             if (lang == null) {
                 lang = RDFLanguages.contentTypeToLang(RDFLanguages.guessContentType(input));

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import org.aksw.commons.util.entity.EntityInfo;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
@@ -52,6 +53,11 @@ public class RdfSourceFactoryImpl
         }
 
         return new RdfSourceImpl(sparkSession, resolvedPath, lang);
+    }
+
+    @Override
+    public RdfSourceCollection newRdfSourceCollection() {
+        return new RdfSourceCollectionImpl(sparkSession);
     }
 
     public static Lang probeLang(Path path, FileSystem fileSystem) throws IOException {

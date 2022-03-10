@@ -2,6 +2,7 @@ package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.spark.cli.cmd.CmdMixinSparkPostProcess;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
@@ -44,7 +45,7 @@ public class CmdSansaMapImpl {
 
     RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
-    RdfSourceCollectionImpl rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
+    RdfSourceCollection rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 
     CmdMixinSparkPostProcess ppc = cmd.postProcessConfig;
 

@@ -39,4 +39,8 @@ public interface RdfSourceFactory {
     }
 
     RdfSource create(Path path, FileSystem fileSystem, Lang lang) throws Exception;
+
+    /** Return a collection to which RdfSources can be added from which a union rdd
+     * can be obtained */
+    RdfSourceCollection newRdfSourceCollection();
 }

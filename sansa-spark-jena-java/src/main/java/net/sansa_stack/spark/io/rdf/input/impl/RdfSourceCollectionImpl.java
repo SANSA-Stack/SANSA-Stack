@@ -44,6 +44,21 @@ public class RdfSourceCollectionImpl
     protected SparkSession sparkSession;
     protected Collection<RdfSource> members;
 
+    public RdfSourceCollectionImpl(SparkSession sparkSession) {
+        this(sparkSession, new ArrayList<>());
+    }
+
+    public RdfSourceCollectionImpl(SparkSession sparkSession, Collection<RdfSource> members) {
+        this.sparkSession = sparkSession;
+        this.members = members;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return members.isEmpty();
+    }
+
+    @Override
     public void add(RdfSource rdfSource) {
         members.add(rdfSource);
     }

@@ -18,3 +18,26 @@ JAVA_OPTS="-Dspark.executor.instances=4 -Dspark.executor.cores=8 -Dspark.hadoop.
 
 
 
+## Detailed Logging
+
+Use the `-X` option to enable detailed logging. This will cause stack traces of exceptions to be shown as illustrated below.
+
+```
+sansa map ...
+
+[INFO] Initialized BlockManager: BlockManagerId(driver, my.server, 37353, None)
+[ERROR] NullPointerException: 
+[INFO] Invoking stop() from shutdown hook
+```
+
+```
+sansa map -X ...
+[INFO] Initialized BlockManager: BlockManagerId(driver, my.server, 42565, None)
+java.lang.RuntimeException: java.lang.NullPointerException
+        at org.aksw.commons.util.exception.ExceptionUtilsAksw.rethrowUnless(ExceptionUtilsAksw.java:40)
+        at org.aksw.commons.util.exception.ExceptionUtilsAksw.rethrowIfNotBrokenPipe(ExceptionUtilsAksw.java:81)
+        at net.sansa_stack.spark.cli.main.MainCliSansaSpark.lambda$mainCore$0(MainCliSansaSpark.java:29)
+        ...
+[INFO] Invoking stop() from shutdown hook
+```
+

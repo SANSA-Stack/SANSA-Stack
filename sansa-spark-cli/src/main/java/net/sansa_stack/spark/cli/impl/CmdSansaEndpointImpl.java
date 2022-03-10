@@ -8,6 +8,7 @@ import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.FreshDatasetArgs;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.PreloadedDatasetArgs;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
@@ -71,7 +72,7 @@ public class CmdSansaEndpointImpl {
 
         RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
-        RdfSourceCollectionImpl sources = new RdfSourceCollectionImpl();
+        RdfSourceCollection sources = rdfSourceFactory.newRdfSourceCollection();
         for (String input : dataset.triplesFile) {
           RdfSource rdfSource = rdfSourceFactory.get(input);
           sources.add(rdfSource);
