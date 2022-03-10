@@ -1461,6 +1461,30 @@
                 <version>3.2</version>
             </dependency>
 
+
+            <!-- Packaging -->
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-uberjar-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-docker-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-deb-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
+                <version>${project.version}</version>
+                <type>rpm</type>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
