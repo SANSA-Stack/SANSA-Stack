@@ -31,6 +31,10 @@ deb-reinstall: ## reinstall a previously built deb package
 	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-deb-cli/target | grep '\.deb$$'`
 	sudo dpkg -i "$$file"
 
+
+deb-rere: deb-rebuild deb-reinstall ## rebuild and reinstall deb
+
+
 rpm-rebuild: ## rebuild the rpm package (minimal build of only required modules
 	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.12 $(ARGS)
 
@@ -38,4 +42,4 @@ rpm-reinstall: ## reinstall a previously built rpm package
 	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-rpm-cli/target | grep '\.rpm$$'`
 	sudo rpm -U "$$file"
 
-
+rpm-rere: rpm-rebuild rpm-reinstall ## ## rebuild and reinstall rpm
