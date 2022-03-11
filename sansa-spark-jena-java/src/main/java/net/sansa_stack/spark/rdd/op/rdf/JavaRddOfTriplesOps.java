@@ -83,13 +83,15 @@ public class JavaRddOfTriplesOps {
     }
 
     /** Sort quads by their string representation (relies on {@link NodeFmtLib#str}) */
-    public static JavaRDD<Triple> sort(JavaRDD<Triple> rdd, boolean ascending, boolean distinct, int numPartitions) {
+    public static JavaRDD<Triple> postProcess(JavaRDD<Triple> rdd, boolean sort, boolean ascending, boolean distinct, int numPartitions) {
 
         if (distinct) {
             rdd = rdd.distinct();
         }
 
-        rdd = rdd.sortBy(NodeFmtLib::str, ascending, numPartitions);
+        if (sort) {
+            rdd = rdd.sortBy(NodeFmtLib::str, ascending, numPartitions);
+        }
 
         return rdd;
     }

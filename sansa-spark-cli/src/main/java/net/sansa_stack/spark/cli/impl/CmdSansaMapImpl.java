@@ -58,7 +58,7 @@ public class CmdSansaMapImpl {
       rddRdfWriterFactory.forQuad(rdd).run();
     } else {
       JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
-      rdd = JavaRddOfTriplesOps.sort(rdd, !ppc.reverse, ppc.unique, ppc.numPartitions);
+      rdd = JavaRddOfTriplesOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
       rddRdfWriterFactory.forTriple(rdd).run();
     }
 
