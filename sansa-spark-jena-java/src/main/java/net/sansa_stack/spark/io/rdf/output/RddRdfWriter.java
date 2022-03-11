@@ -488,12 +488,13 @@ public class RddRdfWriter<T>
 
         Lang lang = rdfFormat.getLang();
 
+        boolean isPrefixesSupported = !Lang.NTRIPLES.equals(lang);
         boolean isTurtleOrTrig = Arrays.asList(Lang.TURTLE, Lang.TRIG).contains(lang);
 
         // TODO Prefixes must generally be handled via StreamRDF
         String prefixStr = null;
 
-        if (globalPrefixMapping != null && !globalPrefixMapping.hasNoMappings()) {
+        if (isPrefixesSupported && globalPrefixMapping != null && !globalPrefixMapping.hasNoMappings()) {
             if (isTurtleOrTrig) {
                 prefixStr = toString(globalPrefixMapping, RDFFormat.TURTLE_PRETTY);
             }
