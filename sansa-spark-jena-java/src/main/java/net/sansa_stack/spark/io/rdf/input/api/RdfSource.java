@@ -34,7 +34,7 @@ import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
  *
  */
 public interface RdfSource {
-    /** Get the language of the source; typically probed for by the RdfSourceFactory */
+    /** Get the language of the source; may have been probed for by an RdfSourceFactory */
     Lang getLang();
 
     RDD<Triple> asTriples();
@@ -43,4 +43,7 @@ public interface RdfSource {
 
     /** A stream of datasets having one named graph each */
     RDD<DatasetOneNg> asDatasets();
+
+
+    Model peekPrefixes();
 }

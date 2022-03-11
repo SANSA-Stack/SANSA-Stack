@@ -16,6 +16,10 @@ import org.apache.jena.hadoop.rdf.types.TripleWritable;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
+/**
+ * A registry for RddRdfLoaders that can supply input of a specific {@link Lang}
+ * to an RDD of a requested type (Triples, Quads, Datasets, ett).
+ */
 public class RddRdfLoaderRegistryImpl
     implements RddRdfLoaderRegistry
 {
@@ -39,17 +43,17 @@ public class RddRdfLoaderRegistryImpl
         registry.register(
                 Lang.TRIG,
                 DatasetOneNg.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, DatasetOneNg.class, FileInputFormatRdfTrigDataset.class));
+                RddRdfLoaders.create(DatasetOneNg.class, FileInputFormatRdfTrigDataset.class));
 
         registry.register(
                 Lang.TRIG,
                 Quad.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, Quad.class, FileInputFormatRdfTrigQuad.class));
+                RddRdfLoaders.create(Quad.class, FileInputFormatRdfTrigQuad.class));
 
         registry.register(
                 Lang.TURTLE,
                 Triple.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, Triple.class, FileInputFormatRdfTurtleTriple.class));
+                RddRdfLoaders.create(Triple.class, FileInputFormatRdfTurtleTriple.class));
 
 //        registry.register(
 //                Lang.NTRIPLES,
@@ -58,12 +62,12 @@ public class RddRdfLoaderRegistryImpl
         registry.register2(
                 Lang.NTRIPLES,
                 Quad.class,
-                (context, path) -> RddRdfLoader.createJavaRdd(context, path, TripleWritable.class, NTriplesInputFormat.class).map(TripleWritable::get).rdd());
+                RddRdfLoaders.create(TripleWritable.class, NTriplesInputFormat.class));
 
         registry.register2(
                 Lang.NQUADS,
                 Quad.class,
-                (context, path) -> RddRdfLoader.createJavaRdd(context, path, QuadWritable.class, NQuadsInputFormat.class).map(QuadWritable::get).rdd());
+                RddRdfLoaders.create(QuadWritable.class, NQuadsInputFormat.class));
 
 
     }
@@ -92,6 +96,7 @@ public class RddRdfLoaderRegistryImpl
     public RddRdfLoaderRegistryImpl() {
         super();
     }
+
 
 
 }

@@ -1,15 +1,15 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaMapImpl;
-import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesHeadImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesUsedImpl;
 import picocli.CommandLine;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "prefixes",
-        description = "Collect the used prefixes")
-public class CmdSansaPrefixes
+@CommandLine.Command(name = "head",
+        description = "Collect the head prefixes")
+public class CmdSansaPrefixesHead
         extends CmdBase
         implements Callable<Integer>
 {
@@ -28,6 +28,6 @@ public class CmdSansaPrefixes
 
     @Override
     public Integer call() throws Exception {
-        return CmdSansaPrefixesImpl.run(this);
+        return CmdSansaPrefixesHeadImpl.run(this);
     }
 }

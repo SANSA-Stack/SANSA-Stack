@@ -8,6 +8,7 @@ import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.LangBuilder;
 import org.apache.jena.riot.RDFLanguages;
@@ -125,5 +126,15 @@ public class RdfSourceCollectionImpl
     @Override
     public RDD<DatasetOneNg> asDatasets() {
         return union(sparkSession, members, RdfSource::asDatasets);
+    }
+
+    @Override
+    public Model peekPrefixes() {
+        Model result = ModelFactory.createDefaultModel();
+        for (RdfSource source : members) {
+            Model contrib = source.peekPrefixes();
+            result.add(contrib);
+        }
+        return result;
     }
 }

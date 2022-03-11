@@ -1,30 +1,32 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
-
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RdfSourceImpl
     implements RdfSource
 {
+    private static final Logger logger = LoggerFactory.getLogger(RdfSourceImpl.class);
+
     // protected FileSystem fileSystem;
     protected SparkSession sparkSession;
     protected Path path;
     protected Lang lang;
-
     // protected RddRdfLoaderRegistry registry;
 
     public RdfSourceImpl(SparkSession sparkSession, Path path, Lang lang) {
@@ -117,7 +119,34 @@ public class RdfSourceImpl
         return result;
     }
 
+    public static <T> RddRdfLoader<T> requireLoader(Lang lang, Class<T> clazz) {
+        RddRdfLoader<T> loader = RddRdfLoaderRegistryImpl.get().find(lang, clazz);
+        if (loader == null) {
+            throw new RuntimeException("No quad loader registered for " + lang + " as " + clazz);
+        }
+        return loader;
+    }
 
+    @Override
+    public Model peekPrefixes() {
+        Model result;
+
+        String pathStr = path.toString();
+        if (RDFLanguages.isTriples(lang)) {
+            RddRdfLoader<Triple> loader = requireLoader(lang, Triple.class);
+            result = loader.peekPrefixes(sparkSession.sparkContext(), pathStr);
+        } else if (RDFLanguages.isQuads(lang)) {
+            RddRdfLoader<Quad> loader = requireLoader(lang, Quad.class);
+            result = loader.peekPrefixes(sparkSession.sparkContext(), pathStr);
+        } else {
+            // TODO We should extend to result sets - but probably that has to be
+            // a different infrastructure than RdfSource (or not?)
+            logger.warn("Lang is neither triples nor quads; returning empty set of prefixes");
+            result = ModelFactory.createDefaultModel();
+        }
+
+        return result;
+    }
 
 
 //    public RDD<Graph> asGraphs() {
