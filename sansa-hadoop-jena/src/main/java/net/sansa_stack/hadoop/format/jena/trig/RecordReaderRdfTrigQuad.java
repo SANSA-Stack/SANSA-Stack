@@ -22,7 +22,7 @@ public class RecordReaderRdfTrigQuad
             String.join("|",
                     "@?base",
                     "@?prefix",
-                    "(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
+                    "(graph\\s*)?(<[^>]*>|\\w*:[^{\\s]+)\\s*\\{",
                     "<[^>]*>",
                     "\\[",
                     "\\w*:"),

@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.rx.util.RxUtils;
 import org.aksw.commons.util.concurrent.CompletionTracker;
 import org.aksw.commons.util.concurrent.ExecutorServiceUtils;
 import org.aksw.commons.util.ref.Ref;
@@ -212,8 +213,9 @@ public class AsyncRdfParserHadoop {
 
             for (InputSplit split : splits) {
                 completionTracker.execute(() -> {
-                    FileSplitUtils.createFlow(job, inputFormat, split)
-                        .forEach(record -> sendRecordToStreamRDF.accept(record, sink));
+                    RxUtils.consume(
+                        FileSplitUtils.createFlow(job, inputFormat, split)
+                            .map(record -> { sendRecordToStreamRDF.accept(record, sink); return 0; }));
                 });
             }
 
