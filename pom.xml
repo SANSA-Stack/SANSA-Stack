@@ -99,7 +99,7 @@
 
         <owlapi.version>5.1.17</owlapi.version>
 
-        <ontop.version>4.0.9-sansa</ontop.version>
+        <ontop.version>4.3.0-SNAPSHOT</ontop.version>
 
         <guava.version>30.1-jre</guava.version>
         <!--        <guava.version>14.0.1</guava.version>-->
@@ -992,7 +992,7 @@
 
             <!-- Ontop -->
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-owlapi</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
@@ -1003,7 +1003,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-system-sql-owlapi</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
@@ -1014,7 +1014,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-rdb</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
