@@ -133,7 +133,10 @@ public class RdfSourceCollectionImpl
         Model result = ModelFactory.createDefaultModel();
         for (RdfSource source : members) {
             Model contrib = source.peekPrefixes();
-            result.add(contrib);
+
+            if (contrib != null) {
+                result.add(contrib);
+            }
         }
         return result;
     }

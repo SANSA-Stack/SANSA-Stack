@@ -165,7 +165,7 @@ public abstract class FileInputFormatRdfBase<T>
             // Exception => // logger.warn("TODO Improve this non-fatal exception", e)
         }
 
-        return sink;
+        return dst;
     }
 
     @Override
