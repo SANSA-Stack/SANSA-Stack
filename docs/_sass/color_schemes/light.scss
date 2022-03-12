@@ -1,0 +1,19 @@
+/* Adjustments for wider content area - based on suggestion from
+ * https://github.com/just-the-docs/just-the-docs/issues/524 */
+
+.site-nav, .site-header, .site-footer {
+  width: 100%;
+}
+
+.side-bar {
+  @include mq(lg) {
+    width: $nav-width;
+  }
+}
+
+.main {
+  @include mq(lg) {
+    margin-left: $nav-width;
+  }
+}
+
