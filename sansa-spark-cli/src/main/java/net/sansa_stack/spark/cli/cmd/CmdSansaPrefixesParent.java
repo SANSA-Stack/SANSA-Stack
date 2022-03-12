@@ -4,7 +4,7 @@ import picocli.CommandLine;
 
 @CommandLine.Command(name = "prefixes",
         subcommands = {
-                CmdSansaPrefixesHead.class, CmdSansaPrefixesUsed.class
+                CmdSansaPrefixesHead.class, CmdSansaPrefixesUsed.class, CmdSansaPrefixesOptimize.class
         })
 public class CmdSansaPrefixesParent {
 }
