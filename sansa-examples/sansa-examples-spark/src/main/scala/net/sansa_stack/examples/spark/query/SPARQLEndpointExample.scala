@@ -7,7 +7,7 @@ import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.io._
-import org.aksw.jenax.server.utils.FactoryBeanSparqlServer
+import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException
 import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
