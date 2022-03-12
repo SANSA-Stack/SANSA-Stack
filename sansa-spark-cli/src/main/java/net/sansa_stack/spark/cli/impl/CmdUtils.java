@@ -42,9 +42,9 @@ public class CmdUtils {
 
         SparkSession.Builder result = SparkSession.builder()
                 .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("spark.kryoserializer.buffer.max", "1000") // MB
+                .config("spark.kryo.serializer.buffer.max", "1000") // MB
                 .config("spark.kryo.registrator", String.join(", ",
-                        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"));
+                        "net.sansa_stack.spark.io.rdf.kryo.JenaKryoRegistrator"));
 
         if (System.getProperty("spark.master") == null) {
             String defaultMaster = "local[*]";
