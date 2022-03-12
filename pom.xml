@@ -485,6 +485,19 @@
             </dependency>
 
 
+            <!-- CSVW Bindings for univocity (hadoop) and our CLI -->
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-models-csvw-univocity</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-models-csvw-picocli</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
             <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
