@@ -8,7 +8,6 @@ import java.util.List;
 public class CmdMixinSparkOutput
     implements RdfOutputConfig
 {
-
     @CommandLine.Option(names = { "-o", "--out-format" },
             description = "Output format. Default: ${DEFAULT-VALUE}",
             defaultValue = "trig/blocks")
@@ -28,7 +27,7 @@ public class CmdMixinSparkOutput
     public List<String> outPrefixes = null;
 
     @CommandLine.Option(names = { "--oup", "--out-used-prefixes" },
-            description = "Number of records by which to defer RDF output for used prefix analysis. Negative value emits all prefixes. Default: ${DEFAULT-VALUE}",
+            description = "Only for streaming to STDOUT. Number of records by which to defer RDF output for collecting used prefixes. Negative value emits all known prefixes. Default: ${DEFAULT-VALUE}",
             defaultValue = "100")
     public long deferOutputForUsedPrefixes;
 
