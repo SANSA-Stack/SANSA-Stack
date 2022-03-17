@@ -134,9 +134,9 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return self();
     }
 
-    public SELF setGlobalPrefixMapping(Map<String, String> globalPrefixMapping) {
+    public SELF setGlobalPrefixMapping(Map<String, String> globalPrefixMap) {
         PrefixMapping pm = new PrefixMappingImpl();
-        pm.setNsPrefixes(globalPrefixMapping);
+        pm.setNsPrefixes(globalPrefixMap);
         setGlobalPrefixMapping(pm);
         return self();
     }

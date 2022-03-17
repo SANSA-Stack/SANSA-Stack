@@ -46,6 +46,7 @@ public class CmdSansaMapImpl {
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
     RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+    int initialPrefixes = rddRdfWriterFactory.getGlobalPrefixMapping().numPrefixes();
 
     CmdUtils.validatePaths(inputStrs, hadoopConf);
 
@@ -60,13 +61,15 @@ public class CmdSansaMapImpl {
 
     Model declaredPrefixes = rdfSources.peekDeclaredPrefixes();
 
+    Map<String, String> usedPm = null;
+
     if (rdfSources.containsQuadLangs()) {
 
       JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD();
       rdd = JavaRddOfQuadsOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
 
-      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.isEmpty()) {
-        Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
+      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.getNsPrefixMap().isEmpty()) {
+        usedPm = JavaRddOps.aggregateUsingJavaCollector(
                 rdd.flatMap(q -> QuadUtils.quadToList(q).iterator()),
                 NodeAnalytics.usedPrefixes(declaredPrefixes.getNsPrefixMap()).asCollector());
         rddRdfWriterFactory.setGlobalPrefixMapping(usedPm);
@@ -78,8 +81,8 @@ public class CmdSansaMapImpl {
       JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
       rdd = JavaRddOfTriplesOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
 
-      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.isEmpty()) {
-        Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
+      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.getNsPrefixMap().isEmpty()) {
+        usedPm = JavaRddOps.aggregateUsingJavaCollector(
                 rdd.flatMap(t -> TripleUtils.tripleToList(t).iterator()),
                 NodeAnalytics.usedPrefixes(declaredPrefixes.getNsPrefixMap()).asCollector());
         rddRdfWriterFactory.setGlobalPrefixMapping(usedPm);
@@ -87,6 +90,11 @@ public class CmdSansaMapImpl {
 
       rddRdfWriterFactory.forTriple(rdd).run();
 
+    }
+
+    if (usedPm != null) {
+      int usedPmCount = usedPm.size();
+      logger.info(String.format("Optimization of prefixes reduced their number from %d to %d", initialPrefixes, usedPmCount));
     }
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
