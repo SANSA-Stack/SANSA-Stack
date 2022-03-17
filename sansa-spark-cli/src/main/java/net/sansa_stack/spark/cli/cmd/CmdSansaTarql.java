@@ -50,10 +50,7 @@ public class CmdSansaTarql
     @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
     public boolean tabs = false;
 
-    @Option(names = { "--rq" }, description = "File with a SPARQL query (RDF Query)")
-    public String queryFile = null;
-
-    @Parameters(arity = "1..n", description = "CSV file(s)")
+    @Parameters(arity = "1..n", description = "tarql query file following by one or more csv file")
     public List<String> inputFiles;
 
     @Override

@@ -2,10 +2,7 @@ package net.sansa_stack.spark.io.rdf.input.impl;
 
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -20,12 +17,9 @@ import org.apache.spark.sql.SparkSession;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static org.apache.jena.riot.WebContent.contentTypeRDFThrift;
 
 public class RdfSourceCollectionImpl
     implements RdfSourceCollection
@@ -129,10 +123,10 @@ public class RdfSourceCollectionImpl
     }
 
     @Override
-    public Model peekPrefixes() {
+    public Model peekDeclaredPrefixes() {
         Model result = ModelFactory.createDefaultModel();
         for (RdfSource source : members) {
-            Model contrib = source.peekPrefixes();
+            Model contrib = source.peekDeclaredPrefixes();
 
             if (contrib != null) {
                 result.add(contrib);

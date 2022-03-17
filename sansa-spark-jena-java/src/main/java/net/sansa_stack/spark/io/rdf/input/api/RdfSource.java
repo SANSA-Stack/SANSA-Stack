@@ -45,5 +45,5 @@ public interface RdfSource {
     RDD<DatasetOneNg> asDatasets();
 
 
-    Model peekPrefixes();
+    Model peekDeclaredPrefixes();
 }

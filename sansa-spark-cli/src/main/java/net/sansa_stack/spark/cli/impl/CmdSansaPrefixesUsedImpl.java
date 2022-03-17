@@ -1,8 +1,6 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.rdf.spark.rdd.op.RddOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
-import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesHead;
 import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesUsed;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
@@ -32,7 +30,7 @@ public class CmdSansaPrefixesUsedImpl {
     new SimpleSparkCmdTemplate<>("Sansa Prefixes Used", cmd.inputConfig, cmd.inputFiles) {
       @Override
       protected void process() {
-        Model model = rdfSources.peekPrefixes();
+        Model model = rdfSources.peekDeclaredPrefixes();
 
         JavaRDD<Node> rdd;
         if (rdfSources.containsQuadLangs()) {

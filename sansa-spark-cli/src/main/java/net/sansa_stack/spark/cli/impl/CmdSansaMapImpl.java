@@ -4,14 +4,18 @@ import net.sansa_stack.spark.cli.cmd.CmdMixinSparkPostProcess;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import org.aksw.jenax.arq.analytics.NodeAnalytics;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
+import org.aksw.jenax.arq.util.triple.TripleUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
@@ -20,6 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -52,14 +58,35 @@ public class CmdSansaMapImpl {
 
     StopWatch stopwatch = StopWatch.createStarted();
 
+    Model declaredPrefixes = rdfSources.peekDeclaredPrefixes();
+
     if (rdfSources.containsQuadLangs()) {
+
       JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD();
       rdd = JavaRddOfQuadsOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
+
+      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.isEmpty()) {
+        Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
+                rdd.flatMap(q -> QuadUtils.quadToList(q).iterator()),
+                NodeAnalytics.usedPrefixes(declaredPrefixes.getNsPrefixMap()).asCollector());
+        rddRdfWriterFactory.setGlobalPrefixMapping(usedPm);
+      }
       rddRdfWriterFactory.forQuad(rdd).run();
+
     } else {
+
       JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
       rdd = JavaRddOfTriplesOps.postProcess(rdd, ppc.unique, !ppc.reverse, ppc.unique, ppc.numPartitions);
+
+      if (cmd.postProcessConfig.optimizePrefixes && !declaredPrefixes.isEmpty()) {
+        Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
+                rdd.flatMap(t -> TripleUtils.tripleToList(t).iterator()),
+                NodeAnalytics.usedPrefixes(declaredPrefixes.getNsPrefixMap()).asCollector());
+        rddRdfWriterFactory.setGlobalPrefixMapping(usedPm);
+      }
+
       rddRdfWriterFactory.forTriple(rdd).run();
+
     }
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");

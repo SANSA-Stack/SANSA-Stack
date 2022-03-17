@@ -5,8 +5,10 @@ import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -47,6 +49,7 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return (SELF)this;
     }
 
+    // TODO Probably we should copy / clone prefixes
     public SELF configureFrom(RddRdfWriterSettings<?> other) {
         this.partitionFolder = other.partitionFolder;
         this.targetFile = other.targetFile;
@@ -128,6 +131,13 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
      */
     public SELF setGlobalPrefixMapping(PrefixMapping globalPrefixMapping) {
         this.globalPrefixMapping = globalPrefixMapping;
+        return self();
+    }
+
+    public SELF setGlobalPrefixMapping(Map<String, String> globalPrefixMapping) {
+        PrefixMapping pm = new PrefixMappingImpl();
+        pm.setNsPrefixes(globalPrefixMapping);
+        setGlobalPrefixMapping(pm);
         return self();
     }
 

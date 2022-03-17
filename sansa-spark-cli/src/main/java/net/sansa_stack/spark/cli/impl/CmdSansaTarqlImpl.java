@@ -2,7 +2,6 @@ package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -10,7 +9,6 @@ import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.query.Query;
@@ -22,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,7 +31,9 @@ public class CmdSansaTarqlImpl {
 
     public static int run(CmdSansaTarql cmd) throws IOException {
 
-        Query query = SparqlStmtMgr.loadQuery(cmd.queryFile, DefaultPrefixes.get());
+        String queryFile = cmd.inputFiles.get(0);
+        List<String> csvFiles = cmd.inputFiles.subList(1, cmd.inputFiles.size());
+        Query query = SparqlStmtMgr.loadQuery(queryFile, DefaultPrefixes.get());
         logger.info("Loaded query " + query);
 
         if (!query.isConstructType() && !query.isConstructQuad()) {
@@ -57,7 +58,7 @@ public class CmdSansaTarqlImpl {
 
         FileInputFormatCsv.setUnivocityConfig(hadoopConf, univocityConf);
 
-        JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, cmd.inputFiles,
+        JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, csvFiles,
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
                         univocityConf));
 

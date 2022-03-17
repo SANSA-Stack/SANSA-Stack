@@ -128,7 +128,7 @@ public class RdfSourceImpl
     }
 
     @Override
-    public Model peekPrefixes() {
+    public Model peekDeclaredPrefixes() {
         Model result;
 
         String pathStr = path.toString();
