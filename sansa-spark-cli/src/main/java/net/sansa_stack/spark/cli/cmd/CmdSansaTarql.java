@@ -32,6 +32,9 @@ public class CmdSansaTarql
     @CommandLine.Mixin
     public DialectMutable csvOptions = PicocliMixinCsvw.of(new DialectMutableImpl());
 
+    @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
+    public boolean tabs = false;
+
     @Option(names = { "--rq" }, description = "File with a SPARQL query (RDF Query)")
     public String queryFile = null;
 

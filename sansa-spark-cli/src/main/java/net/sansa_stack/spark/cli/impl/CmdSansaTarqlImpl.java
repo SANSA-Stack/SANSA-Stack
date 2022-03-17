@@ -1,13 +1,16 @@
 package net.sansa_stack.spark.cli.impl;
 
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
+import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
@@ -41,6 +44,12 @@ public class CmdSansaTarqlImpl {
                 .getOrCreate();
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
+
+        Configuration hadoopConf = javaSparkContext.hadoopConfiguration();
+        UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
+
+        DialectMutable csvCliOptions = cmd.csvOptions;
+
 
         JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, cmd.inputFiles,
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,

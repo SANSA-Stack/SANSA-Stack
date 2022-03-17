@@ -19,7 +19,7 @@ public class CmdMixinSparkPostProcess {
     public boolean sort = false;
 
     @CommandLine.Option(names = { "-r", "--reverse" },
-            description = "Sort descending (requires --sort)")
+            description = "Sort descending (does nothing if --sort is not specified)")
     public boolean reverse = false;
 
     @CommandLine.Option(names = { "--repartition" },
@@ -27,6 +27,6 @@ public class CmdMixinSparkPostProcess {
     public int numPartitions = 0;
 
     @CommandLine.Option(names = { "--optimize-prefixes" }, description = "Discard unused prefxes (requires extra pass over the data)")
-    public boolean unique = false;
+    public boolean optimizePrefixes = false;
 
 }

@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.univocity.parsers.csv.CsvParserSettings;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
+import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.path.core.Path;
 import org.aksw.commons.path.core.PathOpsStr;
 import org.apache.hadoop.conf.Configuration;
@@ -42,6 +45,23 @@ public class JsonHadoopBridge {
         T result;
         try {
             JsonNode node = read(conf);
+            result = read(node, bean);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+    /** Merge the state of src into dst via json serialization */
+    public static <T> T merge(T dst, Object src) {
+        JsonNode state = write(src);
+        read(state, dst);
+        return dst;
+    }
+
+    public static <T> T read(JsonNode node, T bean) {
+        T result;
+        try {
             result = new ObjectMapper()
                     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                     .readerForUpdating(bean)
@@ -66,11 +86,20 @@ public class JsonHadoopBridge {
         return result;
     }
 
-    public void write(Configuration conf, Object bean) {
+    public static JsonNode write(Object bean) {
         JsonNode src = new ObjectMapper()
                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .valueToTree(bean);
+        return src;
+    }
 
+
+    public void write(Configuration conf, Object bean) {
+        JsonNode src = write(bean);
+        write(conf, src);
+    }
+
+    public void write(Configuration conf, JsonNode src) {
         BiConsumer<Path<String>, String> setter = (p, v) -> {
             String key = String.join(".", p.getSegments());
             conf.set(key, v);
@@ -171,6 +200,25 @@ public class JsonHadoopBridge {
     }
 
     public static void main(String[] args) throws JsonProcessingException {
+        CsvParserSettings settings = new CsvParserSettings();
+
+        UnivocityHadoopConf conf = new UnivocityHadoopConf();
+        Dialect dialect = conf.getDialect()
+                .setEncoding(StandardCharsets.ISO_8859_1.name())
+                .setCommentPrefix(".")
+                // .setDelimiter("\n")
+                .setSkipBlankRows(false);
+
+        // UnivocityUtils.configureFromDialect(settings, dialect);
+
+        System.out.println(settings);
+
+
+        /*
+        for (int i = 0; i < 1054; ++i) {
+            // System.out.println(CsvUtils.excelHeadLabel(i));
+        }
+
         UnivocityHadoopConf protoBean = new UnivocityHadoopConf();
         JsonHadoopBridge adapter = JsonHadoopBridge.createFromPrototype(protoBean, "org.foo.bar");
 
@@ -184,7 +232,7 @@ public class JsonHadoopBridge {
 
         UnivocityHadoopConf output = adapter.read(conf, new UnivocityHadoopConf());
         System.out.println(output.getDialect().getEncoding());
-
+*/
 
         /*
         DialectMutable protoBean = new DialectMutableForwardingJacksonString<>(new DialectMutableImpl());

@@ -10,6 +10,8 @@ public class UnivocityHadoopConf
 {
     protected DialectMutableForwardingJackson<?> dialect;
 
+    protected boolean isTabs = false;
+
     public UnivocityHadoopConf() {
         this(new DialectMutableImpl());
     }
@@ -22,5 +24,13 @@ public class UnivocityHadoopConf
     @JsonMerge
     public DialectMutable getDialect() {
         return dialect;
+    }
+
+    public boolean isTabs() {
+        return isTabs;
+    }
+
+    public void setTabs(boolean tabs) {
+        isTabs = tabs;
     }
 }

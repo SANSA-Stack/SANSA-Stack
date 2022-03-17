@@ -121,6 +121,11 @@ public abstract class RecordReaderCsvTestBase<T> {
             throw new RuntimeException(error[0]);
         }
 
+        // Compare first line
+        if (!expected.isEmpty() && !actual.isEmpty()) {
+            Assert.assertEquals(expected.get(0), actual.get(0));
+        }
+
         Assert.assertEquals(expected, actual);
 
     }
