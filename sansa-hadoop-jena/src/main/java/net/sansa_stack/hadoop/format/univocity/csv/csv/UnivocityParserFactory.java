@@ -29,7 +29,7 @@ public class UnivocityParserFactory {
         this.tsvSettings = tsvSettings;
     }
 
-    public static UnivocityParserFactory createDefault(boolean skipHeaders) {
+    public static UnivocityParserFactory createDefault(Boolean skipHeaders) {
         CsvParserSettings defaultCsvSettings = new CsvParserSettings();
         applyDefaults(defaultCsvSettings, skipHeaders);
 
@@ -39,12 +39,12 @@ public class UnivocityParserFactory {
         return new UnivocityParserFactory(true, StandardCharsets.UTF_8, defaultCsvSettings, defaultTsvSettings);
     }
 
-    public static void applyDefaults(CommonParserSettings settings, boolean skipHeaders) {
+    public static void applyDefaults(CommonParserSettings settings, Boolean skipHeaders) {
         settings.setMaxCharsPerColumn(500000);
         settings.setAutoClosingEnabled(false);
         settings.setLineSeparatorDetectionEnabled(true);
         settings.trimValues(false);
-        settings.setHeaderExtractionEnabled(skipHeaders);
+        settings.setHeaderExtractionEnabled(!Boolean.FALSE.equals(skipHeaders));
     }
 
     public UnivocityParserFactory configure(UnivocityHadoopConf conf) {

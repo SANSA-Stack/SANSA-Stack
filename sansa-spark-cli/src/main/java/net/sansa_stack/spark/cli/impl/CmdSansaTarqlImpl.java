@@ -1,6 +1,8 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -45,15 +47,19 @@ public class CmdSansaTarqlImpl {
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 
+        // Put the CSV options from the CLI into the hadoop context
         Configuration hadoopConf = javaSparkContext.hadoopConfiguration();
         UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
 
         DialectMutable csvCliOptions = cmd.csvOptions;
+        csvCliOptions.copyInto(univocityConf.getDialect());
+        univocityConf.setTabs(cmd.tabs);
 
+        FileInputFormatCsv.setUnivocityConfig(hadoopConf, univocityConf);
 
         JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, cmd.inputFiles,
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
-                        CSVFormat.EXCEL.builder().setSkipHeaderRecord(true).build()));
+                        univocityConf));
 
         StopWatch stopwatch = StopWatch.createStarted();
 

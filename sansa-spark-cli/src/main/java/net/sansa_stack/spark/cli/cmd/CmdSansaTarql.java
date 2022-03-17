@@ -17,8 +17,7 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true)
 public class CmdSansaTarql
     extends CmdBase
-    implements Callable<Integer>
-{
+    implements Callable<Integer> {
     /* Just use spark's -Dspark.master=... option
     @Option(names = { "-m", "--spark-master" },
             description = "Spark master. Default: ${DEFAULT-VALUE}",
@@ -26,11 +25,27 @@ public class CmdSansaTarql
     public String sparkMaster = null;
     */
 
-    @CommandLine.Mixin
-    public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
+    /*
+    @CommandLine.ArgGroup(validate = false, heading = "CSV/TSV options")
+    public CsvOptions csvOptions;
+
+    @CommandLine.ArgGroup(validate = false, heading = "Output options")
+    public OutputOptions outputOptions;
+
+    public static class CsvOptions {
+        @CommandLine.Mixin
+        public DialectMutable csvOptions = PicocliMixinCsvw.of(new DialectMutableImpl());
+    }
+
+    public static class OutputOptions {
+    }
+*/
 
     @CommandLine.Mixin
     public DialectMutable csvOptions = PicocliMixinCsvw.of(new DialectMutableImpl());
+
+    @CommandLine.Mixin
+    public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
 
     @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
     public boolean tabs = false;
