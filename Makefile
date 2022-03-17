@@ -23,6 +23,12 @@ shade-examples: ## only shade the examples - use after manual rebuilt of specifi
 integration-tests: ## run the integration tests
 	mvn -pl :sansa-integration-tests_2.12 failsafe:integration-test
 
+conformance-ontop: ## run conforance test suite against ontop
+	mvn -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkOntop' 
+
+conformance-sparqlify: ## run conforance test suite against sparqlify
+	mvn -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
+
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 
