@@ -4,6 +4,8 @@ import com.univocity.parsers.common.AbstractParser;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
@@ -54,7 +56,7 @@ public class RecordReaderCsv
      * w.r.t. a certain amount of lookahead.
      *
      * The regex does the following:
-     * Match a character (the dot at the end) if for the preceeding character it holds:
+     * Match a character (the dot at the end) if the immediate preceeding character is a newline;
      * Match a newline; however only if there is no subsequent sole double quote followed by a newline, comma or eof.
      * Stop matching 'dot' if there was a single quote in the past
      *
@@ -62,10 +64,41 @@ public class RecordReaderCsv
      *          might be within a csv cell
      * @return The corresponding regex pattern
      */
-    public static Pattern createStartOfCsvRecordPattern(long maxCharsPerColumn) {
-        return Pattern.compile(
-                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
-                Pattern.DOTALL);
+    public static CustomPattern createStartOfCsvRecordPattern(long maxCharsPerColumn) {
+        // TODO There must not be an odd number of consecutive quote chars -
+        //  the pattern just captures 1 sole char
+        // A csv record could look like
+        // foo,"""foo->
+        // bar"
+        // baz,bay
+        String x = "(?<=\n(?!((?<![^\"]\"[^\"]).){0,50000}\"(\r?\n|,|$))).";
+        int cand = 1;
+        switch (cand) {
+            case 0:
+                return CustomPatternJava.compile(
+                        "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
+                        Pattern.DOTALL);
+
+                // when going back from the quote char before the cell delimiters [,\n$]
+                //
+            case 1:
+                return CustomPatternJava.compile(
+                        //"(?<=\n(?!((?<![^\"]\"(\"\"){0,10}[^\"]).){0," + maxCharsPerColumn + "}(\"\"){0,10}\"(\r?\n|,|$))).",
+                        // "(?<=(\n|^)(?!((?<![^\"](\"\"){0,10}\"[^\"]).){0," + maxCharsPerColumn + "}(\"\"){0,10}\"(\r?\n|,|$))).",
+
+                        // There must not be an unescaped quote char sequence followed by a quote char
+                        "(?<=(\n|^)(?!((?<![^\"](\"\"){0,10}\"(?!\")).){0,50000}(\"\"){0,10}\"(\r?\n|,|$))).",
+
+                        Pattern.DOTALL);
+/*
+                return Pattern.compile(
+                        "(?<=\n(?!((?<!(?<![^\"](\"\"){0,10}\")).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
+                        Pattern.DOTALL);
+*/
+
+            default:
+                return null;
+        }
     }
 
     public static Pattern createStartOfCsvRecordPattern(long n, char quoteChar, char quoteEscapeChar, char quoteEscapeEscapeChar) {
@@ -100,7 +133,7 @@ public class RecordReaderCsv
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
-            Pattern recordSearchPattern) {
+            CustomPattern recordSearchPattern) {
         super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
     }
 

@@ -7,6 +7,8 @@ import com.google.gson.stream.JsonReader;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
@@ -23,7 +25,8 @@ public class RecordReaderJsonArray
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.json.record.probecount";
 
     // Search for open bracket or comma
-    protected static final Pattern jsonFwdPattern = Pattern.compile("\\[|,", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    protected static final CustomPattern jsonFwdPattern = CustomPatternJava
+            .compile("\\[|,", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     protected Gson gson;
 
@@ -44,7 +47,7 @@ public class RecordReaderJsonArray
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
-            Pattern recordSearchPattern,
+            CustomPattern recordSearchPattern,
             Gson gson) {
         super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
         this.gson = gson;
