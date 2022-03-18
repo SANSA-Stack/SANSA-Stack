@@ -2,6 +2,7 @@ package net.sansa_stack.spark.io.rdf.output;
 
 import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
+import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
@@ -101,7 +102,7 @@ public class RddRdfOpsImpl<T>
             JavaRddFunction<T, Triple> convertToTriple,
             JavaRddFunction<T, Quad> convertToQuad,
             JavaRddFunction<T, Node> convertToNode,
-            Function<? super T, Comparable<?>> keyFunction
+            SerializableFunction<? super T, Comparable<?>> keyFunction
     ) {
 
         return new RddRdfOpsImpl<>(usesQuads,
