@@ -59,12 +59,12 @@ public class RddRdfLoaderRegistryImpl
 //                Lang.NTRIPLES,
 //                Triple.class,
 //                (context, path) -> RddRdfLoader.createRdd(context, path, Triple.class, FileInputFormatTurtleTriple.class));
-        registry.register2(
+        registry.registerMapped(
                 Lang.NTRIPLES,
-                Quad.class,
+                Triple.class,
                 RddRdfLoaders.create(TripleWritable.class, NTriplesInputFormat.class));
 
-        registry.register2(
+        registry.registerMapped(
                 Lang.NQUADS,
                 Quad.class,
                 RddRdfLoaders.create(QuadWritable.class, NQuadsInputFormat.class));
@@ -81,7 +81,7 @@ public class RddRdfLoaderRegistryImpl
     }
 
     @Override
-    public <T, X> void register2(Lang lang, Class<T> targetType, RddRdfLoader<X> loader) {
+    public <T, X> void registerMapped(Lang lang, Class<T> targetType, RddRdfLoader<X> loader) {
         registry.put(lang, targetType, loader);
     }
 
