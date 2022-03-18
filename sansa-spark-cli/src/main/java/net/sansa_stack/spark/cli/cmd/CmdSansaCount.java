@@ -10,7 +10,8 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "count",
         description = "Count triples/quads")
 public class CmdSansaCount
-    implements Callable<Integer>
+        extends CmdBase
+        implements Callable<Integer>
 {
     @CommandLine.Mixin
     public CmdMixinSparkInput inputConfig = new CmdMixinSparkInput();
