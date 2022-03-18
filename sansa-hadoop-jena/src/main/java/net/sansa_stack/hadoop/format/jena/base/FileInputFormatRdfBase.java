@@ -137,7 +137,9 @@ public abstract class FileInputFormatRdfBase<T>
 
     public long getPrefixByteCount(Configuration conf) {
         // open input stream from split
-        long result = conf.getLong(prefixesLengthMaxKey, PARSED_PREFIXES_LENGTH_DEFAULT);
+        long result = prefixesLengthMaxKey == null
+                ? 0l
+                : conf.getLong(prefixesLengthMaxKey, PARSED_PREFIXES_LENGTH_DEFAULT);
         return result;
     }
 
