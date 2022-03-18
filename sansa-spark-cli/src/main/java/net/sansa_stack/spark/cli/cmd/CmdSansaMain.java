@@ -7,7 +7,8 @@ import picocli.CommandLine.Option;
         versionProvider = VersionProviderSansa.class,
         description = "SANSA Command Line Tool",
         subcommands = {
-        CmdSansaPrefixesParent.class, CmdSansaMap.class, CmdSansaTarql.class, CmdSansaNgs.class
+                CmdSansaCount.class, CmdSansaPrefixesParent.class, CmdSansaMap.class,
+                CmdSansaTarql.class, CmdSansaNgs.class
 })
 public class CmdSansaMain extends CmdBase {
 
