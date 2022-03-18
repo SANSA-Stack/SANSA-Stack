@@ -66,8 +66,6 @@ public class CmdSansaTarqlImpl {
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
                         univocityConf));
 
-        StopWatch stopwatch = StopWatch.createStarted();
-
         RdfSource rdfSource;
         if (query.isConstructQuad()) {
             rdfSource = RdfSources.ofQuads(JavaRddOfBindingsOps.tarqlQuads(initialRdd, query));
@@ -78,8 +76,6 @@ public class CmdSansaTarqlImpl {
         }
 
         CmdSansaMapImpl.writeOutRdfSources(rdfSource, rddRdfWriterFactory);
-
-        logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
 
         return 0; // exit code
     }

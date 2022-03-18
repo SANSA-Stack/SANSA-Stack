@@ -166,6 +166,7 @@ public class RddRdfWriter<T>
             }
 
             if (Boolean.TRUE.equals(settings.getOptimizePrefixes())) {
+                result = result.cache();
                 PrefixMapping declaredPrefixes = getGlobalPrefixMapping();
                 if (!declaredPrefixes.getNsPrefixMap().isEmpty()) {
                     Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
