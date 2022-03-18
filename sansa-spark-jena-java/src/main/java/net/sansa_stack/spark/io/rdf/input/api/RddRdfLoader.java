@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD;
 public interface RddRdfLoader<T> {
     RDD<T> load(SparkContext sparkContext, String path);
 
-    // TODO Replace with a generic openRdfStreamIterator
+    // TODO Augment with a generic openRdfStreamIterator
     /** Peek prefixes w.r.t. the hadoop configuration and the
      * loader's FileInputFormat */
     Model peekPrefixes(SparkContext sparkContext, String path);

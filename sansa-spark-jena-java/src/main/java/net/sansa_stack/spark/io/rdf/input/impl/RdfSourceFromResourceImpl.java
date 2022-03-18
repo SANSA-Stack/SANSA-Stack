@@ -1,7 +1,7 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
 import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFromResource;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
@@ -18,10 +18,10 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RdfSourceImpl
-    implements RdfSource
+public class RdfSourceFromResourceImpl
+    implements RdfSourceFromResource
 {
-    private static final Logger logger = LoggerFactory.getLogger(RdfSourceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(RdfSourceFromResourceImpl.class);
 
     // protected FileSystem fileSystem;
     protected SparkSession sparkSession;
@@ -29,7 +29,7 @@ public class RdfSourceImpl
     protected Lang lang;
     // protected RddRdfLoaderRegistry registry;
 
-    public RdfSourceImpl(SparkSession sparkSession, Path path, Lang lang) {
+    public RdfSourceFromResourceImpl(SparkSession sparkSession, Path path, Lang lang) {
         super();
         // this.fileSystem = fileSystem;
         this.sparkSession = sparkSession;

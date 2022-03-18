@@ -4,6 +4,9 @@ import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
@@ -41,6 +44,7 @@ public class CmdSansaTarqlImpl {
         }
 
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
                 .appName("Sansa Tarql (" + cmd.inputFiles + ")")
@@ -64,11 +68,16 @@ public class CmdSansaTarqlImpl {
 
         StopWatch stopwatch = StopWatch.createStarted();
 
+        RdfSource rdfSource;
         if (query.isConstructQuad()) {
-            rddRdfWriterFactory.forQuad(JavaRddOfBindingsOps.tarqlQuads(initialRdd, query)).run();
+            rdfSource = RdfSources.ofQuads(JavaRddOfBindingsOps.tarqlQuads(initialRdd, query));
         } else if (query.isConstructType()) {
-            rddRdfWriterFactory.forTriple(JavaRddOfBindingsOps.tarqlTriples(initialRdd, query)).run();
+            rdfSource = RdfSources.ofTriples(JavaRddOfBindingsOps.tarqlTriples(initialRdd, query));
+        } else {
+            throw new IllegalArgumentException("Unsupported query type (must be CONSTRUCT): " + query);
         }
+
+        CmdSansaMapImpl.writeOutRdfSources(rdfSource, rddRdfWriterFactory);
 
         logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
 

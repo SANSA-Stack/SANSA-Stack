@@ -32,7 +32,7 @@ public class CmdSansaPrefixesOptimizeImpl {
       @Override
       protected void process() {
         JavaRDD<Node> rdd;
-        if (rdfSources.containsQuadLangs()) {
+        if (rdfSources.usesQuads()) {
           rdd = rdfSources.asQuads().toJavaRDD().flatMap(quad -> (QuadUtils.quadToList(quad).iterator()));
         } else {
           rdd = rdfSources.asTriples().toJavaRDD().flatMap(triple -> (TripleUtils.tripleToList(triple).iterator()));

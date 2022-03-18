@@ -57,18 +57,23 @@
             <artifactId>jenax-io-kryo</artifactId>
         </dependency>
 
-
-<!--
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-lambdas-serializable</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-arq-rx</artifactId>
+            <artifactId>jenax-analytics-core</artifactId>
         </dependency>
--->
+
+
+        <!--
+                <dependency>
+                    <groupId>org.aksw.commons</groupId>
+                    <artifactId>aksw-commons-lambdas-serializable</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.aksw.jenax</groupId>
+                    <artifactId>jenax-arq-rx</artifactId>
+                </dependency>
+        -->
 
         <dependency>
             <groupId>org.apache.spark</groupId>

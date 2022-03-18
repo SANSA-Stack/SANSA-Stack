@@ -29,6 +29,12 @@ conformance-ontop: ## run conforance test suite against ontop
 conformance-sparqlify: ## run conforance test suite against sparqlify
 	mvn -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
 
+.ONESHELL:
+dist: ## create the standalone jar-with-dependencies of sansa stack
+	$(MCIS) -Pdist -pl :sansa-stack-spark_2.12 -am
+	file=`find $(CWD)/sansa-stack-parent/sansa-stack-spark/target | grep '\.jar-with-dependencies.jar$$'`
+	echo "Created package: $$file"
+
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 

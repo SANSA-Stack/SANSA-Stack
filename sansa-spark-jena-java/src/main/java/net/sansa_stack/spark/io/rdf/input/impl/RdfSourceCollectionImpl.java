@@ -64,18 +64,15 @@ public class RdfSourceCollectionImpl
     }
 
     @Override
-    public boolean containsQuadLangs() {
+    public boolean usesQuads() {
         boolean result = members.stream().anyMatch(rdfSource -> {
-            boolean r = false;
-            Lang lang = rdfSource.getLang();
-            if (RDFLanguages.isQuads(lang)) {
-                r = true;
-            }
+            boolean r = rdfSource.usesQuads();
             return r;
         });
         return result;
     }
 
+    /*
     @Override
     public Lang getLang() {
         Set<Lang> langs = members.stream().map(RdfSource::getLang).collect(Collectors.toSet());
@@ -88,6 +85,7 @@ public class RdfSourceCollectionImpl
 
         return result;
     }
+     */
 
     public static <I, T> RDD<T> union(
             SparkSession sparkSession, Collection<I> members, Function<I, RDD<T>> mapper) {
