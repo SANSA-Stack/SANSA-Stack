@@ -31,7 +31,7 @@ conformance-sparqlify: ## run conforance test suite against sparqlify
 
 .ONESHELL:
 dist: ## create the standalone jar-with-dependencies of sansa stack
-	$(MCIS) -Pdist -pl :sansa-stack-spark_2.12 -am
+	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am
 	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
