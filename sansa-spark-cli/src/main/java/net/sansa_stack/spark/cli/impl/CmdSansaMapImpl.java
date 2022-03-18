@@ -69,9 +69,10 @@ public class CmdSansaMapImpl {
 
     StopWatch stopwatch = StopWatch.createStarted();
 
-    int initialPrefixes = rddRdfWriterFactory.getGlobalPrefixMapping().numPrefixes();
+    int initialPrefixCount = rddRdfWriterFactory.getGlobalPrefixMapping().numPrefixes();
 
     Model declaredPrefixes = rdfSources.peekDeclaredPrefixes();
+    int declaredPrefixCount = declaredPrefixes.numPrefixes();
 
     RddRdfWriter<?> rddRdfWriter;
 
@@ -88,7 +89,7 @@ public class CmdSansaMapImpl {
             .map(PrefixMapping::getNsPrefixMap).orElse(null);
     if (usedPm != null) {
       int usedPmCount = usedPm.size();
-      logger.info(String.format("Optimization of prefixes reduced their number from %d to %d (of which %d originated from the sources)", initialPrefixes, usedPmCount, declaredPrefixes));
+      logger.info(String.format("Optimization of prefixes reduced their number from %d to %d (of which %d originated from the sources)", initialPrefixCount, usedPmCount, declaredPrefixCount));
     }
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
