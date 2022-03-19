@@ -3,16 +3,121 @@ package net.sansa_stack.hadoop;
 import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.RecordReaderCsv;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class TestCsvNewlineRegex {
+@RunWith(Parameterized.class)
+public class TestCsvMultilineRecordStartTests {
+
+    @Parameterized.Parameters(name = "{index}: test {0}")
+    public static Iterable<?> data() {
+
+        CustomPattern pattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel());
+
+        // expected: 4, 8, 35
+        CsvTestCase tc1 = CsvTestCase.create("csv-excel-1", pattern, String.join("\n",
+                        "a,b",
+                        "x,y",
+                        "\"\"\"this\nis\nmultiline\"\"\", d",
+                        "e,f"),
+                4, 8, 35);
+
+        // expected 4, 8, 18
+        CsvTestCase tc2 = CsvTestCase.create("csv-excel-2", pattern, String.join("\n",
+                        "a,b",
+                        "x,y",
+                        "\"\"\"\"\"\", d",
+                        "e,f"),
+                4, 8, 18);
+
+        // 17
+        CsvTestCase tc3 = CsvTestCase.create("csv-excel-3", pattern, String.join("\n",
+                        "a,b",
+                        "x,y",
+                        "\"\"\"\"\", d",
+                        "e,f"),
+                17);
+
+
+        List<CsvTestCase> result = Arrays.asList(
+                tc1,
+                tc2,
+                tc3);
+
+        return result;
+    }
+
+
+    protected CsvTestCase testCase;
+
+    public TestCsvMultilineRecordStartTests(CsvTestCase testCase) {
+        this.testCase = testCase;
+    }
+
+    @Test
+    public void test() {
+        String input = testCase.getInput();
+        CustomPattern pattern = testCase.getPattern();
+        List<Integer> expectedMatchPositions = testCase.getExpectedMatchPositions();
+
+        CustomMatcher m = pattern.matcher(input);
+        List<Integer> actualMatchPositions = new ArrayList<>();
+        while (m.find()) {
+            int actualMatch = m.start();
+            actualMatchPositions.add(actualMatch);
+            // System.out.println("newline at pos: " + m.start() + " --- group: " + m.group());
+        }
+
+        Assert.assertEquals(expectedMatchPositions, actualMatchPositions);
+    }
+
+    public static class CsvTestCase {
+        protected String name;
+        protected CustomPattern pattern;
+        protected String input;
+        protected List<Integer> expectedMatchPositions;
+
+        public CsvTestCase(String name, CustomPattern pattern, String input, List<Integer> expectedMatchPositions) {
+            this.name = name;
+            this.pattern = pattern;
+            this.input = input;
+            this.expectedMatchPositions = expectedMatchPositions;
+        }
+
+        public static CsvTestCase create(String name, CustomPattern pattern, String input, Integer ... expectedMatchPositions) {
+            return new CsvTestCase(name, pattern, input, Arrays.asList(expectedMatchPositions));
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public CustomPattern getPattern() {
+            return pattern;
+        }
+
+        public String getInput() {
+            return input;
+        }
+
+        public List<Integer> getExpectedMatchPositions() {
+            return expectedMatchPositions;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+
+/*
 
     public static CustomPattern createPattern() {
         CustomPattern result;
@@ -26,8 +131,8 @@ public class TestCsvNewlineRegex {
                 return CustomPatternJava.compile("(?<=\n(?!((?<![^\"]\"[^\"]).){0,50000}\"(\r?\n|,|$))).",
                         Pattern.DOTALL);
 
-                // when going back from the quote char before the cell delimiters [,\n$]
-                //
+            // when going back from the quote char before the cell delimiters [,\n$]
+            //
             case 1: {
                 // Match an effective quote: A quote that is preceeded by an even number of quotes
                 String eQuote = "[^\"](\"\"){0,10}\"";
@@ -52,11 +157,13 @@ public class TestCsvNewlineRegex {
                         //"(?<=(\n|^)(?!((?<![^\"](\"\"){0,10}\"(?!\")).){0,50000}[^\"](\"\"){0,10}\"(\r?\n|,|$))).",
                         complete,
                         Pattern.DOTALL);
+*/
 /*
                 return Pattern.compile(
                         "(?<=\n(?!((?<!(?<![^\"](\"\"){0,10}\")).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
                         Pattern.DOTALL);
-*/
+*//*
+
             }
             case 2: {
                 // Match the first quote in a sequence of quotes:
@@ -89,54 +196,21 @@ public class TestCsvNewlineRegex {
                         complete,
                         Pattern.DOTALL);
             }
-            case 3: return new CustomPatternCsv();
+            case 3: return CustomPatternCsv.create(CustomPatternCsv.Config.createExcel());
             default:
                 return null;
         }
     }
-
     @Test
     public void test1() {
 
-        /*
+        */
+/*
         Pattern testPattern = Pattern.compile("\n");
         Matcher testMatcher = testPattern.matcher("abcd");
         System.out.println(testMatcher.group());
-         */
+         *//*
 
-        CustomPattern pattern = new CustomPatternCsv();
-
-                //createPattern();
-
-        // expected: 4, 8, 35
-        String input0 = String.join("\n",
-                "a,b",
-                "x,y",
-                "\"\"\"this\nis\nmultiline\"\"\", d",
-                "e,f"
-        );
-
-        // expected 4, 8, 18
-        String input1 = String.join("\n",
-                "a,b",
-                "x,y",
-                "\"\"\"\"\"\", d",
-                "e,f"
-        );
-
-        // 17
-        String input2 = String.join("\n",
-                "a,b",
-                "x,y",
-                "\"\"\"\"\", d",
-                "e,f"
-        );
-
-
-        List<String> inputs = Arrays.asList(
-                input0,
-                input1,
-                input2);
         int i = 0;
         for (String input : inputs) {
             System.out.println("input #" + i++);
@@ -146,4 +220,5 @@ public class TestCsvNewlineRegex {
             }
         }
     }
+*/
 }
