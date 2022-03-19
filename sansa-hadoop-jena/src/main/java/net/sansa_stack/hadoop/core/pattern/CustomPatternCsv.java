@@ -3,7 +3,6 @@ package net.sansa_stack.hadoop.core.pattern;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 /**
  * Matcher that searches for record starts (the first character following a newline) that are NOT within a
  * multiline field.
@@ -59,8 +58,6 @@ public class CustomPatternCsv
         }
     }
 
-
-    // TODO finish the pattern
     // In reverse matching the escape character is seen after the quote character
     public static Pattern createBwdQuotePattern(Config dialect) {
         String patternStr = "(quote)((term)|(delim)|$)";
@@ -110,7 +107,6 @@ public class CustomPatternCsv
         }
 
         return new CustomPatternCsv(firstCharOnNewLinePattern, endOfQuotedFieldFwdPattern, startOfQuotedFieldBwdPattern);
-
     }
 
     protected Pattern firstCharOnNewLinePattern;
