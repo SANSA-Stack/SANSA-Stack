@@ -27,7 +27,6 @@ public class CustomPatternCsv
         }
 
         public static Config createExcel() {
-            // return new Config('"', '"', ",", "\r?\n\r?", 32);
             return create('"');
         }
 
@@ -66,10 +65,10 @@ public class CustomPatternCsv
     public static Pattern createBwdQuotePattern(Config dialect) {
         String patternStr = "(quote)((term)|(delim)|$)";
 
-        String str = patternStr
-                .replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())))
-                .replace("(delim)", Pattern.quote(dialect.getDelimiter()))
-                .replace("(term)", dialect.getLineTerminatorPattern());
+        String str = patternStr;
+        str = str.replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())));
+        str = str.replace("(delim)", Pattern.quote(dialect.getDelimiter()));
+        str = str.replace("(term)", dialect.getLineTerminatorPattern());
 
         Pattern result = Pattern.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
         return result;
@@ -90,22 +89,6 @@ public class CustomPatternCsv
         Pattern result = Pattern.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
         return result;
     }
-
-    // Create a pattern for matching csv-like double quotes - where
-    // double-double quote escapes another double quote
-    // This pattern works for forward and reverse matching
-    public static Pattern createQuotePattern(char quoteChar) {
-        String equoteFieldEnd = "(?<!((?<!\")(\"\"){0,10})\")\"(\r?\n|,|$)";
-
-        if (quoteChar != '"') {
-            String qcp = Pattern.quote(Character.toString(quoteChar));
-            equoteFieldEnd = equoteFieldEnd.replace("\"", qcp);
-        }
-
-        Pattern result = Pattern.compile(equoteFieldEnd);
-        return result;
-    }
-
 
     public static CustomPatternCsv create(Config dialect) {
         Pattern firstCharOnNewLinePattern;
@@ -313,4 +296,22 @@ public class CustomPatternCsv
             return 0;
         }
     }
+
+    // Create a pattern for matching csv-like double quotes - where
+    // double-double quote escapes another double quote
+    // This pattern works for forward and reverse matching
+    /*
+    public static Pattern createQuotePattern(char quoteChar) {
+        String equoteFieldEnd = "(?<!((?<!\")(\"\"){0,10})\")\"(\r?\n|,|$)";
+
+        if (quoteChar != '"') {
+            String qcp = Pattern.quote(Character.toString(quoteChar));
+            equoteFieldEnd = equoteFieldEnd.replace("\"", qcp);
+        }
+
+        Pattern result = Pattern.compile(equoteFieldEnd);
+        return result;
+    }
+    */
+
 }
