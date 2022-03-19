@@ -18,10 +18,10 @@ public class TestCsvMultilineRecordStartTests {
     @Parameterized.Parameters(name = "{index}: test {0}")
     public static Iterable<?> data() {
 
-        CustomPattern pattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel());
+        CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel());
 
         // expected: 4, 8, 35
-        CsvTestCase tc1 = CsvTestCase.create("csv-excel-1", pattern, String.join("\n",
+        CsvTestCase excel1 = CsvTestCase.create("csv-excel-1", excelPattern, String.join("\n",
                         "a,b",
                         "x,y",
                         "\"\"\"this\nis\nmultiline\"\"\", d",
@@ -29,7 +29,7 @@ public class TestCsvMultilineRecordStartTests {
                 4, 8, 35);
 
         // expected 4, 8, 18
-        CsvTestCase tc2 = CsvTestCase.create("csv-excel-2", pattern, String.join("\n",
+        CsvTestCase excel2 = CsvTestCase.create("csv-excel-2", excelPattern, String.join("\n",
                         "a,b",
                         "x,y",
                         "\"\"\"\"\"\", d",
@@ -37,18 +37,29 @@ public class TestCsvMultilineRecordStartTests {
                 4, 8, 18);
 
         // 17
-        CsvTestCase tc3 = CsvTestCase.create("csv-excel-3", pattern, String.join("\n",
+        CsvTestCase excel3 = CsvTestCase.create("csv-excel-3", excelPattern, String.join("\n",
                         "a,b",
                         "x,y",
                         "\"\"\"\"\", d",
                         "e,f"),
                 17);
 
+        // escape with backslash
+        CustomPattern customPatternA = CustomPatternCsv.create(CustomPatternCsv.Config.create('"', '\\'));
+
+        CsvTestCase customA1 = CsvTestCase.create("csv-a1", customPatternA, String.join("\n",
+                        "a,b",
+                        "x,y",
+                        "d,\"this\nis\nmult\\\",\niline\"",
+                        "e,f"), // pos 34 is the 'e'
+                4, 8, 34);
+
 
         List<CsvTestCase> result = Arrays.asList(
-                tc1,
-                tc2,
-                tc3);
+                excel1,
+                excel2,
+                excel3,
+                customA1);
 
         return result;
     }
@@ -71,7 +82,7 @@ public class TestCsvMultilineRecordStartTests {
         while (m.find()) {
             int actualMatch = m.start();
             actualMatchPositions.add(actualMatch);
-            // System.out.println("newline at pos: " + m.start() + " --- group: " + m.group());
+            // System.out.println("newline at pos: " + actualMatch + " --- group: " + m.group());
         }
 
         Assert.assertEquals(expectedMatchPositions, actualMatchPositions);

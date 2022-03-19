@@ -27,7 +27,16 @@ public class CustomPatternCsv
         }
 
         public static Config createExcel() {
-            return new Config('"', '"', ",", "\r?\n\r?", 32);
+            // return new Config('"', '"', ",", "\r?\n\r?", 32);
+            return create('"');
+        }
+
+        public static Config create(char quoteChar) {
+            return create(quoteChar, quoteChar);
+        }
+
+        public static Config create(char quoteChar, char escapeChar) {
+            return new Config(quoteChar, escapeChar, ",", "\r?\n\r?", 32);
         }
 
         public char getQuoteChar() {
