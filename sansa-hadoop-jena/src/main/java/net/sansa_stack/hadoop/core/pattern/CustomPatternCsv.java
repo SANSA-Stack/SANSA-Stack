@@ -5,9 +5,8 @@ import java.util.regex.Pattern;
 
 
 /**
- * Matcher that searches for newlines that are NOT within a multiline field.
- *
- *
+ * Matcher that searches for record starts (the first character following a newline) that are NOT within a
+ * multiline field.
  */
 public class CustomPatternCsv
     implements CustomPattern
