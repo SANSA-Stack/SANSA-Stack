@@ -164,18 +164,6 @@ public class CustomPatternCsv
                 return false;
             }
 
-            // createFwdQuotePattern('\"', '\\');
-            // Match the first equote of a sequence of possibly escaped quote chars
-            // String equoteStart = "((?<!\")\"(?=(\"\"){0,10}(\r?\n|,|$)))";
-            // String matchCharAfterNewline = "${equoteFirst}(\r?\n|,|$))).";
-            // Pattern equoteStartPattern = Pattern.compile(equoteStart, Pattern.DOTALL | Pattern.MULTILINE);
-
-            // Match an equote at the end of an field
-            // String equoteFieldEnd = "(?<!((?<!\")(\"\"){0,10})\")\"(\r?\n|,|$)";
-
-            // Pattern equoteFieldEndPattern = Pattern.compile(equoteFieldEnd, Pattern.DOTALL | Pattern.MULTILINE);
-
-            // Pattern newline = Pattern.compile("\n.", Pattern.DOTALL);
             Matcher firstCharOnNewLineMatcher =  firstCharOnNewLinePattern.matcher(charSequence);
             firstCharOnNewLineMatcher.region(pos, regionEnd);
 
@@ -313,5 +301,16 @@ public class CustomPatternCsv
         return result;
     }
     */
+    // createFwdQuotePattern('\"', '\\');
+    // Match the first equote of a sequence of possibly escaped quote chars
+    // String equoteStart = "((?<!\")\"(?=(\"\"){0,10}(\r?\n|,|$)))";
+    // String matchCharAfterNewline = "${equoteFirst}(\r?\n|,|$))).";
+    // Pattern equoteStartPattern = Pattern.compile(equoteStart, Pattern.DOTALL | Pattern.MULTILINE);
 
+    // Match an equote at the end of an field
+    // String equoteFieldEnd = "(?<!((?<!\")(\"\"){0,10})\")\"(\r?\n|,|$)";
+
+    // Pattern equoteFieldEndPattern = Pattern.compile(equoteFieldEnd, Pattern.DOTALL | Pattern.MULTILINE);
+
+    // Pattern newline = Pattern.compile("\n.", Pattern.DOTALL);
 }
