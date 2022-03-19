@@ -50,7 +50,8 @@ public class CmdSansaNgsQueryImpl {
 
     logger.info("Loaded query " + query);
 
-    RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+    // cmd.outputConfig.outFormat
+    // RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
 
     SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa Ngs Query (" + cmd.inputFiles + ")")
