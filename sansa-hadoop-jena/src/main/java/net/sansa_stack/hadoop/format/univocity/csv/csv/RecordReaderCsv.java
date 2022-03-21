@@ -5,6 +5,8 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvw;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
@@ -113,13 +115,17 @@ public class RecordReaderCsv
         super.initialize(inputSplit, context);
 
         Configuration conf = context.getConfiguration();
-        long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
-        this.recordStartPattern = createStartOfCsvRecordPattern(cellMaxLength);
 
         UnivocityHadoopConf parserConf = FileInputFormatCsv.getUnivocityConfig(conf);
         DialectMutable tmp = new DialectMutableImpl();
         parserConf.getDialect().copyInto(tmp);
         requestedDialect = tmp;
+
+        long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
+        CustomPatternCsv.Config config = CustomPatternCsvFromCsvw.adapt(requestedDialect);
+        this.recordStartPattern = CustomPatternCsv.create(config);
+        // createStartOfCsvRecordPattern(cellMaxLength);
+
 
         // The header record (if any) is skipped only in postprocessing by createRecordFlow()
         parserConf.getDialect().setHeader(false);
