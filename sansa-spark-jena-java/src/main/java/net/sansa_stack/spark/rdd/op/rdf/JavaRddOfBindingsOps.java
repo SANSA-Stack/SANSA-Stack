@@ -5,6 +5,8 @@ import net.sansa_stack.spark.rdd.op.rx.JavaRddRxOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.rx.function.RxFunction;
 import org.aksw.jena_sparql_api.rx.query_flow.QueryFlowOps;
+import org.aksw.jenax.arq.util.quad.QuadPatternUtils;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -21,6 +23,7 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.main.OpExecutor;
 import org.apache.jena.sparql.expr.NodeValue;
+import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
@@ -30,6 +33,8 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class JavaRddOfBindingsOps {
 
@@ -108,8 +113,13 @@ public class JavaRddOfBindingsOps {
     /** If the given query mentions a variable ?ROWNUM (upper case) then the input rdd of bindings is
      *  zipped with index */
     public static JavaRDD<Binding> enrichRddWithRowNumIfNeeded(JavaRDD<Binding> rdd, Query query) {
+        Set<Var> mentionedVars = query.isConstructType()
+                ? QuadPatternUtils.getVarsMentioned(query.getConstructTemplate().getQuads())
+                : new HashSet<>();
+
         Op op = Algebra.compile(query);
-        Collection<Var> mentionedVars = OpVars.mentionedVars(op);
+        Collection<Var> patternVars = OpVars.mentionedVars(op);
+        mentionedVars.addAll(patternVars);
         boolean usesRowNum = mentionedVars.contains(ROWNUM);
 
         JavaRDD<Binding> result = usesRowNum
