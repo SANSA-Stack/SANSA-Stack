@@ -123,7 +123,7 @@ public class JavaRddOfBindingsOps {
         boolean usesRowNum = mentionedVars.contains(ROWNUM);
 
         JavaRDD<Binding> result = usesRowNum
-                ? rdd.zipWithIndex().map(bi -> BindingFactory.binding(bi._1, ROWNUM, NodeValue.makeInteger(bi._2).asNode()))
+                ? rdd.zipWithIndex().map(bi -> BindingFactory.binding(bi._1, ROWNUM, NodeValue.makeInteger(bi._2 + 1).asNode()))
                 : rdd;
 
         return result;
