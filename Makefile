@@ -57,6 +57,8 @@ rpm-reinstall: ## reinstall a previously built rpm package
 rpm-rere: rpm-rebuild rpm-reinstall ## ## rebuild and reinstall rpm
 
 ontop-deps: ## List ontop deps suitable for use with mvn's -pl option
+	@# Note: The first line skips xml comments in the same line
+	@# A cleaner solution would build and examine the effective poms
 	@grep --include 'pom.xml' -hoPR '.*<artifactId>ontop.*' | grep -v '<!--' | \
 	grep -oP '(?<=<artifactId>)ontop.*(?=</artifactId>)' | \
 	sort -u | xargs | sed 's/ /,/g'
