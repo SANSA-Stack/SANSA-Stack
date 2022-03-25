@@ -55,3 +55,10 @@ rpm-reinstall: ## reinstall a previously built rpm package
 	sudo rpm -U "$$file"
 
 rpm-rere: rpm-rebuild rpm-reinstall ## ## rebuild and reinstall rpm
+
+ontop-deps: ## List ontop deps suitable for use with mvn's -pl option
+	@grep --include 'pom.xml' -hoPR '.*<artifactId>ontop.*' | grep -v '<!--' | \
+	grep -oP '(?<=<artifactId>)ontop.*(?=</artifactId>)' | \
+	sort -u | xargs | sed 's/ /,/g'
+
+
