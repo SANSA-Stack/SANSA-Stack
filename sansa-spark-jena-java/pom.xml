@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC2-SNAPSHOT</version>
+        <version>0.8.0-RC3-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-spark-jena-java_2.12</artifactId>
@@ -53,22 +53,27 @@
         </dependency>
 
         <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-kryo-jena</artifactId>
-        </dependency>
-
-
-<!--
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-lambdas-serializable</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-kryo</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-arq-rx</artifactId>
+            <artifactId>jenax-analytics-core</artifactId>
         </dependency>
--->
+
+
+        <!--
+                <dependency>
+                    <groupId>org.aksw.commons</groupId>
+                    <artifactId>aksw-commons-lambdas-serializable</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.aksw.jenax</groupId>
+                    <artifactId>jenax-arq-rx</artifactId>
+                </dependency>
+        -->
 
         <dependency>
             <groupId>org.apache.spark</groupId>

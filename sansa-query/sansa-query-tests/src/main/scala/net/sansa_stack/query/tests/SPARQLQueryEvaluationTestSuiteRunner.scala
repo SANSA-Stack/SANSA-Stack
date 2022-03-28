@@ -99,7 +99,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
   private def processAsk(query: Query, resultExpected: Option[SPARQLResult], resultActual: SPARQLResult) = {
 
     if (resultExpected.isEmpty) {
-      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.SPARQLResultSetXML)
+      ResultSetMgr.write(System.out, resultActual.getBooleanResult, ResultSetLang.RS_XML)
       fail("No expected result defined - actual output printed to console")
     } else {
       assert(resultActual.getBooleanResult == resultExpected.get.getBooleanResult, "Result of ASK query does not match")
@@ -163,7 +163,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
     val resultsActual = ResultSetFactory.makeRewindable(resultsAct.getResultSet)
 
     if (resultsOpt.isEmpty) {
-      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.SPARQLResultSetXML)
+      ResultSetMgr.write(System.out, resultsActual, ResultSetLang.RS_XML)
       fail("No expected result defined - actual output printed to console")
     } else {
       val results = resultsOpt.get

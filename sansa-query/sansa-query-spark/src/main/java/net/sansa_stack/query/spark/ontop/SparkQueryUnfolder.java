@@ -38,19 +38,22 @@ public class SparkQueryUnfolder extends AbstractIntensionalQueryMerger implement
     private final Mapping mapping;
     private final SubstitutionFactory substitutionFactory;
     private final QueryTransformerFactory transformerFactory;
+    private final AtomFactory atomFactory;
     private final UnionBasedQueryMerger queryMerger;
     private final CoreUtilsFactory coreUtilsFactory;
 
     @AssistedInject
     private SparkQueryUnfolder(@Assisted Mapping mapping, IntermediateQueryFactory iqFactory,
                                SubstitutionFactory substitutionFactory, QueryTransformerFactory transformerFactory,
-                               UnionBasedQueryMerger queryMerger, CoreUtilsFactory coreUtilsFactory) {
+                               UnionBasedQueryMerger queryMerger, CoreUtilsFactory coreUtilsFactory,
+                               AtomFactory atomFactory) {
         super(iqFactory);
         this.mapping = mapping;
         this.substitutionFactory = substitutionFactory;
         this.transformerFactory = transformerFactory;
         this.queryMerger = queryMerger;
         this.coreUtilsFactory = coreUtilsFactory;
+        this.atomFactory = atomFactory;
     }
 
     @Override
@@ -61,7 +64,7 @@ public class SparkQueryUnfolder extends AbstractIntensionalQueryMerger implement
     protected class BasicQueryUnfoldingTransformer extends AbstractIntensionalQueryMerger.QueryMergingTransformer {
 
         protected BasicQueryUnfoldingTransformer(VariableGenerator variableGenerator) {
-            super(variableGenerator, SparkQueryUnfolder.this.iqFactory, substitutionFactory, transformerFactory);
+            super(variableGenerator, SparkQueryUnfolder.this.iqFactory, substitutionFactory, atomFactory, transformerFactory);
         }
 
         @Override

@@ -2,6 +2,7 @@ package net.sansa_stack.hadoop.format.jena.base;
 
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -32,7 +33,7 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
             String maxRecordLengthKey,
             String probeRecordCountKey,
             String prefixesMaxLengthKey,
-            Pattern recordSearchPattern,
+            CustomPattern recordSearchPattern,
             Lang lang,
             Accumulating<U, G, A, T> accumulating) {
         super(minRecordLengthKey,

@@ -124,7 +124,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected String serializeLimit(long limit) {
+                    protected String serializeLimit(long limit, boolean noSortCondition) {
                         if (limit < 0) {
                             return "";
                         } else {
@@ -133,7 +133,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected String serializeLimitOffset(long limit, long offset) {
+                    protected String serializeLimitOffset(long limit, long offset, boolean noSortCondition) {
                         if (limit == 0) {
                             return "LIMIT 0";
                         }
@@ -163,7 +163,7 @@ public class SparkSelectFromWhereSerializer extends DefaultSelectFromWhereSerial
                     }
 
                     @Override
-                    protected String serializeOffset(long offset) {
+                    protected String serializeOffset(long offset, boolean noSortCondition) {
                         if (offset < 0) {
                             // If the offset is not specified
                             return "";

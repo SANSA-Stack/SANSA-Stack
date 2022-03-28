@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-parent_2.12</artifactId>
-    <version>0.8.0-RC2-SNAPSHOT</version>
+    <version>0.8.0-RC3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - Parent</name>
 
@@ -72,15 +72,22 @@
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.9.1-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.3.2</jena.version>
-        <jsa.version>4.3.2-1-SNAPSHOT</jsa.version>
-        <r2rml-jena-api.version>0.9.1-SNAPSHOT</r2rml-jena-api.version>
+        <aksw-commons.version>0.9.3</aksw-commons.version>
+        <jena.version>4.4.0</jena.version>
+        <jsa.version>4.4.0-2</jsa.version>
+        <r2rml-jena-api.version>0.9.2</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
+<!--
 	<slf4j.version>1.8.0-beta4</slf4j.version>
 	<log4j.version>2.17.0</log4j.version>
+-->
+
+	<slf4j.version>1.7.30</slf4j.version>
+	<!-- <log4j.version>1</log4j.version> -->
+
+
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
         <!-- <jetty.version>9.4.9.4.18.v20190429</jetty.version> -->
@@ -92,7 +99,8 @@
 
         <owlapi.version>5.1.17</owlapi.version>
 
-        <ontop.version>4.0.9-sansa</ontop.version>
+        <ontop.version>4.3.0-2</ontop.version>
+	<sparqlify.version>0.9.1</sparqlify.version>
 
         <guava.version>30.1-jre</guava.version>
         <!--        <guava.version>14.0.1</guava.version>-->
@@ -112,8 +120,6 @@
         <hadoop.deps.scope>compile</hadoop.deps.scope>
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <modules>
@@ -133,8 +139,8 @@
         <module>sansa-examples</module>
         <module>sansa-integration-tests</module>
         <module>sansa-spark-cli</module>
-        <module>sansa-debian-spark-cli</module>
         <module>sansa-bench-spark</module>
+        <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
     </modules>
 
@@ -189,9 +195,9 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-kryo-jena</artifactId>
-                <version>${project.version}</version>
+                <groupId>org.aksw.jenax</groupId>
+                <artifactId>jenax-io-kryo</artifactId>
+                <version>${jsa.version}</version>
             </dependency>
 
             <dependency>
@@ -376,12 +382,6 @@
                 <version>${jsa.version}</version>
             </dependency>
 
-<!--            <dependency>-->
-<!--                <groupId>org.aksw.jenax</groupId>-->
-<!--                <artifactId>jenax-analytics-core</artifactId>-->
-<!--                <version>${jsa.version}</version>-->
-<!--            </dependency>-->
-
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-arq-utils</artifactId>
@@ -486,6 +486,19 @@
                 <!-- <classifier>${scala.compat.version}</classifier> -->
             </dependency>
 
+
+            <!-- CSVW Bindings for univocity (hadoop) and our CLI -->
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-models-csvw-univocity</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.commons</groupId>
+                <artifactId>aksw-commons-models-csvw-picocli</artifactId>
+                <version>${aksw-commons.version}</version>
+            </dependency>
 
             <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
             <dependency>
@@ -994,7 +1007,7 @@
 
             <!-- Ontop -->
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-owlapi</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
@@ -1005,7 +1018,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-system-sql-owlapi</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
@@ -1016,7 +1029,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>it.unibz.inf.ontop</groupId>
+                <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
                 <artifactId>ontop-rdb</artifactId>
                 <version>${ontop.version}</version>
                 <exclusions>
@@ -1226,7 +1239,7 @@
             <dependency>
                 <groupId>org.aksw.bsbm</groupId>
                 <artifactId>bsbm-core</artifactId>
-                <version>3.1.6-SNAPSHOT</version>
+                <version>3.1.6</version>
                 <scope>test</scope>
             </dependency>
 
@@ -1380,10 +1393,20 @@
             </dependency>
 
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+
+
+<!--
+            <dependency>
 		<groupId>org.apache.logging.log4j</groupId>
 		<artifactId>log4j-slf4j18-impl</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+-->
 
 
             <dependency>
@@ -1450,7 +1473,31 @@
             <dependency>
                 <groupId>com.github.jsqlparser</groupId>
                 <artifactId>jsqlparser</artifactId>
-                <version>3.2</version>
+                <version>4.3</version>
+            </dependency>
+
+
+            <!-- Packaging -->
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-uberjar-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-docker-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-deb-cli_2.12</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
+                <version>${project.version}</version>
+                <type>rpm</type>
             </dependency>
 
         </dependencies>
@@ -1684,6 +1731,17 @@
                     </executions>
                 </plugin>
 
+		<!-- This plugin was last released 2011 - does anything depend on it? -->
+		<plugin>
+			                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+		<version>2.15.2</version>
+		<configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                </configuration>
+            </plugin>
+
+
                 <!-- <plugin> -->
                 <!-- <groupId>org.scalatest</groupId> -->
                 <!-- <artifactId>scalatest-maven-plugin</artifactId> -->
@@ -1713,6 +1771,24 @@
                 <!-- </execution> -->
                 <!-- </executions> -->
                 <!-- </plugin> -->
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-deploy-plugin</artifactId>
+			<version>3.0.0-M2</version>
+                </plugin>
+		<plugin>
+			<groupId>org.sonatype.plugins</groupId>
+                                <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.12</version>
+                </plugin>
+                        <plugin>
+                                <groupId>de.dentrassi.maven</groupId>
+                                <artifactId>rpm</artifactId>
+                                <version>1.8.0</version>
+                                <extensions>true</extensions>
+                        </plugin>
+
 
                 <!-- Gitflow -->
                 <plugin>
@@ -1997,7 +2073,6 @@
                         <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
                         <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
                         <!-- we use a central config located in the root directory -->
-                        <!--suppress UnresolvedMavenProperty-->
                         <configLocation>${scalastyle.config.path}</configLocation>
                         <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
                         <outputEncoding>UTF-8</outputEncoding>

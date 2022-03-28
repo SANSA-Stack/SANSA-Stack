@@ -5,8 +5,10 @@ import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.shared.impl.PrefixMappingImpl;
 
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -30,6 +32,8 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
     /** Whether to convert quads to triples if a triple-based output format is requested */
     protected boolean mapQuadsToTriplesForTripleLangs;
 
+    protected RdfPostProcessingSettingsMutable postProcessingSettings = new RdfPostProcessingSettingsBase();
+
     /**
      * Only for console output: Instead of writing tuples out immediatly,
      * collect up to this number of tuples in order to derive the used prefixes.
@@ -47,6 +51,7 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return (SELF)this;
     }
 
+    // TODO Probably we should copy / clone prefixes
     public SELF configureFrom(RddRdfWriterSettings<?> other) {
         this.partitionFolder = other.partitionFolder;
         this.targetFile = other.targetFile;
@@ -60,6 +65,8 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         this.mapQuadsToTriplesForTripleLangs = other.mapQuadsToTriplesForTripleLangs;
         this.deferOutputForUsedPrefixes = other.deferOutputForUsedPrefixes;
         this.consoleOutSupplier = other.consoleOutSupplier;
+
+        this.postProcessingSettings.copyFrom(other.postProcessingSettings);
         return self();
     }
 
@@ -131,6 +138,13 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return self();
     }
 
+    public SELF setGlobalPrefixMapping(Map<String, String> globalPrefixMap) {
+        PrefixMapping pm = new PrefixMappingImpl();
+        pm.setNsPrefixes(globalPrefixMap);
+        setGlobalPrefixMapping(pm);
+        return self();
+    }
+
     public RDFFormat getOutputFormat() {
         return outputFormat;
     }
@@ -198,5 +212,15 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
 
     public Supplier<OutputStream> getConsoleOutSupplier() {
         return consoleOutSupplier;
+    }
+
+
+    public RdfPostProcessingSettingsMutable getPostProcessingSettings() {
+        return postProcessingSettings;
+    }
+
+    public SELF setPostProcessingSettings(RdfPostProcessingSettingsMutable postProcessingSettings) {
+        this.postProcessingSettings = postProcessingSettings;
+        return self();
     }
 }

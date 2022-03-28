@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+  	    <groupId>net.sansa-stack</groupId>
+    	<artifactId>sansa-pkg-parent_2.12</artifactId>
+	    <version>0.8.0-RC3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
+	<packaging>rpm</packaging>
+
+	<properties>
+		<rpm.packageName>sansa-cli</rpm.packageName>
+		<rpm.skipSigning>true</rpm.skipSigning>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-spark-cli_2.12</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Needed in order for <packaging>rpm</packaging> to be recognized -->
+			<plugin>
+				<groupId>de.dentrassi.maven</groupId>
+				<artifactId>rpm</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-deploy-plugin</artifactId> -->
+			<!-- <configuration> -->
+			<!-- <skip>true</skip> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
+
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<project.description>SANSA CLI (rpm bundle)</project.description>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>rpm</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+					</plugin>
+
+					<plugin>
+						<groupId>de.dentrassi.maven</groupId>
+						<artifactId>rpm</artifactId>
+						<extensions>true</extensions>
+
+						<executions>
+							<execution>
+								<!-- <phase>package</phase> -->
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+								<configuration>
+									<attach>false</attach> <!-- don't attach RPM as a secondary artifact -->
+									<group>Application/Misc</group> <!-- set RPM group -->
+
+									<rulesets>
+										<ruleset>
+											<id>my-default</id>
+											<rules>
+												<rule>
+													<when>
+														<type>directory</type>
+													</when>
+													<mode>0750</mode>
+												</rule>
+												<rule>
+													<when>
+														<prefix>/etc/</prefix>
+													</when>
+													<configuration>true</configuration>
+												</rule>
+												<file>
+													<when>
+														<prefix>/usr/share/doc/</prefix>
+													</when>
+													<documentation>true</documentation>
+												</file>
+												<file>
+													<when>
+														<suffix>README.txt</suffix>
+													</when>
+													<readme>true</readme>
+												</file>
+												<!-- <rule> <when> <type>file</type> <prefix>/usr/lib/foobar/lib/dir1</prefix> 
+													</when> <user>foo</user> <group>bar</group> </rule> -->
+											</rules>
+										</ruleset>
+									</rulesets>
+
+
+									<entries>
+
+										<!-- collect all files from : target/lib -->
+										<entry>
+											<name>/usr/share/${rpm.packageName}/lib</name>
+											<collect>
+												<from>target/lib</from>
+											</collect>
+											<ruleset>my-default</ruleset>
+										</entry>
+
+										<!-- collect all files from : src/main/resources/etc -->
+										<entry>
+											<name>/usr/bin</name>
+											<collect>
+												<from>${basedir}/src/rpm/resources/usr/bin</from>
+												<directories>false</directories> <!-- make implicit directories -->
+											</collect>
+											<mode>0755</mode>
+											<ruleset>my-default</ruleset>
+										</entry>
+
+										<!-- collect all files from : src/main/resources/lib -->
+
+										<!-- <entry> -->
+										<!-- <name>/usr/lib/navpoc</name> -->
+										<!-- <collect> -->
+										<!-- <from>src/main/resources/lib</from> -->
+										<!-- <directories>true</directories> make explicit directories -->
+										<!-- </collect> -->
+										<!-- <ruleset>my-default</ruleset> -->
+										<!-- </entry> -->
+
+									</entries>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+	<!-- <description>${project.description}</description> -->
+
+
+</project>
+

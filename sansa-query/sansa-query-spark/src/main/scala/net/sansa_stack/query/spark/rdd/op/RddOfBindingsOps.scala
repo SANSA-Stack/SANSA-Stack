@@ -4,7 +4,7 @@ import java.util
 
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.ResultSetSparkImpl
-import net.sansa_stack.query.spark.binding.engine.{ExecutionDispatch, OpExecutorImpl}
+import net.sansa_stack.query.spark.engine.{ExecutionDispatch, OpExecutorImpl}
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
@@ -18,10 +18,10 @@ import org.apache.jena.sparql.algebra.op.OpService
 import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
-import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingMap, BindingProject}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingProject}
 import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
-import org.apache.jena.sparql.util.NodeFactoryExtra
+import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.classTag
@@ -34,12 +34,14 @@ object RddOfBindingsOps {
   //  }
 
 
-  // FIXME This belongs to RddOfDatasetOps
-  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query): ResultSetSpark = {
+  // FIXME This would actually belong to RddOfDatasetOps (in sansa-jena-spark)
+  // however our query api for spark (e.g. ResultSetSpark) is part of the query module
+  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query, cxt: Context): ResultSetSpark = {
     val op = Algebra.compile(query)
 
     // Set up an execution context
     // TODO ... allow passing that as a parameter
+    // val cxt = if (cxt == null) ARQ.getContext.copy() else cxt.copy
     val cxt = ARQ.getContext.copy()
     cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime)
     val execCxt = new ExecutionContext(cxt, null, null, null)
