@@ -41,7 +41,7 @@ object SparqlifyUtils3 // extends StrictLogging
     val ers = SparqlifyUtils.createDefaultExprRewriteSystem()
     val mappingOps = SparqlifyUtils.createDefaultMappingOps(ers)
 
-    val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
+    // val candidateViewSelector = new CandidateViewSelectorSparqlify(mappingOps, new ViewDefinitionNormalizerImpl());
 
     val basicTableInfoProvider = new BasicTableInfoProviderSpark(sparkSession)
 

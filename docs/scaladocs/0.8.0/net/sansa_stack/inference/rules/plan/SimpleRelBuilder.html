@@ -1,0 +1,2619 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <title>SANSA-Stack 0.8.0 ScalaDoc  - net.sansa_stack.inference.rules.plan.SimpleRelBuilder</title>
+          <meta name="description" content="SANSA - Stack 0.8.0 ScalaDoc - net.sansa stack.inference.rules.plan.SimpleRelBuilder" />
+          <meta name="keywords" content="SANSA Stack 0.8.0 ScalaDoc net.sansa stack.inference.rules.plan.SimpleRelBuilder" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      
+      <link href="../../../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery.panzoom.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery.mousewheel.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/index.js"></script>
+      <script type="text/javascript" src="../../../../../index.js"></script>
+      <script type="text/javascript" src="../../../../../lib/scheduler.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      
+      <script type="text/javascript">
+        /* this variable can be used by the JS to determine the path to the root document */
+        var toRoot = '../../../../../';
+      </script>
+    
+        </head>
+        <body>
+      <div id="search">
+        <span id="doc-title">SANSA-Stack 0.8.0 ScalaDoc<span id="doc-version"></span></span>
+        <span class="close-results"><span class="left">&lt;</span> Back</span>
+        <div id="textfilter">
+          <span class="input">
+            <input autocapitalize="none" placeholder="Search" id="index-input" type="text" accesskey="/" />
+            <i class="clear material-icons"></i>
+            <i id="search-icon" class="material-icons"></i>
+          </span>
+        </div>
+    </div>
+      <div id="search-results">
+        <div id="search-progress">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="results-content">
+          <div id="entity-results"></div>
+          <div id="member-results"></div>
+        </div>
+      </div>
+      <div id="content-scroll-container" style="-webkit-overflow-scrolling: touch;">
+        <div id="content-container" style="-webkit-overflow-scrolling: touch;">
+          <div id="subpackage-spacer">
+            <div id="packages">
+              <h1>Packages</h1>
+              <ul>
+                <li name="_root_.root" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_root_"></a><a id="root:_root_"></a>
+      <span class="permalink">
+      <a href="../../../../../index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../../../index.html"><span class="name">root</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="_root_.net" visbl="pub" class="indented1 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="net"></a><a id="net:net"></a>
+      <span class="permalink">
+      <a href="../../../../../net/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../../index.html"><span class="name">net</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="net.sansa_stack" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sansa_stack"></a><a id="sansa_stack:sansa_stack"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../index.html"><span class="name">sansa_stack</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../index.html" class="extype" name="net">net</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inference"></a><a id="inference:inference"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../index.html"><span class="name">inference</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../index.html" class="extype" name="net.sansa_stack">sansa_stack</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.rules" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rules"></a><a id="rules:rules"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../index.html"><span class="name">rules</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="net.sansa_stack.inference">inference</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.rules.plan" visbl="pub" class="indented5 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="plan"></a><a id="plan:plan"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="index.html"><span class="name">plan</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="net.sansa_stack.inference.rules">rules</a></dd></dl></div>
+    </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="Join.html" title="A join between two triple patterns."></a>
+                        <a href="Join.html" title="A join between two triple patterns.">Join</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="Plan.html" title="An execution plan to process a single rule."></a>
+                        <a href="Plan.html" title="An execution plan to process a single rule.">Plan</a>
+                      </li><li class="current-entities indented5">
+                        <a class="object" href="PlanGenerator$.html" title=""></a>
+                        <a class="class" href="PlanGenerator.html" title=""></a>
+                        <a href="PlanGenerator.html" title="">PlanGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="trait" href="SQLGenerator.html" title="A SQL generator for rules."></a>
+                        <a href="SQLGenerator.html" title="A SQL generator for rules.">SQLGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="SQLQuery.html" title=""></a>
+                        <a href="SQLQuery.html" title="">SQLQuery</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="SimpleCalciteConnection.html" title=""></a>
+                        <a href="SimpleCalciteConnection.html" title="">SimpleCalciteConnection</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="SimplePlanExecutor.html" title=""></a>
+                        <a href="SimplePlanExecutor.html" title="">SimplePlanExecutor</a>
+                      </li><li class="current-entities indented5">
+                        <a class="object" href="SimplePlanGenerator$.html" title=""></a>
+                        <a class="class" href="SimplePlanGenerator.html" title=""></a>
+                        <a href="SimplePlanGenerator.html" title="">SimplePlanGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <a class="object" href="SimpleRelBuilder$.html" title=""></a>
+                        <a class="class" href="" title=""></a>
+                        <a href="" title="">SimpleRelBuilder</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="SimpleSQLGenerator.html" title="A simple implementation of a SQL generator: Joins are generated for common triple patterns in the body."></a>
+                        <a href="SimpleSQLGenerator.html" title="A simple implementation of a SQL generator: Joins are generated for common triple patterns in the body.">SimpleSQLGenerator</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="object" href="TriplesSchema$.html" title=""></a>
+                        <a href="TriplesSchema$.html" title="">TriplesSchema</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="TriplesTableFactory.html" title=""></a>
+                        <a href="TriplesTableFactory.html" title="">TriplesTableFactory</a>
+                      </li>
+              </ul>
+            </div>
+          </div>
+          <div id="content">
+            <body class="class type">
+      <div id="definition">
+        <a href="SimpleRelBuilder$.html" title="See companion object"><div class="big-circle class-companion-object">c</div></a>
+        <p id="owner"><a href="../../../../index.html" class="extype" name="net">net</a>.<a href="../../../index.html" class="extype" name="net.sansa_stack">sansa_stack</a>.<a href="../../index.html" class="extype" name="net.sansa_stack.inference">inference</a>.<a href="../index.html" class="extype" name="net.sansa_stack.inference.rules">rules</a>.<a href="index.html" class="extype" name="net.sansa_stack.inference.rules.plan">plan</a></p>
+        <h1><a href="SimpleRelBuilder$.html" title="See companion object">SimpleRelBuilder</a><span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span></h1>
+        <h3><span class="morelinks"><div>
+            Companion <a href="SimpleRelBuilder$.html" title="See companion object">object SimpleRelBuilder</a>
+          </div></span></h3>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SimpleRelBuilder</span><span class="result"> extends <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      </h4>
+
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/SANSA-Stack/SANSA-Stack/tree/v0.8.0/sansa-inference/sansa-inference-common/src/main/scala/net/sansa_stack/inference/rules/plan/SimpleRelBuilder.scala" target="_blank">SimpleRelBuilder.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">
+            Linear Supertypes
+          </span>
+          <div class="superTypes hiddenContent"><span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div class="toggle"></div>
+        <div id="memberfilter">
+          <i class="material-icons arrow"></i>
+          <span class="input">
+            <input id="mbrsel-input" placeholder="Filter all members" type="text" accesskey="/" />
+          </span>
+          <i class="clear material-icons"></i>
+        </div>
+        <div id="filterby">
+          <div id="order">
+            <span class="filtertype">Ordering</span>
+            <ol>
+              
+              <li class="alpha in"><span>Alphabetic</span></li>
+              <li class="inherit out"><span>By Inheritance</span></li>
+            </ol>
+          </div>
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="net.sansa_stack.inference.rules.plan.SimpleRelBuilder"><span>SimpleRelBuilder</span></li><li class="in" name="org.apache.calcite.tools.RelBuilder"><span>RelBuilder</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="net.sansa_stack.inference.rules.plan.SimpleRelBuilder#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(context:org.apache.calcite.plan.Context,cluster:org.apache.calcite.plan.RelOptCluster,relOptSchema:org.apache.calcite.plan.RelOptSchema):net.sansa_stack.inference.rules.plan.SimpleRelBuilder"></a><a id="&lt;init&gt;:SimpleRelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#&lt;init&gt;(context:org.apache.calcite.plan.Context,cluster:org.apache.calcite.plan.RelOptCluster,relOptSchema:org.apache.calcite.plan.RelOptSchema):net.sansa_stack.inference.rules.plan.SimpleRelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">SimpleRelBuilder</span><span class="params">(<span name="context">context: <span class="extype" name="org.apache.calcite.plan.Context">Context</span></span>, <span name="cluster">cluster: <span class="extype" name="org.apache.calcite.plan.RelOptCluster">RelOptCluster</span></span>, <span name="relOptSchema">relOptSchema: <span class="extype" name="org.apache.calcite.plan.RelOptSchema">RelOptSchema</span></span>)</span>
+      </span>
+      
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div class="values members">
+              <h3>Value Members</h3>
+              <ol>
+                <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#!=(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html###():Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#==(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregate" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:java.util.List[org.apache.calcite.rel.core.AggregateCall]):org.apache.calcite.tools.RelBuilder"></a><a id="aggregate(GroupKey,List[AggregateCall]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:java.util.List[org.apache.calcite.rel.core.AggregateCall]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>, <span name="arg1">arg1: <span class="extype" name="java.util.List">List</span>[<span class="extype" name="org.apache.calcite.rel.core.AggregateCall">AggregateCall</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregate" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:Iterable[org.apache.calcite.tools.RelBuilder.AggCall]):org.apache.calcite.tools.RelBuilder"></a><a id="aggregate(GroupKey,Iterable[AggCall]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:Iterable[org.apache.calcite.tools.RelBuilder.AggCall]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregate" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:org.apache.calcite.tools.RelBuilder.AggCall*):org.apache.calcite.tools.RelBuilder"></a><a id="aggregate(GroupKey,&lt;repeated...&gt;[AggCall]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregate(x$1:org.apache.calcite.tools.RelBuilder.GroupKey,x$2:org.apache.calcite.tools.RelBuilder.AggCall*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregate</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregateCall" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:Boolean,x$4:org.apache.calcite.rex.RexNode,x$5:String,x$6:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="aggregateCall(SqlAggFunction,Boolean,Boolean,RexNode,String,Iterable[_&lt;:RexNode]):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:Boolean,x$4:org.apache.calcite.rex.RexNode,x$5:String,x$6:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregateCall</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlAggFunction">SqlAggFunction</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg3">arg3: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg4">arg4: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg5">arg5: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregateCall" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:Boolean,x$4:org.apache.calcite.rex.RexNode,x$5:String,x$6:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="aggregateCall(SqlAggFunction,Boolean,Boolean,RexNode,String,&lt;repeated...&gt;[RexNode]):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:Boolean,x$4:org.apache.calcite.rex.RexNode,x$5:String,x$6:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">aggregateCall</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlAggFunction">SqlAggFunction</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg3">arg3: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg4">arg4: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg5">arg5: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#alias" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="alias(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode"></a><a id="alias(RexNode,String):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#alias(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">alias</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#and" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="and(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="and(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#and(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">and</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#and" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="and(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="and(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#and(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">and</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#as" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="as(x$1:String):org.apache.calcite.tools.RelBuilder"></a><a id="as(String):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#as(x$1:String):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">as</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#asInstanceOf[T0]:T0" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#avg" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="avg(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="avg(Boolean,String,RexNode):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#avg(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">avg</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg2">arg2: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#build" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="build():org.apache.calcite.rel.RelNode"></a><a id="build():RelNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#build():org.apache.calcite.rel.RelNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">build</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#call" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="call(x$1:org.apache.calcite.sql.SqlOperator,x$2:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="call(SqlOperator,Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#call(x$1:org.apache.calcite.sql.SqlOperator,x$2:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">call</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlOperator">SqlOperator</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#call" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="call(x$1:org.apache.calcite.sql.SqlOperator,x$2:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="call(SqlOperator,&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#call(x$1:org.apache.calcite.sql.SqlOperator,x$2:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">call</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlOperator">SqlOperator</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#cast" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName,x$3:Int,x$4:Int):org.apache.calcite.rex.RexNode"></a><a id="cast(RexNode,SqlTypeName,Int,Int):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName,x$3:Int,x$4:Int):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cast</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.sql.type.SqlTypeName">SqlTypeName</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg3">arg3: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#cast" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName,x$3:Int):org.apache.calcite.rex.RexNode"></a><a id="cast(RexNode,SqlTypeName,Int):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName,x$3:Int):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cast</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.sql.type.SqlTypeName">SqlTypeName</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#cast" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName):org.apache.calcite.rex.RexNode"></a><a id="cast(RexNode,SqlTypeName):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#cast(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.sql.type.SqlTypeName):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cast</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.sql.type.SqlTypeName">SqlTypeName</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#clear" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clear():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#clear():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clear</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a><a id="clone():AnyRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#clone():Object" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<span class="extype" name="java.lang">lang</span>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#convert" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="convert(x$1:org.apache.calcite.rel.type.RelDataType,x$2:Boolean):org.apache.calcite.tools.RelBuilder"></a><a id="convert(RelDataType,Boolean):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#convert(x$1:org.apache.calcite.rel.type.RelDataType,x$2:Boolean):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">convert</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.type.RelDataType">RelDataType</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#count" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="count(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="count(Boolean,String,&lt;repeated...&gt;[RexNode]):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#count(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">count</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#countStar" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="countStar(x$1:String):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="countStar(String):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#countStar(x$1:String):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">countStar</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#desc" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="desc(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="desc(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#desc(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">desc</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#distinct" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="distinct():org.apache.calcite.tools.RelBuilder"></a><a id="distinct():RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#distinct():org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">distinct</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#dot" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dot(x$1:org.apache.calcite.rex.RexNode,x$2:Int):org.apache.calcite.rex.RexNode"></a><a id="dot(RexNode,Int):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#dot(x$1:org.apache.calcite.rex.RexNode,x$2:Int):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dot</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#dot" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="dot(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode"></a><a id="dot(RexNode,String):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#dot(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">dot</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#empty" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="empty():org.apache.calcite.tools.RelBuilder"></a><a id="empty():RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#empty():org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">empty</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="equals(RexNode,RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#equals(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#equals(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode"></a><a id="field(RexNode,String):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:org.apache.calcite.rex.RexNode,x$2:String):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:Int,x$2:String,x$3:String):org.apache.calcite.rex.RexNode"></a><a id="field(Int,String,String):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:Int,x$2:String,x$3:String):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg2">arg2: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:String,x$2:String):org.apache.calcite.rex.RexNode"></a><a id="field(String,String):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:String,x$2:String):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:Int,x$2:Int,x$3:Int):org.apache.calcite.rex.RexInputRef"></a><a id="field(Int,Int,Int):RexInputRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:Int,x$2:Int,x$3:Int):org.apache.calcite.rex.RexInputRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexInputRef">RexInputRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:Int):org.apache.calcite.rex.RexInputRef"></a><a id="field(Int):RexInputRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:Int):org.apache.calcite.rex.RexInputRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexInputRef">RexInputRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:Int,x$2:Int,x$3:String):org.apache.calcite.rex.RexInputRef"></a><a id="field(Int,Int,String):RexInputRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:Int,x$2:Int,x$3:String):org.apache.calcite.rex.RexInputRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg2">arg2: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexInputRef">RexInputRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#field" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="field(x$1:String):org.apache.calcite.rex.RexInputRef"></a><a id="field(String):RexInputRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#field(x$1:String):org.apache.calcite.rex.RexInputRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">field</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexInputRef">RexInputRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields(x$1:org.apache.calcite.util.mapping.Mappings.TargetMapping):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields(TargetMapping):ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields(x$1:org.apache.calcite.util.mapping.Mappings.TargetMapping):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.util.mapping.Mappings.TargetMapping">TargetMapping</span></span>)</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields(x$1:Iterable[String]):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields(Iterable[String]):ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields(x$1:Iterable[String]):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields(x$1:java.util.List[_&lt;:Number]):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields(List[_&lt;:Number]):ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields(x$1:java.util.List[_&lt;:Number]):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.util.List">List</span>[_ &lt;: <span class="extype" name="java.lang.Number">Number</span>]</span>)</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields(x$1:org.apache.calcite.rel.RelCollation):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields(RelCollation):ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields(x$1:org.apache.calcite.rel.RelCollation):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.RelCollation">RelCollation</span></span>)</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields(x$1:Int,x$2:Int):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields(Int,Int):ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields(x$1:Int,x$2:Int):com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#fields" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="fields():com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]"></a><a id="fields():ImmutableList[RexNode]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#fields():com.google.common.collect.ImmutableList[org.apache.calcite.rex.RexNode]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fields</span><span class="params">()</span><span class="result">: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#filter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filter(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="filter(Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#filter(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filter</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#filter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="filter(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="filter(&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#filter(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filter</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<span class="extype" name="java.lang">lang</span>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#getClass():Class[_]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="net.sansa_stack.inference.rules.plan.SimpleRelBuilder#getCluster" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getCluster:org.apache.calcite.plan.RelOptCluster"></a><a id="getCluster:RelOptCluster"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#getCluster:org.apache.calcite.plan.RelOptCluster" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getCluster</span><span class="result">: <span class="extype" name="org.apache.calcite.plan.RelOptCluster">RelOptCluster</span></span>
+      </span>
+      
+      
+    </li><li name="net.sansa_stack.inference.rules.plan.SimpleRelBuilder#getPlanner" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getPlanner:org.apache.calcite.plan.RelOptPlanner"></a><a id="getPlanner:RelOptPlanner"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#getPlanner:org.apache.calcite.plan.RelOptPlanner" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getPlanner</span><span class="result">: <span class="extype" name="org.apache.calcite.plan.RelOptPlanner">RelOptPlanner</span></span>
+      </span>
+      
+      
+    </li><li name="org.apache.calcite.tools.RelBuilder#getRexBuilder" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getRexBuilder():org.apache.calcite.rex.RexBuilder"></a><a id="getRexBuilder():RexBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#getRexBuilder():org.apache.calcite.rex.RexBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getRexBuilder</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexBuilder">RexBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#getTypeFactory" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypeFactory():org.apache.calcite.rel.type.RelDataTypeFactory"></a><a id="getTypeFactory():RelDataTypeFactory"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#getTypeFactory():org.apache.calcite.rel.type.RelDataTypeFactory" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypeFactory</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.rel.type.RelDataTypeFactory">RelDataTypeFactory</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:org.apache.calcite.util.ImmutableBitSet,x$2:com.google.common.collect.ImmutableList[org.apache.calcite.util.ImmutableBitSet]):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(ImmutableBitSet,ImmutableList[ImmutableBitSet]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:org.apache.calcite.util.ImmutableBitSet,x$2:com.google.common.collect.ImmutableList[org.apache.calcite.util.ImmutableBitSet]):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.util.ImmutableBitSet">ImmutableBitSet</span></span>, <span name="arg1">arg1: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.util.ImmutableBitSet">ImmutableBitSet</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:String*):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(&lt;repeated...&gt;[String]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:String*):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:Int*):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(&lt;repeated...&gt;[Int]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:Int*):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Boolean,x$3:Iterable[_&lt;:Iterable[_&lt;:org.apache.calcite.rex.RexNode]]):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(Iterable[_&lt;:RexNode],Boolean,Iterable[_&lt;:Iterable[_&lt;:RexNode]]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Boolean,x$3:Iterable[_&lt;:Iterable[_&lt;:org.apache.calcite.rex.RexNode]]):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(Iterable[_&lt;:RexNode]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(&lt;repeated...&gt;[RexNode]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey():org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey():GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey():org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupKey</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#hashCode():Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#intersect" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="intersect(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder"></a><a id="intersect(Boolean,Int):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#intersect(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">intersect</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#intersect" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="intersect(x$1:Boolean):org.apache.calcite.tools.RelBuilder"></a><a id="intersect(Boolean):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#intersect(x$1:Boolean):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">intersect</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#isInstanceOf[T0]:Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#isNotNull" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isNotNull(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="isNotNull(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#isNotNull(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isNotNull</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#isNull" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isNull(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="isNull(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#isNull(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isNull</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#join" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:String*):org.apache.calcite.tools.RelBuilder"></a><a id="join(JoinRelType,&lt;repeated...&gt;[String]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:String*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.core.JoinRelType">JoinRelType</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#join" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode,x$3:java.util.Set[org.apache.calcite.rel.core.CorrelationId]):org.apache.calcite.tools.RelBuilder"></a><a id="join(JoinRelType,RexNode,Set[CorrelationId]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode,x$3:java.util.Set[org.apache.calcite.rel.core.CorrelationId]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.core.JoinRelType">JoinRelType</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg2">arg2: <span class="extype" name="java.util.Set">Set</span>[<span class="extype" name="org.apache.calcite.rel.core.CorrelationId">CorrelationId</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#join" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder"></a><a id="join(JoinRelType,RexNode):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.core.JoinRelType">JoinRelType</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#join" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="join(JoinRelType,Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.core.JoinRelType">JoinRelType</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#join" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="join(JoinRelType,RexNode,&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#join(x$1:org.apache.calcite.rel.core.JoinRelType,x$2:org.apache.calcite.rex.RexNode,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">join</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.core.JoinRelType">JoinRelType</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#limit" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="limit(x$1:Int,x$2:Int):org.apache.calcite.tools.RelBuilder"></a><a id="limit(Int,Int):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#limit(x$1:Int,x$2:Int):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">limit</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#literal" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="literal(x$1:Any):org.apache.calcite.rex.RexNode"></a><a id="literal(Any):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#literal(x$1:Any):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">literal</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#match" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="match(x$1:org.apache.calcite.rex.RexNode,x$2:Boolean,x$3:Boolean,x$4:java.util.Map[String,org.apache.calcite.rex.RexNode],x$5:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$6:org.apache.calcite.rex.RexNode,x$7:java.util.Map[String,_&lt;:java.util.SortedSet[String]],x$8:Boolean,x$9:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$10:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$11:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder"></a><a id="match(RexNode,Boolean,Boolean,Map[String,RexNode],Iterable[_&lt;:RexNode],RexNode,Map[String,_&lt;:SortedSet[String]],Boolean,Iterable[_&lt;:RexNode],Iterable[_&lt;:RexNode],RexNode):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#match(x$1:org.apache.calcite.rex.RexNode,x$2:Boolean,x$3:Boolean,x$4:java.util.Map[String,org.apache.calcite.rex.RexNode],x$5:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$6:org.apache.calcite.rex.RexNode,x$7:java.util.Map[String,_&lt;:java.util.SortedSet[String]],x$8:Boolean,x$9:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$10:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$11:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">match</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg3">arg3: <span class="extype" name="java.util.Map">Map</span>[<span class="extype" name="java.lang.String">String</span>, <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg4">arg4: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg5">arg5: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg6">arg6: <span class="extype" name="java.util.Map">Map</span>[<span class="extype" name="java.lang.String">String</span>, _ &lt;: <span class="extype" name="java.util.SortedSet">SortedSet</span>[<span class="extype" name="java.lang.String">String</span>]]</span>, <span name="arg7">arg7: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg8">arg8: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg9">arg9: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg10">arg10: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#max" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="max(x$1:String,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="max(String,RexNode):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#max(x$1:String,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">max</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#min" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="min(x$1:String,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="min(String,RexNode):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#min(x$1:String,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">min</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#minus" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="minus(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder"></a><a id="minus(Boolean,Int):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#minus(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">minus</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#minus" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="minus(x$1:Boolean):org.apache.calcite.tools.RelBuilder"></a><a id="minus(Boolean):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#minus(x$1:Boolean):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">minus</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#not" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="not(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="not(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#not(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">not</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#notEquals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notEquals(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="notEquals(RexNode,RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#notEquals(x$1:org.apache.calcite.rex.RexNode,x$2:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notEquals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#notify():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#notifyAll():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#nullsFirst" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nullsFirst(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="nullsFirst(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#nullsFirst(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nullsFirst</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#nullsLast" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="nullsLast(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="nullsLast(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#nullsLast(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nullsLast</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#or" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="or(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="or(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#or(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">or</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#or" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="or(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="or(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#or(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">or</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternAlter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternAlter(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="patternAlter(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternAlter(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternAlter</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternAlter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternAlter(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="patternAlter(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternAlter(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternAlter</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternConcat" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternConcat(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="patternConcat(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternConcat(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternConcat</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternConcat" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternConcat(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="patternConcat(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternConcat(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternConcat</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternExclude" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternExclude(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode"></a><a id="patternExclude(RexNode):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternExclude(x$1:org.apache.calcite.rex.RexNode):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternExclude</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternField" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternField(x$1:String,x$2:org.apache.calcite.rel.type.RelDataType,x$3:Int):org.apache.calcite.rex.RexNode"></a><a id="patternField(String,RelDataType,Int):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternField(x$1:String,x$2:org.apache.calcite.rel.type.RelDataType,x$3:Int):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternField</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rel.type.RelDataType">RelDataType</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternPermute" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternPermute(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="patternPermute(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternPermute(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternPermute</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternPermute" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternPermute(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="patternPermute(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternPermute(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternPermute</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternQuantify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternQuantify(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode"></a><a id="patternQuantify(&lt;repeated...&gt;[RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternQuantify(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternQuantify</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#patternQuantify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patternQuantify(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode"></a><a id="patternQuantify(Iterable[_&lt;:RexNode]):RexNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#patternQuantify(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.rex.RexNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patternQuantify</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#peek" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="peek(x$1:Int,x$2:Int):org.apache.calcite.rel.RelNode"></a><a id="peek(Int,Int):RelNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#peek(x$1:Int,x$2:Int):org.apache.calcite.rel.RelNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">peek</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#peek" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="peek(x$1:Int):org.apache.calcite.rel.RelNode"></a><a id="peek(Int):RelNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#peek(x$1:Int):org.apache.calcite.rel.RelNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">peek</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#peek" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="peek():org.apache.calcite.rel.RelNode"></a><a id="peek():RelNode"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#peek():org.apache.calcite.rel.RelNode" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">peek</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#permute" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="permute(x$1:org.apache.calcite.util.mapping.Mapping):org.apache.calcite.tools.RelBuilder"></a><a id="permute(Mapping):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#permute(x$1:org.apache.calcite.util.mapping.Mapping):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">permute</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.util.mapping.Mapping">Mapping</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#project" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="project(&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#project(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#project" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Iterable[String],x$3:Boolean):org.apache.calcite.tools.RelBuilder"></a><a id="project(Iterable[_&lt;:RexNode],Iterable[String],Boolean):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Iterable[String],x$3:Boolean):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg1">arg1: <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.String">String</span>]</span>, <span name="arg2">arg2: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#project" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Iterable[String]):org.apache.calcite.tools.RelBuilder"></a><a id="project(Iterable[_&lt;:RexNode],Iterable[String]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode],x$2:Iterable[String]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>, <span name="arg1">arg1: <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#project" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="project(Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#project(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">project</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#push" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="push(x$1:org.apache.calcite.rel.RelNode):org.apache.calcite.tools.RelBuilder"></a><a id="push(RelNode):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#push(x$1:org.apache.calcite.rel.RelNode):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">push</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#pushAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="pushAll(x$1:Iterable[_&lt;:org.apache.calcite.rel.RelNode]):org.apache.calcite.tools.RelBuilder"></a><a id="pushAll(Iterable[_&lt;:RelNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#pushAll(x$1:Iterable[_&lt;:org.apache.calcite.rel.RelNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">pushAll</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rel.RelNode">RelNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#rename" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rename(x$1:java.util.List[String]):org.apache.calcite.tools.RelBuilder"></a><a id="rename(List[String]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#rename(x$1:java.util.List[String]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">rename</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.util.List">List</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#scan" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="scan(x$1:String*):org.apache.calcite.tools.RelBuilder"></a><a id="scan(&lt;repeated...&gt;[String]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#scan(x$1:String*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scan</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#scan" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="scan(x$1:Iterable[String]):org.apache.calcite.tools.RelBuilder"></a><a id="scan(Iterable[String]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#scan(x$1:Iterable[String]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">scan</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[<span class="extype" name="java.lang.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#semiJoin" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="semiJoin(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="semiJoin(&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#semiJoin(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">semiJoin</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#semiJoin" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="semiJoin(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="semiJoin(Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#semiJoin(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">semiJoin</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sort" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sort(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="sort(Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sort(x$1:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sort</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sort" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sort(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="sort(&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sort(x$1:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sort</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sort" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sort(x$1:Int*):org.apache.calcite.tools.RelBuilder"></a><a id="sort(&lt;repeated...&gt;[Int]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sort(x$1:Int*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sort</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sortLimit" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sortLimit(x$1:Int,x$2:Int,x$3:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder"></a><a id="sortLimit(Int,Int,Iterable[_&lt;:RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sortLimit(x$1:Int,x$2:Int,x$3:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sortLimit</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg2">arg2: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sortLimit" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sortLimit(x$1:Int,x$2:Int,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder"></a><a id="sortLimit(Int,Int,&lt;repeated...&gt;[RexNode]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sortLimit(x$1:Int,x$2:Int,x$3:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sortLimit</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>, <span name="arg2">arg2: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#sum" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sum(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="sum(Boolean,String,RexNode):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#sum(x$1:Boolean,x$2:String,x$3:org.apache.calcite.rex.RexNode):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">sum</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg2">arg2: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#toString():String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#union" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="union(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder"></a><a id="union(Boolean,Int):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#union(x$1:Boolean,x$2:Int):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">union</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#union" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="union(x$1:Boolean):org.apache.calcite.tools.RelBuilder"></a><a id="union(Boolean):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#union(x$1:Boolean):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">union</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#values" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="values(x$1:org.apache.calcite.rel.type.RelDataType):org.apache.calcite.tools.RelBuilder"></a><a id="values(RelDataType):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#values(x$1:org.apache.calcite.rel.type.RelDataType):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.type.RelDataType">RelDataType</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#values" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="values(x$1:Iterable[_&lt;:java.util.List[org.apache.calcite.rex.RexLiteral]],x$2:org.apache.calcite.rel.type.RelDataType):org.apache.calcite.tools.RelBuilder"></a><a id="values(Iterable[_&lt;:List[RexLiteral]],RelDataType):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#values(x$1:Iterable[_&lt;:java.util.List[org.apache.calcite.rex.RexLiteral]],x$2:org.apache.calcite.rel.type.RelDataType):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="java.util.List">List</span>[<span class="extype" name="org.apache.calcite.rex.RexLiteral">RexLiteral</span>]]</span>, <span name="arg1">arg1: <span class="extype" name="org.apache.calcite.rel.type.RelDataType">RelDataType</span></span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#values" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="values(x$1:org.apache.calcite.rel.type.RelDataType,x$2:Object*):org.apache.calcite.tools.RelBuilder"></a><a id="values(RelDataType,&lt;repeated...&gt;[AnyRef]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#values(x$1:org.apache.calcite.rel.type.RelDataType,x$2:Object*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.rel.type.RelDataType">RelDataType</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="scala.AnyRef">AnyRef</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#values" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="values(x$1:Array[String],x$2:Object*):org.apache.calcite.tools.RelBuilder"></a><a id="values(Array[String],&lt;repeated...&gt;[AnyRef]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#values(x$1:Array[String],x$2:Object*):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">values</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="java.lang.String">String</span>]</span>, <span name="arg1">arg1: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="scala.AnyRef">AnyRef</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#variable" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="variable(x$1:org.apache.calcite.util.Holder[org.apache.calcite.rex.RexCorrelVariable]):org.apache.calcite.tools.RelBuilder"></a><a id="variable(Holder[RexCorrelVariable]):RelBuilder"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#variable(x$1:org.apache.calcite.util.Holder[org.apache.calcite.rex.RexCorrelVariable]):org.apache.calcite.tools.RelBuilder" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">variable</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.util.Holder">Holder</span>[<span class="extype" name="org.apache.calcite.rex.RexCorrelVariable">RexCorrelVariable</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#wait():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#wait(x$1:Long):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li>
+              </ol>
+            </div>
+
+        
+
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="org.apache.calcite.tools.RelBuilder#aggregateCall" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:org.apache.calcite.rex.RexNode,x$4:String,x$5:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="aggregateCall(SqlAggFunction,Boolean,RexNode,String,Iterable[_&lt;:RexNode]):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:org.apache.calcite.rex.RexNode,x$4:String,x$5:Iterable[_&lt;:org.apache.calcite.rex.RexNode]):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: ">aggregateCall</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlAggFunction">SqlAggFunction</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg3">arg3: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg4">arg4: <span class="extype" name="java.lang.Iterable">Iterable</span>[_ &lt;: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"></dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#aggregateCall" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:org.apache.calcite.rex.RexNode,x$4:String,x$5:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall"></a><a id="aggregateCall(SqlAggFunction,Boolean,RexNode,String,&lt;repeated...&gt;[RexNode]):AggCall"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#aggregateCall(x$1:org.apache.calcite.sql.SqlAggFunction,x$2:Boolean,x$3:org.apache.calcite.rex.RexNode,x$4:String,x$5:org.apache.calcite.rex.RexNode*):org.apache.calcite.tools.RelBuilder.AggCall" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: ">aggregateCall</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.sql.SqlAggFunction">SqlAggFunction</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span></span>, <span name="arg3">arg3: <span class="extype" name="java.lang.String">String</span></span>, <span name="arg4">arg4: <span class="extype" name="scala.&lt;repeated...&gt;">&lt;repeated...&gt;</span>[<span class="extype" name="org.apache.calcite.rex.RexNode">RexNode</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.AggCall">AggCall</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@transient</span><span class="args">()</span>
+              
+                <span class="name">@Deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"></dd></dl></div>
+    </li><li name="org.apache.calcite.tools.RelBuilder#groupKey" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="groupKey(x$1:org.apache.calcite.util.ImmutableBitSet,x$2:Boolean,x$3:com.google.common.collect.ImmutableList[org.apache.calcite.util.ImmutableBitSet]):org.apache.calcite.tools.RelBuilder.GroupKey"></a><a id="groupKey(ImmutableBitSet,Boolean,ImmutableList[ImmutableBitSet]):GroupKey"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/rules/plan/SimpleRelBuilder.html#groupKey(x$1:org.apache.calcite.util.ImmutableBitSet,x$2:Boolean,x$3:com.google.common.collect.ImmutableList[org.apache.calcite.util.ImmutableBitSet]):org.apache.calcite.tools.RelBuilder.GroupKey" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: ">groupKey</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="org.apache.calcite.util.ImmutableBitSet">ImmutableBitSet</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="arg2">arg2: <span class="extype" name="com.google.common.collect.ImmutableList">ImmutableList</span>[<span class="extype" name="org.apache.calcite.util.ImmutableBitSet">ImmutableBitSet</span>]</span>)</span><span class="result">: <span class="extype" name="org.apache.calcite.tools.RelBuilder.GroupKey">GroupKey</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>RelBuilder</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"></dd></dl></div>
+    </li></ol>
+            </div>
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="org.apache.calcite.tools.RelBuilder">
+              <h3>Inherited from <span class="extype" name="org.apache.calcite.tools.RelBuilder">RelBuilder</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+    </body>
+          </div>
+        </div>
+      </div>
+    </body>
+      </html>

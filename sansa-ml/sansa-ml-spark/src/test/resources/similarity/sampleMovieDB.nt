@@ -1,0 +1,47 @@
+<https://sansa.sample-stack.net/film/1> <http://www.w3.org/2000/01/rdf-schema#label> "The Shawshank Redemption" .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/runtime> "142"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "161"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "165"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "192"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/extendedVersionRuntime> "196"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/1> .
+<https://sansa.sample-stack.net/actor/1> <http://www.w3.org/2000/01/rdf-schema#label> "Morgan Freeman" .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/writer> <http://data.linkedmdb.org/writer/1> .
+<https://sansa.sample-stack.net/writer/1> <http://www.w3.org/2000/01/rdf-schema#label> "Stephen King" .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/2> .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/3> .
+<https://sansa.sample-stack.net/film/1> <http://data.linkedmdb.org/movie/initial_release_date> "1994"^^<http://www.w3.org/2001/XMLSchema#timestamp> .
+<https://sansa.sample-stack.net/film/1> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/drama> .
+<https://sansa.sample-stack.net/film/2> <http://www.w3.org/2000/01/rdf-schema#label> "Green Mile" .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/runtime> "189"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/1> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/4> .
+<https://sansa.sample-stack.net/actor/4> <http://www.w3.org/2000/01/rdf-schema#label> "Tom Hanks" .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/writer> <http://data.linkedmdb.org/writer/1> .
+<https://sansa.sample-stack.net/writer/1> <http://www.w3.org/2000/01/rdf-schema#label> "Stephen King" .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/5> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/6> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/initial_release_date> "1999"^^<http://www.w3.org/2001/XMLSchema#timestamp> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/international_release_date> "2000"^^<http://www.w3.org/2001/XMLSchema#timestamp> .
+<https://sansa.sample-stack.net/film/2> <http://data.linkedmdb.org/movie/international_release_date> "2001"^^<http://www.w3.org/2001/XMLSchema#timestamp> .
+<https://sansa.sample-stack.net/film/2> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/drama> .
+<https://sansa.sample-stack.net/film/2> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/crime> .
+<https://sansa.sample-stack.net/film/2> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/fantasy> .
+<https://sansa.sample-stack.net/film/3> <http://www.w3.org/2000/01/rdf-schema#label> "Catch Me If You Can" .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/runtime> "141"^^<http://www.w3.org/2001/XMLSchema#int> .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/4> .
+<https://sansa.sample-stack.net/actor/10> <http://www.w3.org/2000/01/rdf-schema#label> "Leonardo DiCaprio" .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/writer> <http://data.linkedmdb.org/writer/3> .
+<https://sansa.sample-stack.net/writer/3> <http://www.w3.org/2000/01/rdf-schema#label> "Frank Abagnale Jr." .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/10> .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/actor> <https://sansa.sample-stack.net/actor/11> .
+<https://sansa.sample-stack.net/film/3> <http://data.linkedmdb.org/movie/initial_release_date> "2002"^^<http://www.w3.org/01-01-2001/XMLSchema#timestamp> .
+<https://sansa.sample-stack.net/film/3> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/drama> .
+<https://sansa.sample-stack.net/film/3> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/crime> .
+<https://sansa.sample-stack.net/film/3> <https://sansa.sample-stack.net/genre> <https://sansa.sample-stack.net/genre/biography> .
+<https://sansa.sample-stack.net/film/3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+<https://sansa.sample-stack.net/film/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+<https://sansa.sample-stack.net/film/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+<https://sansa.sample-stack.net/film/4> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://data.linkedmdb.org/movie/film> .
+<https://sansa.sample-stack.net/film/4> <http://www.w3.org/2000/01/rdf-schema#label> "Empty Feature movie" .
+

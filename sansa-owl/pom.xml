@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent_2.12</artifactId>
-		<version>0.8.0-RC1</version>
+		<version>0.8.0-RC3</version>
 	</parent>
 
 	<packaging>pom</packaging>
@@ -44,7 +44,7 @@
 	</developers>
 
 	<modules>
-		<module>sansa-owl-flink</module>
+		<!-- <module>sansa-owl-flink</module> -->
 		<module>sansa-owl-spark</module>
 		<module>sansa-owl-common</module>
 	</modules>

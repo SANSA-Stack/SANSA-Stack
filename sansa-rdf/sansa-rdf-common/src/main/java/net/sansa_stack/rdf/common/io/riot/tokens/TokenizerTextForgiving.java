@@ -399,7 +399,7 @@ public final class TokenizerTextForgiving implements Tokenizer
             case CH_SLASH:      reader.readChar(); token.setType(TokenType.SLASH);     /*token.setImage(CH_SLASH);*/ return token;
             case CH_RSLASH:     reader.readChar(); token.setType(TokenType.RSLASH);    /*token.setImage(CH_RSLASH);*/ return token;
             case CH_VBAR:       reader.readChar(); token.setType(TokenType.VBAR);      /*token.setImage(CH_VBAR);*/ return token;
-            case CH_AMPHERSAND: reader.readChar(); token.setType(TokenType.AMPHERSAND);/*token.setImage(CH_AMPHERSAND);*/ return token;
+            case CH_AMPHERSAND: reader.readChar(); token.setType(TokenType.AMPERSAND); /*token.setImage(CH_AMPHERSAND);*/ return token;
             // Specials (if blank node processing off)
             //case CH_COLON:      reader.readChar(); token.setType(TokenType.COLON); return token;
 

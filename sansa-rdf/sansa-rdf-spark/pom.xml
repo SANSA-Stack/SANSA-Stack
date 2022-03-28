@@ -7,10 +7,15 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-rdf-parent_2.12</artifactId>
-        <version>0.8.0-RC1</version>
+        <version>0.8.0-RC3</version>
     </parent>
 
     <dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -135,8 +140,8 @@
         </dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-analytics</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-analytics-core</artifactId>
 		</dependency>
 
 		<!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId>

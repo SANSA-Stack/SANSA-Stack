@@ -15,6 +15,9 @@ class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {
 
   Walker.walk(expr, this)
 
+  override def visit(tripleTerm: ExprTripleTerm): Unit = {
+  }
+
   override def visitExprFunction(func: ExprFunction): Unit = {
   }
 

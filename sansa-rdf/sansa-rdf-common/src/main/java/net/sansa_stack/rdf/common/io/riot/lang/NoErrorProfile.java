@@ -4,10 +4,8 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.iri.IRI;
 import org.apache.jena.riot.system.ErrorHandler;
 import org.apache.jena.riot.system.FactoryRDF;
-import org.apache.jena.riot.system.IRIResolver;
 import org.apache.jena.riot.system.ParserProfile;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.tokens.Token;
@@ -25,10 +23,14 @@ class NoErrorProfile implements ParserProfile {
 		return base.resolveIRI(uriStr, line, col);
 	}
 
+	// Removed in jena 4
+	/*
 	@Override
 	public IRI makeIRI(String uriStr, long line, long col) {
 		return base.makeIRI(uriStr, line, col);
 	}
+	*/
+
 
 	@Override
 	public void setBaseIRI(String baseIRI) {

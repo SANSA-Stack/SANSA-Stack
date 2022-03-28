@@ -1,14 +1,16 @@
 package net.sansa_stack.hadoop;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Iterators;
 import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.jena.rdf.trig.RecordReaderTrigDataset;
+import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
 import net.sansa_stack.hadoop.util.FileSplitUtils;
-import org.aksw.jena_sparql_api.rx.DatasetFactoryEx;
+import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
+import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.riot.RDFDataMgr;
@@ -23,11 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
- * Test cases for the {@link RecordReaderTrigDataset}:
+ * Test cases for the {@link RecordReaderRdfTrigDataset}:
  * A given set of test datasets (represented as trig files) is first split into a configurable
  * number of splits from which the overall graph is then reassembled.
  * The reassembled dataset must match the one of the original file.
@@ -38,18 +38,6 @@ import java.util.stream.Collectors;
 public abstract class RecordReaderRdfTestBase<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderRdfTestBase.class);
-
-    public static List<Object[]> createParameters(Map<String, Range<Integer>> fileToNumSplits) {
-
-        // Post process the map into junit params by enumerating the ranges
-        // and creating a test case for each obtained value
-        List<Object[]> result = fileToNumSplits.entrySet().stream()
-                .flatMap(e -> ContiguousSet.create(e.getValue(), DiscreteDomain.integers()).stream()
-                        .map(numSplits -> new Object[]{e.getKey(), numSplits}))
-                .collect(Collectors.toList());
-
-        return result;
-    }
 
     protected String file;
     protected int numSplits;
@@ -63,7 +51,7 @@ public abstract class RecordReaderRdfTestBase<T> {
     protected abstract void accumulate(Dataset target, T contrib);
 
     /** Override this for custom hadoop configuration */
-    protected void configureHadoop(Configuration conf) {};
+    protected void configureHadoop(Configuration conf) {}
 
     /**
      * Override this to use a different Dataset implementation
@@ -71,14 +59,14 @@ public abstract class RecordReaderRdfTestBase<T> {
      */
     protected Dataset createDataset() {
         return DatasetFactory.create();
-    };
+    }
 
     protected void assertIsIsomorphic(Dataset expected, Dataset actual) {
         boolean isIso = DatasetCompareUtils.isIsomorphic(
                 expected, actual, true,
-                System.err, ResultSetLang.SPARQLResultSetTSV);
+                System.err, ResultSetLang.RS_TSV);
 
-        Assert.assertTrue("Datasets were not isomoprhic - see output above", isIso);
+        Assert.assertTrue("Datasets were not isomorphic - see output above", isIso);
     }
 
 
@@ -87,37 +75,17 @@ public abstract class RecordReaderRdfTestBase<T> {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
-        conf.set(RecordReaderTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
-        conf.set(RecordReaderTrigDataset.RECORD_PROBECOUNT_KEY, "1");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "1");
 
         configureHadoop(conf);
 
-        // val testFileName = "w3c_ex2.trig"
-        // val referenceFileName = "nato-phonetic-alphabet-example.trig"
-        // val testFileName = "nato-phonetic-alphabet-example.trig"
-        // val testFileName = "nato-phonetic-alphabet-example.trig.bz2"
-
-        // val referenceFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
-        // val testFile = new File("/home/raven/Projects/Data/Hobbit/hobbit-sensor-stream-150k.trig")
-        // val testFile = new File("/home/raven/Projects/Eclipse/facete3-parent/version1/hobbit-sensor-stream-150k-events-data.trig.bz2")
-
-
-        // val referenceFile new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
-
         Path referencePath = Paths.get(file).toAbsolutePath();
         Path testPath = referencePath;
-        // val testFile = new File(getClass.getClassLoader.getResource("/hobbit-sensor-stream-150k-events-data.trig.bz2").getPath)
-
-        // read the target dataset
-        // Dataset expectedDataset = DatasetFactory.create();
-        //RDFDataMgr.read(expectedDataset, new BZip2CompressorInputStream(Files.newInputStream(referencePath)), Lang.TRIG);
-        // Dataset expectedDataset = DatasetFactoryEx.createInsertOrderPreservingDataset();
-
-        // Supplier<Dataset> datasetFactory = DatasetFactory::create;
-        // Supplier<Dataset> datasetFactory = DatasetFactoryEx::createInsertOrderPreservingDataset;
 
         Dataset expectedDataset = createDataset();
-        RDFDataMgr.read(expectedDataset, referencePath.toString());
+        // RDFDataMgr.read(expectedDataset, referencePath.toString());
+        RDFDataMgrEx.readAsGiven(expectedDataset, referencePath.toString());
 
         long fileLengthTotal = Files.size(testPath);
 
@@ -167,9 +135,9 @@ public abstract class RecordReaderRdfTestBase<T> {
             long fileTotalLength,
             int numSplits
     ) throws IOException, InterruptedException {
-        List<InputSplit> splits = FileSplitUtils.generateFileSplits(testHadoopPath, fileTotalLength, numSplits);
+        List<InputSplit> splits = FileSplitUtils.listFileSplits(testHadoopPath, fileTotalLength, numSplits);
 
-        return Flowable.fromIterable(splits).flatMap(split -> createFlow(job, inputFormat, split));
+        return Flowable.fromIterable(splits).flatMap(split -> FileSplitUtils.createFlow(job, inputFormat, split));
     }
 
 
@@ -200,31 +168,7 @@ public abstract class RecordReaderRdfTestBase<T> {
     }
   }
   */
-    public static <T> Flowable<T> createFlow(
-            Job job,
-            InputFormat<?, T> inputFormat,
-            InputSplit inputSplit) {
-        return Flowable.generate(() -> {
-                    // setup
-                    RecordReader<?, T> reader = inputFormat.createRecordReader(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
-                    // initialize
-                    reader.initialize(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
-                    return reader;
-                },
-                (reader, emitter) -> {
-                    try {
-                        if (reader.nextKeyValue()) {
-                            T record = reader.getCurrentValue();
-                            emitter.onNext(record);
-                        } else {
-                            emitter.onComplete();
-                        }
-                    } catch (Exception e) {
-                        emitter.onError(e);
-                    }
-                },
-                AutoCloseable::close);
-    }
+
 
     /*
     public Dataset consumeRecords(RecordReader<?, Dataset> reader) throws IOException, InterruptedException {

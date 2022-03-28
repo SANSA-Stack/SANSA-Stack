@@ -1,15 +1,16 @@
 package net.sansa_stack.examples.spark.query
 
+import com.typesafe.scalalogging.Logger
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.query.spark.SPARQLEngine.{Ontop, SPARQLEngine, Sparqlify}
 import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.io._
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException
 import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
-import org.apache.jena.riot.{Lang, RDFDataMgr}
+import org.apache.jena.riot.{Lang, RDFDataMgr, RDFLanguages}
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.analysis.DatabaseAlreadyExistsException
@@ -85,7 +86,8 @@ object SPARQLEndpointExample {
         queryEngineFactory.create(Option(database), mappings)
       } else {
         // triples.verticalPartition(RdfPartitionerDefault).r2rmlModel
-        val lang = Lang.NTRIPLES
+        val lang = RDFLanguages.filenameToLang(input)
+//        val lang = Lang.NTRIPLES
         val triples = spark.rdf(lang)(input)
         import net.sansa_stack.rdf.spark.partition._
 

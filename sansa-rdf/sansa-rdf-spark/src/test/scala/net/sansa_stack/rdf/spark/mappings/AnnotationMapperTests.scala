@@ -3,12 +3,11 @@ package net.sansa_stack.rdf.spark.mappings
 import java.util.Objects
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.rdf.spark.mapper.{Cluster, ClusterEntry, Labeled, LevenshteinMatcherConfig, Person}
-import org.aksw.jena_sparql_api.mapper.proxy.JenaPluginUtils
+import net.sansa_stack.rdf.spark.mapper.{Cluster, ClusterEntry, LevenshteinMatcherConfig, Person}
+import org.aksw.jenax.reprogen.core.JenaPluginUtils
 import org.apache.jena.rdf.model.{ModelFactory, Property, Resource, ResourceFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.vocabulary.FOAF
-import org.apache.jena.vocabulary.RDFS
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.FunSuite
@@ -51,6 +50,7 @@ class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
     // serializableConfig = nonSerializeConfig.asResource()
 
     // The broadcast is a workaround
+    // The .asResource() is crucial here: It unproxies the config object (derived from Resource) into a plain ResourceImpl
     val conf = spark.sparkContext.broadcast(nonSerializeConfig.asResource())
 
     in => {

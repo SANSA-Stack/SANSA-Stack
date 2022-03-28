@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-parent_2.12</artifactId>
-		<version>0.8.0-RC1</version>
+		<version>0.8.0-RC3</version>
 	</parent>
 
     <packaging>pom</packaging>
@@ -55,7 +55,7 @@
 
     <modules>
         <module>sansa-query-common</module>
-        <module>sansa-query-flink</module>
+        <!-- <module>sansa-query-flink</module> -->
         <module>sansa-query-spark</module>
         <module>sansa-query-tests</module>
     </modules>

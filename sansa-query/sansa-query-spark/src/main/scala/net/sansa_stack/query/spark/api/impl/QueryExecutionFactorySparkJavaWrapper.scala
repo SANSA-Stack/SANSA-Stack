@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.api.impl
 
 import net.sansa_stack.query.spark.api.domain.{JavaQueryExecutionFactorySpark, QueryExecutionFactorySpark, QueryExecutionSpark}
-import org.aksw.jena_sparql_api.core.QueryExecutionFactoryDecoratorBase
+import org.aksw.jena_sparql_api.transform.QueryExecutionFactoryDecoratorBase
 import org.apache.jena.query.Query
 
 /**

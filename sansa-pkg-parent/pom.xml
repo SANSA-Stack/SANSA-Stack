@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.8.0-RC3</version>
+    </parent>
+
+    <artifactId>sansa-pkg-parent_2.12</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>sansa-pkg-deb-cli</module>
+        <module>sansa-pkg-rpm-cli</module>
+        <module>sansa-pkg-docker-cli</module>
+	<module>sansa-pkg-uberjar-cli</module>
+	
+	<!-- Dummy module that should come after all skipped modules -->
+	<!-- If the last module of a maven reactor is skipped then certain release actions may not run -->
+	<!-- <module>sansa-pkg-dummy</module> -->
+    </modules>
+
+</project>
+

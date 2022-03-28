@@ -111,7 +111,7 @@ class SimilarityExperimentMetaGraphFactory {
 
   }
 
-  //noinspection ScalaStyle
+  // noinspection ScalaStyle
   /* def transform(
                df: DataFrame
              )(

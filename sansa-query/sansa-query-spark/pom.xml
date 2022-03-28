@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-query-parent_2.12</artifactId>
-		<version>0.8.0-RC1</version>
+		<version>0.8.0-RC3</version>
 	</parent>
 
     <properties>
@@ -67,50 +67,51 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>apache-jena-libs</artifactId>
-            <type>pom</type>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
 
+
+<!--
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
+            <groupId>org.aksw.jenax</groupId>
             <artifactId>jena-sparql-api-core</artifactId>
         </dependency>
+-->
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-mapper-annotations</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-annotations-reprogen</artifactId>
         </dependency>
 
+<!--
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-virtuoso</artifactId>
         </dependency>
+-->
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-server-standalone</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-server-standalone</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-algebra</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-analytics-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-algebra</artifactId>
+        </dependency>
+
+<!--
         <dependency>
             <groupId>org.aksw.jena-sparql-api</groupId>
             <artifactId>jena-sparql-api-views</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.aksw.jena-sparql-api</groupId>
-            <artifactId>jena-sparql-api-analytics</artifactId>
-        </dependency>
+-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -216,7 +217,7 @@
 
         <!-- Ontop -->
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-owlapi</artifactId>
             <exclusions>
                 <exclusion>
@@ -226,7 +227,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-system-sql-owlapi</artifactId>
             <exclusions>
                 <exclusion>
@@ -236,7 +237,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-rdb</artifactId>
             <!--
                         <exclusions>

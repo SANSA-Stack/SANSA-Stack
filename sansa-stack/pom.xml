@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sansa-stack_2.12</artifactId>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.8.0-RC3</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>sansa-stack-spark</module>
+        <!-- <module>sansa-stack-flink</module> -->
+    </modules>
+
+</project>

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-ml-parent_2.12</artifactId>
-		<version>0.8.0-RC1</version>
+		<version>0.8.0-RC3</version>
 	</parent>
 
 	<artifactId>sansa-ml-spark_2.12</artifactId>
@@ -110,6 +110,13 @@
 		<dependency>
 			<groupId>com.github.scopt</groupId>
 			<artifactId>scopt_${scala.binary.version}</artifactId>
+		</dependency>
+
+		<!-- Isolation Forest -->
+		<dependency>
+			<groupId>com.linkedin.isolation-forest</groupId>
+			<artifactId>isolation-forest_3.0.0_2.12</artifactId>
+			<version>2.0.4</version>
 		</dependency>
 
 	</dependencies>

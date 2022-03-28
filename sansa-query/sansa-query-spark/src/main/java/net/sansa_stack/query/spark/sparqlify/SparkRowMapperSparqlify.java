@@ -6,7 +6,8 @@ import org.aksw.sparqlify.core.sparql.ItemProcessorSparqlify;
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingHashMap;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 
@@ -38,7 +39,7 @@ public class SparkRowMapperSparqlify
 	}
 
 	public static Binding rowToRawBinding(Row row) {
-		BindingHashMap result = new BindingHashMap();
+		BindingBuilder result = BindingFactory.builder();
 
 		String[] fieldNames = row.schema().fieldNames();
 		for (int i = 0; i < fieldNames.length; ++i) {
@@ -48,6 +49,6 @@ public class SparkRowMapperSparqlify
 			RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v);
 		}
 
-		return result;
+		return result.build();
 	}
 }

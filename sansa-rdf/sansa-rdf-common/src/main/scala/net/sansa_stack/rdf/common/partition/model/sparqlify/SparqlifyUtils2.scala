@@ -2,19 +2,20 @@ package net.sansa_stack.rdf.common.partition.model.sparqlify
 
 import java.util
 
-import scala.language.implicitConversions
-import scala.reflect.runtime.universe._
-import collection.JavaConverters._
 import com.google.common.collect.ImmutableMap
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import org.aksw.jena_sparql_api.utils.Vars
 import org.aksw.jena_sparql_api.views.E_RdfTerm
+import org.aksw.jenax.arq.util.`var`.Vars
 import org.aksw.obda.domain.api.Constraint
 import org.aksw.obda.domain.impl.LogicalTableTableName
 import org.aksw.obda.jena.domain.impl.ViewDefinition
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.{Expr, ExprVar, NodeValue}
+
+import scala.collection.JavaConverters._
+import scala.language.implicitConversions
+import scala.reflect.runtime.universe._
 
 // This is now all unified in R2rmlUtils
 object SparqlifyUtils2 {

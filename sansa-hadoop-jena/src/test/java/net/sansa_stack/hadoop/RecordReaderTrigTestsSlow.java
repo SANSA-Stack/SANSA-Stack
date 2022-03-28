@@ -1,11 +1,12 @@
 package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
-import net.sansa_stack.hadoop.jena.rdf.trig.FileInputFormatTrigDataset;
-import org.aksw.jena_sparql_api.utils.DatasetGraphUtils;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.jena.query.Dataset;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 @RunWith(Parameterized.class)
 // TODO Tag with @Category()
 public class RecordReaderTrigTestsSlow
-    extends RecordReaderRdfTestBase<Dataset>
+    extends RecordReaderRdfTestBase<DatasetOneNg>
 {
     /**
      * Test case parameters
@@ -29,7 +30,7 @@ public class RecordReaderTrigTestsSlow
         map.put("../sansa-resource-testdata/src/main/resources/hobbit-sensor-stream-150k-events-data.trig.bz2",
                 Range.closed(1, 5));
 
-        return createParameters(map);
+        return FileSplitUtils.createTestParameters(map);
     }
 
 
@@ -43,12 +44,12 @@ public class RecordReaderTrigTestsSlow
     }
 
     @Override
-    public InputFormat<?, Dataset> createInputFormat() {
-        return new FileInputFormatTrigDataset();
+    public InputFormat<?, DatasetOneNg> createInputFormat() {
+        return new FileInputFormatRdfTrigDataset();
     }
 
     @Override
-    public void accumulate(Dataset target, Dataset contrib) {
+    public void accumulate(Dataset target, DatasetOneNg contrib) {
         DatasetGraphUtils.addAll(target.asDatasetGraph(), contrib.asDatasetGraph());
     }
 }

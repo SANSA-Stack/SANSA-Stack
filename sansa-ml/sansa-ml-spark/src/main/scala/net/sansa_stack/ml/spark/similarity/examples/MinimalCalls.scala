@@ -30,6 +30,8 @@ object MinimalCalls {
       .appName(s"MinMal Semantic Similarity Estimation Calls")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
+
 
     // cause of jena NPE issue TODO ask Claus what is solution
     JenaSystem.init()

@@ -72,11 +72,7 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
     // val datatype = if (o.isLiteral()) (if (isPlainLiteral(o)) XSD.xstring.getURI else o.getLiteralDatatypeURI) else ""
     // val langTagPresent = isPlainLiteral(o)
 
-    val datatype = if (o.isLiteral) {
-      if (!distinguishStringLiterals && isPlainLiteral(o)) XSD.xstring.getURI else o.getLiteralDatatypeURI
-    } else {
-      ""
-    }
+    val datatype = Option(determineDatatypeURI(o)).getOrElse("")
 
     val langTagPresent = o.isLiteral &&
       ((distinguishStringLiterals && o.getLiteralDatatypeURI == RDF.langString.getURI && o.getLiteralLanguage.trim().nonEmpty)
@@ -91,6 +87,16 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
 
     RdfPartitionStateDefault(subjectType, predicate, objectType, datatype, langTagPresent, lang)
   }
+
+  def determineDatatypeURI(node: Node): String = {
+    if (node.isLiteral) {
+      if (!distinguishStringLiterals && isPlainLiteral(node)) XSD.xstring.getURI else node.getLiteralDatatypeURI
+    } else {
+      null
+    }
+  }
+
+  def determineLanguage(node: Node): String = if (node.isLiteral) node.getLiteralLanguage else null
 
   /**
    * Lay a triple out based on the partition

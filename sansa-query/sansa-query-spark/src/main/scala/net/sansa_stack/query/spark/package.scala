@@ -9,10 +9,10 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
-import net.sansa_stack.query.spark.ops.rdd.RddOfAnyOps
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
+import net.sansa_stack.rdf.spark.rdd.op.RddOps
 
 import scala.reflect.ClassTag
 
@@ -94,7 +94,7 @@ package object spark {
    *
    *
    */
-  implicit class RddOfBindingImplicits(rddOfTriple: RDD[_ <: Binding]) {
+  implicit class RddOfBindingsImplicits(rddOfTriple: RDD[_ <: Binding]) {
 
     // def usedPrefixes(targetSize: Int): mutable.MultiMap[Var, RDFDatatype] = RddOfBindingOps.usedIriPrefixes(rddOfTriple)
   }
@@ -145,10 +145,10 @@ package object spark {
    * Implicits for operations applicable to any RDD
    * TODO These are utils common to spark (independent of rdf) - new sansa-common-spark layer?
    */
-  implicit class RddOfAnyImplicits[T: ClassTag](rdd: RDD[T]) {
+  implicit class RddOpsImplicits[T: ClassTag](rdd: RDD[T]) {
 
     def javaCollect[A: ClassTag, R: ClassTag](collector: Collector[_ >: T, A, R]): R =
-      RddOfAnyOps.aggregateUsingJavaCollector(rdd, collector)
+      RddOps.aggregateUsingJavaCollector(rdd, collector)
 
   }
 }

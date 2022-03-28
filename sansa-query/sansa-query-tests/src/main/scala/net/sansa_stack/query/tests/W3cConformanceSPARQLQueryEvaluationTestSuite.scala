@@ -3,12 +3,11 @@ package net.sansa_stack.query.tests
 import java.io.File
 import java.net.{URI, URL}
 import java.nio.file.{Path, Paths}
-
 import scala.collection.JavaConverters._
-
 import org.apache.jena.riot.RDFParserBuilder
 import org.apache.jena.ext.com.google.common.reflect.ClassPath
 import org.apache.jena.iri.{IRIFactory, ViolationCodes}
+import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
 import org.apache.jena.rdf.model.{ModelFactory, RDFList, Resource}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFParserBuilder}
@@ -62,7 +61,11 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
     val baseURL = classOf[W3cConformanceSPARQLQueryEvaluationTestSuite].getResource(testDirSPARQL11)
     val model = ModelFactory.createDefaultModel()
 
-    RDFParserBuilder.create.source("sparql11/data-sparql11/manifest-sparql11-query.ttl").checking(false).resolveURIs(false).parse(model)
+    RDFParserBuilder.create
+      .source("sparql11/data-sparql11/manifest-sparql11-query.ttl")
+      .checking(false)
+      .resolver(IRIxResolver.create().noBase().allowRelative(true).build())
+      .parse(model)
 
     val includesList = model.listObjectsOfProperty(model.createProperty("http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#include")).next().as(classOf[RDFList])
 
@@ -71,7 +74,11 @@ class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VER
 
   private def loadTestCasesFromSubManifest(r: Resource, base: String) = {
     val model = ModelFactory.createDefaultModel()
-    RDFParserBuilder.create.source(base + r.getURI).checking(false).resolveURIs(false).parse(model)
+    RDFParserBuilder.create
+      .source(base + r.getURI)
+      .checking(false)
+      .resolver(IRIxResolver.create().noBase().allowRelative(true).build())
+      .parse(model)
 
     val uri = URI.create(r.getURI)
     val parent = Paths.get(base + (if (uri.getPath().endsWith("/")) uri.resolve("..") else uri.resolve(".")).toString)

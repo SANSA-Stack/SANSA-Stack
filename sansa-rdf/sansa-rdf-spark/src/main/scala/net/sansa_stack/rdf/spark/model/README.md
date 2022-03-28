@@ -29,7 +29,7 @@ import net.sansa_stack.rdf.spark.model._
 
 val triplesAsDF = triplesRDD.toDF()
 ```
-See the [net.sansa_stack.rdf.spark.model.rdd.TripleOps](rdd/RddOfTripleOps.scala) for more function implementations.
+See the [net.sansa_stack.rdf.spark.model.rdd.TripleOps](../rdd/ops/RddOfTripleOps.scala) for more function implementations.
 
 ***
 ### DataFrame TripleOps

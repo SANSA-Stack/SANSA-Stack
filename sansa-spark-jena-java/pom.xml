@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.8.0-RC3</version>
+    </parent>
+
+    <artifactId>sansa-spark-jena-java_2.12</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+<!--
+    <properties>
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+    </properties>
+-->
+<!--
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+-->
+
+    <dependencies>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-hadoop-jena</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-kryo</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-analytics-core</artifactId>
+        </dependency>
+
+
+        <!--
+                <dependency>
+                    <groupId>org.aksw.commons</groupId>
+                    <artifactId>aksw-commons-lambdas-serializable</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.aksw.jenax</groupId>
+                    <artifactId>jenax-arq-rx</artifactId>
+                </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-test-resources_2.12</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
+        </dependency>
+        -->
+    </dependencies>
+
+</project>
+

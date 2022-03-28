@@ -1,16 +1,17 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
 import java.io.File
+
 import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.ops.rdd.RddOfBindingToDataFrameMapper
+import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition._
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Var
-import org.apache.jena.sparql.engine.binding.{Binding, BindingHashMap}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
@@ -82,13 +83,13 @@ object MainSansaSparqlServer {
     val resultSet = qef.createQueryExecution("SELECT * { ?s ?p ?o . OPTIONAL { ?s <foobar> ?y } }")
       .execSelectSpark()
 
-    val schemaMapping = RddOfBindingToDataFrameMapper
+    val schemaMapping = RddOfBindingsToDataFrameMapper
       .configureSchemaMapper(resultSet)
       .setVarToFallbackDatatype((v: Var) => null)
       .createSchemaMapping
 
     println(schemaMapping)
-    val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+    val df = RddOfBindingsToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
     df.show(20)
 
@@ -157,7 +158,7 @@ object MainSansaSparqlServer {
   }
 
   def rowToBinding(row: Row): Binding = {
-    val result = new BindingHashMap()
+    val result = BindingFactory.builder
 
     val fieldNames = row.schema.fieldNames
     row.toSeq.zipWithIndex.foreach {
@@ -167,7 +168,7 @@ object MainSansaSparqlServer {
         RowMapperSparqlifyBinding.addAttr(result, j, fieldName, v)
     }
 
-    result
+    result.build
   }
 
 }

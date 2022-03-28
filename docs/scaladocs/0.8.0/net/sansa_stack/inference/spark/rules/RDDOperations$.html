@@ -1,0 +1,853 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <title>SANSA-Stack 0.8.0 ScalaDoc  - net.sansa_stack.inference.spark.rules.RDDOperations</title>
+          <meta name="description" content="SANSA - Stack 0.8.0 ScalaDoc - net.sansa stack.inference.spark.rules.RDDOperations" />
+          <meta name="keywords" content="SANSA Stack 0.8.0 ScalaDoc net.sansa stack.inference.spark.rules.RDDOperations" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      
+      <link href="../../../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery.panzoom.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery.mousewheel.min.js"></script>
+      <script type="text/javascript" src="../../../../../lib/index.js"></script>
+      <script type="text/javascript" src="../../../../../index.js"></script>
+      <script type="text/javascript" src="../../../../../lib/scheduler.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      
+      <script type="text/javascript">
+        /* this variable can be used by the JS to determine the path to the root document */
+        var toRoot = '../../../../../';
+      </script>
+    
+        </head>
+        <body>
+      <div id="search">
+        <span id="doc-title">SANSA-Stack 0.8.0 ScalaDoc<span id="doc-version"></span></span>
+        <span class="close-results"><span class="left">&lt;</span> Back</span>
+        <div id="textfilter">
+          <span class="input">
+            <input autocapitalize="none" placeholder="Search" id="index-input" type="text" accesskey="/" />
+            <i class="clear material-icons"></i>
+            <i id="search-icon" class="material-icons"></i>
+          </span>
+        </div>
+    </div>
+      <div id="search-results">
+        <div id="search-progress">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="results-content">
+          <div id="entity-results"></div>
+          <div id="member-results"></div>
+        </div>
+      </div>
+      <div id="content-scroll-container" style="-webkit-overflow-scrolling: touch;">
+        <div id="content-container" style="-webkit-overflow-scrolling: touch;">
+          <div id="subpackage-spacer">
+            <div id="packages">
+              <h1>Packages</h1>
+              <ul>
+                <li name="_root_.root" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_root_"></a><a id="root:_root_"></a>
+      <span class="permalink">
+      <a href="../../../../../index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../../../index.html"><span class="name">root</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="_root_.net" visbl="pub" class="indented1 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="net"></a><a id="net:net"></a>
+      <span class="permalink">
+      <a href="../../../../../net/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../../index.html"><span class="name">net</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="net.sansa_stack" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sansa_stack"></a><a id="sansa_stack:sansa_stack"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../index.html"><span class="name">sansa_stack</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../../index.html" class="extype" name="net">net</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="inference"></a><a id="inference:inference"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../index.html"><span class="name">inference</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../index.html" class="extype" name="net.sansa_stack">sansa_stack</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark" visbl="pub" class="indented4 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="spark"></a><a id="spark:spark"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../index.html"><span class="name">spark</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="net.sansa_stack.inference">inference</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules" visbl="pub" class="indented5 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="rules"></a><a id="rules:rules"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="index.html"><span class="name">rules</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="net.sansa_stack.inference.spark">spark</a></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.plan" visbl="pub" class="indented6 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="plan"></a><a id="plan:plan"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/plan/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="plan/index.html"><span class="name">plan</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="net.sansa_stack.inference.spark.rules">rules</a></dd></dl></div>
+    </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="object" href="Planner$.html" title=""></a>
+                        <a href="Planner$.html" title="">Planner</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="object" href="" title="Common operations on RDD of triples."></a>
+                        <a href="" title="Common operations on RDD of triples.">RDDOperations</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="object" href="RuleEntailmentType$.html" title="The type of entailment of a rule, i.e."></a>
+                        <a href="RuleEntailmentType$.html" title="The type of entailment of a rule, i.e.">RuleEntailmentType</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="RuleExecutor.html" title="A rule executor that works on Spark data structures and operations."></a>
+                        <a href="RuleExecutor.html" title="A rule executor that works on Spark data structures and operations.">RuleExecutor</a>
+                      </li><li class="current-entities indented5">
+                        <span class="separator"></span>
+                        <a class="class" href="RuleExecutorNative.html" title="A rule executor that works on Spark data structures and operations."></a>
+                        <a href="RuleExecutorNative.html" title="A rule executor that works on Spark data structures and operations.">RuleExecutorNative</a>
+                      </li>
+              </ul>
+            </div>
+          </div>
+          <div id="content">
+            <body class="object value">
+      <div id="definition">
+        <div class="big-circle object">o</div>
+        <p id="owner"><a href="../../../../index.html" class="extype" name="net">net</a>.<a href="../../../index.html" class="extype" name="net.sansa_stack">sansa_stack</a>.<a href="../../index.html" class="extype" name="net.sansa_stack.inference">inference</a>.<a href="../index.html" class="extype" name="net.sansa_stack.inference.spark">spark</a>.<a href="index.html" class="extype" name="net.sansa_stack.inference.spark.rules">rules</a></p>
+        <h1>RDDOperations<span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span></h1>
+        <h3><span class="morelinks"></span></h3>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <span class="name">RDDOperations</span>
+      </span>
+      </h4>
+
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Common operations on RDD of triples.
+</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/SANSA-Stack/SANSA-Stack/tree/v0.8.0/sansa-inference/sansa-inference-spark/src/main/scala/net/sansa_stack/inference/spark/rules/RDDOperations.scala" target="_blank">RDDOperations.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">
+            Linear Supertypes
+          </span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div class="toggle"></div>
+        <div id="memberfilter">
+          <i class="material-icons arrow"></i>
+          <span class="input">
+            <input id="mbrsel-input" placeholder="Filter all members" type="text" accesskey="/" />
+          </span>
+          <i class="clear material-icons"></i>
+        </div>
+        <div id="filterby">
+          <div id="order">
+            <span class="filtertype">Ordering</span>
+            <ol>
+              
+              <li class="alpha in"><span>Alphabetic</span></li>
+              <li class="inherit out"><span>By Inheritance</span></li>
+            </ol>
+          </div>
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="net.sansa_stack.inference.spark.rules.RDDOperations"><span>RDDOperations</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div class="values members">
+              <h3>Value Members</h3>
+              <ol>
+                <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#!=(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html###():Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#==(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#asInstanceOf[T0]:T0" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a><a id="clone():AnyRef"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#clone():Object" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<span class="extype" name="java.lang">lang</span>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a><a id="equals(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#equals(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<span class="extype" name="java.lang">lang</span>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#getClass():Class[_]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#hashCode():Int" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#isInstanceOf[T0]:Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#notify():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#notifyAll():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#objKeyPredSubj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objKeyPredSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="objKeyPredSubj(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#objKeyPredSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objKeyPredSubj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (o,(p,s))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (o,(p,s))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (o,(p,s))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#objKeySubjPred" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objKeySubjPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="objKeySubjPred(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#objKeySubjPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objKeySubjPred</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (o,(s,p))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (o,(s,p))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (o,(s,p))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#objPredKeySubj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objPredKeySubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]"></a><a id="objPredKeySubj(RDD[RDFTriple]):RDD[((String,String),String)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#objPredKeySubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objPredKeySubj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[((<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>), <span class="extype" name="scala.Predef.String">String</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns ((o,p),s)</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns ((o,p),s)</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples ((o,p),s)</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#objSubj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="objSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,String)]"></a><a id="objSubj(RDD[RDFTriple]):RDD[(String,String)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#objSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,String)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">objSubj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (o,s)</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (o,s)</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (o,s)</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#predKeyObjSubj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="predKeyObjSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="predKeyObjSubj(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#predKeyObjSubj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">predKeyObjSubj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (p,(o,s))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (p,(o,s))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (p,(o,s))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#predKeySubjObj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="predKeySubjObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="predKeySubjObj(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#predKeySubjObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">predKeySubjObj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (p,(s,o))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (p,(s,o))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (p,(s,o))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#subjKeyObjPred" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjKeyObjPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="subjKeyObjPred(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#subjKeyObjPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjKeyObjPred</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (s,(o,p))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (s,(o,p))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (s,(o,p))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#subjKeyPredObj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjKeyPredObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]"></a><a id="subjKeyPredObj(RDD[RDFTriple]):RDD[(String,(String,String))]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#subjKeyPredObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,(String,String))]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjKeyPredObj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>))]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (s,(p,o))</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (s,(p,o))</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (s,(p,o))</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#subjObj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,String)]"></a><a id="subjObj(RDD[RDFTriple]):RDD[(String,String)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#subjObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[(String,String)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjObj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns (s,o)</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns (s,o)</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (s,o)</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#subjObjKeyPred" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjObjKeyPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]"></a><a id="subjObjKeyPred(RDD[RDFTriple]):RDD[((String,String),String)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#subjObjKeyPred(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjObjKeyPred</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[((<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>), <span class="extype" name="scala.Predef.String">String</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns ((s,o),p)</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns ((s,o),p)</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples ((s,o),p)</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#subjPredKeyObj" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="subjPredKeyObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]"></a><a id="subjPredKeyObj(RDD[RDFTriple]):RDD[((String,String),String)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#subjPredKeyObj(triples:org.apache.spark.rdd.RDD[net.sansa_stack.inference.data.RDFTriple]):org.apache.spark.rdd.RDD[((String,String),String)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">subjPredKeyObj</span><span class="params">(<span name="triples">triples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[<a href="../../data/RDFTriple.html" class="extype" name="net.sansa_stack.inference.data.RDFTriple">RDFTriple</a>]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[((<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>), <span class="extype" name="scala.Predef.String">String</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given triple (s,p,o) it returns ((s,p),o)</p><div class="fullcomment"><div class="comment cmt"><p>For a given triple (s,p,o) it returns ((s,p),o)</p></div><dl class="paramcmts block"><dt class="param">triples</dt><dd class="cmt"><p>the triples (s,p,o)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples ((s,p),o)</p></dd></dl></div>
+    </li><li name="net.sansa_stack.inference.spark.rules.RDDOperations#swap" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="swap[A,B](tuples:org.apache.spark.rdd.RDD[(A,B)]):org.apache.spark.rdd.RDD[(B,A)]"></a><a id="swap[A,B](RDD[(A,B)]):RDD[(B,A)]"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#swap[A,B](tuples:org.apache.spark.rdd.RDD[(A,B)]):org.apache.spark.rdd.RDD[(B,A)]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">swap</span><span class="tparams">[<span name="A">A</span>, <span name="B">B</span>]</span><span class="params">(<span name="tuples">tuples: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="net.sansa_stack.inference.spark.rules.RDDOperations.swap.A">A</span>, <span class="extype" name="net.sansa_stack.inference.spark.rules.RDDOperations.swap.B">B</span>)]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="net.sansa_stack.inference.spark.rules.RDDOperations.swap.B">B</span>, <span class="extype" name="net.sansa_stack.inference.spark.rules.RDDOperations.swap.A">A</span>)]</span>
+      </span>
+      
+      <p class="shortcomment cmt">For a given tuple (x,y) it returns (y,x)
+</p><div class="fullcomment"><div class="comment cmt"><p>For a given tuple (x,y) it returns (y,x)
+</p></div><dl class="paramcmts block"><dt class="param">tuples</dt><dd class="cmt"><p>the tuples (x,y)</p></dd><dt>returns</dt><dd class="cmt"><p>tuples (y,x)</p></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#toString():String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#wait():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
+      <span class="permalink">
+      <a href="../../../../../net/sansa_stack/inference/spark/rules/RDDOperations$.html#wait(x$1:Long):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li>
+              </ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+    </body>
+          </div>
+        </div>
+      </div>
+    </body>
+      </html>

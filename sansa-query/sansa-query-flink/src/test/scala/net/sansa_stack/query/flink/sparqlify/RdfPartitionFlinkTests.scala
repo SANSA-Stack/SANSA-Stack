@@ -4,14 +4,13 @@ import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import com.google.common.collect.HashMultimap
 import de.javakaffee.kryoserializers.guava.HashMultimapSerializer
-import net.sansa_stack.kryo.jena.{ANYNodeSerializer, DefaultNodeSerializer, ExprSerializer, TripleSerializer, VarSerializer, VariableNodeSerializer}
+import net.sansa_stack.kryo.jena._
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringString
 import net.sansa_stack.rdf.flink.partition.core.RdfPartitionUtilsFlink
-import net.sansa_stack.rdf.spark.kryo.sparqlify.RestrictedExprSerializer
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
-import org.aksw.jena_sparql_api.stmt.SparqlQueryParserImpl
 import org.aksw.jena_sparql_api.views.RestrictedExpr
+import org.aksw.jenax.stmt.parser.query.SparqlQueryParserImpl
 import org.aksw.sparqlify.util.SparqlifyCoreInit
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment, _}
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment

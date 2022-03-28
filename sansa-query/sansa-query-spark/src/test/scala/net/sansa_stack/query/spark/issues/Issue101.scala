@@ -1,11 +1,10 @@
 package net.sansa_stack.query.spark.issues
 
 import java.io.StringReader
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 import org.apache.jena.graph.Triple
-import org.apache.jena.query.{QueryExecutionFactory, ResultSet, ResultSetFactory, ResultSetFormatter}
+import org.apache.jena.query.{QueryExecutionFactory, ResultSet, ResultSetFactory, ResultSetFormatter, ResultSetRewindable}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
@@ -63,7 +62,7 @@ class Issue101
       |""".stripMargin
 
   var triplesRDD: RDD[Triple] = _
-  var rsTarget: ResultSet = _
+  var rsTarget: ResultSetRewindable = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -97,9 +96,10 @@ class Issue101
 
   def runQuery(qef: QueryExecutionFactorySpark): Unit = {
     val qe = qef.createQueryExecution(query)
-    val rsActual = qe.execSelect()
+    val rsActual = qe.execSelect().rewindable()
     qe.close()
 
+    rsTarget.reset()
     assert(ResultSetCompare.equalsByTerm(rsTarget, rsActual), "resultsets do not match")
   }
 

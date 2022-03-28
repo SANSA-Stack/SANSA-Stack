@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>sansa-rdf-parent_2.12</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.8.0-RC1</version>
+		<version>0.8.0-RC3</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sansa-rdf-common_2.12</artifactId>
@@ -16,8 +16,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-kryo-jena</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-io-kryo</artifactId>
 		</dependency>
 
 		<dependency>
@@ -62,23 +62,25 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-rx</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-rx</artifactId>
 		</dependency>
 
+<!--
 		<dependency>
 			<groupId>org.aksw.jena-sparql-api</groupId>
 			<artifactId>jena-sparql-api-io-core</artifactId>
 		</dependency>
+-->
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-io-hdt</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-arq-hdt</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.jena-sparql-api</groupId>
-			<artifactId>jena-sparql-api-mapper-proxy</artifactId>
+			<groupId>org.aksw.jenax</groupId>
+			<artifactId>jenax-reprogen-core</artifactId>
 		</dependency>
 
 

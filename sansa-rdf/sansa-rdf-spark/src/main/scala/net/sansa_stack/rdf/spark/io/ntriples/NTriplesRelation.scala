@@ -9,7 +9,7 @@ import net.sansa_stack.rdf.spark.utils.Logging
 import org.apache.jena.graph.Node
 import org.apache.jena.riot.lang.LangNTriples
 import org.apache.jena.riot.system.RiotLib
-import org.apache.jena.riot.tokens.{Tokenizer, TokenizerFactory}
+import org.apache.jena.riot.tokens.{Tokenizer, TokenizerText}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, PrunedScan, TableScan}
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -132,7 +132,7 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Parse
     // always close the streams
     cleanly(new ByteArrayInputStream(s.getBytes))(_.close()) { is =>
       val profile = RiotLib.dftProfile
-      val tokenizer: Tokenizer = TokenizerFactory.makeTokenizerUTF8(is)
+      val tokenizer: Tokenizer = TokenizerText.create.source(is).build
       val parser = new LangNTriples(tokenizer, profile, null)
       parser.next()
     }

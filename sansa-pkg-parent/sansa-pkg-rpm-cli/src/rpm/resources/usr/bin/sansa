@@ -1,0 +1,17 @@
+#!/bin/sh
+
+LIB_DIR="/usr/share/sansa-cli/"
+MAIN_CLASS="net.sansa_stack.spark.cli.main.MainCliSansaSpark"
+# EXTRA_OPTS=""
+
+java $EXTRA_OPTS $JAVA_OPTS -cp "$LIB_DIR/lib/*" "$MAIN_CLASS" "$@"
+
+# Examples
+
+# Extra opts:
+# EXTRA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
+
+
+# Spring boot launcher:
+# java $JAVA_OPTS -cp "$LIB_DIR:$LIB_DIR/lib/*" "-Dloader.main=${MAIN_CLASS}" "org.springframework.boot.loader.PropertiesLauncher" "$@"
+

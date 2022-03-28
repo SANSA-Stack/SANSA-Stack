@@ -12,6 +12,7 @@
 @prefix bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 @prefix dc: <http://purl.org/dc/elements/1.1/>
 @prefix rev: <http://purl.org/stuff/rev#>
+@base <http://www.example.org/>
 
 <#ProducerMapping>
 	rml:logicalSource [

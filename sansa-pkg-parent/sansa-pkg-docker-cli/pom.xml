@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+  	    <groupId>net.sansa-stack</groupId>
+    	<artifactId>sansa-pkg-parent_2.12</artifactId>
+	    <version>0.8.0-RC3</version>
+	</parent>
+
+	<artifactId>sansa-pkg-docker-cli_2.12</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-spark-cli_2.12</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<configuration>
+					<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.1.4</version>
+				<configuration>
+					<to>
+					    <!-- TODO Update -->
+						<image>docker.io/sansa/sansa-stack</image>
+					</to>
+					<from>
+						<image>openjdk:alpine</image>
+					</from>
+					<container>
+						<mainClass>onet.sansa_stack.spark.cli.main.MainCliSansaSpark</mainClass>
+					</container>
+					<containerizingMode>packaged</containerizingMode>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>
+
