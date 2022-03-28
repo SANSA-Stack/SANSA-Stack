@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.cmd.impl.CmdSansaEndpointImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaEndpointImpl;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;

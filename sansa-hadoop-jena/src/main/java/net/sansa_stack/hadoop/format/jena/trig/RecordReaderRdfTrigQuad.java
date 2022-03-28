@@ -1,6 +1,8 @@
 package net.sansa_stack.hadoop.format.jena.trig;
 
 import io.reactivex.rxjava3.core.Flowable;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.riot.Lang;
@@ -18,7 +20,7 @@ public class RecordReaderRdfTrigQuad
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.trig.quad.record.probecount";
     public static final String PREFIXES_MAXLENGTH_KEY = "mapreduce.input.trig.quad.prefixes.maxlength";
 
-    protected static final Pattern trigFwdPattern = Pattern.compile(
+    protected static final CustomPattern trigFwdPattern = CustomPatternJava.compile(
             String.join("|",
                     "@?base",
                     "@?prefix",

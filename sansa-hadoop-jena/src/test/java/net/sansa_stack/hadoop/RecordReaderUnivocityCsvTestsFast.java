@@ -2,10 +2,9 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import com.univocity.parsers.common.record.Record;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.CsvUtils;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -33,8 +32,11 @@ public class RecordReaderUnivocityCsvTestsFast
 
     @Override
     protected List<List<String>> parseConventional(Path path) {
-        return CsvUtils.readCsvRecords(() ->
-                RecordReaderJsonArrayTestBase.autoDecode(Files.newInputStream(path)), CsvUtils.defaultSettings(false))
+
+        UnivocityParserFactory parserFactory = UnivocityParserFactory.createDefault(true);
+
+        return UnivocityUtils.readCsvRecords(() ->
+                RecordReaderJsonArrayTestBase.autoDecode(Files.newInputStream(path)), parserFactory)
                 .map(Record::getValues).map(Arrays::asList).toList().blockingGet();
     }
 

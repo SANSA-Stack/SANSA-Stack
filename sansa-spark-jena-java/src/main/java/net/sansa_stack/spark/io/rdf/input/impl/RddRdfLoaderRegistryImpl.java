@@ -1,5 +1,7 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
+import net.sansa_stack.hadoop.format.jena.nquads.FileInputFormatRdfNQuads;
+import net.sansa_stack.hadoop.format.jena.ntriples.FileInputFormatRdfNTriples;
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
 import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
@@ -9,13 +11,13 @@ import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.ext.com.google.common.collect.HashBasedTable;
 import org.apache.jena.ext.com.google.common.collect.Table;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.hadoop.rdf.io.input.nquads.NQuadsInputFormat;
-import org.apache.jena.hadoop.rdf.io.input.ntriples.NTriplesInputFormat;
-import org.apache.jena.hadoop.rdf.types.QuadWritable;
-import org.apache.jena.hadoop.rdf.types.TripleWritable;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
+/**
+ * A registry for RddRdfLoaders that can supply input of a specific {@link Lang}
+ * to an RDD of a requested type (Triples, Quads, Datasets, ett).
+ */
 public class RddRdfLoaderRegistryImpl
     implements RddRdfLoaderRegistry
 {
@@ -39,31 +41,31 @@ public class RddRdfLoaderRegistryImpl
         registry.register(
                 Lang.TRIG,
                 DatasetOneNg.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, DatasetOneNg.class, FileInputFormatRdfTrigDataset.class));
+                RddRdfLoaders.create(DatasetOneNg.class, FileInputFormatRdfTrigDataset.class));
 
         registry.register(
                 Lang.TRIG,
                 Quad.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, Quad.class, FileInputFormatRdfTrigQuad.class));
+                RddRdfLoaders.create(Quad.class, FileInputFormatRdfTrigQuad.class));
 
         registry.register(
                 Lang.TURTLE,
                 Triple.class,
-                (context, path) -> RddRdfLoader.createRdd(context, path, Triple.class, FileInputFormatRdfTurtleTriple.class));
+                RddRdfLoaders.create(Triple.class, FileInputFormatRdfTurtleTriple.class));
 
 //        registry.register(
 //                Lang.NTRIPLES,
 //                Triple.class,
 //                (context, path) -> RddRdfLoader.createRdd(context, path, Triple.class, FileInputFormatTurtleTriple.class));
-        registry.register2(
+        registry.register(
                 Lang.NTRIPLES,
-                Quad.class,
-                (context, path) -> RddRdfLoader.createJavaRdd(context, path, TripleWritable.class, NTriplesInputFormat.class).map(TripleWritable::get).rdd());
+                Triple.class,
+                RddRdfLoaders.create(Triple.class, FileInputFormatRdfNTriples.class));
 
-        registry.register2(
+        registry.register(
                 Lang.NQUADS,
                 Quad.class,
-                (context, path) -> RddRdfLoader.createJavaRdd(context, path, QuadWritable.class, NQuadsInputFormat.class).map(QuadWritable::get).rdd());
+                RddRdfLoaders.create(Quad.class, FileInputFormatRdfNQuads.class));
 
 
     }
@@ -77,7 +79,7 @@ public class RddRdfLoaderRegistryImpl
     }
 
     @Override
-    public <T, X> void register2(Lang lang, Class<T> targetType, RddRdfLoader<X> loader) {
+    public <T, X> void registerMapped(Lang lang, Class<T> targetType, RddRdfLoader<X> loader) {
         registry.put(lang, targetType, loader);
     }
 
@@ -92,6 +94,7 @@ public class RddRdfLoaderRegistryImpl
     public RddRdfLoaderRegistryImpl() {
         super();
     }
+
 
 
 }

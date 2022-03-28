@@ -7,37 +7,42 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC2-SNAPSHOT</version>
+        <version>0.8.0-RC3-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-hadoop-jena</artifactId>
     <packaging>jar</packaging>
 
-<!--
-    <properties>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-    </properties>
--->
-<!--
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>src/main/resources-filtered</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
--->
+    <!--
+        <properties>
+            <timestamp>${maven.build.timestamp}</timestamp>
+            <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        </properties>
+    -->
+    <!--
+        <build>
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                </resource>
+                <resource>
+                    <directory>src/main/resources-filtered</directory>
+                    <filtering>true</filtering>
+                </resource>
+            </resources>
+        </build>
+    -->
 
     <dependencies>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
 
         <dependency>
@@ -57,7 +62,7 @@
         </dependency>
 
 
-	<!-- For the rx operators for grouping consecutive triples/quads/items -->
+        <!-- For the rx operators for grouping consecutive triples/quads/items -->
         <dependency>
             <groupId>org.aksw.jenax</groupId>
             <artifactId>jenax-arq-rx</artifactId>
@@ -73,22 +78,26 @@
             <artifactId>jenax-io-core</artifactId>
         </dependency>
 
-<!--
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-elephas-common</artifactId>
-        </dependency>
--->
+        <!--
+                <dependency>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-elephas-common</artifactId>
+                </dependency>
+        -->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-elephas-io</artifactId>
         </dependency>
 
-            <dependency>
-                <groupId>com.univocity</groupId>
-                <artifactId>univocity-parsers</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>com.univocity</groupId>
+            <artifactId>univocity-parsers</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-models-csvw-univocity</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>

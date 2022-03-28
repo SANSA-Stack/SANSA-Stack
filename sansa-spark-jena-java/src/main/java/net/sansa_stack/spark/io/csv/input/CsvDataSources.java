@@ -1,7 +1,11 @@
 package net.sansa_stack.spark.io.csv.input;
 
-import net.sansa_stack.hadoop.format.commons_csv.csv.CsvUtils;
-import net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
+import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,7 +19,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class CsvDataSources {
@@ -23,34 +29,49 @@ public class CsvDataSources {
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String path,
-            CSVFormat csvFormat) throws IOException
+            UnivocityHadoopConf csvConf) throws IOException
     {
-        // If the headers are not skipped then custom headers are required
-        if (!csvFormat.getSkipHeaderRecord()) {
-            throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
-        }
+        Dialect dialect = csvConf.getDialect();
+
+        UnivocityParserFactory parserFactory = UnivocityParserFactory
+                .createDefault(false)
+                .configure(csvConf);
 
         FileSystem fs = FileSystem.get(sc.hadoopConfiguration());
 
-        List<String> headers = CsvUtils.readCsvRows(path, fs, csvFormat).firstElement().blockingGet();
+        String[] sampleRow = UnivocityUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
+        List<String> headers;
+        // If the headers are not skipped then custom headers are required
+        if (!Boolean.FALSE.equals(dialect.getHeader())) {
+            headers = Arrays.asList(sampleRow);
+        } else {
+            int n = sampleRow.length;
+            headers = new ArrayList<>(n);
+            for (int i = 0; i < n; ++i) {
+                headers.add(CsvwLib.getExcelColumnLabel(i));
+            }
+            // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
+        }
+
         List<Var> vars = Var.varList(headers);
 
-        return createRddOfBindings(sc, path, csvFormat, row -> createBinding(vars, row));
+        return createRddOfBindings(sc, path, csvConf, row -> createBinding(vars, row));
     }
 
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String path,
-            CSVFormat csvFormat,
+            UnivocityHadoopConf univocityConf,
             Function<List<String>, Binding> mapper)
     {
-        Configuration conf = new Configuration();
-        FileInputFormatCsv.setCsvFormat(conf, csvFormat);
+        Configuration conf = sc.hadoopConfiguration();
+        FileInputFormatCsv.setUnivocityConfig(conf, univocityConf);
 
         JavaRDD<List<String>> rdd;
         if (false) {
+            // FileInputFormatCsv.setCsvFormat(conf, csvFormat);
             // Commons-CSV
-            rdd = sc.newAPIHadoopFile(path, FileInputFormatCsv.class, LongWritable.class, List.class, conf)
+            rdd = sc.newAPIHadoopFile(path, net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv.class, LongWritable.class, List.class, conf)
                     .map(t -> (List<String>) t._2);
         } else {
             // Univocity CSV
@@ -68,12 +89,18 @@ public class CsvDataSources {
      */
     public static Binding createBinding(List<Var> headings, List<String> strs) {
         BindingBuilder builder = BindingBuilder.create();
-        for (int i = 0; i < headings.size(); ++i) {
-            Var var = headings.get(i);
-            String str = strs.get(i);
+        Iterator<Var> itVar = headings.iterator();
+        Iterator<String> itStr = strs.iterator();
 
-            builder.add(var, NodeFactory.createLiteral(str));
+        while (itVar.hasNext()) {
+            Var var = itVar.next();
+            String str = itStr.hasNext() ? itStr.next() : null;
+
+            if (str != null) {
+                builder.add(var, NodeFactory.createLiteral(str));
+            }
         }
+
         Binding result = builder.build();
         return result;
     }

@@ -1,5 +1,7 @@
 package net.sansa_stack.spark.io.rdf.output;
 
+import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
@@ -43,7 +45,7 @@ public class RddRdfWriterFactory
         return RddRdfWriter.createForGraph().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<DatasetGraph> forDatasetGraph(JavaRDD<? extends DatasetGraph> rdd) {
+    public RddRdfWriter<DatasetGraphOneNg> forDatasetGraph(JavaRDD<? extends DatasetGraphOneNg> rdd) {
         return RddRdfWriter.createForDatasetGraph().configureFrom(this).setRdd(rdd);
     }
 
@@ -51,7 +53,7 @@ public class RddRdfWriterFactory
         return RddRdfWriter.createForModel().configureFrom(this).setRdd(rdd);
     }
 
-    public RddRdfWriter<Dataset> forDataset(JavaRDD<? extends Dataset> rdd) {
+    public RddRdfWriter<DatasetOneNg> forDataset(JavaRDD<? extends DatasetOneNg> rdd) {
         return RddRdfWriter.createForDataset().configureFrom(this).setRdd(rdd);
     }
 }

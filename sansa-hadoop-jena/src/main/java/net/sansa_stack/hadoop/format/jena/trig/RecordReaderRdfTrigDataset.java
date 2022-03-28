@@ -2,6 +2,8 @@ package net.sansa_stack.hadoop.format.jena.trig;
 
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfAccumulatingBase;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
@@ -27,7 +29,9 @@ public class RecordReaderRdfTrigDataset
     public static final String PREFIXES_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.prefixes.maxlength";
 
 
-    protected static final Pattern trigFwdPattern = Pattern.compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    protected static final CustomPattern trigFwdPattern = CustomPatternJava
+            .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
+                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     public static class AccumulatingDataset
         implements Accumulating<Quad, Node, DatasetOneNg, DatasetOneNg> {

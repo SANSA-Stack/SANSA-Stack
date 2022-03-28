@@ -34,6 +34,9 @@ trait QueryEngineFactory {
    */
   def create(database: Option[String], mappingModel: Model): QueryExecutionFactorySpark
 
+  def create(database: String, mappingModel: Model): QueryExecutionFactorySpark =
+    create(Option(database), mappingModel)
+
   /**
    * Creates a query engine factory for the given RDD of triples.
    * A Spark database named by the ID of the given triples RDD will be used to maintain the tables used during

@@ -3,6 +3,8 @@ package net.sansa_stack.hadoop.format.commons_csv.csv;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -60,8 +62,8 @@ public class RecordReaderCsv
      *          might be within a csv cell
      * @return The corresponding regex pattern
      */
-    public static Pattern createStartOfCsvRecordPattern(long n) {
-        return Pattern.compile(
+    public static CustomPattern createStartOfCsvRecordPattern(long n) {
+        return CustomPatternJava.compile(
                 "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + n + "}\"(\r?\n|,|$))).",
                 Pattern.DOTALL);
     }
@@ -83,7 +85,7 @@ public class RecordReaderCsv
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
-            Pattern recordSearchPattern) {
+            CustomPattern recordSearchPattern) {
         super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
     }
 

@@ -1,6 +1,8 @@
 package net.sansa_stack.hadoop.core;
 
 import io.reactivex.rxjava3.core.Flowable;
+import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.util.InputStreamWithCloseLogging;
 import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
 import net.sansa_stack.hadoop.util.SeekableInputStream;
@@ -11,7 +13,7 @@ import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
 import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
 import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
-import org.aksw.jena_sparql_api.io.binseach.BufferFromInputStream;
+import org.aksw.jena_sparql_api.io.binseach.BufferOverInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -41,8 +43,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -107,7 +107,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * used to avoid having to invoke the actual parser (which may start a new thread)
      * on each single character
      */
-    protected Pattern recordStartPattern;
+    protected CustomPattern recordStartPattern;
 
     protected final Accumulating<U, G, A, T> accumulating;
 
@@ -158,7 +158,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
-            Pattern recordStartPattern,
+            CustomPattern recordStartPattern,
             // String headerBytesKey,
             Accumulating<U, G, A, T> accumulating) {
         this.minRecordLengthKey = minRecordLengthKey;
@@ -461,7 +461,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
         long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
 
-        BufferFromInputStream tailBuffer = BufferFromInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
+        BufferOverInputStream tailBuffer = BufferOverInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
         Seekable tailNav = tailBuffer.newChannel();
 
 
@@ -530,7 +530,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                                     return false;
                                 }));
 
-        BufferFromInputStream headBuffer = BufferFromInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
+        BufferOverInputStream headBuffer = BufferOverInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
         Seekable headNav = headBuffer.newChannel();
 
         StopWatch headSw = StopWatch.createStarted();
@@ -724,7 +724,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @throws IOException
      */
     public static long findNextRecord(
-            Pattern recordSearchPattern,
+            CustomPattern recordSearchPattern,
             Seekable nav,
             long splitStart,
             long absProbeRegionStart,
@@ -750,7 +750,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         //  if we set the matcher region anyway?
         CharSequence charSequence = new CharSequenceFromSeekable(seekable);
 
-        Matcher fwdMatcher = recordSearchPattern.matcher(charSequence);
+        CustomMatcher fwdMatcher = recordSearchPattern.matcher(charSequence);
         fwdMatcher.region(0, relProbeRegionEnd);
 
         long matchPos = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, prober);
@@ -843,7 +843,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     public static long findFirstPositionWithProbeSuccess(
             Seekable rawSeekable,
             Predicate<Long> posValidator,
-            Matcher m,
+            CustomMatcher m,
             boolean isFwd,
             Predicate<Seekable> prober) throws IOException {
 
