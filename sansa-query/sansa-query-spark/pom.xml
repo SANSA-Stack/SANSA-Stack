@@ -11,7 +11,7 @@
 	</parent>
 
     <properties>
-        <version.owlapi.ontop>5.1.17</version.owlapi.ontop>
+        <version.owlapi.ontop>5.1.20</version.owlapi.ontop>
     </properties>
 
     <dependencies>
@@ -251,7 +251,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <version>2.1.210</version>
         </dependency>
         <!--        <dependency>-->
         <!--            <groupId>it.unibz.inf.ontop</groupId>-->
@@ -285,7 +285,7 @@
         <dependency>
             <groupId>com.github.owlcs</groupId>
             <artifactId>ontapi</artifactId>
-            <version>2.1.0</version>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>
