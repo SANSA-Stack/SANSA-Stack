@@ -1651,6 +1651,7 @@
                                     <jvmArg>-Xmx1024m</jvmArg>
                                     <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
                                 </jvmArgs>
+
                                 <!--<javacArgs> -->
                                 <!--<javacArg>-source</javacArg> -->
                                 <!--<javacArg>${java.version}</javacArg> -->
@@ -1668,15 +1669,12 @@
                                 <goal>testCompile</goal>
                             </goals>
                         </execution>
-                        <!-- FIXME This doc-jar goal breaks the build ~ 2021-06-29 Claus -->
-                        <!--
-                                                <execution>
-                                                    <id>attach-javadocs</id>
-                                                    <goals>
-                                                        <goal>doc-jar</goal>
-                                                    </goals>
-                                                </execution>
-                        -->
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>doc-jar</goal>
+                            </goals>
+                        </execution>
                     </executions>
                 </plugin>
 
