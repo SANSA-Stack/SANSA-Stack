@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 
 public class InterruptingSeekableByteChannel
-    extends SeekableByteChannelDecoratorBase
+    extends SeekableByteChannelDecoratorBase<SeekableByteChannel>
 {
     protected long interruptPos;
 
