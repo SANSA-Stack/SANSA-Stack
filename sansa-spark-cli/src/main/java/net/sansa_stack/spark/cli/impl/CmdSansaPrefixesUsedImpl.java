@@ -33,7 +33,7 @@ public class CmdSansaPrefixesUsedImpl {
         Model model = rdfSources.peekDeclaredPrefixes();
 
         JavaRDD<Node> rdd;
-        if (rdfSources.containsQuadLangs()) {
+        if (rdfSources.usesQuads()) {
           rdd = rdfSources.asQuads().toJavaRDD().flatMap(quad -> (QuadUtils.quadToList(quad).iterator()));
         } else {
           rdd = rdfSources.asTriples().toJavaRDD().flatMap(triple -> (TripleUtils.tripleToList(triple).iterator()));

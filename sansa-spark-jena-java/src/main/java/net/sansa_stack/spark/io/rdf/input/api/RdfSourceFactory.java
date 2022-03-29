@@ -16,21 +16,21 @@ import org.apache.jena.riot.Lang;
  */
 public interface RdfSourceFactory {
 
-    default RdfSource get(String sourceStr) {
+    default RdfSourceFromResource get(String sourceStr) {
         return get(sourceStr, (Lang) null);
     }
 
-    default RdfSource get(String sourceStr, Lang lang) {
+    default RdfSourceFromResource get(String sourceStr, Lang lang) {
         Path path = new Path(sourceStr);
         return get(path, null, lang);
     }
 
-    default RdfSource get(String sourceStr, FileSystem fileSystem) {
+    default RdfSourceFromResource get(String sourceStr, FileSystem fileSystem) {
         Path path = new Path(sourceStr);
         return get(path, fileSystem, null);
     }
 
-    default RdfSource get(Path path, FileSystem fileSystem, Lang lang) {
+    default RdfSourceFromResource get(Path path, FileSystem fileSystem, Lang lang) {
         try {
             return create(path, fileSystem, lang);
         } catch (Exception e) {
@@ -38,7 +38,7 @@ public interface RdfSourceFactory {
         }
     }
 
-    RdfSource create(Path path, FileSystem fileSystem, Lang lang) throws Exception;
+    RdfSourceFromResource create(Path path, FileSystem fileSystem, Lang lang) throws Exception;
 
     /** Return a collection to which RdfSources can be added from which a union rdd
      * can be obtained */

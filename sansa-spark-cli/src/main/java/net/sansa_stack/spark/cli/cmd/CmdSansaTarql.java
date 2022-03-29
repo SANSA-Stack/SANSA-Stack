@@ -47,6 +47,9 @@ public class CmdSansaTarql
     @CommandLine.Mixin
     public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
 
+    @CommandLine.Mixin
+    public CmdMixinSparkPostProcess postProcessConfig = new CmdMixinSparkPostProcess();
+
     @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
     public boolean tabs = false;
 

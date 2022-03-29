@@ -1,11 +1,26 @@
 package net.sansa_stack.spark.cli.cmd;
 
+import net.sansa_stack.spark.io.rdf.output.RdfPostProcessingSettings;
+import net.sansa_stack.spark.io.rdf.output.RdfPostProcessingSettingsBase;
 import picocli.CommandLine;
 
-public class CmdMixinSparkPostProcess {
+public class CmdMixinSparkPostProcess
+    implements RdfPostProcessingSettings
+{
+    @CommandLine.Option(names = { "--pretty" }, description = "Enables --sort, --unique and --optimize-prefixes")
+    public void setPretty(boolean value) {
+        this.unique = true;
+        this.sort = true;
+        this.optimizePrefixes = true;
+    }
+
     @CommandLine.Option(names = { "-u", "--unique" },
             description = "Make quads unique")
     public boolean unique = false;
+
+    @CommandLine.Option(names = { "--unique-partitions" },
+            description = "Number of partitions to use for the unique operation")
+    public Integer uniquePartitions;
 
     // Implement this at some point
     /*
@@ -19,14 +34,45 @@ public class CmdMixinSparkPostProcess {
     public boolean sort = false;
 
     @CommandLine.Option(names = { "-r", "--reverse" },
-            description = "Sort descending (does nothing if --sort is not specified)")
+            description = "Sort ascending (does nothing if --sort is not specified)")
     public boolean reverse = false;
 
-    @CommandLine.Option(names = { "--repartition" },
-            description = "Number of partitions to use for grouping / sorting. '0' or negative values disable repartitioning")
-    public int numPartitions = 0;
+    @CommandLine.Option(names = { "--sort-partitions" },
+            description = "Number of partitions to use for the sort operation")
+    public Integer sortPartitions;
 
-    @CommandLine.Option(names = { "--optimize-prefixes" }, description = "Discard unused prefxes (requires extra pass over the data)")
+    @CommandLine.Option(names = { "--optimize-prefixes" },
+            description = "Only output used prefixes (requires additional scan of the data)")
     public boolean optimizePrefixes = false;
 
+
+    @Override
+    public Boolean getDistinct() {
+        return unique;
+    }
+
+    @Override
+    public Integer getDistinctPartitions() {
+        return uniquePartitions;
+    }
+
+    @Override
+    public Boolean getSort() {
+        return sort;
+    }
+
+    @Override
+    public Boolean getSortAscending() {
+        return reverse;
+    }
+
+    @Override
+    public Integer getSortPartitions() {
+        return sortPartitions;
+    }
+
+    @Override
+    public Boolean getOptimizePrefixes() {
+        return optimizePrefixes;
+    }
 }

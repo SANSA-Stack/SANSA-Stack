@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.io.rdf.output;
 
 
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.commons.io.util.FileMerger;
 import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
@@ -8,6 +9,9 @@ import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import org.aksw.jenax.arq.analytics.NodeAnalytics;
+import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.util.prefix.PrefixMapAdapter;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
@@ -22,7 +26,6 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.hadoop.rdf.types.QuadWritable;
 import org.apache.jena.hadoop.rdf.types.TripleWritable;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
@@ -32,7 +35,6 @@ import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.*;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
 import org.apache.jena.shared.PrefixMapping;
-import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.util.FmtUtils;
 import org.apache.jena.util.iterator.WrappedIterator;
@@ -40,7 +42,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.rdd.RDD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
@@ -70,7 +71,7 @@ public class RddRdfWriter<T>
 {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
-    protected RddRdfDispatcherImpl<T> dispatcher;
+    protected RddRdfOpsImpl<T> dispatcher;
 
     // Cached attributes from the given RDD
     protected JavaSparkContext sparkContext;
@@ -79,7 +80,7 @@ public class RddRdfWriter<T>
 
     protected Configuration hadoopConfiguration;
 
-    public RddRdfWriter(RddRdfDispatcherImpl<T> dispatcher) {
+    public RddRdfWriter(RddRdfOpsImpl<T> dispatcher) {
         super();
         this.dispatcher = dispatcher;
     }
@@ -119,6 +120,7 @@ public class RddRdfWriter<T>
     }
 
 
+    /** Same as .run() just without the checked IOException */
     public void runUnchecked() {
         try {
             run();
@@ -136,6 +138,47 @@ public class RddRdfWriter<T>
         }
     }
 
+    /**
+     * Create the effective RDD w.r.t. configuration (sort, unqiue, optimize prefixes)
+     * If optimize prefixes is enabled then invoking this method will immediately perform that analysis
+     * The current behavior is that this writer's prefix map will be updated to the used prefixes.
+     * However, this is subject to change such that a new writer instance with the used prefixes
+     * is created.
+     */
+    public JavaRDD<T> getEffectiveRdd(RdfPostProcessingSettings settings) {
+        JavaRDD<T> result = rdd.map(x -> (T)x);
+
+        if (settings != null) {
+
+            if (Boolean.TRUE.equals(settings.getDistinct())) {
+                Integer n = settings.getDistinctPartitions();
+                result = n == null
+                        ? result.distinct()
+                        : result.distinct(n);
+            }
+
+            if (Boolean.TRUE.equals(settings.getSort())) {
+                boolean isAscending = Boolean.TRUE.equals(settings.getSortAscending());
+                int numPartitions = Optional.ofNullable(settings.getSortPartitions())
+                        .orElse(rdd.getNumPartitions());
+
+                result = result.sortBy(dispatcher.getKeyFunction()::apply, isAscending, numPartitions);
+            }
+
+            if (Boolean.TRUE.equals(settings.getOptimizePrefixes())) {
+                result = result.cache();
+                PrefixMapping declaredPrefixes = getGlobalPrefixMapping();
+                if (!declaredPrefixes.getNsPrefixMap().isEmpty()) {
+                    Map<String, String> usedPm = JavaRddOps.aggregateUsingJavaCollector(
+                            dispatcher.convertToNode(result),
+                            NodeAnalytics.usedPrefixes(declaredPrefixes.getNsPrefixMap()).asCollector());
+                    setGlobalPrefixMapping(usedPm);
+                }
+            }
+        }
+
+        return result;
+    }
 
     protected void runOutputToConsole() throws IOException {
         try (OutputStream out = consoleOutSupplier.get()) {
@@ -219,7 +262,8 @@ public class RddRdfWriter<T>
         }
 
 
-        JavaRDD<T> effectiveRdd = rdd.map(x -> (T)x);
+        // JavaRDD<T> effectiveRdd = rdd.map(x -> (T)x);
+        JavaRDD effectiveRdd = getEffectiveRdd(postProcessingSettings);
 
         if (useCoalesceOne) {
             effectiveRdd = effectiveRdd.coalesce(1);
@@ -581,29 +625,28 @@ public class RddRdfWriter<T>
     }
 
     public static RddRdfWriter<Triple> createForTriple() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForTriple());
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForTriple());
     }
 
     public static RddRdfWriter<Quad> createForQuad() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForQuad());
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForQuad());
     }
 
     public static RddRdfWriter<Graph> createForGraph() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForGraph());
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForGraph());
     }
 
-    public static RddRdfWriter<DatasetGraph> createForDatasetGraph() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForDatasetGraph());
+    public static RddRdfWriter<DatasetGraphOneNg> createForDatasetGraph() {
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForDatasetGraph());
     }
 
     public static RddRdfWriter<Model> createForModel() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForModel());
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForModel());
     }
 
-    public static RddRdfWriter<Dataset> createForDataset() {
-        return new RddRdfWriter<>(RddRdfDispatcherImpl.createForDataset());
+    public static RddRdfWriter<DatasetOneNg> createForDataset() {
+        return new RddRdfWriter<>(RddRdfOpsImpl.createForDataset());
     }
-
 
     public static void validate(RddRdfWriterSettings<?> settings) {
         RDFFormat outputFormat = settings.getOutputFormat();

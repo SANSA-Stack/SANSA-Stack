@@ -29,6 +29,12 @@ conformance-ontop: ## run conforance test suite against ontop
 conformance-sparqlify: ## run conforance test suite against sparqlify
 	mvn -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
 
+.ONESHELL:
+dist: ## create the standalone jar-with-dependencies of sansa stack
+	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am
+	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
+	printf '\nCreated package:\n\n%s\n\n' "$$file"
+
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 
@@ -49,3 +55,12 @@ rpm-reinstall: ## reinstall a previously built rpm package
 	sudo rpm -U "$$file"
 
 rpm-rere: rpm-rebuild rpm-reinstall ## ## rebuild and reinstall rpm
+
+ontop-deps: ## List ontop deps suitable for use with mvn's -pl option
+	@# Note: The first line skips xml comments in the same line
+	@# A cleaner solution would build and examine the effective poms
+	@grep --include 'pom.xml' -hoPR '.*<artifactId>ontop.*' | grep -v '<!--' | \
+	grep -oP '(?<=<artifactId>)ontop.*(?=</artifactId>)' | \
+	sort -u | xargs | sed 's/ /,/g'
+
+

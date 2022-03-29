@@ -9,5 +9,5 @@ public interface RdfSourceCollection
     void add(RdfSource rdfSource);
 
     Collection<RdfSource> getMembers();
-    boolean containsQuadLangs();
+    // boolean containsQuadLangs();
 }
