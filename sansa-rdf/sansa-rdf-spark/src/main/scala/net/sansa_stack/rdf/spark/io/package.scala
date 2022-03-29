@@ -332,11 +332,13 @@ package object io {
    * Adds methods to save RDDs of datasets to a folder or file.
    *
    */
+  /*
   implicit class JenaDatasetWriter[T](quads: RDD[JenaDataset]) {
     def configureSave(): RddRdfWriter[JenaDataset] = {
       RddRdfWriter.createForDataset.setRdd(quads)
     }
   }
+  */
 
 
 

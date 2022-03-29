@@ -1,0 +1,10 @@
+#!/bin/sh
+
+#WORK_DIR=`dirname "$0"`
+
+LIB_DIR="/usr/share/sansa-cli/"
+MAIN_CLASS="net.sansa_stack.spark.cli.main.MainCliSansaSpark"
+
+# EXTRA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
+java $EXTRA_OPTS $JAVA_OPTS -cp "$LIB_DIR:$LIB_DIR/lib/*" "$MAIN_CLASS" "$@"
+

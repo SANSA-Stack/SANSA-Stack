@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
-import org.aksw.jenax.arq.analytics.ResultSetAnalytics
+import org.aksw.jenax.arq.analytics.BindingAnalytics
 import org.aksw.jenax.arq.schema_mapping.{FieldMapping, SchemaMapperImpl, SchemaMapping, TypePromoterImpl}
 import org.aksw.r2rml.common.vocab.R2rmlTerms
 import org.apache.jena.datatypes.TypeMapper
@@ -67,7 +67,7 @@ object RddOfBindingsToDataFrameMapper extends LazyLogging {
 
     // Gather result set statistics using the analytic functions
     val usedDatatypesAndNulls = resultSet.getBindings.javaCollect(
-      ResultSetAnalytics.usedDatatypesAndNullCounts(javaResultVars).asCollector())
+      BindingAnalytics.usedDatatypesAndNullCounts(javaResultVars).asCollector())
 
     val typeMapper = TypeMapper.getInstance()
 

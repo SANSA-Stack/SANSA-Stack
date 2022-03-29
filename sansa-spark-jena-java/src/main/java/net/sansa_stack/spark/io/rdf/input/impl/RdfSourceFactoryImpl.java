@@ -1,9 +1,8 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFromResource;
 import org.aksw.commons.util.entity.EntityInfo;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
@@ -12,9 +11,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.spark.sql.SparkSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Implementation of a source factory based on spark/hadoop.
@@ -25,6 +27,8 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 public class RdfSourceFactoryImpl
     implements RdfSourceFactory
 {
+    private static final Logger logger = LoggerFactory.getLogger(RdfSourceFactoryImpl.class);
+
     protected SparkSession sparkSession;
     // protected FileSystem fileSystem;
 
@@ -38,7 +42,7 @@ public class RdfSourceFactoryImpl
     }
 
     @Override
-    public RdfSource create(Path path, FileSystem fileSystem, Lang lang) throws Exception {
+    public RdfSourceFromResource create(Path path, FileSystem fileSystem, Lang lang) throws Exception {
 
         if (fileSystem == null) {
             Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
@@ -51,7 +55,14 @@ public class RdfSourceFactoryImpl
             lang = probeLang(resolvedPath, fileSystem);
         }
 
-        return new RdfSourceImpl(sparkSession, resolvedPath, lang);
+        logger.info("Creating RDF Source: " + path + " -> " + lang);
+
+        return new RdfSourceFromResourceImpl(sparkSession, resolvedPath, lang);
+    }
+
+    @Override
+    public RdfSourceCollection newRdfSourceCollection() {
+        return new RdfSourceCollectionImpl(sparkSession);
     }
 
     public static Lang probeLang(Path path, FileSystem fileSystem) throws IOException {

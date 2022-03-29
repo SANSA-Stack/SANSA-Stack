@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>net.sansa-stack</groupId>
 		<artifactId>sansa-query-parent_2.12</artifactId>
-		<version>0.8.0-RC2-SNAPSHOT</version>
+		<version>0.8.0-RC3-SNAPSHOT</version>
 	</parent>
 
     <properties>
@@ -114,11 +114,6 @@
 -->
 
         <dependency>
-            <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-analytics-core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
         </dependency>
@@ -222,7 +217,7 @@
 
         <!-- Ontop -->
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-owlapi</artifactId>
             <exclusions>
                 <exclusion>
@@ -232,7 +227,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-system-sql-owlapi</artifactId>
             <exclusions>
                 <exclusion>
@@ -242,7 +237,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>it.unibz.inf.ontop</groupId>
+            <groupId>net.sansa-stack.thirdparty.it.unibz.inf.ontop</groupId>
             <artifactId>ontop-rdb</artifactId>
             <!--
                         <exclusions>

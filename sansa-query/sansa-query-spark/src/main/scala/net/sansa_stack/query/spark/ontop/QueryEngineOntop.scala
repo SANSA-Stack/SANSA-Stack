@@ -208,7 +208,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
   def prepare(): Unit = {
     // in local mode, there won't be any executor
-    if (spark.sparkContext.isLocal) {
+    if (!spark.sparkContext.isLocal) {
       logger.debug(s"preparing Ontop setup on executors ...")
       val mappingsBC = spark.sparkContext.broadcast(mappingsModel)
       val propertiesBC = spark.sparkContext.broadcast(ontopProperties)

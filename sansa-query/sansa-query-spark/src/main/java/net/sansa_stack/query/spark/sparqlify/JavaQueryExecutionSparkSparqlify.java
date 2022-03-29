@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify;
 
+import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
+import net.sansa_stack.query.spark.api.domain.JavaResultSetSparkImpl;
 import net.sansa_stack.query.spark.api.impl.JavaQueryExecutionSparkBase;
 import org.aksw.jenax.arq.connection.core.QueryExecutionFactory;
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite;
@@ -30,7 +32,7 @@ public class JavaQueryExecutionSparkSparqlify
 
 		JavaRDD<Binding> rdd = QueryExecutionUtilsSpark.createQueryExecution(sparkSession, rewrite, query);
 
-		JavaResultSetSpark result = new ResultSetSparkImpl(resultVars, rdd);
+		JavaResultSetSpark result = new JavaResultSetSparkImpl(resultVars, rdd);
 		return result;
 	}
 }

@@ -1,0 +1,12 @@
+Package: sansa-cli
+Version: [[version]]
+Section: web
+Priority: optional
+Architecture: all
+Depends: java-runtime-headless
+Maintainer: Claus Stadler <cstadler@informatik.uni-leipzig.de>
+Description: SANSA Command Line Interfaces
+Distribution: ldstack-nightly
+Homepage: https://sansa-stack.net/
+Vcs-Git: git://github.com/SANSA-Stack/SANSA-Stack.git
+Vcs-Browser: https://github.com/SANSA-Stack/SANSA-Stack

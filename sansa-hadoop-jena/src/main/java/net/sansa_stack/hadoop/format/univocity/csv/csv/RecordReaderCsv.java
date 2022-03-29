@@ -1,22 +1,26 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.common.AbstractParser;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
-import net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvw;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.domain.api.DialectMutable;
+import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
@@ -28,7 +32,7 @@ import java.util.regex.Pattern;
 public class RecordReaderCsv
     extends RecordReaderGenericBase<String[], String[], String[], String[]>
 {
-    private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsv.class);
+    // private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsv.class);
 
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.csv.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.csv.record.maxlength";
@@ -44,9 +48,9 @@ public class RecordReaderCsv
     public static final String CELL_MAXLENGTH_KEY = "mapreduce.input.csv.cell.maxlength";
     public static final long CELL_MAXLENGTH_DEFAULT_VALUE = 300000;
 
-    /* The csv format used by this instance. Initialized during initialize() */
-    protected CSVFormat requestedCsvFormat;
-    protected CSVFormat effectiveCsvFormat;
+    /* Factory for parsers (csv/tsv) according to configuration. Initialized during initialize() */
+    protected Dialect requestedDialect;
+    protected UnivocityParserFactory parserFactory;
 
     /**
      * Create a regex for matching csv record starts.
@@ -54,19 +58,36 @@ public class RecordReaderCsv
      * w.r.t. a certain amount of lookahead.
      *
      * The regex does the following:
-     * Match a character (the dot at the end) if for the preceeding character it holds:
+     * Match a character (the dot at the end) if the immediate preceeding character is a newline;
      * Match a newline; however only if there is no subsequent sole double quote followed by a newline, comma or eof.
      * Stop matching 'dot' if there was a single quote in the past
      *
-     * @param n The maximum number of lookahead bytes to check for whether a newline character
+     * @param maxCharsPerColumn The maximum number of lookahead bytes to check for whether a newline character
      *          might be within a csv cell
      * @return The corresponding regex pattern
      */
-    public static Pattern createStartOfCsvRecordPattern(long n) {
-        return Pattern.compile(
-                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + n + "}\"(\r?\n|,|$))).",
+    public static CustomPattern createStartOfCsvRecordPattern(long maxCharsPerColumn) {
+        // TODO There must not be an odd number of consecutive quote chars -
+        //  the pattern just captures 1 sole char
+        return CustomPatternJava.compile(
+                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
                 Pattern.DOTALL);
     }
+
+    public static Pattern createStartOfCsvRecordPattern(long n, char quoteChar, char quoteEscapeChar, char quoteEscapeEscapeChar) {
+        // Pattern for matching a non-escaped quote char
+        String quoteCharPattern;
+        if (quoteChar == quoteEscapeChar) {
+            quoteCharPattern = "[^" + quoteChar + "]" + quoteChar + "[^" + quoteChar + "]";
+        } else {
+            quoteCharPattern = "[^" + quoteEscapeEscapeChar + "]" + "[^" + quoteEscapeChar + "]" + quoteChar;
+        }
+
+        return Pattern.compile(
+                "(?<=\n(?!((?<!" + quoteCharPattern + ").){0," + n + "}\"(\r?\n|,|$))).",
+                Pattern.DOTALL);
+    }
+
 
     // Failed regexes
     // "(?!(([^\"]|\"\")*\"(\r?\n\r?|,|$)))(?:\r?\n\r?).",
@@ -85,7 +106,7 @@ public class RecordReaderCsv
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
-            Pattern recordSearchPattern) {
+            CustomPattern recordSearchPattern) {
         super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
     }
 
@@ -94,34 +115,34 @@ public class RecordReaderCsv
         super.initialize(inputSplit, context);
 
         Configuration conf = context.getConfiguration();
+
+        UnivocityHadoopConf parserConf = FileInputFormatCsv.getUnivocityConfig(conf);
+        DialectMutable tmp = new DialectMutableImpl();
+        parserConf.getDialect().copyInto(tmp);
+        requestedDialect = tmp;
+
         long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
-        this.recordStartPattern = createStartOfCsvRecordPattern(cellMaxLength);
+        CustomPatternCsv.Config config = CustomPatternCsvFromCsvw.adapt(requestedDialect);
+        this.recordStartPattern = CustomPatternCsv.create(config);
+        // createStartOfCsvRecordPattern(cellMaxLength);
 
-        // Default to EXCEL
-        this.requestedCsvFormat = FileInputFormatCsv.getCsvFormat(conf, CSVFormat.EXCEL);
 
-        // The header record is skipped only in postprocessing by createRecordFlow()
-        this.effectiveCsvFormat = disableSkipHeaderRecord(requestedCsvFormat);
+        // The header record (if any) is skipped only in postprocessing by createRecordFlow()
+        parserConf.getDialect().setHeader(false);
+        this.parserFactory = UnivocityParserFactory.createDefault(false).configure(parserConf);
+        // this.effectiveCsvFormat = disableSkipHeaderRecord(requestedTabularFormat);
     }
 
-    protected CSVFormat disableSkipHeaderRecord(CSVFormat csvFormat) {
-        return CSVFormat.Builder.create(csvFormat)
-                .setSkipHeaderRecord(false)
-                .build();
-    }
-
-    protected CsvParser newCsvParser(Reader reader) throws IOException {
-        CsvParserSettings settings = CsvUtils.defaultSettings(false);
-        CsvParser parser = new CsvParser(settings);
-        parser.beginParsing(reader);
-        // parser.parse(reader);
-        return parser;
-    }
+//    protected CSVFormat disableSkipHeaderRecord(CSVFormat csvFormat) {
+//        return CSVFormat.Builder.create(csvFormat)
+//                .setSkipHeaderRecord(false)
+//                .build();
+//    }
 
     /** State class used for Flowable.generate */
     private static class State {
         public Reader reader;
-        public CsvParser csvParser = null;
+        public AbstractParser<?> parser = null;
         public long seenRowLength = -1;
         public String[] priorRow = null;
 
@@ -137,7 +158,8 @@ public class RecordReaderCsv
     protected Flowable<String[]> createRecordFlow() throws IOException {
         Flowable<String[]> tmp = super.createRecordFlow();
 
-        if (requestedCsvFormat.getSkipHeaderRecord() && isFirstSplit) {
+        // Header is true by default
+        if (!Boolean.FALSE.equals(requestedDialect.getHeader()) && isFirstSplit) {
             tmp = tmp.skip(1);
         }
 
@@ -148,7 +170,7 @@ public class RecordReaderCsv
     protected Flowable<String[]> parse(Callable<InputStream> inputStreamSupplier) {
 
         return Flowable.generate(
-                () -> new State(new InputStreamReader(inputStreamSupplier.call())),
+                () -> new State(parserFactory.newInputStreamReader(inputStreamSupplier.call())),
                 (s, e) -> {
 //                    BufferedReader br = new BufferedReader(s.reader);
 //                    List<String> lines = br.lines().limit(2).collect(Collectors.toList());
@@ -156,9 +178,10 @@ public class RecordReaderCsv
 //                    if (true) throw new RuntimeException("dummy exception");
 
                     try {
-                        CsvParser it = s.csvParser;
+                        AbstractParser<?> it = s.parser;
                         if (it == null) {
-                            it = s.csvParser = newCsvParser(s.reader);
+                            it = s.parser = parserFactory.newParser();
+                            s.parser.beginParsing(s.reader);
                         }
 
                         String[] row;
@@ -176,7 +199,7 @@ public class RecordReaderCsv
                                 logger.error("Prior row: " + s.priorRow);
                                 logger.error("Current row: " + row);
                                  */
-                                String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, s.seenRowLength, row, s.priorRow);
+                                String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, s.seenRowLength, Arrays.asList(row), Arrays.asList(s.priorRow));
                                 throw new IllegalStateException(msg);
                             }
                             s.priorRow = row;

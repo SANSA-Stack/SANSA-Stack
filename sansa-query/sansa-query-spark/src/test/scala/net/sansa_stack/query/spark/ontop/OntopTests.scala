@@ -32,7 +32,8 @@ class OntopTests extends FunSuite with DataFrameSuiteBase {
     conf
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+      .set("spark.kryo.registrator", String.join(",",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator", "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
     conf
   }
 

@@ -6,7 +6,7 @@ import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition._
-import org.aksw.jena_sparql_api.server.utils.FactoryBeanSparqlServer
+import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.commons.io.IOUtils
 import org.apache.jena.riot.{Lang, RDFDataMgr}

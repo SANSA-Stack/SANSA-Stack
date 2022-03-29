@@ -7,9 +7,9 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-
 import scala.Tuple2;
 
 public class JavaRddOfTriplesOps {
@@ -82,5 +82,20 @@ public class JavaRddOfTriplesOps {
         }
     }
 
+    /** Sort quads by their string representation (relies on {@link NodeFmtLib#str}) */
+    public static JavaRDD<Triple> postProcess(
+            JavaRDD<Triple> rdd, boolean sort, boolean ascending, boolean distinct, int numPartitions) {
 
+        if (distinct) {
+            rdd = rdd.distinct();
+        }
+
+        if (sort) {
+            rdd = rdd.sortBy(NodeFmtLib::str, ascending, numPartitions);
+        }
+
+        return rdd;
+    }
+
+    
 }
