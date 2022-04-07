@@ -36,7 +36,7 @@
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search">
           {%- if site.logo %}
-            <a href="{{ site.url | absolute_url }}{{ site.github.baseurl }}"><img src="{{ site.logo }}" class="logo" alt="Logo"></a>
+            <a href="{{ site.url | absolute_url }}{{ site.github.baseurl }}"><img src="{{ site.logo | absolute_url }}" class="logo" alt="Logo"></a>
           {%- else %}
             <a href="{{ site.url | absolute_url }}{{ site.github.baseurl }}" class="icon icon-home"> {{ site.title }}</a>
           {%- endif %}
