@@ -29,7 +29,7 @@ remote_theme: carlosperate/jekyll-theme-rtd
 repo_url: 'https://github.com/SANSA-Stack/SANSA-Stack'
 
 edit_on_github: true
-github_docs_folder: false
+github_docs_folder: true
 sticky_navigation: true
 prev_next_buttons_location: both
 search_enabled: true
