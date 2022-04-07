@@ -5,7 +5,7 @@
   max-width: 1200px;
 }
 
-/*
+
 .rst-content div[class^="highlight"] {
   border: 0;
 }
@@ -13,7 +13,7 @@
 .rst-content div[class^="highlight"] pre {
   padding: 0;
 }
-*/
+
 
 /** Below copied from theme (https://github.com/carlosperate/jekyll-theme-rtd/blob/master/assets/css/theme_extra.css) ------------ */
 
