@@ -283,7 +283,7 @@ class QueryEngineOntop(val spark: SparkSession,
 
       // execute SQL query
       val resultRaw = spark.sql(sql)
-      //    result.show(false)
+//      resultRaw.show(false)
       //    result.printSchema()
 
       (resultRaw, Some(queryRewrite))
