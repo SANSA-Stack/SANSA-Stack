@@ -4,7 +4,7 @@ has_children: false
 nav_order: 1
 ---
 
-# Source Code
+## Source Code
 
 The Sansa project comprises java/scala libraries, a command line tool and examples.
 
