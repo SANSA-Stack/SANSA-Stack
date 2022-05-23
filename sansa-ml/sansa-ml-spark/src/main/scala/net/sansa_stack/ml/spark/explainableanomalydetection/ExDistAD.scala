@@ -15,6 +15,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object ExDistAD {
 
+  var fileCounter = 1;
+
   def assembleDF(
       featureColumns: Array[String],
       data: DataFrame
@@ -27,7 +29,6 @@ object ExDistAD {
     val output = assembler.transform(data)
     output.createOrReplaceTempView("data")
     (output, assembler.getInputCols)
-
   }
 
   def trainDecisionTree(
@@ -314,11 +315,24 @@ object ExDistAD {
           config
         )
     }
-    if (!anomalies.isEmpty && config.verbose) {
-      LOG.info(
-        "All the following values in " + labelColumn + " column are anomaly because of " + rule
-      )
-      output1.filter(output1(labelColumn).isin(anomalies: _*)).show(false)
+    if (!anomalies.isEmpty) {
+      val explanation = "All the values in " + labelColumn + " column are anomaly because of " + rule
+      val anomalyList = output1.filter(output1(labelColumn).isin(anomalies: _*))
+
+      if (config.verbose) {
+        LOG.info(explanation)
+        anomalyList.show(false)
+      }
+
+      if (config.writeResultToFile) {
+        ExDistADUtil.writeToFile(
+          config.resultFilePath,
+          anomalyList,
+          explanation,
+          fileCounter
+        )
+        fileCounter = fileCounter + 1
+      }
     }
   }
 }
