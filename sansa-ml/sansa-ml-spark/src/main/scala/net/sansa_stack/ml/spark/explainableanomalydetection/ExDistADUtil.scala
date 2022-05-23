@@ -18,6 +18,8 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 
 import java.io.{BufferedWriter, File, FileWriter}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 /** This class gathers all the utilities needed for distributed anomaly
   * detection
@@ -278,9 +280,16 @@ object ExDistADUtil {
     * @param data
     *   the dataframe that should be written to a file
     */
-  def writeToFile(path: String, data: DataFrame): Unit = {
+  def writeToFile(
+      path: String,
+      data: DataFrame,
+      explanation: String,
+      fileSuffix: Int
+  ): Unit = {
+    val newPath: String = path + "_" + fileSuffix
     if (path.contains("hdfs://")) {
-      val stringBuilder: StringBuilder = new StringBuilder()
+      val stringBuilder: StringBuilder =
+        new StringBuilder(explanation).append("\n")
       data
         .coalesce(1)
         .collect()
@@ -288,7 +297,7 @@ object ExDistADUtil {
           stringBuilder.append(row.mkString(",")).append("\n")
         })
 
-      val fsPath = new Path(path)
+      val fsPath = new Path(newPath)
       val fs =
         fsPath.getFileSystem(createSpark().sparkContext.hadoopConfiguration)
       fs.delete(fsPath, true)
@@ -300,12 +309,19 @@ object ExDistADUtil {
         ("delimiter", ","),
         ("header", "true")
       )
+      data.show(false)
+
       data
+        .drop("indexedFeatures")
         .coalesce(1)
         .write
         .mode(SaveMode.Overwrite)
         .options(tsvWithHeaderOptions)
-        .csv(path)
+        .csv(newPath)
+      Files.write(
+        Paths.get(newPath + File.separator + "explanation.txt"),
+        explanation.getBytes(StandardCharsets.UTF_8)
+      )
     }
 
   }
