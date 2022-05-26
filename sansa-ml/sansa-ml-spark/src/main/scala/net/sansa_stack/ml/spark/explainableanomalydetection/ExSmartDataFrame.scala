@@ -9,27 +9,41 @@ import org.apache.jena.graph
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Column, DataFrame, Dataset, Encoders}
 import org.apache.spark.sql.functions.{col, first, udf}
 import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders}
 
+/**
+ * This class is responsible for converting RDD[Triple] to a dataframe, extract the featrues, and cast the types to primitive datatypes.
+ */
 object ExSmartDataFrame {
 
+  /**
+   * UDF for convering boolean to integer
+   */
+  val bool2int_udf = udf(bool2int _)
 
   /**
    * Transform given RDD[Triple] to casted type, pivoted, renamed, dataframe
-   * @param rdd
-   * @return
+   * @param rdd the given data
+   * @return the dataframe
    */
   def transform(rdd: RDD[Triple],config: ExDistADConfig): DataFrame = {
     val rddWithDataType: RDD[Triple] = addDataTypeToPredicates(rdd)
-    val df: DataFrame = createDataFrame(rddWithDataType)
+    val df: DataFrame = DistADUtil.createDF(rddWithDataType)
     val featuresDF: DataFrame = extractFeatures(df,rddWithDataType,config)
     var renamedColPivotedDF: DataFrame = renameCols(featuresDF)
     val castedPivotedDF: DataFrame = castTypes(renamedColPivotedDF)
     castedPivotedDF
   }
 
+  /**
+   * Extract features based on the values in the config object.
+   * @param df the given dataframe
+   * @param rddWithDataType the original RDD[Triples]
+   * @param config the config file object
+   * @return a dataframe which contains the extarcted features
+   */
   def extractFeatures(df:DataFrame,rddWithDataType: RDD[Triple],config: ExDistADConfig) = {
     config.featureExtractor match {
       case config.PIVOT =>
@@ -70,9 +84,10 @@ object ExSmartDataFrame {
         b
     }
   }
+
   /**
    * Gets an RDD and append datatype to the predicate with __
-   * @param rdd
+   * @param rdd the data
    * @return rdd with datatype appended to the predicates
    */
   def addDataTypeToPredicates(
@@ -107,11 +122,8 @@ object ExSmartDataFrame {
       )
       .map(p => {
         val obj = p.getObject
-
         if (obj.isLiteral) {
           if (obj.toString.contains("^^")) {
-
-            //TODO: it seems there are many data types in the original dbpedia
             var value = obj.toString.split("\\^\\^")(0)
             var dataType = ""
             if (obj.toString.split("\\^\\^")(1).contains("#")) {
@@ -124,8 +136,7 @@ object ExSmartDataFrame {
                 .split("dbpedia.org/datatype/")
                 .last
             } else {
-              println("WE SHOULD NEVER BE HERE \t" + obj.toString())
-              //TODO: what should we do here. Dbpedia is so dirty
+              LOG.error("WE SHOULD NEVER BE HERE \t" + obj.toString())
               dataType = ""
               value = "\"ERROR\""
             }
@@ -169,27 +180,27 @@ object ExSmartDataFrame {
       })
   }
 
-  def createDataFrame(rddWithDataType: RDD[Triple]): DataFrame = {
-    DistADUtil.createDF(rddWithDataType)
-  }
-
-  def pivot(df: DataFrame): DataFrame = {
-    df.groupBy("s")
-      .pivot("p")
-      .agg(first("o"))
-  }
-
-  def renameCols(pivotedDF: DataFrame): DataFrame = {
-    pivotedDF
+  /**
+   * Renamed the columns and keep only the last part of the column separated by /
+   * @param data the dataframe
+   * @return a renamed dataframe
+   */
+  def renameCols(data: DataFrame): DataFrame = {
+    data
       .toDF(
-        pivotedDF.columns.map(
+        data.columns.map(
           _.split("/").last
         ): _*
       )
   }
 
-  def castTypes(renamedColPivotedDF: DataFrame): DataFrame = {
-    var data = renamedColPivotedDF
+  /**
+   * Cast each column in dataframe to a premitive type
+   * @param dataframe the given dataframe
+   * @return a dataframe which its columns are casted
+   */
+  def castTypes(dataframe: DataFrame): DataFrame = {
+    var data = dataframe
     data.columns.foreach(c => {
       if (!c.equals("s")) {
         val colRealName = c
@@ -268,7 +279,22 @@ object ExSmartDataFrame {
     data
   }
 
+  /**
+   * Pivot given dataframe based on predicated and agregate over objects
+   * @param df the given dataframe
+   * @return the pivoted dataframe
+   */
+  def pivot(df: DataFrame): DataFrame = {
+    df.groupBy("s")
+      .pivot("p")
+      .agg(first("o"))
+  }
+
+  /**
+   * Converts a boolean to integer
+   * @param b given boolean
+   * @return a corespondnig integer
+   */
   def bool2int(b:Boolean) = if (b) 1 else 0
-  val bool2int_udf = udf(bool2int _)
 
 }
