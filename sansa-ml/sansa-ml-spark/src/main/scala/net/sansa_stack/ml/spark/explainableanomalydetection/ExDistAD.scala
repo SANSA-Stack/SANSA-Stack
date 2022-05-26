@@ -11,12 +11,18 @@ import org.apache.spark.ml.tree._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object ExDistAD {
 
   var fileCounter = 1;
 
+  /**
+    * Get a dataframe and array of columns and generated a vector for the given columns
+    * @param featureColumns the given columns
+    * @param data a given dataframe
+    * @return a tuple of dataframe and new columns
+    */
   def assembleDF(
       featureColumns: Array[String],
       data: DataFrame
@@ -31,6 +37,13 @@ object ExDistAD {
     (output, assembler.getInputCols)
   }
 
+  /**
+    * Create a Decision Tree and tran it
+    * @param data the given data
+    * @param labelColumn the given label
+    * @param config the config object
+    * @return the trained DecisionTreeRegressionModel
+    */
   def trainDecisionTree(
       data: DataFrame,
       labelColumn: String,
@@ -49,6 +62,13 @@ object ExDistAD {
     treeModel
   }
 
+  /**
+    * Gets a trained DecisionTreeRegressionModel and parse it and convert each node to a query
+    * @param treeModel the trained DecisionTreeRegressionModel
+    * @param output
+    * @param realColsName
+    * @return list of rules
+    */
   def parseDecisionTree(
       treeModel: DecisionTreeRegressionModel,
       output: DataFrame,
@@ -132,6 +152,12 @@ object ExDistAD {
     rawRules
   }
 
+  /**
+    * Gets list of rules and convert them to SQL rules
+    * @param rawRules a given list of rules
+    * @param realColsName
+    * @return the list of SQL rules
+    */
   def generateSqlRules(
       rawRules: List[String],
       realColsName: Array[String]
@@ -142,7 +168,7 @@ object ExDistAD {
       val splitArray: Array[String] = rule.split(";")
       for (r <- splitArray) {
         if (r.contains("is in")) {
-          // cat
+          // categorical
           val rSplit = r.split(" ")
           val featureIndex = rSplit(1).toInt
           val featureValue = rSplit(4).substring(1, rSplit(4).length - 1)
@@ -154,7 +180,7 @@ object ExDistAD {
             ) + " IN (" + featureValue + ")"
           }
         } else {
-          // numeric
+          // numerical
           val rSplit = r.split(" ")
           val featureIndex = rSplit(1).toInt
           val operator = rSplit(2)
@@ -184,6 +210,11 @@ object ExDistAD {
     sqlRules
   }
 
+  /**
+    * Sort SQL rules based on length
+    * @param sqlRules the given SQL rules
+    * @return sorted SQL rules
+    */
   def sortSqlRulesDesc(sqlRules: List[String]): List[String] = {
     sqlRules.sortWith(
       _.sliding("AND".length).count(_ == "AND") > _.sliding("AND".length)
@@ -192,20 +223,31 @@ object ExDistAD {
 
   }
 
-  def containIndex(p: String, allColumns: Array[String]): Boolean = {
+  /**
+    * Check to see if a column name contains "index"
+    * @param columnName
+    * @param allColumns
+    * @return true or false
+    */
+  def containIndex(columnName: String, allColumns: Array[String]): Boolean = {
     for (col <- allColumns) {
-      if (col.contains(p) && col.endsWith("_index") && !p.endsWith("_index")) {
+      if (col.contains(columnName) && col.endsWith("_index") && !columnName
+            .endsWith("_index")) {
         return true
       }
     }
     false
   }
 
+  /**
+    * The main function
+    * @param args
+    */
   def main(args: Array[String]): Unit = {
 
     val config: ExDistADConfig = new ExDistADConfig(
-//      args(0)
-      "/home/farshad/Desktop/PhD/rdfdata/exad/config.conf"
+      args(0)
+//      "/home/farshad/Desktop/PhD/rdfdata/exad/config.conf"
     )
     val spark = ExDistADUtil.createSpark()
     LOG.info(config)
@@ -283,13 +325,13 @@ object ExDistAD {
     }
   }
 
-  private def ruleRunner(
+  def ruleRunner(
       rule: String,
       spark: SparkSession,
       labelColumn: String,
       config: ExDistADConfig,
       output: DataFrame
-  ) = {
+  ): Dataset[Row] = {
     val fullQuery = "SELECT * FROM originalData WHERE " + rule
     val output1 = spark.sql(fullQuery)
     val result = output1.select(labelColumn)
@@ -297,27 +339,29 @@ object ExDistAD {
     val dataType = labelColumn.split("_(?!__)").last
     var anomalies: Array[Double] = Array()
     // TODO add other numeric datatypes
+
+    var filteredDF = result.filter(!_.anyNull)
+    var values: Array[Double] = null
     dataType match {
       case "integer" | "int" =>
-        anomalies = ExDistADUtil.anomalyDetectionMethod(
-          result
-            .filter(!_.anyNull)
-            .map(p => p.getInt(0).toDouble)
-            .collect(),
-          config
-        )
+        values = filteredDF.map(p => p.getInt(0).toDouble).collect()
       case "decimal" =>
-        anomalies = ExDistADUtil.anomalyDetectionMethod(
-          result
-            .filter(!_.anyNull)
-            .map(p => p.getDouble(0))
-            .collect(),
-          config
-        )
+        values = filteredDF.map(p => p.getDouble(0)).collect()
+      case "long" =>
+        values = filteredDF.map(p => p.getLong(0).toDouble).collect()
+      case "double" =>
+        values = filteredDF.map(p => p.getDouble(0)).collect()
+      case "float" =>
+        values = filteredDF.map(p => p.getFloat(0).toDouble).collect()
     }
+    anomalies = ExDistADUtil.anomalyDetectionMethod(
+      values,
+      config
+    )
     if (!anomalies.isEmpty) {
       val explanation = "All the values in " + labelColumn + " column are anomaly because of " + rule
-      val anomalyList = output1.filter(output1(labelColumn).isin(anomalies: _*))
+      val anomalyList: Dataset[Row] =
+        output1.filter(output1(labelColumn).isin(anomalies: _*))
 
       if (config.verbose) {
         LOG.info(explanation)
@@ -333,6 +377,8 @@ object ExDistAD {
         )
         fileCounter = fileCounter + 1
       }
+      return anomalyList
     }
+    null
   }
 }
