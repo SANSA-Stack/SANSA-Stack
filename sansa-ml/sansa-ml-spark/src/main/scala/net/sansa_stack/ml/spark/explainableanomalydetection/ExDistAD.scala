@@ -406,7 +406,7 @@ object ExDistAD {
       labelColumn: String,
       config: ExDistADConfig,
       output: DataFrame
-  ): Dataset[Row] = {
+  ): (Dataset[Row], String) = {
     val fullQuery = "SELECT * FROM originalData WHERE " + rule
     val output1 = spark.sql(fullQuery)
     val result = output1.select(labelColumn)
@@ -452,7 +452,7 @@ object ExDistAD {
         )
         fileCounter = fileCounter + 1
       }
-      return anomalyList
+      return (anomalyList, explanation)
     }
     null
   }

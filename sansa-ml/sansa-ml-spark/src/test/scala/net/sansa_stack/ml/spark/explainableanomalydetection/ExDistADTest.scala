@@ -256,6 +256,6 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
       config,
       o._1
     )
-    assert(anomalies.count() == 5)
+    assert(anomalies._1.count() == 5)
   }
 }
