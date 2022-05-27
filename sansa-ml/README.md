@@ -18,6 +18,7 @@ The current stack provides:
 - [Feature Based Semantic Similarity Estimations](#feature-based-semantic-similarity-estimations) for further description checkout this [ReadMe](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/ReadMe.md) or take a look into [minimal examples](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity/examples/MinimalCalls.scala).
 - [Sparql Transformer](#sparql-transformer)
 - [DistAD](#distad-distributed-anomaly-detection)
+- [ExDistAD](#exdistad-explanable-distributed-anomaly-detection)
 
 ### SmartFeatureExtractor
 This feature extractor creates out of a Apache Spark Dataset of Apache Jena Triple a Dataframe which contains entity feature information for further machine learning approaches.
@@ -316,6 +317,40 @@ Moreover, DistAD offers options to select between different algorithms, and hype
 ![](distad.png)
 
 For more information about DistAD visit [here](http://sansa-stack.github.io/SANSA-Stack/ml/publications.html).
+
+### ExDistAD Explanable Distributed Anomaly Detection
+[ExDistAD](https://github.com/SANSA-Stack/SANSA-Stack/blob/feature/exdistad/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/explainableanomalydetection): This module is a generic, scalable, and distributed framework for explanable anomaly detection on large RDF knowledge graphs. ExDistAD is inspired by OutlierTree and works by evaluating and following distributed supervised decision tree splits on variables. This helps to detect and explain anomalous cases which can not be detected without considering other features.
+
+ExDistAD needs a config file which looks like as follows:
+```groovy
+verbose=false
+writeResultToFile=false
+
+inputData="/home/farshad/Desktop/ExAd8April2022/synthetic/data3_20k.ttl"
+
+resultFilePath="/home/farshad/Desktop/deleteme/output.nt"
+
+anomalyDetectionAlgorithm="IQR" //Possible values: IQR, MAD, ZSCORE
+featureExtractor="Pivot" //Possible values:Pivot, Literal2Feature
+
+anomalyListSize = 1
+
+//Literal2Feature
+depth=1
+seedNumber=1
+
+//Decision Tree
+maxDepth=2
+maxBin=5
+```
+
+After providing a config file, use can easily start the ExDistAD process. The process will read the config file nad based on the values will initiate the corresponding classes.
+```scala
+val configFilePath = "PATH/TO/config.conf"
+ExDistAD.main(Array(configFilePath))
+```
+
+For more information about ExDistAD visit [here](http://sansa-stack.github.io/SANSA-Stack/ml/publications.html).
 
 ### Feature Based Semantic Similarity Estimations
 [DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
