@@ -208,8 +208,9 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
 
     val rawRules: List[String] =
       parseDecisionTree(treeModel, o._1, o._2)
-    var sqlRules: List[String] = generateSqlRules(rawRules, o._2)
-    assert(sqlRules.length == 6)
+    var sqlRules: (List[String], List[String]) =
+      generateSqlRules(rawRules, o._2, o._1)
+    assert(sqlRules._1.length == 6)
   }
 
   test("Anomaly Detection") {
@@ -245,8 +246,16 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
 
     val rawRules: List[String] =
       parseDecisionTree(treeModel, o._1, o._2)
-    var sqlRules: List[String] = generateSqlRules(rawRules, o._2)
-    var anomalies = ruleRunner(sqlRules(0), spark, labelColumn, config, o._1)
+    var sqlRules: (List[String], List[String]) =
+      generateSqlRules(rawRules, o._2, o._1)
+    var anomalies = ruleRunner(
+      sqlRules._1(0),
+      sqlRules._2(0),
+      spark,
+      labelColumn,
+      config,
+      o._1
+    )
     assert(anomalies.count() == 5)
   }
 }

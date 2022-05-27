@@ -1,4 +1,4 @@
-package net.sansa_stack.ml.spark.explainableanomalydetection2;
+package net.sansa_stack.ml.spark.explainableanomalydetection;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -6,11 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class SyntheticDataGenerator {
+public class SyntheticDataGeneratorWithRealTypes {
 
 
     public static void main(String[] args) throws IOException {
-        args = new String[]{"20000", "/home/farshad/Desktop/ExAd8April2022/synthetic/data2_20k.ttl","/home/farshad/Desktop/ExAd8April2022/synthetic/data2_20k.csv"};
+        args = new String[]{"20000", "/home/farshad/Desktop/ExAd8April2022/synthetic/data3_20k.ttl","/home/farshad/Desktop/ExAd8April2022/synthetic/data3_20k.csv"};
         final float studentPercentage = 0.50f;
         final int numberOfRows = Integer.parseInt(args[0]);
         final int WRITE_THRESHOLD = 1000000 - 1;
@@ -19,7 +19,7 @@ public class SyntheticDataGenerator {
 
         Files.createFile(Paths.get(RDF_FILE));
         Files.createFile(Paths.get(CSV_FILE));
-        new SyntheticDataGenerator().run(studentPercentage, numberOfRows, WRITE_THRESHOLD, RDF_FILE,CSV_FILE);
+        new SyntheticDataGeneratorWithRealTypes().run(studentPercentage, numberOfRows, WRITE_THRESHOLD, RDF_FILE,CSV_FILE);
     }
 
     public void run(float studentPercentage, int numberOfRows, int WRITE_THRESHOLD, String RDF_FILE,String CSV_FILE) {
@@ -31,10 +31,10 @@ public class SyntheticDataGenerator {
         int numberOfStudents = (int) (numberOfRows * studentPercentage);
         for (int i = 0; i < numberOfRows; i++) {
             if (i < numberOfStudents) {
-                finalResultRDF.append(generateStudent(i).toNTripleRDF());
+                finalResultRDF.append(generateStudent(i).toNTripleRDFOriginal());
                 finalResultCSV.append(generateStudent(i));
             } else {
-                finalResultRDF.append(generatePresident(i).toNTripleRDF());
+                finalResultRDF.append(generatePresident(i).toNTripleRDFOriginal());
                 finalResultCSV.append(generatePresident(i));
             }
 
@@ -78,33 +78,33 @@ public class SyntheticDataGenerator {
         for(int i=1;i<=totalNumberOfPregnant;i++){
             Person p = new Person();
             p.setId(id + i);
-            p.setSex(0);
+            p.setSex(false);
             p.setAge(getAge(90,100));
-            p.setPregnant(1);
-            p.setJob(1);
-            finalResultRDF.append(p.toNTripleRDF());
+            p.setPregnant(true);
+            p.setJob("President");
+            finalResultRDF.append(p.toNTripleRDFOriginal());
             finalResultCSV.append(p);
         }
 
         for(int i=1;i<=totalNumberOfPresident;i++){
             Person p = new Person();
             p.setId(id + totalNumberOfPregnant+i);
-            p.setSex(0);
+            p.setSex(false);
             p.setAge(getAge(4,10));
-            p.setPregnant(0);
-            p.setJob(1);
-            finalResultRDF.append(p.toNTripleRDF());
+            p.setPregnant(false);
+            p.setJob("President");
+            finalResultRDF.append(p.toNTripleRDFOriginal());
             finalResultCSV.append(p);
         }
 
         for(int i=1;i<=totalNumberOfStudent;i++){
             Person p = new Person();
             p.setId(id + totalNumberOfPregnant+totalNumberOfPresident+i);
-            p.setSex(0);
+            p.setSex(false);
             p.setAge(getAge(70,90));
-            p.setPregnant(0);
-            p.setJob(0);
-            finalResultRDF.append(p.toNTripleRDF());
+            p.setPregnant(false);
+            p.setJob("Student");
+            finalResultRDF.append(p.toNTripleRDFOriginal());
             finalResultCSV.append(p);
         }
     }
@@ -116,33 +116,33 @@ public class SyntheticDataGenerator {
         int max = 70;
         p.setAge(getAge(min, max));
         p.setSex(getSex(0.9f));
-        p.setJob(1);
-        p.setPregnant(getPresidentPregnant(p.getSex(), p.getAge()));
+        p.setJob("President");
+        p.setPregnant(getPresidentPregnant(p.sex, p.getAge()));
         return p;
     }
 
-    private int getPresidentPregnant(int sex, int age) {
-        if (sex == 0) {
-            return 0;
+    private boolean getPresidentPregnant(boolean sex, int age) {
+        if (sex == false) {
+            return false;
         } else {
             if (age > 55) {
-                return 0;
+                return false;
             } else {
                 if (Math.random() < 0.4) {
-                    return 1;
+                    return true;
                 } else {
-                    return 0;
+                    return false;
                 }
             }
         }
 
     }
 
-    private int getSex(float maleThreshold) {
+    private boolean getSex(float maleThreshold) {
         if (Math.random() < maleThreshold)
-            return 1;
+            return true;
         else
-            return 0;
+            return false;
     }
 
     private Person generateStudent(int id) {
@@ -152,8 +152,8 @@ public class SyntheticDataGenerator {
         int max = 14;
         p.setAge(getAge(min, max));
         p.setSex(getSex(0.5f));
-        p.setJob(0);
-        p.setPregnant(0);
+        p.setJob("Student");
+        p.setPregnant(false);
         return p;
     }
 
@@ -162,69 +162,6 @@ public class SyntheticDataGenerator {
     }
 
     class Person {
-        private int id;
-        private int age;
-        private int sex;
-        private int pregnant;
-        private int job;
-
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public int getAge() {
-            return age;
-        }
-
-        public void setAge(int age) {
-            this.age = age;
-        }
-
-        public int getSex() {
-            return sex;
-        }
-
-        public void setSex(int sex) {
-            this.sex = sex;
-        }
-
-        public int getPregnant() {
-            return pregnant;
-        }
-
-        public void setPregnant(int pregnant) {
-            this.pregnant = pregnant;
-        }
-
-        public int getJob() {
-            return job;
-        }
-
-        public void setJob(int job) {
-            this.job = job;
-        }
-
-        public String toNTripleRDF() {
-            StringBuilder result = new StringBuilder();
-            result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/id> " + id + " .").append("\n");
-            result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/age> " + age + " .").append("\n");
-            result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/sex> " + sex + " .").append("\n");
-            result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/pregnant> " + pregnant + " .").append("\n");
-            result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/job> " + job + " .").append("\n");
-            return result.toString();
-        }
-
-        @Override
-        public String toString() {
-            return id + "," + age + "," + sex + "," + pregnant + "," + job + "\n";
-        }
-    }
-
-    class PersonOriginal {
         private int id;
         private int age;
         private boolean sex;
@@ -302,7 +239,7 @@ public class SyntheticDataGenerator {
             result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/age> " + age + " .").append("\n");
             result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/sex> " + sex + " .").append("\n");
             result.append("<http://dig.isi.edu/Person" + id + "> " + "<http://dig.isi.edu/pregnant> " + pregnant + " .").append("\n");
-//            result.append("<http://dig.isi.edu/Person"+id+"> " + "<http://dig.isi.edu/job> " + "<http://dig.isi.edu/"+job+"> .").append("\n");
+            result.append("<http://dig.isi.edu/Person"+id+"> " + "<http://dig.isi.edu/job> " + "<http://dig.isi.edu/"+job+"> .").append("\n");
             return result.toString();
         }
     }

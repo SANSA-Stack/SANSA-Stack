@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.explainableanomalydetection
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import net.sansa_stack.ml.spark.utils.ConfigResolver
 
 /** This class gets a config file path and reads the values from the config file
@@ -22,26 +22,43 @@ class ExDistADConfig(path: String) extends Serializable {
   /**
     * Configurable values
     */
-  var verbose: Boolean = cfg.getBoolean("verbose")
-  var writeResultToFile: Boolean = cfg.getBoolean("writeResultToFile")
-  var inputData: String = cfg.getString("inputData")
-  var resultFilePath: String = cfg.getString("resultFilePath")
-  var anomalyListSize: Int = cfg.getInt("anomalyListSize")
+  var verbose: Boolean =
+    if (cfg.hasPath("verbose"))
+      cfg.getBoolean("verbose")
+    else
+      false
+
+  var writeResultToFile: Boolean =
+    if (cfg.hasPath("writeResultToFile"))
+      cfg.getBoolean("writeResultToFile")
+    else
+      false
+  var inputData: String =
+    if (cfg.hasPath("inputData")) cfg.getString("inputData") else ""
+  var resultFilePath: String =
+    if (cfg.hasPath("resultFilePath")) cfg.getString("resultFilePath") else ""
+  var anomalyListSize: Int =
+    if (cfg.hasPath("anomalyListSize")) cfg.getInt("anomalyListSize") else 1
   var anomalyDetectionAlgorithm: String =
-    cfg.getString("anomalyDetectionAlgorithm")
-  var featureExtractor: String = cfg.getString("featureExtractor")
+    if (cfg.hasPath("anomalyDetectionAlgorithm"))
+      cfg.getString("anomalyDetectionAlgorithm")
+    else "IQR"
+  var featureExtractor: String =
+    if (cfg.hasPath("featureExtractor")) cfg.getString("featureExtractor")
+    else "Pivot"
 
   /**
     * Literal2Feature
     */
-  var l2fDepth: Int = cfg.getInt("depth")
-  var l2fSeedNumber: Int = cfg.getInt("seedNumber")
+  var l2fDepth: Int = if (cfg.hasPath("depth")) cfg.getInt("depth") else 1
+  var l2fSeedNumber: Int =
+    if (cfg.hasPath("seedNumber")) cfg.getInt("seedNumber") else 1
 
   /**
     * Decision Tree
     */
-  var maxDepth: Int = cfg.getInt("maxDepth")
-  var maxBin: Int = cfg.getInt("maxBin")
+  var maxDepth: Int = if (cfg.hasPath("maxDepth")) cfg.getInt("maxDepth") else 2
+  var maxBin: Int = if (cfg.hasPath("maxBin")) cfg.getInt("maxBin") else 5
 
   override def toString: String =
     s"ExDistADConfig(\nverbose=$verbose,\nwriteResultToFile=$writeResultToFile,\ninputData=$inputData,\nresultFilePath=$resultFilePath,\nanomalyListSize=$anomalyListSize,\nanomalyDetectionAlgorithm=$anomalyDetectionAlgorithm,\nfeatureExtractor=$featureExtractor,\nl2fDepth=$l2fDepth,\nl2fSeedNumber=$l2fSeedNumber,\nmaxDepth=$maxDepth,\nmaxBin=$maxBin\n)"
