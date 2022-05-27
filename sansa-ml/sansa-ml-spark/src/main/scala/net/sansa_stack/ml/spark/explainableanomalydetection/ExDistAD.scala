@@ -2,7 +2,7 @@ package net.sansa_stack.ml.spark.explainableanomalydetection
 
 import net.sansa_stack.ml.spark.anomalydetection.DistADLogger.LOG
 import org.apache.jena.graph
-import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.feature.{VectorAssembler}
 import org.apache.spark.ml.regression.{
   DecisionTreeRegressionModel,
   DecisionTreeRegressor
@@ -10,8 +10,8 @@ import org.apache.spark.ml.regression.{
 import org.apache.spark.ml.tree._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.BooleanType
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.types.{BooleanType}
+import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
 object ExDistAD {
 
@@ -30,7 +30,7 @@ object ExDistAD {
     val assembler = new VectorAssembler()
       .setInputCols(featureColumns)
       .setOutputCol("indexedFeatures")
-      .setHandleInvalid("keep")
+      .setHandleInvalid("skip")
 
     val output = assembler.transform(data)
     output.createOrReplaceTempView("data")
@@ -152,19 +152,53 @@ object ExDistAD {
     rawRules
   }
 
+  def getRealValue(
+      featureName: String,
+      featureValue: String,
+      output: DataFrame
+  ): Object = {
+    if (featureName.endsWith("__boolean")) {
+      featureValue
+    } else {
+      val newFeatureName = featureName.replace("_index", "")
+      val result = output
+        .select(featureName, newFeatureName)
+        .where(col(featureName) === lit(featureValue))
+        .first()
+        .getString(1)
+      result
+//
+//      val converter = new IndexToString()
+//        .setInputCol(featureName)
+//        .setOutputCol("originalValue")
+//      val converted: DataFrame = converter.transform(output)
+//      converted.show(false)
+//      val selectedData = converted
+//        .select(newFeatureName, featureName, "originalValue")
+//
+//      selectedData.show(false)
+//
+//      featureValue
+    }
+  }
+
   /**
     * Gets list of rules and convert them to SQL rules
+    *
     * @param rawRules a given list of rules
     * @param realColsName
     * @return the list of SQL rules
     */
   def generateSqlRules(
       rawRules: List[String],
-      realColsName: Array[String]
-  ): List[String] = {
+      realColsName: Array[String],
+      output: DataFrame
+  ): (List[String], List[String]) = {
     var sqlRules: List[String] = List[String]()
+    var sqlMappedRules: List[String] = List[String]()
     for (rule <- rawRules) {
       var resultSqlRule: String = ""
+      var resultSqlMappedRule: String = ""
       val splitArray: Array[String] = rule.split(";")
       for (r <- splitArray) {
         if (r.contains("is in")) {
@@ -174,10 +208,24 @@ object ExDistAD {
           val featureValue = rSplit(4).substring(1, rSplit(4).length - 1)
           if (resultSqlRule.isEmpty) {
             resultSqlRule = resultSqlRule + realColsName(featureIndex) + " IN (" + featureValue + ")"
+            resultSqlMappedRule = resultSqlMappedRule + realColsName(
+              featureIndex
+            ).replace("_index", "") + " IN (" + getRealValue(
+              realColsName(featureIndex),
+              featureValue,
+              output
+            ) + ")"
           } else {
             resultSqlRule = resultSqlRule + " AND " + realColsName(
               featureIndex
             ) + " IN (" + featureValue + ")"
+            resultSqlMappedRule = resultSqlMappedRule + " AND " + realColsName(
+              featureIndex
+            ).replace("_index", "") + " IN (" + getRealValue(
+              realColsName(featureIndex),
+              featureValue,
+              output
+            ) + ")"
           }
         } else {
           // numerical
@@ -187,6 +235,9 @@ object ExDistAD {
           val featureValue = rSplit(3).toDouble
           if (resultSqlRule.isEmpty) {
             resultSqlRule = resultSqlRule + realColsName(featureIndex) + " " + operator + " " + featureValue
+            resultSqlMappedRule = resultSqlMappedRule + realColsName(
+              featureIndex
+            ) + " " + operator + " " + featureValue
           } else {
             val checkString = realColsName(featureIndex) + " " + operator + " "
             if (resultSqlRule.contains(checkString)) {
@@ -196,8 +247,18 @@ object ExDistAD {
                   featureIndex
                 ) + " " + operator + " " + featureValue
               )
+
+              resultSqlMappedRule = resultSqlMappedRule.replaceAll(
+                checkString + "\\d+\\.?\\d+",
+                realColsName(
+                  featureIndex
+                ) + " " + operator + " " + featureValue
+              )
             } else {
               resultSqlRule = resultSqlRule + " AND " + realColsName(
+                featureIndex
+              ) + " " + operator + " " + featureValue
+              resultSqlMappedRule = resultSqlMappedRule + " AND " + realColsName(
                 featureIndex
               ) + " " + operator + " " + featureValue
             }
@@ -206,8 +267,9 @@ object ExDistAD {
         }
       }
       sqlRules = resultSqlRule :: sqlRules
+      sqlMappedRules = resultSqlMappedRule :: sqlMappedRules
     }
-    sqlRules
+    (sqlRules, sqlMappedRules)
   }
 
   /**
@@ -247,7 +309,6 @@ object ExDistAD {
 
     val config: ExDistADConfig = new ExDistADConfig(
       args(0)
-//      "/home/farshad/Desktop/PhD/rdfdata/exad/config.conf"
     )
     val spark = ExDistADUtil.createSpark()
     LOG.info(config)
@@ -316,17 +377,31 @@ object ExDistAD {
 
     val rawRules: List[String] =
       parseDecisionTree(treeModel, output, realColsName)
-    var sqlRules: List[String] = generateSqlRules(rawRules, realColsName)
-    output.createOrReplaceTempView("originalData")
-    sqlRules = sortSqlRulesDesc(sqlRules)
 
-    for (rule <- sqlRules) {
-      ruleRunner(rule, spark, labelColumn, config, output)
+    var sqlRules: (List[String], List[String]) =
+      generateSqlRules(rawRules, realColsName, output)
+    output.createOrReplaceTempView("originalData")
+//    sqlRules = sortSqlRulesDesc(sqlRules._1)
+//    if (config.verbose) {
+//      sqlRules._1 foreach println
+//    }
+    for (i <- 0 until sqlRules._1.length) {
+      ruleRunner(
+        sqlRules._1(i),
+        sqlRules._2(i),
+        spark,
+        labelColumn,
+        config,
+        output
+      )
     }
+//    for (rule <- sqlRules._1) {}
+
   }
 
   def ruleRunner(
       rule: String,
+      mappedRule: String,
       spark: SparkSession,
       labelColumn: String,
       config: ExDistADConfig,
@@ -359,7 +434,7 @@ object ExDistAD {
       config
     )
     if (!anomalies.isEmpty) {
-      val explanation = "All the values in " + labelColumn + " column are anomaly because of " + rule
+      val explanation = "All the values in " + labelColumn + " column are anomaly because of " + mappedRule
       val anomalyList: Dataset[Row] =
         output1.filter(output1(labelColumn).isin(anomalies: _*))
 

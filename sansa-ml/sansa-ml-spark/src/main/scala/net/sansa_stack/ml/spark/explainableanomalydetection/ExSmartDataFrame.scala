@@ -222,28 +222,33 @@ object ExSmartDataFrame {
               col(colRealName).cast(DoubleType)
             )
           case "boolean" =>
-            data = data.withColumn(
-              c,
-              bool2int_udf(col(colRealName).cast(BooleanType))
-            )
+//            data = data.withColumn(
+//              c,
+//              bool2int_udf(col(colRealName).cast(BooleanType))
+//            )
+            val indexer = new StringIndexer()
+              .setInputCol(c)
+              .setOutputCol(colRealName + "_index")
+              .setHandleInvalid("skip")
+            data = indexer.fit(data).transform(data)
           case "String" =>
             val indexer = new StringIndexer()
               .setInputCol(c)
               .setOutputCol(colRealName + "_index")
-              .setHandleInvalid("keep")
+              .setHandleInvalid("skip")
             data = indexer.fit(data).transform(data)
 
           case "url" =>
             val indexer = new StringIndexer()
               .setInputCol(c)
               .setOutputCol(colRealName + "_index")
-              .setHandleInvalid("keep")
+              .setHandleInvalid("skip")
             data = indexer.fit(data).transform(data)
           case "unknown" =>
             val indexer = new StringIndexer()
               .setInputCol(c)
               .setOutputCol(colRealName + "_index")
-              .setHandleInvalid("keep")
+              .setHandleInvalid("skip")
             data = indexer.fit(data).transform(data)
           case "date" =>
             val indexer = new StringIndexer()
@@ -270,7 +275,7 @@ object ExSmartDataFrame {
             val indexer = new StringIndexer()
               .setInputCol(c)
               .setOutputCol(colRealName + "_index")
-              .setHandleInvalid("keep")
+              .setHandleInvalid("skip")
             data = indexer.fit(data).transform(data)
           //ToDo add other datatypes as well
         }
@@ -295,6 +300,6 @@ object ExSmartDataFrame {
    * @param b given boolean
    * @return a corespondnig integer
    */
-  def bool2int(b:Boolean) = if (b) 1 else 0
+  def bool2int(b:Boolean) = if (b) 1.0 else 0.0
 
 }
