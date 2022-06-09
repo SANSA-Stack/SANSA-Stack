@@ -13,6 +13,25 @@
     <artifactId>sansa-hadoop-jena</artifactId>
     <packaging>jar</packaging>
 
+    <build>
+	    <plugins>
+		    <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+		    <artifactId>scala-maven-plugin</artifactId>
+		    <executions>
+		                            <execution>
+						    <id>attach-javadocs</id>
+						    <phase>none</phase>
+<!--                           <goals>
+                                <goal>doc-jar</goal>
+</goals>-->
+		    </execution>
+	    </executions>
+
+	    </plugin>
+	    </plugins>
+    </build>
+
     <!--
         <properties>
             <timestamp>${maven.build.timestamp}</timestamp>
@@ -34,6 +53,14 @@
     -->
 
     <dependencies>
+	    <!-- If scala:doc-jar fails then enable this dependency to see the errors -->
+	    <!--
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+	</dependency>
+	    -->
+
 
         <dependency>
             <groupId>com.google.guava</groupId>

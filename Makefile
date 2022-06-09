@@ -1,7 +1,7 @@
 CWD = $(shell pwd)
 
 # Maven Clean Install Skip ; skip tests, javadoc, scaladoc, etc
-MS = mvn -DskipTests=true -Dmaven.javadoc.skip=true -Dskip
+MS = mvn -DskipTests -Dmaven.javadoc.skip=true -Dskip
 MCIS = $(MS) clean install
 
 # Source: https://stackoverflow.com/questions/4219255/how-do-you-get-the-list-of-targets-in-a-makefile
@@ -16,6 +16,9 @@ mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  
 rebuild-examples: ## rebuild and shade examples - they must be present for integration tests
 	$(MCIS) -am -pl :sansa-examples-spark_2.12 $(ARGS)
 	mvn -Pdist package -pl :sansa-examples-spark_2.12
+
+deploy-snapshot: ## deploy a snapshot of the modules up to ml
+	mvn -DskipTests deploy -pl :sansa-ml-spark_2.12 -am
 
 shade-examples: ## only shade the examples - use after manual rebuilt of specific modules
 	mvn -Pdist package -pl :sansa-examples-spark_2.12
