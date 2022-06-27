@@ -5,6 +5,7 @@ import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -12,15 +13,18 @@ import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
+import org.aksw.jenax.arq.util.node.NodeUtils;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.triple.TripleUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +48,7 @@ public class CmdSansaMapImpl {
     List<String> inputStrs = cmd.inputFiles;
 
     SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
-            .appName("Sansa Sort (" + cmd.inputFiles + ")")
+            .appName("Sansa Map (" + cmd.inputFiles + ")")
             .getOrCreate();
 
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
@@ -59,7 +63,19 @@ public class CmdSansaMapImpl {
 
     RdfSourceCollection rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 
-    writeOutRdfSources(rdfSources, rddRdfWriterFactory);
+    RdfSource rdfSource = rdfSources;
+    CmdSansaMap.MapOperation mapOp = cmd.mapOperation;
+    if (mapOp != null) {
+      if (Boolean.TRUE.equals(mapOp.defaultGraph)) {
+        rdfSource = RdfSources.ofTriples(rdfSource.asTriples().toJavaRDD());
+      } else if (mapOp.graphName != null) {
+        Node graphNode = NodeUtils.createGraphNode(mapOp.graphName);
+        RDD<Quad> rdd = JavaRddOfTriplesOps.mapIntoGraph(graphNode).apply(rdfSource.asTriples().toJavaRDD()).rdd();
+        rdfSource = RdfSources.ofQuads(rdd.toJavaRDD());
+      }
+    }
+
+    writeOutRdfSources(rdfSource, rddRdfWriterFactory);
 
     return 0; // exit code
   }
@@ -81,6 +97,7 @@ public class CmdSansaMapImpl {
       rddRdfWriter = rddRdfWriterFactory.forQuad(rdd);
     } else {
       JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
+
       rddRdfWriter = rddRdfWriterFactory.forTriple(rdd);
     }
     rddRdfWriter.runUnchecked();

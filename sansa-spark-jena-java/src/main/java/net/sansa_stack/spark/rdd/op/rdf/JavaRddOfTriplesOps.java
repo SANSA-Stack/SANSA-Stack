@@ -1,13 +1,21 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.util.string.StringUtils;
 import org.aksw.jena_sparql_api.io.json.RDFNodeJsonUtils;
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.out.NodeFmtLib;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import scala.Tuple2;
@@ -80,6 +88,19 @@ public class JavaRddOfTriplesOps {
         } else {
             throw new RuntimeException("Unknown node: " + node);
         }
+    }
+
+    public static JavaRDD<Model> mapToModel(JavaRDD<Triple> rdd) {
+        return rdd.map(triple -> {
+            Graph g = GraphFactory.createDefaultGraph();
+            g.add(triple);
+            Model r = ModelFactory.createModelForGraph(g);
+            return r;
+        });
+    }
+
+    public static JavaRddFunction<Triple, Quad> mapIntoGraph(Node graphNode) {
+        return rdd -> rdd.map(triple -> new Quad(graphNode, triple));
     }
 
     /** Sort quads by their string representation (relies on {@link NodeFmtLib#str}) */
