@@ -1,18 +1,16 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.common.DefaultPrefixes;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -22,9 +20,7 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Called from the Java class [[CmdSansaTarql]]
@@ -32,7 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class CmdSansaTarqlImpl {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
-    public static int run(CmdSansaTarql cmd) throws IOException {
+    public static int run(CmdSansaTarql cmd) throws Exception {
+        // Thread.sleep(10000); System.err.println("Done sleping");
 
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = cmd.inputFiles.subList(1, cmd.inputFiles.size());
@@ -44,6 +41,8 @@ public class CmdSansaTarqlImpl {
         }
 
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        rddRdfWriterFactory.setUseElephas(true);
+
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
@@ -60,7 +59,7 @@ public class CmdSansaTarqlImpl {
         csvCliOptions.copyInto(univocityConf.getDialect());
         univocityConf.setTabs(cmd.tabs);
 
-        FileInputFormatCsv.setUnivocityConfig(hadoopConf, univocityConf);
+        FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
 
         JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, csvFiles,
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,

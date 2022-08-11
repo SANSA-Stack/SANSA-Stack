@@ -13,8 +13,11 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * RecordReader for the Trig RDF format that groups consecutive quads having the
@@ -77,6 +80,14 @@ public class RecordReaderRdfTrigDataset
     }
 
     @Override
+    protected Stream<Quad> parse(InputStream in) {
+        Stream<Quad> result = RDFDataMgrRx.createFlowableQuads(() -> in, lang, baseIri).blockingStream();
+        System.out.println("isParallel: " + result.isParallel());
+        // Flowable<Dataset> result = RDFDataMgrRx.createFlowableDatasets(inputStreamSupplier, lang, baseIri);
+        return result;
+    }
+
+    // @Override
     protected Flowable<Quad> parse(Callable<InputStream> inputStreamSupplier) {
         Flowable<Quad> result = RDFDataMgrRx.createFlowableQuads(inputStreamSupplier, lang, baseIri);
         // Flowable<Dataset> result = RDFDataMgrRx.createFlowableDatasets(inputStreamSupplier, lang, baseIri);

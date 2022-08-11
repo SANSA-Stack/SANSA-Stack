@@ -109,8 +109,7 @@ public class CmdSansaMapImpl {
       logger.info(String.format("Optimization of prefixes reduced their number from %d to %d (of which %d originated from the sources)", initialPrefixCount, usedPmCount, declaredPrefixCount));
     }
 
-    logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
-
+    logger.info(String.format("Processing time: %.3f seconds", stopwatch.getTime(TimeUnit.MILLISECONDS) / 1000.0f));
   }
 }
 

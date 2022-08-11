@@ -2,9 +2,11 @@ package net.sansa_stack.hadoop;
 
 import com.google.common.collect.Range;
 import com.univocity.parsers.common.record.Record;
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -22,7 +24,18 @@ public class RecordReaderUnivocityCsvTestsFast
 
     @Override
     protected InputFormat getInputFormat() {
-        return new FileInputFormatCsv();
+        return new FileInputFormatCsvUnivocity();
+    }
+
+    @Override
+    protected void configureHadoop(Configuration conf) {
+        super.configureHadoop(conf);
+        UnivocityHadoopConf csvConf = new UnivocityHadoopConf();
+        // TODO What should be the default csv settings w.r.t. to headers?
+        // Probably headers should be assumed
+        csvConf.getDialect().setHeaderRowCount(1l);
+        csvConf.getDialect().setHeader(true);
+        FileInputFormatCsvUnivocity.setUnivocityConfig(conf, csvConf);
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.apache.jena.riot.Lang;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RecordReaderRdfTurtleTriple
         extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
@@ -55,6 +56,11 @@ public class RecordReaderRdfTurtleTriple
     }
 
     @Override
+    protected Stream<Triple> parse(InputStream in) {
+        Stream<Triple> result = RDFDataMgrRx.createFlowableTriples(() -> in, lang, baseIri).blockingStream();
+        return result;
+    }
+
     protected Flowable<Triple> parse(Callable<InputStream> inputStreamSupplier) {
         Flowable<Triple> result = RDFDataMgrRx.createFlowableTriples(inputStreamSupplier, lang, baseIri);
         return result;

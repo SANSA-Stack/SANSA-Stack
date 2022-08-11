@@ -1,12 +1,11 @@
 package net.sansa_stack.spark.io.csv.input;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.LongWritable;
@@ -65,7 +64,7 @@ public class CsvDataSources {
             Function<List<String>, Binding> mapper)
     {
         Configuration conf = sc.hadoopConfiguration();
-        FileInputFormatCsv.setUnivocityConfig(conf, univocityConf);
+        FileInputFormatCsvUnivocity.setUnivocityConfig(conf, univocityConf);
 
         JavaRDD<List<String>> rdd;
         if (false) {
@@ -76,7 +75,7 @@ public class CsvDataSources {
         } else {
             // Univocity CSV
             rdd = sc.newAPIHadoopFile(path,
-                    net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsv.class, LongWritable.class, String[].class, conf)
+                    FileInputFormatCsvUnivocity.class, LongWritable.class, String[].class, conf)
                     .map(t -> Arrays.asList( t._2));
         }
         JavaRDD<Binding> bindingRdd = rdd.map(mapper);

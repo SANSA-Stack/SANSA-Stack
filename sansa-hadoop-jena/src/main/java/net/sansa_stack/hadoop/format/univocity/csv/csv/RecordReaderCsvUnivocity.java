@@ -1,5 +1,7 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
 import com.univocity.parsers.common.AbstractParser;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
@@ -21,15 +23,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
  * CSV rows must all have the same length.
  *
+ * Note the csvw dialect "header" attribute is interpreted slightly differently: It controls whether to use
+ * the given header names (true) or generate excel header names (false) ("a", "b", ..., "aa", ...)
+ * The skip
+ *
  */
-public class RecordReaderCsv
+public class RecordReaderCsvUnivocity
     extends RecordReaderGenericBase<String[], String[], String[], String[]>
 {
     // private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsv.class);
@@ -51,6 +59,8 @@ public class RecordReaderCsv
     /* Factory for parsers (csv/tsv) according to configuration. Initialized during initialize() */
     protected Dialect requestedDialect;
     protected UnivocityParserFactory parserFactory;
+
+    protected long postProcessRowSkipCount;
 
     /**
      * Create a regex for matching csv record starts.
@@ -94,7 +104,7 @@ public class RecordReaderCsv
     //"(([^\"]{0,1000}(\"\")?){0,100}\"(?:\r?\n|,|$))?[^,\n]*.", // horrible backtracking; times out
     //"\n(?!.{0,50000}(?<!\")\"(\r?\n|,|$))" // somewhat works but too slow!
 
-    public RecordReaderCsv() {
+    public RecordReaderCsvUnivocity() {
         this(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
@@ -102,7 +112,7 @@ public class RecordReaderCsv
                 null);
     }
 
-    public RecordReaderCsv(
+    public RecordReaderCsvUnivocity(
             String minRecordLengthKey,
             String maxRecordLengthKey,
             String probeRecordCountKey,
@@ -116,7 +126,7 @@ public class RecordReaderCsv
 
         Configuration conf = context.getConfiguration();
 
-        UnivocityHadoopConf parserConf = FileInputFormatCsv.getUnivocityConfig(conf);
+        UnivocityHadoopConf parserConf = FileInputFormatCsvUnivocity.getUnivocityConfig(conf);
         DialectMutable tmp = new DialectMutableImpl();
         parserConf.getDialect().copyInto(tmp);
         requestedDialect = tmp;
@@ -126,9 +136,11 @@ public class RecordReaderCsv
         this.recordStartPattern = CustomPatternCsv.create(config);
         // createStartOfCsvRecordPattern(cellMaxLength);
 
+        postProcessRowSkipCount = Optional.ofNullable(parserConf.getDialect().getHeaderRowCount()).orElse(0l);
 
-        // The header record (if any) is skipped only in postprocessing by createRecordFlow()
-        parserConf.getDialect().setHeader(false);
+
+        // Configure the parser to parse all rows
+        parserConf.getDialect().setHeaderRowCount(0l);
         this.parserFactory = UnivocityParserFactory.createDefault(false).configure(parserConf);
         // this.effectiveCsvFormat = disableSkipHeaderRecord(requestedTabularFormat);
     }
@@ -140,13 +152,73 @@ public class RecordReaderCsv
 //    }
 
     /** State class used for Flowable.generate */
-    private static class State {
+    private static class State
+        extends AbstractIterator<String[]>
+        implements AutoCloseable
+    {
         public Reader reader;
+        public Callable<AbstractParser<?>> parserFactory;
         public AbstractParser<?> parser = null;
         public long seenRowLength = -1;
         public String[] priorRow = null;
 
-        State(Reader reader) { this.reader = reader; }
+        State(Callable<AbstractParser<?>> parserFactory, Reader reader) { this.parserFactory = parserFactory; this.reader = reader; }
+
+        @Override
+        protected String[] computeNext() {
+            String[] result;
+
+            // AbstractParser<?> it = parser;
+            if (parser == null) {
+                try {
+                    parser = parserFactory.call();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                parser.beginParsing(reader);
+            }
+
+            String[] row;
+            if ((row = parser.parseNext()) == null) {
+                result = endOfData();
+            } else {
+
+                long rowLength = row.length;
+                if (seenRowLength == -1) {
+                    seenRowLength = rowLength;
+                } else if (rowLength != seenRowLength) {
+                                /*
+                                String msg = String.format("Current row length (%d) does not match prior one (%d)", rowLength, s.seenRowLength);
+                                logger.error(msg);
+                                logger.error("Prior row: " + s.priorRow);
+                                logger.error("Current row: " + row);
+                                 */
+                    String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, seenRowLength, Arrays.asList(row), Arrays.asList(priorRow));
+                    throw new IllegalStateException(msg);
+                }
+                priorRow = row;
+                result = row;
+            }
+
+            return result;
+        }
+
+        @Override
+        public void close() {
+            try {
+                if (parser != null) {
+                    parser.stopParsing();
+                }
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -155,28 +227,36 @@ public class RecordReaderCsv
      * This assumes that the header actually resides on the first split!
      */
     @Override
-    protected Flowable<String[]> createRecordFlow() throws IOException {
-        Flowable<String[]> tmp = super.createRecordFlow();
+    protected Stream<String[]> createRecordFlow() throws IOException {
+        Stream<String[]> tmp = super.createRecordFlow();
 
         // Header is true by default
-        if (!Boolean.FALSE.equals(requestedDialect.getHeader()) && isFirstSplit) {
-            tmp = tmp.skip(1);
+        // if (!Boolean.FALSE.equals(requestedDialect.getHeader()) && isFirstSplit) {
+        if (isFirstSplit && postProcessRowSkipCount > 0) {
+            tmp = tmp.skip(postProcessRowSkipCount);
+            // tmp = tmp.skip(1);
         }
 
         return tmp;
     }
 
-    @Override
-    protected Flowable<String[]> parse(Callable<InputStream> inputStreamSupplier) {
 
+    protected Stream<String[]> parse(InputStream in) {
+        State it = new State(parserFactory::newParser, parserFactory.newInputStreamReader(in));
+        Stream<String[]> result = Streams.stream(it).onClose(it::close);
+        return result;
+        // return parse(() -> in).blockingStream();
+    }
+
+    // @Override
+    protected Flowable<String[]> parse(Callable<InputStream> inputStreamSupplier) {
         return Flowable.generate(
-                () -> new State(parserFactory.newInputStreamReader(inputStreamSupplier.call())),
+                () -> new State(parserFactory::newParser, parserFactory.newInputStreamReader(inputStreamSupplier.call())),
                 (s, e) -> {
 //                    BufferedReader br = new BufferedReader(s.reader);
 //                    List<String> lines = br.lines().limit(2).collect(Collectors.toList());
 //                    System.out.println("Lines: " + lines);
 //                    if (true) throw new RuntimeException("dummy exception");
-
                     try {
                         AbstractParser<?> it = s.parser;
                         if (it == null) {

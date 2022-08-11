@@ -42,9 +42,13 @@ public class UnivocityParserFactory {
     public static void applyDefaults(CommonParserSettings settings, Boolean skipHeaders) {
         settings.setMaxCharsPerColumn(500000);
         settings.setAutoClosingEnabled(false);
-        settings.setLineSeparatorDetectionEnabled(true);
+        //settings.setLineSeparatorDetectionEnabled(true);
+        settings.setLineSeparatorDetectionEnabled(false);
         settings.trimValues(false);
         settings.setHeaderExtractionEnabled(!Boolean.FALSE.equals(skipHeaders));
+
+        // Concurrent read must be false or non-deterministic errors are likely occur!
+        settings.setReadInputOnSeparateThread(false);
     }
 
     public UnivocityParserFactory configure(UnivocityHadoopConf conf) {

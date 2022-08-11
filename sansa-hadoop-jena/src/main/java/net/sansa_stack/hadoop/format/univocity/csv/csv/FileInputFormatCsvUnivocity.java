@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
-public class FileInputFormatCsv
+public class FileInputFormatCsvUnivocity
         extends FileInputFormat<LongWritable, String[]> {
 
     // Namespace for csv settings
@@ -32,7 +32,7 @@ public class FileInputFormatCsv
         return result;
     }
 
-    public FileInputFormatCsv() {
+    public FileInputFormatCsvUnivocity() {
     }
 
     @Override
@@ -45,7 +45,7 @@ public class FileInputFormatCsv
 
     @Override
     public RecordReader<LongWritable, String[]> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
-        return new RecordReaderCsv();
+        return new RecordReaderCsvUnivocity();
     }
 
 }

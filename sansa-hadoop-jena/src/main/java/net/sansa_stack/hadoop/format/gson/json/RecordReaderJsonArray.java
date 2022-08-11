@@ -1,5 +1,7 @@
 package net.sansa_stack.hadoop.format.gson.json;
 
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -14,8 +16,10 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 import java.io.*;
 import java.util.AbstractMap;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RecordReaderJsonArray
     extends RecordReaderGenericBase<JsonElement, JsonElement, JsonElement, JsonElement>
@@ -83,7 +87,102 @@ public class RecordReaderJsonArray
     }
 
 
-    @Override
+    public static class JsonElementIterator
+                extends AbstractIterator<JsonElement>
+                implements AutoCloseable {
+
+        public JsonElementIterator(Gson gson, JsonReader reader) {
+            this.gson = gson;
+            this.reader = reader;
+            this.isFirstElt = false;
+        }
+
+        protected Gson gson;
+
+            protected JsonReader reader;
+            protected boolean isFirstElt;
+
+
+
+            @Override
+            protected JsonElement computeNext() {
+                JsonElement result;
+                try {
+
+                    if (!isFirstElt) {
+                        isFirstElt = true;
+                        try {
+                            reader.beginArray();
+                        } catch (EOFException x) {
+                            result = endOfData();
+                            return result;
+                        }
+                    }
+
+                    if (reader.hasNext()) {
+                        JsonElement item = gson.fromJson(reader, JsonElement.class);
+                        result = item;
+                        // System.out.println("READ: " + item);
+                    } else {
+                        reader.endArray();
+
+                        // hasNext() seems to return true if there is another token
+                        // However it may be JsonToken.END_DOCUMENT which actually means there is no
+                        // more actual data
+                        boolean hasMore;
+                        try {
+                            hasMore = reader.hasNext();
+                        } catch (Exception y) {
+                            // System.out.println("WARN: " + y);
+
+                            // hasNext() may raise MalformedJsonException
+                            // this means that there is more data even though we cannot parse it
+                            hasMore = true;
+                        }
+
+                        if (hasMore) {
+                            JsonElement nextItem = null;
+                            try {
+                                nextItem = gson.fromJson(reader, JsonElement.class);
+                            } catch (IllegalArgumentException y) {
+                                // System.out.println("COMPLETED!");
+                                result = endOfData();
+                            }
+
+                            if (nextItem != null) {
+                                throw new RuntimeException("More items found after array end: " + nextItem);
+                            }
+                            result = null; // TODO We should probably never come here but the logic is confusing
+                        } else {
+                            // System.out.println("COMPLETED!");
+                            result = endOfData();
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return result;
+            }
+
+
+        @Override
+        public void close() {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        }
+    }
+
+    protected Stream<JsonElement> parse(InputStream in) {
+        JsonElementIterator it = new JsonElementIterator(gson, gson.newJsonReader(new InputStreamReader(in)));
+        return Streams.stream(it).onClose(it::close);
+    }
+
+    // @Override
     protected Flowable<JsonElement> parse(Callable<InputStream> inputStreamSupplier) {
         return Flowable.generate( // <JsonElement, Map.Entry<JsonReader, Boolean>>
                 () -> {

@@ -1,9 +1,12 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
+import com.google.common.collect.Streams;
+import org.aksw.commons.util.stream.StreamFunction;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.Function2;
+import scala.Tuple2;
 
 import java.util.Collections;
 import java.util.function.BiConsumer;
@@ -62,5 +65,14 @@ public class JavaRddOps {
 
         R finishedResult = collector.finisher().apply(unfinishedResult);
         return finishedResult;
+    }
+
+    /** Map operation based on a flowable transformer */
+    public static <I, O> JavaRDD<O> mapPartitions(JavaRDD<I> rdd, StreamFunction<I, O> fn) {
+        return rdd.mapPartitions(it -> fn.apply(Streams.stream(it)).iterator());
+    }
+
+    public static <K, V, O> JavaRDD<O> mapPartitions(JavaPairRDD<K, V> rdd, StreamFunction<Tuple2<K, V>, O> fn) {
+        return rdd.mapPartitions(it -> fn.apply(Streams.stream(it)).iterator());
     }
 }

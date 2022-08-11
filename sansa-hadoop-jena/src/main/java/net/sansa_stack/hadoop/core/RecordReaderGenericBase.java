@@ -12,7 +12,8 @@ import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
 import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
 import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
 import org.aksw.commons.io.seekable.api.Seekable;
-import org.aksw.commons.rx.op.FlowableOperatorSequentialGroupBy;
+import org.aksw.commons.util.stream.SequentialGroupBySpec;
+import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
 import org.aksw.jena_sparql_api.io.binseach.BufferOverInputStream;
 import org.aksw.jena_sparql_api.io.binseach.CharSequenceFromSeekable;
 import org.apache.commons.io.IOUtils;
@@ -39,16 +40,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * A generic record reader that uses a callback mechanism to detect a consecutive sequence of records
  * that must start in the current split and which may extend over any number of successor splits.
- * The callback that needs to be implemented is {@link #parse(Callable)}.
+ * The callback that needs to be implemented is {@link #parse(InputStream)}.
  * This method receives a supplier of input streams and must return an RxJava {@link Flowable} over such an
  * input stream.
  * Note that in constrast to Java Streams, RxJava Flowables idiomatically
@@ -123,6 +124,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected AtomicLong currentKey = new AtomicLong();
     protected T currentValue; // = DatasetFactory.create();
 
+    protected Runnable recordFlowCloseable;
     protected Iterator<T> datasetFlow;
 
     protected Decompressor decompressor;
@@ -216,7 +218,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         org.apache.hadoop.fs.Path file = split.getPath();
 
-        codec = new CompressionCodecFactory(job).getCodec(file);
+        CompressionCodecFactory compressionCodecFactory = new CompressionCodecFactory(job);
+        codec = compressionCodecFactory.getCodec(file);
+
         // var streamFactory: Long => (InputStream, Long, Long) = null
 
         if (null != codec) {
@@ -235,10 +239,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // val (arr, extraLength) = readToBuffer(stream, isEncoded, splitStart, splitEnd, desiredExtraBytes)
         // println("TRIGREADER READ " + arr.length + " bytes (including " + desiredExtraBytes + " extra) in " + sw.elapsed(TimeUnit.MILLISECONDS) + " ms")
 
-        Flowable<T> tmp = createRecordFlow();
-        datasetFlow = tmp
-                .doOnError(t -> raisedThrowable = t).onErrorComplete()
-                .blockingIterable().iterator();
+        Stream<T> tmp = createRecordFlow();
+        recordFlowCloseable = tmp::close;
+        datasetFlow = tmp.iterator();
     }
 
     /**
@@ -246,13 +249,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * The input stream may be incorrectly positioned in which case the Flowable
      * is expected to indicate this by raising an error event.
      *
-     * @param inputStreamSupplier A supplier of input streams. May supply the same underlying stream
-     *                            on each call hence only at most a single stream should be taken from the supplier.
-     *                            Supplied streams are safe to use in try-with-resources blocks (possibly using CloseShieldInputStream).
-     *                            Taken streams should be closed by the client code.
+     * @param inputStream A supplier of input streams. May supply the same underlying stream
+     *                    on each call hence only at most a single stream should be taken from the supplier.
+     *                    Supplied streams are safe to use in try-with-resources blocks (possibly using CloseShieldInputStream).
+     *                    Taken streams should be closed by the client code.
      * @return
      */
-    protected abstract Flowable<U> parse(Callable<InputStream> inputStreamSupplier);
+    protected abstract Stream<U> parse(InputStream inputStream);
 
     /**
      * Seek to a given offset and prepare to read up to the 'end' position (exclusive)
@@ -273,14 +276,15 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             if (decompressor != null) {
                 // Not sure if returning a decompressor resets its state properly in all cases
                 // may want to comment the line out
-                CodecPool.returnDecompressor(decompressor);
+                // CodecPool.returnDecompressor(decompressor);
             }
 
-            decompressor = CodecPool.getDecompressor(codec);
+            decompressor = codec.createDecompressor(); // CodecPool.getDecompressor(codec);
 
             if (codec instanceof SplittableCompressionCodec) {
                 SplittableCompressionCodec scc = (SplittableCompressionCodec) codec;
 
+                // System.out.println(String.format("Setting stream to start %d - end %d", start, end));
                 SplitCompressionInputStream tmp = scc.createInputStream(rawStream, decompressor, start, end,
                         SplittableCompressionCodec.READ_MODE.BYBLOCK);
 
@@ -367,24 +371,24 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param tailItems The first set of group items after in the next split
      * @return
      */
-    protected Flowable<T> aggregate(boolean isFirstSplit, Flowable<U> splitFlow, List<U> tailItems) {
+    protected Stream<T> aggregate(boolean isFirstSplit, Stream<U> splitFlow, List<U> tailItems) {
         // We need to be careful to not return null as a flow item:
         // FlowableOperatorSequentialGroupBy returns a stream of (key, accumulator) pairs
         // Returning a null accumulator is ok as long it resides within the pair
+        SequentialGroupBySpec<U, G, A> spec = SequentialGroupBySpec.create(
+                accumulating::classify,
+                (accNum, groupKey) -> !isFirstSplit && accNum == 0
+                        ? null
+                        : accumulating.createAccumulator(groupKey),
+                accumulating::accumulate);
 
-        Flowable<T> result = splitFlow
-                .concatWith(Flowable.fromIterable(tailItems))
-                .lift(FlowableOperatorSequentialGroupBy.create(
-                        accumulating::classify,
-                        (accNum, groupKey) -> !isFirstSplit && accNum == 0
-                                ? null
-                                : accumulating.createAccumulator(groupKey),
-                        accumulating::accumulate))
-                .compose(flowable -> isFirstSplit ? flowable : flowable.skip(1))
+        Stream<T> result = StreamOperatorSequentialGroupBy.create(spec)
+                .transform(Stream.concat(splitFlow, tailItems.stream()))
                 .map(e -> accumulating.accumulatedValue(e.getValue()));
-
-//        List<T> tmp = result.toList().blockingGet();
-//        result = Flowable.fromIterable(tmp);
+        if (!isFirstSplit) {
+            result = result.skip(1);
+        }
+        // Stream<T> result = entryStream.map(e -> accumulating.accumulatedValue(e.getValue()));
         return result;
     }
 
@@ -411,10 +415,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return result;
     }
 
-    protected Flowable<U> parseFromSeekable(Seekable seekable) {
-        Callable<InputStream> inSupp = () -> effectiveInputStreamSupp(seekable);
-        // long pos = getPos(seekable);
-        Flowable<U> r = parse(inSupp);
+    protected Stream<U> parseFromSeekable(Seekable seekable) {
+        InputStream in = effectiveInputStreamSupp(seekable);
+        Stream<U> r = parse(in);
         return r;
     }
 
@@ -422,19 +425,22 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // long pos = getPos(seekable);
 
         // printSeekable(seekable)
-        long recordCount = parseFromSeekable(seekable)
-                // .doOnError(t -> t.printStackTrace())
-                .take(probeRecordCount)
-                .count()
-                .onErrorReturnItem(-1L)
-                .blockingGet();
+        long recordCount;
+        try (Stream<U> stream = parseFromSeekable(seekable)
+                    .limit(probeRecordCount)) {
+                recordCount = stream.count();
+        } catch (Throwable e) {
+            recordCount = -1;
+        }
+                    // .collect(Collectors.toCollection(() -> new ArrayList<>(probeRecordCount)));
+
         boolean foundValidRecordOffset = recordCount > 0;
 
         // System.out.println(String.format("Probing at pos %s: %b", pos, foundValidRecordOffset));
         return foundValidRecordOffset;
     }
 
-    protected Flowable<T> createRecordFlow() throws IOException {
+    protected Stream<T> createRecordFlow() throws IOException {
 
         String splitName = split.getPath().getName();
         String splitId = splitName + ":" + splitStart + "+" + splitLength;
@@ -478,12 +484,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         // lines(tailNav).limit(100).forEach(System.out::println);
 
-        List<U> tailItems = parseFromSeekable(tailNav)
-                .lift(FlowableOperatorSequentialGroupBy.create(accumulating::classify, () -> (List<U>)new ArrayList(), Collection::add))
+        SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(
+                accumulating::classify, () -> (List<U>)new ArrayList(), Collection::add);
+
+        List<U> tailItems = StreamOperatorSequentialGroupBy.create(spec)
+                .transform(parseFromSeekable(tailNav))
                 .map(Map.Entry::getValue)
-                .first(Collections.emptyList())
-                 // .firstElement()
-                .blockingGet();
+                .findFirst().orElse(Collections.emptyList());
 
         long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
         logger.info(String.format("In split %s got %d tail items at pos %d within %d bytes read in %d ms",
@@ -684,9 +691,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 ExceptionUtils::getStackTrace, RecordReaderGenericBase::logClose);
 
 
-        Flowable<T> result = null;
+        Stream<T> result = null;
         if (headBytes >= 0) {
-            result = aggregate(isFirstSplit, parse(() -> fullStream), tailItems);
+            result = aggregate(isFirstSplit, parse(fullStream), tailItems);
 
             // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
             // nav.setPos(effectiveRecordRangeStart - splitStart)
@@ -695,7 +702,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // .onErrorReturnItem(EMPTY_DATASET)
             // .filter(isNonEmptyDataset)
         } else {
-            result = Flowable.empty();
+            result = Stream.empty();
         }
 
         //    val cnt = result
@@ -953,18 +960,25 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     @Override
     public void close() throws IOException {
         try {
-            // Stream apparently can be null if hadoop aborts a record reader early due
-            // an encountered error (not necessarily related to this instance)
-            if (rawStream != null) {
-                // Under normal operation this close is redundant because the stream is owned
-                // by the flowable which closes it the moment it has consumed the last item
-                rawStream.close();
-                rawStream = null;
+            if (recordFlowCloseable != null) {
+                recordFlowCloseable.run();
             }
         } finally {
-            if (this.decompressor != null) {
-                CodecPool.returnDecompressor(this.decompressor);
-                this.decompressor = null;
+
+            try {
+                // Stream apparently can be null if hadoop aborts a record reader early due
+                // an encountered error (not necessarily related to this instance)
+                if (rawStream != null) {
+                    // Under normal operation this close is redundant because the stream is owned
+                    // by the flowable which closes it the moment it has consumed the last item
+                    rawStream.close();
+                    rawStream = null;
+                }
+            } finally {
+                if (this.decompressor != null) {
+                    CodecPool.returnDecompressor(this.decompressor);
+                    this.decompressor = null;
+                }
             }
         }
     }

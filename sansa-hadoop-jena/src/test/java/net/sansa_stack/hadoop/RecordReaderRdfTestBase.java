@@ -76,7 +76,7 @@ public abstract class RecordReaderRdfTestBase<T> {
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
         conf.set(RecordReaderRdfTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
-        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "1");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "2");
 
         configureHadoop(conf);
 

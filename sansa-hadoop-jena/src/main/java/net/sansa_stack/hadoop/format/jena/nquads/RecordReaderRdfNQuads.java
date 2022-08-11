@@ -12,6 +12,7 @@ import org.apache.jena.sparql.core.Quad;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RecordReaderRdfNQuads
         extends RecordReaderGenericRdfNonAccumulatingBase<Quad>
@@ -38,6 +39,11 @@ public class RecordReaderRdfNQuads
     }
 
     @Override
+    protected Stream<Quad> parse(InputStream in) {
+        Stream<Quad> result = RDFDataMgrRx.createFlowableQuads(() -> in, lang, baseIri).blockingStream();
+        return result;
+    }
+
     protected Flowable<Quad> parse(Callable<InputStream> inputStreamSupplier) {
         Flowable<Quad> result = RDFDataMgrRx.createFlowableQuads(inputStreamSupplier, lang, baseIri);
         return result;

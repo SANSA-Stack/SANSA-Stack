@@ -269,7 +269,23 @@ public class RddRdfWriter<T>
             effectiveRdd = effectiveRdd.coalesce(1);
         }
 
+        boolean useOldElephas = false;
+
         if (useElephas) {
+            RddRdfWriter2 writer =  new RddRdfWriter2(outputFormat, mapQuadsToTriplesForTripleLangs, globalPrefixMapping);
+            Lang lang = outputFormat.getLang();
+
+            if (RDFLanguages.isTriples(lang)) {
+                JavaRDD<Triple> triples = dispatcher.convertToTriple.apply(effectiveRdd);
+                writer.writeTriples(triples.rdd(), effPartitionFolder);
+            } else if (RDFLanguages.isQuads(lang)) {
+                JavaRDD<Quad> quads = dispatcher.convertToQuad.apply(effectiveRdd);
+                writer.writeQuads(quads.rdd(), effPartitionFolder);
+            } else {
+                throw new IllegalStateException(String.format("Language %s is neiter triples nor quads", lang));
+            }
+
+        } else if (useOldElephas) {
             Lang lang = RDFLanguages.filenameToLang(effPartitionFolder.toString());
             Objects.requireNonNull(String.format("Could not determine language from path %s ", effPartitionFolder));
 
@@ -528,6 +544,7 @@ public class RddRdfWriter<T>
             PrefixMapping globalPrefixMapping,
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF) throws IOException {
 
+
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(javaRdd.context());
 
         Lang lang = rdfFormat.getLang();
@@ -597,6 +614,7 @@ public class RddRdfWriter<T>
 //                entry.getOutputFormatClass(),
 //                hadoopConfiguration);
 //    }
+
 
     public static <T> void saveUsingElephas(
             JavaRDD<T> rdd,

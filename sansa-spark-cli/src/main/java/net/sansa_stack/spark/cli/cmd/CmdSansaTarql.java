@@ -44,6 +44,9 @@ public class CmdSansaTarql
     @CommandLine.Mixin
     public DialectMutable csvOptions = PicocliMixinCsvw.of(new DialectMutableImpl());
 
+    // @Option(names = { "--force-alloc-names" }, description = "Allocate column names even if headers are present; default: ${DEFAULT-VALUE}", defaultValue="false")
+    // public boolean forceAllocColumnNames = false;
+
     @CommandLine.Mixin
     public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
 

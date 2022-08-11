@@ -1,5 +1,7 @@
 package net.sansa_stack.hadoop.format.commons_csv.csv;
 
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
@@ -19,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
@@ -115,14 +118,66 @@ public class RecordReaderCsv
     }
 
     /** State class used for Flowable.generate */
-    private static class State {
+    private static class State
+        extends AbstractIterator<List> implements AutoCloseable
+    {
         public Reader reader;
+        public CSVFormat effectiveCsvFormat;
+
         public CSVParser csvParser = null;
         public Iterator<CSVRecord> iterator;
         public long seenRowLength = -1;
         public List<String> priorRow = null;
 
-        State(Reader reader) { this.reader = reader; }
+        State(Reader reader, CSVFormat effectiveCsvFormat) { this.reader = reader; this.effectiveCsvFormat = effectiveCsvFormat; }
+
+        @Override
+        protected List computeNext() {
+            List result;
+            Iterator<CSVRecord> it = iterator;
+            if (it == null) {
+                try {
+                    csvParser = new CSVParser(reader, effectiveCsvFormat);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                it = iterator = csvParser.iterator();
+            }
+
+            if (!it.hasNext()) {
+                result = endOfData();
+            } else {
+                CSVRecord csvRecord = it.next();
+                List<String> row = csvRecord.toList();
+
+                long rowLength = row.size();
+                if (seenRowLength == -1) {
+                    seenRowLength = rowLength;
+                } else if (rowLength != seenRowLength) {
+                            /*
+                            String msg = String.format("Current row length (%d) does not match prior one (%d)", rowLength, s.seenRowLength);
+                            logger.error(msg);
+                            logger.error("Prior row: " + s.priorRow);
+                            logger.error("Current row: " + row);
+                             */
+                    String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, seenRowLength, row, priorRow);
+                    throw new IllegalStateException(msg);
+                }
+                priorRow = row;
+                result = row;
+            }
+
+            return result;
+        }
+
+        @Override
+        public void close() {
+            try {
+                csvParser.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -131,21 +186,21 @@ public class RecordReaderCsv
      * This assumes that the header actually resides on the first split!
      */
     @Override
-    protected Flowable<List> createRecordFlow() throws IOException {
-        Flowable<List> tmp = super.createRecordFlow();
-
+    protected Stream<List> createRecordFlow() throws IOException {
+        Stream<List> tmp = super.createRecordFlow();
         if (requestedCsvFormat.getSkipHeaderRecord() && isFirstSplit) {
             tmp = tmp.skip(1);
         }
-
         return tmp;
     }
 
     @Override
-    protected Flowable<List> parse(Callable<InputStream> inputStreamSupplier) {
-
+    protected Stream<List> parse(InputStream in) {
+        State it = new State(new InputStreamReader(in), effectiveCsvFormat);
+        return Streams.stream(it).onClose(it::close);
+/*
         return Flowable.generate(
-                () -> new State(new InputStreamReader(inputStreamSupplier.call())),
+                () -> new State(new InputStreamReader(in)),
                 (s, e) -> {
 //                    BufferedReader br = new BufferedReader(s.reader);
 //                    List<String> lines = br.lines().limit(2).collect(Collectors.toList());
@@ -174,7 +229,7 @@ public class RecordReaderCsv
                                 logger.error(msg);
                                 logger.error("Prior row: " + s.priorRow);
                                 logger.error("Current row: " + row);
-                                 */
+                                 * /
                                 String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, s.seenRowLength, row, s.priorRow);
                                 throw new IllegalStateException(msg);
                             }
@@ -187,5 +242,6 @@ public class RecordReaderCsv
                     }
                 },
                 s -> s.csvParser.close());
+ */
     }
 }

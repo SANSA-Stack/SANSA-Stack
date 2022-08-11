@@ -6,7 +6,12 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 
-public interface RdfSource {
+/**
+ * An RdfSource is a NodeTupleSource with tuple size either 3 or 4.
+ */
+public interface RdfSource
+    extends NodeTupleSource
+{
     /** Whether this source is based on a quad model */
     boolean usesQuads();
 
