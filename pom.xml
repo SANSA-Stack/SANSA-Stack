@@ -1669,7 +1669,9 @@
 
                     <configuration>
                         <useFile>false</useFile>
-                        <disableXmlReport>true</disableXmlReport>
+			<disableXmlReport>true</disableXmlReport>
+			<!-- <argLine>-disableassertions</argLine> --> <!-- Some channel classes may introduce too much overhead with assertions enabled -->
+
                         <!--						<threadCountSuites>4</threadCountSuites>-->
                         <!-- If you have classpath issue like NoDefClassError,... -->
                         <!-- useManifestOnlyJar>false</useManifestOnlyJar -->

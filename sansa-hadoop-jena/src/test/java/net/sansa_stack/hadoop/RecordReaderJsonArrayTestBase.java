@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Test cases for the {@link RecordReaderJsonArray}:
@@ -121,8 +122,9 @@ public abstract class RecordReaderJsonArrayTestBase {
         // inputFormat.getSplits(job);
 
         JsonArray actual = new JsonArray();
-        RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
-                .forEach(actual::add);
+        try (Stream<JsonElement> stream = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)) {
+                stream.forEach(actual::add);
+        }
 
 
         Assert.assertEquals(expected, actual);

@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.aksw.commons.rx.util.RxUtils;
 import org.aksw.commons.util.concurrent.CompletionTracker;
@@ -213,9 +214,17 @@ public class AsyncRdfParserHadoop {
 
             for (InputSplit split : splits) {
                 completionTracker.execute(() -> {
+                    try (Stream<?> stream = FileSplitUtils.createFlow(job, inputFormat, split)
+                            .map(record -> { sendRecordToStreamRDF.accept(record, sink); return 0; })) {
+                            stream.count();
+                    }
+
+                    /*
                     RxUtils.consume(
                         FileSplitUtils.createFlow(job, inputFormat, split)
                             .map(record -> { sendRecordToStreamRDF.accept(record, sink); return 0; }));
+                            * /
+                     */
                 });
             }
 

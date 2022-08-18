@@ -122,11 +122,12 @@ public abstract class RecordReaderCsvTestBase<T> {
 
 
         Throwable[] error = new Throwable[]{null};
-        RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
-                .map(this::recordToList)
-                .doOnError(t -> error[0] = t)
-                .onErrorComplete()
-                .forEach(actual::add);
+        try (Stream<List<String>> stream = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
+                .map(this::recordToList)) {
+            // .doOnError(t -> error[0] = t)
+            // .onErrorComplete()
+                stream.forEach(actual::add);
+        }
 
         if (error[0] != null) {
             throw new RuntimeException(error[0]);

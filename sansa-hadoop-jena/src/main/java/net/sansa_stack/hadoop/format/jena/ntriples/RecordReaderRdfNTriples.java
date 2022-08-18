@@ -4,9 +4,12 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
+import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.lang.LabelToNode;
+import org.apache.jena.riot.system.AsyncParser;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -39,7 +42,13 @@ public class RecordReaderRdfNTriples
 
     @Override
     protected Stream<Triple> parse(InputStream in) {
-        Stream<Triple> result = RDFDataMgrRx.createFlowableTriples(() -> in, lang, baseIri).blockingStream();
+        Stream result = AsyncParser.of(in, lang, baseIri).setChunkSize(100)
+                .mutateSources(parser -> parser
+                        .labelToNode(RDFDataMgrRx.createLabelToNodeAsGivenOrRandom())
+                        .resolver(IRIxResolverUtils.newIRIxResolverAsGiven()))
+                .streamTriples();
+
+        // Stream<Triple> result = RDFDataMgrRx.createFlowableTriples(() -> in, lang, baseIri).blockingStream();
         return result;
     }
 

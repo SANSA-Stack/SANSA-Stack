@@ -11,6 +11,10 @@ import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
 import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
 import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
 import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
+import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
+import org.aksw.commons.io.input.ReadableChannel;
+import org.aksw.commons.io.input.ReadableChannels;
+import org.aksw.commons.io.input.SeekableReadableChannel;
 import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.util.stream.SequentialGroupBySpec;
 import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
@@ -36,6 +40,8 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -156,6 +162,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     // Will be set in case an error occurs
     protected Throwable raisedThrowable = null;
 
+    protected String splitName;
+    protected String splitId;
+
     public RecordReaderGenericBase(
             String minRecordLengthKey,
             String maxRecordLengthKey,
@@ -210,6 +219,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         splitEnd = splitStart + splitLength;
 
         isFirstSplit = splitStart == 0;
+
+        splitName = split.getPath().getName();
+        splitId = splitName + ":" + splitStart + "+" + splitLength;
 
         // maxRecordLength = Math.min(maxRecordLength, splitLength)
         // println("Split length = " + splitLength)
@@ -351,7 +363,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             int maxExpectedExcess = isEncoded ? 1 : 0;
 
             if (exceededSplitPos > maxExpectedExcess) {
-                logger.warn("Exceeded split pos by " + exceededSplitPos + " bytes");
+                logger.warn(String.format("Split %s: Exceeded split pos by %d bytes", splitId, exceededSplitPos));
             }
         }
         return virtualEofReached;
@@ -397,10 +409,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     }
 
 
-    protected InputStream effectiveInputStreamSupp(Seekable seekable) {
+    protected InputStream effectiveInputStreamSupp(SeekableReadableChannel<byte[]> seekable) {
+        SeekableReadableChannel<byte[]> newChannel = seekable; // seekable.cloneObject();
         InputStream r = new SequenceInputStream(
                 new ByteArrayInputStream(preambleBytes),
-                effectiveInputStream(Channels.newInputStream(seekable.cloneObject())));
+                effectiveInputStream(ReadableChannels.newInputStream(newChannel)));
         return r;
     }
 
@@ -415,18 +428,18 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return result;
     }
 
-    protected Stream<U> parseFromSeekable(Seekable seekable) {
+    protected Stream<U> parseFromSeekable(SeekableReadableChannel<byte[]> seekable) {
         InputStream in = effectiveInputStreamSupp(seekable);
         Stream<U> r = parse(in);
         return r;
     }
 
-    protected boolean prober(Seekable seekable) {
+    protected boolean prober(SeekableReadableChannel<byte[]> seekable) {
         // long pos = getPos(seekable);
 
         // printSeekable(seekable)
         long recordCount;
-        try (Stream<U> stream = parseFromSeekable(seekable)
+        try (Stream<U> stream = parseFromSeekable(seekable.cloneObject())
                     .limit(probeRecordCount)) {
                 recordCount = stream.count();
         } catch (Throwable e) {
@@ -442,15 +455,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     protected Stream<T> createRecordFlow() throws IOException {
 
-        String splitName = split.getPath().getName();
-        String splitId = splitName + ":" + splitStart + "+" + splitLength;
-
         // System.err.println(s"Processing split $absSplitStart: $splitStart - $splitEnd | --+$actualExtraBytes--> $dataRegionEnd")
 
         // Clones the provided seekable!
-
-
-
 
         // Except for the first split, the first record may parse sucessfully but may
         // actually be an incomplete record that is cut off an the split boundary and that would
@@ -467,38 +474,42 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + desiredExtraBytes);
         long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
 
-        BufferOverInputStream tailBuffer = BufferOverInputStream.create(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
-        Seekable tailNav = tailBuffer.newChannel();
+        List<U> tailItems;
+        long tailRecordOffset;
+        long tailBytes;
 
+        BufferOverReadableChannel<byte[]> tailBuffer = BufferOverReadableChannel.createForBytes(new BoundedInputStream(stream, desiredExtraBytes), 1024 * 1024);
+        try (SeekableReadableChannel<byte[]> tailNav = tailBuffer.newReadableChannel()) {
 
-        StopWatch tailSw = StopWatch.createStarted();
-        long tailRecordOffset = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, this::prober);
-        // If no record is found in the tail then take all its known bytes because
-        // we assume we hit the last few splits of the stream and there simply are no further record
-        // starts anymore
-        long tailBytes = tailRecordOffset < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset);
+            StopWatch tailSw = StopWatch.createStarted();
+            tailRecordOffset = skipToNthRecord(skipRecordCount, tailNav, 0, 0, maxRecordLength, desiredExtraBytes, pos -> true, this::prober);
+            // If no record is found in the tail then take all its known bytes because
+            // we assume we hit the last few splits of the stream and there simply are no further record
+            // starts anymore
+            tailBytes = tailRecordOffset < 0 ? tailBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset);
 
-        // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
-        // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
-        tailNav.setPos(tailBytes);
+            // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
+            // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
+            tailNav.position(tailBytes);
 
-        // lines(tailNav).limit(100).forEach(System.out::println);
+            // lines(tailNav).limit(100).forEach(System.out::println);
 
-        SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(
-                accumulating::classify, () -> (List<U>)new ArrayList(), Collection::add);
+            SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(
+                    accumulating::classify, () -> (List<U>) new ArrayList(), Collection::add);
 
-        List<U> tailItems = StreamOperatorSequentialGroupBy.create(spec)
-                .transform(parseFromSeekable(tailNav))
-                .map(Map.Entry::getValue)
-                .findFirst().orElse(Collections.emptyList());
+            tailItems = StreamOperatorSequentialGroupBy.create(spec)
+                    .transform(parseFromSeekable(tailNav))
+                    .map(Map.Entry::getValue)
+                    .findFirst().orElse(Collections.emptyList());
 
-        long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
-        logger.info(String.format("In split %s got %d tail items at pos %d within %d bytes read in %d ms",
-                splitId,
-                tailItems.size(),
-                adjustedSplitEnd,
-                tailBytes,
-                tailItemTime));
+            long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
+            logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms",
+                    splitId,
+                    tailItems.size(),
+                    adjustedSplitEnd,
+                    tailBytes,
+                    tailItemTime));
+        }
 
         // Set the stream to the start of the split and get the head buffer
         // Note that we will use the stream later in its state to read the body part
@@ -537,22 +548,23 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                                     return false;
                                 }));
 
-        BufferOverInputStream headBuffer = BufferOverInputStream.create(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
-        Seekable headNav = headBuffer.newChannel();
+        BufferOverReadableChannel headBuffer = BufferOverReadableChannel.createForBytes(new BoundedInputStream(splitBoundedHeadStream, desiredExtraBytes), 1024 * 1024);
+        int headBytes;
+        try (SeekableReadableChannel<byte[]> headNav = headBuffer.newReadableChannel()) {
 
-        StopWatch headSw = StopWatch.createStarted();
+            StopWatch headSw = StopWatch.createStarted();
 
-        int headBytes = isFirstSplit
-                ? 0
-                : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, this::prober));
+            headBytes = isFirstSplit
+                    ? 0
+                    : Ints.checkedCast(skipToNthRecord(skipRecordCount, headNav, 0, 0, maxRecordLength, desiredExtraBytes, posValidator, this::prober));
 
-        long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
-        logger.info(String.format("In split %s found head record at pos %d with %d bytes read in %d ms",
-                splitId,
-                headBytes,
-                headBuffer.getKnownDataSize(),
-                headRecordTime));
-
+            long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
+            logger.info(String.format("Split %s: Found head record at pos %d with %d bytes read in %d ms",
+                    splitId,
+                    headBytes,
+                    headBuffer.getKnownDataSize(),
+                    headRecordTime));
+        }
 
         // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
 
@@ -597,10 +609,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // FIXME There are two possibilities now why we couldn't find a record
             //  - There were errors in the data
             //  - There is a record that goes across this split
-            logger.warn(String.format("No data found in split starting at %d. Possible reasons: " +
+            logger.warn(String.format("Split %s: No data found. Possible reasons: " +
                     "(1) A large record spanning this split, " +
                     "(2) Syntax error(s) in the data," +
-                    "(3) Some bug in the implementation", splitStart));
+                    "(3) Some bug in the implementation", splitId));
 
             // No data from this split
             headStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
@@ -615,15 +627,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     ? headBuffer.getKnownDataSize()
                     : knownDecodedDataLength[0];
 
-            Seekable headChannel = headBuffer.newChannel();
+            SeekableReadableChannel<byte[]> headChannel = headBuffer.newReadableChannel();
             if (headBytes != 0) {
                 // The method nextPos may read bytes from the head buffer if no bytes have been read yet!
                 // So only call nextPos when we have to and know for sure we had prior reads. This is indicated by
                 // a non-zero value of headBytes.
-                headChannel.nextPos(headBytes);
+                // headChannel.nextPos(headBytes);
+                headChannel.position(headBytes);
             }
 
-            headStream = new BoundedInputStream(Channels.newInputStream(headChannel), headLength - headBytes);
+            headStream = new BoundedInputStream(ReadableChannels.newInputStream(headChannel), headLength - headBytes);
 
             if (!isFirstSplit) {
                 headStream = effectiveInputStream(headStream);
@@ -645,10 +658,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // // TailBuffer in encoded setting is displaced by 1 byte
             int displacement = isEncoded ? 1 : 0;
 
-            Seekable tailChannel = tailBuffer.newChannel();
-            tailChannel.nextPos(displacement);
+            SeekableReadableChannel<byte[]> tailChannel = tailBuffer.newReadableChannel();
+            // tailChannel.nextPos(displacement);
+            tailChannel.position(displacement);
 
-            tailStream = new BoundedInputStream(Channels.newInputStream(tailChannel), tailBytes - displacement);
+            tailStream = new BoundedInputStream(ReadableChannels.newInputStream(tailChannel), tailBytes - displacement);
 
             // If there is a tailRecord then inject the postamble
             postambleStream = tailRecordOffset < 0
@@ -732,40 +746,45 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      */
     public static long findNextRecord(
             CustomPattern recordSearchPattern,
-            Seekable nav,
+            SeekableReadableChannel<byte[]> nav,
             long splitStart,
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
             Predicate<Long> posValidator,
-            Predicate<Seekable> prober) throws IOException {
+            Predicate<SeekableReadableChannel<byte[]>> prober) throws IOException {
         // Set up absolute positions
         long absProbeRegionEnd = Math.min(absProbeRegionStart + maxRecordLength, absDataRegionEnd); // = splitStart + bufferLength
         int relProbeRegionEnd = Ints.checkedCast(absProbeRegionEnd - absProbeRegionStart);
 
+        long position = absProbeRegionStart - splitStart;
+        nav.position(position);
         // System.err.println(s"absProbeRegionStart: $absProbeRegionStart - absProbeRegionEnd: $absProbeRegionEnd - relProbeRegionEnd: $relProbeRegionEnd")
 
         // Data region is up to the end of the buffer
         long relDataRegionEnd = absDataRegionEnd - absProbeRegionStart;
 
-        Seekable seekable = nav.cloneObject();
-        seekable.setPos(absProbeRegionStart - splitStart);
-        // seekable.limitNext(relDataRegionEnd)
-        // val charSequence = new CharSequenceFromSeekable(seekable)
-        // seekable.limitNext(relDataRegionEnd)
-        // TODO The original code used limitNext but do we need that
-        //  if we set the matcher region anyway?
-        CharSequence charSequence = new CharSequenceFromSeekable(seekable);
+        try (SeekableReadableChannel<byte[]> seekable = nav.cloneObject()) { //ReadableChannels.shift(nav.cloneObject(), position)) {
+            // seekable.position(0); // Position at the shifted position
+            // seekable.position(absProbeRegionStart - splitStart);
 
-        CustomMatcher fwdMatcher = recordSearchPattern.matcher(charSequence);
-        fwdMatcher.region(0, relProbeRegionEnd);
 
-        long matchPos = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, prober);
+            // seekable.limitNext(relDataRegionEnd)
+            // val charSequence = new CharSequenceFromSeekable(seekable)
+            // seekable.limitNext(relDataRegionEnd)
+            // TODO The original code used limitNext but do we need that
+            //  if we set the matcher region anyway?
+            CharSequence charSequence = ReadableChannels.asCharSequence(seekable);
+            CustomMatcher fwdMatcher = recordSearchPattern.matcher(charSequence);
+            fwdMatcher.region(0, relProbeRegionEnd);
 
-        long result = matchPos >= 0
-                ? matchPos + splitStart
-                : -1;
-        return result;
+            long matchPos = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, prober);
+
+            long result = matchPos >= 0
+                    ? matchPos + splitStart
+                    : -1;
+            return result;
+        }
     }
 
     /**
@@ -783,14 +802,18 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      */
     long skipToNthRecord(
             int n,
-            Seekable nav,
+            SeekableReadableChannel<byte[]> nav,
             long splitStart,
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
             Predicate<Long> posValidator,
-            Predicate<Seekable> prober) throws IOException {
+            Predicate<SeekableReadableChannel<byte[]>> prober) throws IOException {
         long result = -1L;
+
+        if (splitId.equals("hobbit-sensor-stream-150k-events-data.trig.bz2:742930+371465")) {
+            System.out.println("here");
+        }
 
         // TODO availableDataRegion is a confusing name - what is meant is "the available amount *allowed* for probing"
         //   the *actual* available amount of data may be much less
@@ -809,11 +832,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     //   It only takes the data region *allowed* for probing into account instead of the *available* one.
                     //   For encoded streams the available region is not known in advance
                     //   Hence, the warning is e.g. always incorrectly shown when scanning the tail region of the last split.
-                    logger.warn("Found no record start in a record search region of " + maxRecordLength + " bytes, although up to " + availableDataRegion + " bytes were allowed for reading");
+                    logger.warn(String.format("Split %s: Found no record start in a search region of " + maxRecordLength + " bytes, although up to " + availableDataRegion + " bytes were allowed for reading",
+                            splitId));
+
                     // throw new RuntimeException(s"Found no record start in a record search region of $maxRecordLength bytes, although $availableDataRegion bytes were available")
                 } else {
                     // Here we assume we read into the last chunk which contained no full record
-                    logger.warn("No more records found after pos " + (splitStart + nextProbePos));
+                    logger.warn(String.format("Split %s: No more records found after pos " + (splitStart + nextProbePos),
+                            splitId));
                 }
 
 
@@ -848,57 +874,78 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @return
      */
     public static long findFirstPositionWithProbeSuccess(
-            Seekable rawSeekable,
+            SeekableReadableChannel<byte[]> rawSeekable,
             Predicate<Long> posValidator,
             CustomMatcher m,
             boolean isFwd,
-            Predicate<Seekable> prober) throws IOException {
-
-        Seekable seekable = rawSeekable.cloneObject();
-        long absMatcherStartPos = seekable.getPos();
-
-        boolean isEndReached = false;
+            Predicate<SeekableReadableChannel<byte[]>> prober) throws IOException {
 
         long result = -1l;
 
-        StopWatch sw = StopWatch.createStarted();
-        while (m.find() && !isEndReached) {
-            // logger.info("Time spent on regex matching: " + sw.getTime(TimeUnit.MILLISECONDS) + "ms");
+        try (SeekableReadableChannel<byte[]> seekable = rawSeekable.cloneObject()) {
+            long absMatcherStartPos = seekable.position();
 
-            int start = m.start();
-            int end = m.end();
-            // The matcher yields absolute byte positions from the beginning of the byte sequence
-            int matchPos = isFwd
-                    ? start
-                    : -end + 1;
-
-            int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
-
-            boolean validAbsPos = posValidator.test((long) absPos);
-            if (!validAbsPos) {
-                break;
+            try (SeekableReadableChannel<byte[]> tmp = seekable.cloneObject()) {
+                System.out.println("Probing at pos " + absMatcherStartPos + ":\n" + abbreviateAsUTF8(ReadableChannels.newInputStream(tmp), 1024, "..."));
             }
+            // System.out.println("STARTPOS: " + absMatcherStartPos);
 
-            // Set the seekable to the found position ...
-            seekable.setPos(absPos);
-            // .. which may reveal that we have actually reached the end
-            isEndReached = seekable.isPosAfterEnd();
 
-            if (!isEndReached) {
-                // System.out.println("End reached: " + isEndReached);
+            boolean isEndReached = false;
 
-                Seekable probeSeek = seekable.cloneObject();
+            StopWatch sw = StopWatch.createStarted();
+            while (m.find() && !isEndReached) {
+                // logger.info("Time spent on regex matching: " + sw.getTime(TimeUnit.MILLISECONDS) + "ms");
 
-                boolean probeResult = prober.test(probeSeek);
-                // System.err.println(s"Probe result for matching at pos $absPos with fwd=$isFwd: $probeResult")
+                int start = m.start();
+                int end = m.end();
+                // The matcher yields absolute byte positions from the beginning of the byte sequence
+                int matchPos = isFwd
+                        ? start
+                        : -end + 1;
 
-                if (probeResult) {
-                    result = absPos;
+                int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
+
+                boolean validAbsPos = posValidator.test((long) absPos);
+                // System.out.println("ValidPos: " + validAbsPos);
+                if (!validAbsPos) {
                     break;
                 }
+
+                // Set the seekable to the found position ...
+                seekable.position(absPos);
+                // .. which may reveal that we have actually reached the end
+                isEndReached = seekable.read(new byte[1], 0, 1) <= 0; // == -1
+                seekable.position(absPos);
+                // isEndReached = seekable.isPosAfterEnd();
+
+                if (!isEndReached) {
+
+                    boolean probeResult;
+
+                    try (SeekableReadableChannel<byte[]> tmp = seekable.cloneObject()) {
+                        System.out.println("Probeseek at pos " + tmp.position() + ":\n" + abbreviateAsUTF8(ReadableChannels.newInputStream(tmp), 1024, "..."));
+                    }
+
+                    try (SeekableReadableChannel<byte[]> probeSeek = seekable.cloneObject()) {
+                        if (absPos == 10230) {
+                            System.out.println("here");
+                        }
+
+                        probeResult = prober.test(probeSeek);
+                    }
+                    System.err.println(String.format("Probe result for matching at pos %d with fwd=%b %b", absPos, isFwd, probeResult));
+
+                    if (probeResult) {
+                        result = absPos;
+                        break;
+                    }
+                } else {
+                    System.out.println("End reached: " + isEndReached);
+                }
+                sw.reset();
+                sw.start();
             }
-            sw.reset();
-            sw.start();
         }
 
         return result;
@@ -981,6 +1028,37 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 }
             }
         }
+    }
+
+
+    public static String abbreviateAsUTF8(InputStream in , int maxWidth, String abbrevMarker) throws IOException {
+        return abbreviate(in, StandardCharsets.UTF_8, maxWidth, abbrevMarker);
+    }
+
+    public static String abbreviate(InputStream in, Charset charset, int maxWidth, String abbrevMarker) throws IOException {
+        return abbreviate(new InputStreamReader(in, charset), maxWidth, abbrevMarker);
+    }
+
+    public static String abbreviate(InputStreamReader reader, int maxWidth, String abbrevMarker) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int c;
+        for (int i = 0; i < maxWidth && (c = reader.read()) != -1; ++i) {
+            sb.append((char)c);
+        }
+
+        // Append the marker unless read successfully returns -1
+        boolean appendAbbrevMarker = true;
+        try {
+            appendAbbrevMarker = reader.read() != -1;
+        } catch (Exception e) {
+            // Ignored
+        }
+
+        if (appendAbbrevMarker) {
+            sb.append(abbrevMarker);
+        }
+
+        return sb.toString();
     }
 }
 
