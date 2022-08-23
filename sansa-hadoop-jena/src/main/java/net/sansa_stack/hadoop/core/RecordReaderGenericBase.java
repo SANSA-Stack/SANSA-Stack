@@ -447,8 +447,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ReadableChannel<U[]> channel = null;
         try {
             ReadableChannel<byte[]> byteChannel =
-                    new ReadableChannelSwitchable<>(ReadableChannels.withCounter(seekable.cloneObject()));
+                    new ReadableChannelSwitchable<>(seekable.cloneObject());
 
+            // System.out.println("here");
+            // Runtime.getRuntime().gc();
             stream = parseFromSeekable(byteChannel, true);
 
             if (resultBuffer != null) {
@@ -565,14 +567,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                         tailBytes,
                         tailItemTime));
                 //}
-            } else {
+            }
+
                 ReadableChannel<U[]> tmp = tailEltBuffer.getDataSupplier();
                 if (tmp != null) {
                     tmp.close();
                 }
 
                 tailByteBuffer.getDataSupplier().close();
-            }
         }
 
 
@@ -941,12 +943,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     }
 
     private static <T> Stream<T> debufferedEltStream(BufferOverReadableChannel<T[]> eltBorc) {
-        ReadableChannel<T[]> eltSource = eltBorc.getDataSupplier();
-        ReadableChannelWithValue<T[], ReadableChannelSwitchable<byte[]>, ?> byteC = (ReadableChannelWithValue<T[], ReadableChannelSwitchable<byte[]>, ?>) eltSource;
+        ReadableChannel<T[]> dataSupplier = eltBorc.getDataSupplier();
+        if (false) {
+            try {
+                return ReadableChannels.newStream(eltBorc.newReadableChannel()).onClose(() -> IOUtils.closeQuietly(eltBorc.getDataSupplier()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-        BufferOverReadableChannel.debuffer(byteC.getValue());
+        ReadableChannelWithValue<T[], ReadableChannelSwitchable<byte[]>, ?> byteSource = (ReadableChannelWithValue<T[], ReadableChannelSwitchable<byte[]>, ?>)  eltBorc.getDataSupplier();
 
-        return unbufferedStream(eltBorc);
+        BufferOverReadableChannel.debuffer(byteSource.getValue());
+
+        return unbufferedStream(eltBorc).onClose(() -> IOUtils.closeQuietly(dataSupplier));
         // ReadableChannelSwitchable<byte[]> byteSwitchable = byteC.getValue();
         // debuffer(byteBorc, byteC.getValue());
 
@@ -958,13 +968,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     /** Remove buffering from a channel. As long as the channel is positioned within the buffer's store
      * area it will read from the buffer's store but no longer write to it.
      * After leaving that area, data is read directly from the buffer's supplier */
+    /*
     public static <A> void debuffer(BufferOverReadableChannel<A> borc, ReadableChannel<A> channel) {
         ReadableChannelSwitchable<A> switchable = (ReadableChannelSwitchable<A>)channel;
         ReadableChannel<A> decoratee = switchable.getDecoratee();
 
-        if (decoratee instanceof ReadableChannelWithCounter) {
+        if (decoratee instanceof BufferOverReadableChannel.Channel) {
             @SuppressWarnings("unchecked")
-            ReadableChannelWithCounter<A, ?> c = (ReadableChannelWithCounter<A, ?>)decoratee;
+            BufferOverReadableChannel.Channel<A> c = (BufferOverReadableChannel.Channel<A>)decoratee;
 
             Lock writeLock = switchable.getReadWriteLock().writeLock();
             try {
@@ -988,7 +999,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 writeLock.unlock();
             }
         }
-    }
+    }*/
 
     /**
      * @param nav
