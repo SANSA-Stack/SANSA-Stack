@@ -161,7 +161,7 @@ public abstract class FileInputFormatRdfBase<T>
             }
         };
 
-        try(Stream<EltStreamRDF> stream = AsyncParser.of(in, lang, null).streamElements()){
+        try(Stream<EltStreamRDF> stream = AsyncParser.of(in, lang, null).setChunkSize(100).streamElements()){
             Iterator<EltStreamRDF> it = stream.iterator();
             long nonPrefixEventCount = 0;
             long maxNonPrefixEventCount = 1000;

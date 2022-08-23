@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -577,7 +578,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 tailByteBuffer.getDataSupplier().close();
         }
 
-
         // Displacement was needed due to hadoop reading one byte past split boundaries
         // With DeferredSeekablePushbackInputStream this should no longer be needed
         // // TailBuffer in encoded setting is displaced by 1 byte
@@ -894,6 +894,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 bodyEltStream = debufferedEltStream(headEltBuffer);
             }
 
+
             // parse(new SequenceInputStream(Collections.enumeration(Arrays.asList(splitBoundedBodyStream, tailStream))), false);
 
             // The byte channel must be conditionally bounded
@@ -901,7 +902,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Issue: the headItemBuffer must be capped at the split point
             result = aggregate(isFirstSplit, bodyEltStream, tailElts);
 
-
+            boolean inspectBufferSizes = false;
+            if (inspectBufferSizes) {
+                // Load all items into memory and print out the sizes of the byte level buffers
+                // The sizes should be relatively small
+                try (Stream<T> tmp = result) {
+                    result = tmp.collect(Collectors.toList()).stream();
+                }
+                System.out.println("TailByteBuffer.size = " + tailByteBuffer.getBuffer().size());
+                System.out.println("HeadByteBuffer.size = " + headByteBuffer.getBuffer().size());
+            }
 
             // result = aggregate(isFirstSplit, parse(fullStream, false), tailItems);
 
@@ -944,7 +954,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     private static <T> Stream<T> debufferedEltStream(BufferOverReadableChannel<T[]> eltBorc) {
         ReadableChannel<T[]> dataSupplier = eltBorc.getDataSupplier();
-        if (false) {
+
+        boolean suppressDebuffer = false;
+        if (suppressDebuffer) {
             try {
                 return ReadableChannels.newStream(eltBorc.newReadableChannel()).onClose(() -> IOUtils.closeQuietly(eltBorc.getDataSupplier()));
             } catch (Exception e) {
