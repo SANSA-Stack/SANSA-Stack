@@ -144,7 +144,7 @@ public abstract class RecordReaderCsvTestBase<T> {
             int maxCols = Math.max(expectedColCount, actualColCount);
 
             for (int j = 0; j < maxCols; ++j) {
-                String expectedCell = j < expectedColCount ? expectedRow.get(j) : "(no present)";
+                String expectedCell = j < expectedColCount ? expectedRow.get(j) : "(not present)";
                 String actualCell = j < actualColCount ? actualRow.get(j) : "(not present)";
 
                 if (!Objects.equals(expectedCell, actualCell)) {

@@ -10,6 +10,7 @@ import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvw;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
@@ -105,19 +106,15 @@ public class RecordReaderCsvUnivocity
     //"\n(?!.{0,50000}(?<!\")\"(\r?\n|,|$))" // somewhat works but too slow!
 
     public RecordReaderCsvUnivocity() {
-        this(
+        this(new RecordReaderConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                null);
+                null));
     }
 
-    public RecordReaderCsvUnivocity(
-            String minRecordLengthKey,
-            String maxRecordLengthKey,
-            String probeRecordCountKey,
-            CustomPattern recordSearchPattern) {
-        super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
+    public RecordReaderCsvUnivocity(RecordReaderConf conf) {
+        super(conf, Accumulating.identity());
     }
 
     @Override
@@ -241,7 +238,7 @@ public class RecordReaderCsvUnivocity
     }
 
 
-    protected Stream<String[]> parse(InputStream in) {
+    protected Stream<String[]> parse(InputStream in, boolean isProbe) {
         State it = new State(parserFactory::newParser, parserFactory.newInputStreamReader(in));
         Stream<String[]> result = Streams.stream(it).onClose(it::close);
         return result;

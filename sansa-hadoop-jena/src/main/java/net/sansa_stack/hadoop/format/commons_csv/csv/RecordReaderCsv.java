@@ -2,11 +2,11 @@ package net.sansa_stack.hadoop.format.commons_csv.csv;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Streams;
-import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -16,10 +16,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -77,19 +79,15 @@ public class RecordReaderCsv
     //"\n(?!.{0,50000}(?<!\")\"(\r?\n|,|$))" // somewhat works but too slow!
 
     public RecordReaderCsv() {
-        this(
+        this(new RecordReaderConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                null);
+                null));
     }
 
-    public RecordReaderCsv(
-            String minRecordLengthKey,
-            String maxRecordLengthKey,
-            String probeRecordCountKey,
-            CustomPattern recordSearchPattern) {
-        super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
+    public RecordReaderCsv(RecordReaderConf conf) {
+        super(conf, Accumulating.identity());
     }
 
     @Override
@@ -129,6 +127,8 @@ public class RecordReaderCsv
         public long seenRowLength = -1;
         public List<String> priorRow = null;
 
+        public long counter = 0;
+
         State(Reader reader, CSVFormat effectiveCsvFormat) { this.reader = reader; this.effectiveCsvFormat = effectiveCsvFormat; }
 
         @Override
@@ -149,6 +149,7 @@ public class RecordReaderCsv
             } else {
                 CSVRecord csvRecord = it.next();
                 List<String> row = csvRecord.toList();
+                ++counter;
 
                 long rowLength = row.size();
                 if (seenRowLength == -1) {
@@ -160,7 +161,7 @@ public class RecordReaderCsv
                             logger.error("Prior row: " + s.priorRow);
                             logger.error("Current row: " + row);
                              */
-                    String msg = String.format("Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", rowLength, seenRowLength, row, priorRow);
+                    String msg = String.format("At row %d: Current row length (%d) does not match prior one (%d) - current: %s | prior: %s", counter, rowLength, seenRowLength, row, priorRow);
                     throw new IllegalStateException(msg);
                 }
                 priorRow = row;
@@ -173,7 +174,11 @@ public class RecordReaderCsv
         @Override
         public void close() {
             try {
-                csvParser.close();
+                if (csvParser != null) {
+                    csvParser.close();
+                } else {
+                    reader.close();
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -195,7 +200,7 @@ public class RecordReaderCsv
     }
 
     @Override
-    protected Stream<List> parse(InputStream in) {
+    protected Stream<List> parse(InputStream in, boolean isProbe) {
         State it = new State(new InputStreamReader(in), effectiveCsvFormat);
         return Streams.stream(it).onClose(it::close);
 /*

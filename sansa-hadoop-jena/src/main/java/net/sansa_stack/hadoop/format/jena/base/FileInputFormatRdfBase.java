@@ -21,6 +21,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.AsyncParser;
+import org.apache.jena.riot.system.EltStreamRDF;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFBase;
 import org.slf4j.Logger;
@@ -160,12 +161,12 @@ public abstract class FileInputFormatRdfBase<T>
             }
         };
 
-        try(Stream<AsyncParser.EvtStreamRDF> stream = AsyncParser.of(in, lang, null).streamEvents()){
-            Iterator<AsyncParser.EvtStreamRDF> it = stream.iterator();
+        try(Stream<EltStreamRDF> stream = AsyncParser.of(in, lang, null).streamElements()){
+            Iterator<EltStreamRDF> it = stream.iterator();
             long nonPrefixEventCount = 0;
             long maxNonPrefixEventCount = 1000;
             while (it.hasNext() && nonPrefixEventCount < maxNonPrefixEventCount) {
-                AsyncParser.EvtStreamRDF event = it.next();
+                EltStreamRDF event = it.next();
                 if (event.isPrefix()) {
                     prefixSink.prefix(event.getPrefix(), event.getIri());
                     nonPrefixEventCount = 0;

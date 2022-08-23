@@ -1,20 +1,16 @@
 package net.sansa_stack.hadoop.format.jena.trig;
 
-import com.google.common.collect.Streams;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfAccumulatingBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderRdfConf;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
-import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
-import org.apache.jena.atlas.iterator.IteratorCloseable;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.lang.LabelToNode;
-import org.apache.jena.riot.system.AsyncParser;
 import org.apache.jena.sparql.core.Quad;
 
 import java.io.InputStream;
@@ -74,24 +70,23 @@ public class RecordReaderRdfTrigDataset
     }
 
     public RecordReaderRdfTrigDataset() {
-        super(
+        super(new RecordReaderRdfConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                PREFIXES_MAXLENGTH_KEY,
                 trigFwdPattern,
-                Lang.TRIG,
+                        PREFIXES_MAXLENGTH_KEY,
+                Lang.TRIG),
                 new AccumulatingDataset());
     }
 
     @Override
-    protected Stream<Quad> parse(InputStream in) {
-        Stream<Quad> result = AsyncParser.of(in, lang, baseIri)
-                .mutateSources(parser -> parser
-                        .labelToNode(RDFDataMgrRx.createLabelToNodeAsGivenOrRandom())
-                        .resolver(IRIxResolverUtils.newIRIxResolverAsGiven()))
-                .setChunkSize(100)
-                .streamQuads();
+    protected Stream<Quad> parse(InputStream in, boolean isProbe) {
+        Stream<Quad> result = setupParser(in, isProbe).streamQuads();
+
+        // List<Quad> tmp = result.collect(Collectors.toList());
+        // System.out.println("Got " + tmp.size() + " items");
+        // result = tmp.stream();
 
         // Stream<Quad> result = RDFDataMgrRx.createFlowableQuads(() -> in, lang, baseIri).blockingStream();
         // System.out.println("isParallel: " + result.isParallel());

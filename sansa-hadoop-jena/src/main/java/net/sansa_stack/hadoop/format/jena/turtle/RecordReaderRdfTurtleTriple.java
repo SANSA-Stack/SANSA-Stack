@@ -4,6 +4,8 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfTripleBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderRdfConf;
 import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;
@@ -18,7 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class RecordReaderRdfTurtleTriple
-        extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
+        extends RecordReaderGenericRdfTripleBase
 {
 
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.turtle.triple.record.minlength";
@@ -50,25 +52,13 @@ public class RecordReaderRdfTurtleTriple
             Pattern.CASE_INSENSITIVE); // | Pattern.MULTILINE);
 
     public RecordReaderRdfTurtleTriple() {
-        super(
+        super(new RecordReaderRdfConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                PREFIXES_MAXLENGTH_KEY,
                 turtleRecordStartPattern,
-                Lang.TURTLE);
-    }
-
-    @Override
-    protected Stream<Triple> parse(InputStream in) {
-        // Stream<Triple> result = RDFDataMgrRx.createFlowableTriples(() -> in, lang, baseIri).blockingStream();
-        Stream<Triple> result = AsyncParser.of(in, lang, baseIri)
-                .mutateSources(parser -> parser
-                        .labelToNode(RDFDataMgrRx.createLabelToNodeAsGivenOrRandom())
-                        .resolver(IRIxResolverUtils.newIRIxResolverAsGiven()))
-                .setChunkSize(100)
-                .streamTriples();
-        return result;
+                PREFIXES_MAXLENGTH_KEY,
+                Lang.TURTLE));
     }
 
     protected Flowable<Triple> parse(Callable<InputStream> inputStreamSupplier) {
