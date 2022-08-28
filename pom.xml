@@ -73,9 +73,9 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.6.0-SNAPSHOT</jena.version>
-        <jenax.version>4.6.0-1-SNAPSHOT</jenax.version>
-        <r2rml-jena-api.version>4.6.0-1-SNAPSHOT</r2rml-jena-api.version>
+        <jena.version>4.7.0-SNAPSHOT</jena.version>
+        <jenax.version>4.7.0-1-SNAPSHOT</jenax.version>
+        <r2rml-jena-api.version>4.7.0-1-SNAPSHOT</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
