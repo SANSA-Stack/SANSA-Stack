@@ -42,12 +42,9 @@ public class LinkDatasetGraphSansa
 
     public static LinkDatasetGraphSansa create(Configuration conf, SerializableSupplier<LinkSparqlUpdate> link) {
         SerializableSupplier<StreamRDF> sinkFactory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
-           LinkSparqlUpdate update = link.get();
-           try {
+           try (LinkSparqlUpdate update = link.get()) {
                // System.out.println("Update: " + Thread.currentThread() + " " + updateRequest.toString().length());
                update.update(updateRequest);
-           } finally {
-               update.close();
            }
         });
 

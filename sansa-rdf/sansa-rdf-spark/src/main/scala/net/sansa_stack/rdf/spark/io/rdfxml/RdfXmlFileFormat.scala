@@ -120,4 +120,6 @@ private[rdfxml] class RdfXmlOutputWriter(
 //    gen.close()
     writer.close()
   }
+
+  override def path(): String = ???
 }

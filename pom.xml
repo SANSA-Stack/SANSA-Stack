@@ -63,12 +63,12 @@
         <scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
         <flink.version>1.11.2</flink.version>
-        <spark.version>3.0.1</spark.version>
+        <spark.version>3.3.0</spark.version>
         <!-- Spark Testing isn't always in sync, so we have to check for latest version and adapt here -->
         <spark.testing.version>3.0.1_1.0.0</spark.testing.version>
 
-        <!--<hadoop.version>3.2.1</hadoop.version>-->
-        <hadoop.version>2.8.5</hadoop.version>
+        <hadoop.version>3.3.4</hadoop.version>
+	<!-- <hadoop.version>2.8.5</hadoop.version> -->
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
