@@ -79,12 +79,9 @@
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
-<!--
-	<slf4j.version>1.8.0-beta4</slf4j.version>
-	<log4j.version>2.17.0</log4j.version>
--->
+	<slf4j.version>1.7.36</slf4j.version>
+	<log4j.version>2.18.0</log4j.version>
 
-	<slf4j.version>1.7.30</slf4j.version>
 	<!-- <log4j.version>1</log4j.version> -->
 
 
