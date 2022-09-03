@@ -82,6 +82,8 @@
 	<slf4j.version>1.7.36</slf4j.version>
 	<log4j.version>2.18.0</log4j.version>
 
+
+	<ver.netty>4.1.74.Final</ver.netty>
 	<!-- <log4j.version>1</log4j.version> -->
 
 
@@ -646,6 +648,36 @@
             <!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-util</artifactId>
                 <version>${jetty.version}</version> </dependency> -->
 
+		<!-- io.netty:netty is ancient -->
+	<!--
+		<dependency>
+                        <groupId>io.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>${ver.netty}</version>
+			<scope>provided</scope>
+		</dependency>
+	-->
+                    <dependency>
+                        <groupId>io.netty</groupId>
+			<artifactId>netty-handler</artifactId>
+			<version>${ver.netty}</version>
+			<!-- <scope>provided</scope> -->
+                    </dependency>
+                    <dependency>
+                        <groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<version>${ver.netty}</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+		<!--
+                    <dependency>
+                        <groupId>io.netty</groupId>
+			<artifactId>netty-tcnative-classes</artifactId>
+			<version>${ver.netty}</version>
+			</dependency>
+		-->
+
+
             <!-- HADOOP dependencies (mainly used for InputFormat definitions) -->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -682,8 +714,18 @@
                     <exclusion>
                         <groupId>com.sun.jersey.contribs</groupId>
                         <artifactId>jersey-guice</artifactId>
-                    </exclusion>
+		</exclusion>
+		      <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
 
+		<!--
+		    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+			</exclusion>
+		-->
                 </exclusions>
             </dependency>
             <dependency>
@@ -714,7 +756,11 @@
                     <exclusion>
                         <groupId>com.google.guava</groupId>
                         <artifactId>guava</artifactId>
-                    </exclusion>
+		</exclusion>
+		<exclusion>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-reload4j</artifactId>
+		</exclusion>
                 </exclusions>
             </dependency>
 

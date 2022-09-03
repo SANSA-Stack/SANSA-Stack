@@ -144,8 +144,13 @@
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>spark-gremlin</artifactId>
-            <version>3.3.0</version>
-            <exclusions>
+            <version>3.6.1</version>
+	    <exclusions>
+		<!-- Conflicts with netty from hadoop-yarn -->
+		<exclusion>
+		    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+		</exclusion>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
                     <artifactId>spark-core_2.11</artifactId>
@@ -292,12 +297,22 @@
             <groupId>com.twitter</groupId>
             <artifactId>chill_${scala.binary.version}</artifactId>
         </dependency>
+	
+	<!--
+	<dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>4.1.42.Final</version>
+        </dependency>
+	-->
 
+	<!--
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.42.Final</version>
-        </dependency>
+		</dependency>
+	-->
 
         <dependency>
             <groupId>com.github.scopt</groupId>
