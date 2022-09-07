@@ -84,6 +84,7 @@
 
 
 	<ver.netty>4.1.74.Final</ver.netty>
+	<ver.jackson>2.13.3</ver.jackson>
 	<!-- <log4j.version>1</log4j.version> -->
 
 
@@ -1383,27 +1384,11 @@
 
             <!-- FasterXML -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.10.5.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>2.10.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
-                <version>2.10.4</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>2.10.4</version>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+		<version>${ver.jackson}</version>
+		<type>pom</type>
+		<scope>import</scope>
             </dependency>
 
             <!-- slf4j Logger dependencies -->
