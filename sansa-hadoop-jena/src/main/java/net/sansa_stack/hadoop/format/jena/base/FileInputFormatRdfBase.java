@@ -168,7 +168,7 @@ public abstract class FileInputFormatRdfBase<T>
             while (it.hasNext() && nonPrefixEventCount < maxNonPrefixEventCount) {
                 EltStreamRDF event = it.next();
                 if (event.isPrefix()) {
-                    prefixSink.prefix(event.getPrefix(), event.getIri());
+                    prefixSink.prefix(event.prefix(), event.iri());
                     nonPrefixEventCount = 0;
                 } else {
                     ++nonPrefixEventCount;

@@ -160,10 +160,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected long splitEnd = -1;
     protected boolean isFirstSplit = false;
 
-
-    // Will be set in case an error occurs
-    protected Throwable raisedThrowable = null;
-
     protected String splitName;
     protected String splitId;
 
@@ -281,9 +277,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @return
      */
     public Map.Entry<Long, Long> setStreamToInterval(long start, long end) throws IOException {
-
         Map.Entry<Long, Long> result;
-
         if (null != codec) {
             if (decompressor != null) {
                 // Not sure if returning a decompressor resets its state properly in all cases
@@ -446,9 +440,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ArrayOps<U[]> arrayOps = (ArrayOps)ArrayOps.OBJECT;
         Stream<U> stream = null;
         ReadableChannel<U[]> channel = null;
+        ReadableChannel<byte[]> byteChannel = new ReadableChannelSwitchable<>(seekable.cloneObject());
         try {
-            ReadableChannel<byte[]> byteChannel =
-                    new ReadableChannelSwitchable<>(seekable.cloneObject());
 
             // System.out.println("here");
             // Runtime.getRuntime().gc();
@@ -472,6 +465,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             } else if (stream != null) {
                 stream.close();
             }
+
+            IOUtils.closeQuietly(byteChannel);
 
             if (e instanceof IOException) {
                 // Parse errors can be silently swallowed, however technical exceptions such as IO error
@@ -535,8 +530,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 //                try (ReadableChannel<U[]> tailEltSupplier = Optional.ofNullable(
 //                        tailEltBuffer.getDataSupplier()).orElseGet(() -> ReadableChannels.empty(ArrayOps.forObjects()))) {
 
-                SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(
-                        accumulating::classify, () -> (List<U>) new ArrayList(), Collection::add);
+                SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(accumulating::classify, () -> (List<U>) new ArrayList(1 * 1024), Collection::add);
 
 
                 // Concat the buffer of probed items with the parsing stream (the latter without buffering)
@@ -547,10 +541,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // ReadableChannel<U[]> debufferedEltChannel = debufferEltStream(tailEltBuffer, tailByteBuffer); //, tailEltBuffer.getDataSupplier());
 
                 try (Stream<U> tailEltStream = debufferedEltStream(tailEltBuffer)) {
-                    tailElts = StreamOperatorSequentialGroupBy.create(spec)
-                            .transform(tailEltStream)
-                            .map(Map.Entry::getValue)
-                            .findFirst().orElse(Collections.emptyList());
+                    tailElts = StreamOperatorSequentialGroupBy.create(spec).transform(tailEltStream).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyList());
                 }
 
                 /*
@@ -561,21 +552,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                  */
 
                 long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
-                logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms",
-                        splitId,
-                        tailElts.size(),
-                        adjustedSplitEnd,
-                        tailBytes,
-                        tailItemTime));
+                logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms", splitId, tailElts.size(), adjustedSplitEnd, tailBytes, tailItemTime));
                 //}
             }
 
-                ReadableChannel<U[]> tmp = tailEltBuffer.getDataSupplier();
-                if (tmp != null) {
-                    tmp.close();
-                }
+            ReadableChannel<U[]> tmp = tailEltBuffer.getDataSupplier();
+            if (tmp != null) {
+                tmp.close();
+            }
 
-                tailByteBuffer.getDataSupplier().close();
+            tailByteBuffer.getDataSupplier().close();
+        } catch (Throwable e) {
+            // The logic that analyses and possibly gathers tail elements should never fail
+            // TODO Unless due to IOExceptions e.g. when the network went down
+            throw new RuntimeException("Should never come here");
         }
 
         // Displacement was needed due to hadoop reading one byte past split boundaries
@@ -583,6 +573,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // // TailBuffer in encoded setting is displaced by 1 byte
         int displacement = isEncoded ? 1 : 0;
 
+        // TODO The following channel is sometimes not closed - why?
         SeekableReadableChannel<byte[]> tailChannel = tailByteBuffer.newReadableChannel();
         // tailChannel.nextPos(displacement);
         tailChannel.position(displacement);
@@ -1242,21 +1233,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
 
         boolean result;
-        if (!datasetFlow.hasNext()) {
-
-            if (raisedThrowable != null) {
-                throw new RuntimeException(raisedThrowable);
+        try {
+            if (!datasetFlow.hasNext()) {
+                // System.err.println("nextKeyValue: Drained all datasets from flow")
+                result = false;
+            } else {
+                currentValue = datasetFlow.next();
+                // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
+                // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
+                // System.err.println("nextKeyValue: Done printing out dataset value")
+                currentKey.incrementAndGet();
+                result = currentValue != null;
             }
-
-            // System.err.println("nextKeyValue: Drained all datasets from flow")
-            result = false;
-        } else {
-            currentValue = datasetFlow.next();
-            // System.err.println("nextKeyValue: Got dataset value: " + currentValue.listNames().asScala.toList)
-            // RDFDataMgr.write(System.err, currentValue, RDFFormat.TRIG_PRETTY)
-            // System.err.println("nextKeyValue: Done printing out dataset value")
-            currentKey.incrementAndGet();
-            result = currentValue != null;
+        } catch (Exception e) {
+            throw new RuntimeException(splitId, e);
         }
 
         return result;

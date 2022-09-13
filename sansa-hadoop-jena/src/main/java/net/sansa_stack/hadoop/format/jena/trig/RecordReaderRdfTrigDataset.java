@@ -25,8 +25,7 @@ import java.util.stream.Stream;
  * same IRI for the graph component into Datasets.
  */
 public class RecordReaderRdfTrigDataset
-    extends RecordReaderGenericRdfAccumulatingBase<Quad, Node, DatasetOneNg, DatasetOneNg>
-{
+        extends RecordReaderGenericRdfAccumulatingBase<Quad, Node, DatasetOneNg, DatasetOneNg> {
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.dataset.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.record.maxlength";
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.trig.dataset.record.probecount";
@@ -38,7 +37,7 @@ public class RecordReaderRdfTrigDataset
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     public static class AccumulatingDataset
-        implements Accumulating<Quad, Node, DatasetOneNg, DatasetOneNg> {
+            implements Accumulating<Quad, Node, DatasetOneNg, DatasetOneNg> {
 
         @Override
         public Node classify(Quad item) {
@@ -71,12 +70,12 @@ public class RecordReaderRdfTrigDataset
 
     public RecordReaderRdfTrigDataset() {
         super(new RecordReaderRdfConf(
-                RECORD_MINLENGTH_KEY,
-                RECORD_MAXLENGTH_KEY,
-                RECORD_PROBECOUNT_KEY,
-                trigFwdPattern,
+                        RECORD_MINLENGTH_KEY,
+                        RECORD_MAXLENGTH_KEY,
+                        RECORD_PROBECOUNT_KEY,
+                        trigFwdPattern,
                         PREFIXES_MAXLENGTH_KEY,
-                Lang.TRIG),
+                        Lang.TRIG),
                 new AccumulatingDataset());
     }
 
@@ -100,6 +99,4 @@ public class RecordReaderRdfTrigDataset
         // Flowable<Dataset> result = RDFDataMgrRx.createFlowableDatasets(inputStreamSupplier, lang, baseIri);
         return result;
     }
-
-
 }
