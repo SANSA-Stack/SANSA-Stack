@@ -21,9 +21,9 @@ import java.nio.file.{Files, Paths}
 /** This class gathers all the utilities needed for explainable distributed anomaly
   * detection
   */
-object ExDistADUtil {
+object ExPADUtil {
 
-  val LOG: Logger = Logger.getLogger(ExDistADUtil.getClass)
+  val LOG: Logger = Logger.getLogger(ExPADUtil.getClass)
 
   /** Creates an Spark session and returns it
     * @return
@@ -135,7 +135,7 @@ object ExDistADUtil {
     */
   def anomalyDetectionMethod(
       data: Array[Double],
-      config: ExDistADConfig
+      config: ExPADConfig
   ): Array[Double] = {
     config.anomalyDetectionAlgorithm match {
       case config.IQR    => iqr(data, config.anomalyListSize)

@@ -13,7 +13,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{BooleanType}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, SparkSession}
 
-object ExDistAD {
+object ExPAD {
 
   var fileCounter = 1;
 
@@ -47,7 +47,7 @@ object ExDistAD {
   def trainDecisionTree(
       data: DataFrame,
       labelColumn: String,
-      config: ExDistADConfig
+      config: ExPADConfig
   ): DecisionTreeRegressionModel = {
     val output = data.filter(!col(labelColumn).isNull)
     val dtRegressor = new DecisionTreeRegressor()
@@ -307,17 +307,17 @@ object ExDistAD {
     */
   def main(args: Array[String]): Unit = {
 
-    val config: ExDistADConfig = new ExDistADConfig(
+    val config: ExPADConfig = new ExPADConfig(
       args(0)
     )
-    val spark = ExDistADUtil.createSpark()
+    val spark = ExPADUtil.createSpark()
     LOG.info(config)
     val input = config.inputData
     if (config.verbose) {
       LOG.info("Input file is: " + input)
     }
     var originalDataRDD: RDD[graph.Triple] =
-      ExDistADUtil.readData(spark, input).repartition(200).cache()
+      ExPADUtil.readData(spark, input).repartition(200).cache()
     if (config.verbose) {
       LOG.info("Original Data RDD:")
       originalDataRDD.take(10) foreach LOG.info
@@ -353,7 +353,7 @@ object ExDistAD {
       data: DataFrame,
       spark: SparkSession,
       column: String,
-      config: ExDistADConfig
+      config: ExPADConfig
   ) = {
     val labelColumn = column
     var featureColumns: Array[String] = allColumns
@@ -400,12 +400,12 @@ object ExDistAD {
   }
 
   def ruleRunner(
-      rule: String,
-      mappedRule: String,
-      spark: SparkSession,
-      labelColumn: String,
-      config: ExDistADConfig,
-      output: DataFrame
+                  rule: String,
+                  mappedRule: String,
+                  spark: SparkSession,
+                  labelColumn: String,
+                  config: ExPADConfig,
+                  output: DataFrame
   ): (Dataset[Row], String) = {
     val fullQuery = "SELECT * FROM originalData WHERE " + rule
     val output1 = spark.sql(fullQuery)
@@ -429,7 +429,7 @@ object ExDistAD {
       case "float" =>
         values = filteredDF.map(p => p.getFloat(0).toDouble).collect()
     }
-    anomalies = ExDistADUtil.anomalyDetectionMethod(
+    anomalies = ExPADUtil.anomalyDetectionMethod(
       values,
       config
     )
@@ -444,7 +444,7 @@ object ExDistAD {
       }
 
       if (config.writeResultToFile) {
-        ExDistADUtil.writeToFile(
+        ExPADUtil.writeToFile(
           config.resultFilePath,
           anomalyList,
           explanation,

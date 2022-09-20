@@ -6,9 +6,9 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 
 /**
-  * Test class for @link{ExDistADUtil}
+  * Test class for @link{ExPADUtil}
   */
-class ExDistADUtilTest extends AnyFunSuite with SharedSparkContext {
+class ExPADUtilTest extends AnyFunSuite with SharedSparkContext {
 
   System.setProperty(
     "spark.serializer",
@@ -53,43 +53,43 @@ class ExDistADUtilTest extends AnyFunSuite with SharedSparkContext {
 
   test("IQR Test 1") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100)
-    val result = ExDistADUtil.iqr(data, 1)
+    val result = ExPADUtil.iqr(data, 1)
     assert(result.length == 1)
   }
 
   test("IQR Test 2") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    val result = ExDistADUtil.iqr(data, 1)
+    val result = ExPADUtil.iqr(data, 1)
     assert(result.length == 0)
   }
 
   test("MAD Test 1") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100)
-    val result = ExDistADUtil.mad(data, 1)
+    val result = ExPADUtil.mad(data, 1)
     assert(result.length == 1)
   }
 
   test("MAD Test 2") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    val result = ExDistADUtil.mad(data, 1)
+    val result = ExPADUtil.mad(data, 1)
     assert(result.length == 0)
   }
 
   test("Z-Score Test 1") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100)
-    val result = ExDistADUtil.mad(data, 1)
+    val result = ExPADUtil.mad(data, 1)
     assert(result.length == 1)
   }
 
   test("Z-Score Test 2") {
     val data: Array[Double] = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    val result = ExDistADUtil.mad(data, 1)
+    val result = ExPADUtil.mad(data, 1)
     assert(result.length == 0)
   }
 
   test("Test createDF") {
-    val data = ExDistADUtil.readData(spark, dataPath)
-    assert(ExDistADUtil.createDF(data).count() == 13)
+    val data = ExPADUtil.readData(spark, dataPath)
+    assert(ExPADUtil.createDF(data).count() == 13)
   }
 
 }

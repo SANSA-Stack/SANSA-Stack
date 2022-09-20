@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.explainableanomalydetection
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import net.sansa_stack.ml.spark.explainableanomalydetection.ExDistAD.{
+import net.sansa_stack.ml.spark.explainableanomalydetection.ExPAD.{
   assembleDF,
   containIndex,
   generateSqlRules,
@@ -15,9 +15,9 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 
 /**
-  * Test class for @link{ExDistAD}
+  * Test class for @link{ExPAD}
   */
-class ExDistADTest extends AnyFunSuite with SharedSparkContext {
+class ExPADTest extends AnyFunSuite with SharedSparkContext {
 
   System.setProperty(
     "spark.serializer",
@@ -47,7 +47,7 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
     .getOrCreate()
 
   private val configFilePath =
-    this.getClass.getClassLoader.getResource("ExDistAD/config.conf").getPath
+    this.getClass.getClassLoader.getResource("ExPAD/config.conf").getPath
 
   override def beforeAll() {
     super.beforeAll()
@@ -61,27 +61,27 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
   }
 
   test("Read Data Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val data = ExDistADUtil.readData(spark, dataPath)
+    val data = ExPADUtil.readData(spark, dataPath)
     assert(data.count() == 100100)
   }
 
   test("Smart Data Frame Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     assert(data.count() == 20020)
   }
 
   test("Assemble DF Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     val allColumns: Array[String] = data.columns
     val numericalColumns =
@@ -107,10 +107,10 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
   }
 
   test("Decision Tree Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     val allColumns: Array[String] = data.columns
     val numericalColumns =
@@ -140,10 +140,10 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
   }
 
   test("Parse Decision Tree Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     val allColumns: Array[String] = data.columns
     val numericalColumns =
@@ -176,10 +176,10 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
   }
 
   test("SQL Generator Test") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     val allColumns: Array[String] = data.columns
     val numericalColumns =
@@ -214,10 +214,10 @@ class ExDistADTest extends AnyFunSuite with SharedSparkContext {
   }
 
   test("Anomaly Detection") {
-    val config: ExDistADConfig = new ExDistADConfig(configFilePath)
+    val config: ExPADConfig = new ExPADConfig(configFilePath)
     val dataPath =
       this.getClass.getClassLoader.getResource(config.inputData).getPath
-    val originalDataRDD = ExDistADUtil.readData(spark, dataPath)
+    val originalDataRDD = ExPADUtil.readData(spark, dataPath)
     val data = ExSmartDataFrame.transform(originalDataRDD, config)
     val allColumns: Array[String] = data.columns
     val numericalColumns =

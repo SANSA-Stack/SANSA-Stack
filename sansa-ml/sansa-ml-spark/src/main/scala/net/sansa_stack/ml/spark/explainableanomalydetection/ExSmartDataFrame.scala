@@ -28,7 +28,7 @@ object ExSmartDataFrame {
    * @param rdd the given data
    * @return the dataframe
    */
-  def transform(rdd: RDD[Triple],config: ExDistADConfig): DataFrame = {
+  def transform(rdd: RDD[Triple],config: ExPADConfig): DataFrame = {
     val rddWithDataType: RDD[Triple] = addDataTypeToPredicates(rdd)
     val df: DataFrame = DistADUtil.createDF(rddWithDataType)
     val featuresDF: DataFrame = extractFeatures(df,rddWithDataType,config)
@@ -44,7 +44,7 @@ object ExSmartDataFrame {
    * @param config the config file object
    * @return a dataframe which contains the extarcted features
    */
-  def extractFeatures(df:DataFrame,rddWithDataType: RDD[Triple],config: ExDistADConfig) = {
+  def extractFeatures(df:DataFrame,rddWithDataType: RDD[Triple],config: ExPADConfig) = {
     config.featureExtractor match {
       case config.PIVOT =>
         df.groupBy("s")

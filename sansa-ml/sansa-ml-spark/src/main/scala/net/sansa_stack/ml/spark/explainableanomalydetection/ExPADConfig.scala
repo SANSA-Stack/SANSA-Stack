@@ -7,7 +7,7 @@ import net.sansa_stack.ml.spark.utils.ConfigResolver
   *
   * @param path the path of the config file
   */
-class ExDistADConfig(path: String) extends Serializable {
+class ExPADConfig(path: String) extends Serializable {
   val cfg: Config = new ConfigResolver(path).getConfig()
 
   /**
@@ -61,5 +61,5 @@ class ExDistADConfig(path: String) extends Serializable {
   var maxBin: Int = if (cfg.hasPath("maxBin")) cfg.getInt("maxBin") else 5
 
   override def toString: String =
-    s"ExDistADConfig(\nverbose=$verbose,\nwriteResultToFile=$writeResultToFile,\ninputData=$inputData,\nresultFilePath=$resultFilePath,\nanomalyListSize=$anomalyListSize,\nanomalyDetectionAlgorithm=$anomalyDetectionAlgorithm,\nfeatureExtractor=$featureExtractor,\nl2fDepth=$l2fDepth,\nl2fSeedNumber=$l2fSeedNumber,\nmaxDepth=$maxDepth,\nmaxBin=$maxBin\n)"
+    s"ExPADConfig(\nverbose=$verbose,\nwriteResultToFile=$writeResultToFile,\ninputData=$inputData,\nresultFilePath=$resultFilePath,\nanomalyListSize=$anomalyListSize,\nanomalyDetectionAlgorithm=$anomalyDetectionAlgorithm,\nfeatureExtractor=$featureExtractor,\nl2fDepth=$l2fDepth,\nl2fSeedNumber=$l2fSeedNumber,\nmaxDepth=$maxDepth,\nmaxBin=$maxBin\n)"
 }
