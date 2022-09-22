@@ -350,7 +350,7 @@ val configFilePath = "PATH/TO/config.conf"
 ExPAD.main(Array(configFilePath))
 ```
 
-For more information about ExPAD visit [here](http://sansa-stack.github.io/SANSA-Stack/ml/publications.html).
+For more information about ExPAD visit [here](https://github.com/SANSA-Stack/SANSA-Stack/releases/tag/v0.8.5_ExPAD).
 
 ### Feature Based Semantic Similarity Estimations
 [DistSim - Feature Based Semantic Similarity Estimations (code)](https://github.com/SANSA-Stack/SANSA-Stack/tree/develop/sansa-ml/sansa-ml-spark/src/main/scala/net/sansa_stack/ml/spark/similarity):
