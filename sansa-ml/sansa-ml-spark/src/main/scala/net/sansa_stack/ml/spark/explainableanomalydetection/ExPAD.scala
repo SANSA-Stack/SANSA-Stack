@@ -167,18 +167,6 @@ object ExPAD {
         .first()
         .getString(1)
       result
-//
-//      val converter = new IndexToString()
-//        .setInputCol(featureName)
-//        .setOutputCol("originalValue")
-//      val converted: DataFrame = converter.transform(output)
-//      converted.show(false)
-//      val selectedData = converted
-//        .select(newFeatureName, featureName, "originalValue")
-//
-//      selectedData.show(false)
-//
-//      featureValue
     }
   }
 
@@ -381,10 +369,7 @@ object ExPAD {
     var sqlRules: (List[String], List[String]) =
       generateSqlRules(rawRules, realColsName, output)
     output.createOrReplaceTempView("originalData")
-//    sqlRules = sortSqlRulesDesc(sqlRules._1)
-//    if (config.verbose) {
-//      sqlRules._1 foreach println
-//    }
+
     for (i <- 0 until sqlRules._1.length) {
       ruleRunner(
         sqlRules._1(i),

@@ -222,10 +222,6 @@ object ExSmartDataFrame {
               col(colRealName).cast(DoubleType)
             )
           case "boolean" =>
-//            data = data.withColumn(
-//              c,
-//              bool2int_udf(col(colRealName).cast(BooleanType))
-//            )
             val indexer = new StringIndexer()
               .setInputCol(c)
               .setOutputCol(colRealName + "_index")
