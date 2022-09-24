@@ -573,7 +573,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // // TailBuffer in encoded setting is displaced by 1 byte
         int displacement = isEncoded ? 1 : 0;
 
-        // TODO The following channel is sometimes not closed - why?
         SeekableReadableChannel<byte[]> tailChannel = tailByteBuffer.newReadableChannel();
         // tailChannel.nextPos(displacement);
         tailChannel.position(displacement);
@@ -716,6 +715,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     "(1) A large record spanning this split, " +
                     "(2) Syntax error(s) in the data," +
                     "(3) Some bug in the implementation", splitId));
+
+            tailByteStream.close();
 
             // No data from this split
             headStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);

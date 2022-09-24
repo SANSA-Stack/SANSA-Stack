@@ -186,6 +186,8 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
+    /** @deprecated because misconfigurations are only detected at the end of a spark process.
+     *  Use RddRdfWriterFactory instead which does eager checking. */
     def configureSave(): RddRdfWriter[Triple] = RddRdfWriter.createForTriple.setRdd(triples)
 
 
