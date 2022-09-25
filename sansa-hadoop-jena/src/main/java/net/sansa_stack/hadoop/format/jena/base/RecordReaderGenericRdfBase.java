@@ -11,9 +11,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.AsyncParserBuilder;
-import org.apache.jena.riot.system.ErrorHandlerFactory;
+import org.apache.jena.riot.system.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +26,8 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
 
     protected String baseIri;
     protected Lang lang;
+
+    protected PrefixMap prefixMap;
 
     public RecordReaderGenericRdfBase(RecordReaderRdfConf conf,
             Accumulating<U, G, A, T> accumulating) {
@@ -50,15 +50,17 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
         baseIri = job.get(baseIriKey);
 
         Model model = FileInputFormatRdfBase.getModel(job, headerBytesKey);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
+        prefixMap = PrefixMapFactory.create(model);
+        // ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // RDFDataMgr.write(baos, model, RDFFormat.TURTLE_PRETTY);
         // val prefixBytes = baos.toByteArray
-        preambleBytes = baos.toByteArray();
+        // preambleBytes = baos.toByteArray();
     }
 
     protected AsyncParserBuilder setupParser(InputStream in, boolean isProbe) {
         AsyncParserBuilder result = AsyncParser.of(in, lang, baseIri)
                 .mutateSources(parser -> parser
+                        .prefixes(prefixMap)
                         .labelToNode(RDFDataMgrRx.createLabelToNodeAsGivenOrRandom())
                         .resolver(IRIxResolverUtils.newIRIxResolverAsGiven()));
 

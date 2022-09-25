@@ -561,6 +561,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 tmp.close();
             }
 
+            // We buffered the tail elements - close the byte supplier
             tailByteBuffer.getDataSupplier().close();
         } catch (Throwable e) {
             // The logic that analyses and possibly gathers tail elements should never fail
