@@ -374,10 +374,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      *
      * @param isFirstSplit If true then the first record is included in the output; otherwise it is skipped
      * @param splitFlow The flow of items obtained from the split
-     * @param tailItems The first set of group items after in the next split
+     * @param tailElts The first set of group items after in the next split
      * @return
      */
-    protected Stream<T> aggregate(boolean isFirstSplit, Stream<U> splitFlow, List<U> tailItems) {
+    protected Stream<T> aggregate(boolean isFirstSplit, Stream<U> splitFlow, List<U> tailElts) {
         // We need to be careful to not return null as a flow item:
         // FlowableOperatorSequentialGroupBy returns a stream of (key, accumulator) pairs
         // Returning a null accumulator is ok as long it resides within the pair
@@ -389,7 +389,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 accumulating::accumulate);
 
         Stream<T> result = StreamOperatorSequentialGroupBy.create(spec)
-                .transform(Stream.concat(splitFlow, tailItems.stream()))
+                .transform(Stream.concat(splitFlow, tailElts.stream()))
                 .map(e -> accumulating.accumulatedValue(e.getValue()));
         if (!isFirstSplit) {
             result = result.skip(1);
@@ -551,8 +551,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                         .findFirst().orElse(Collections.emptyList());
                  */
 
-                long tailItemTime = tailSw.getTime(TimeUnit.MILLISECONDS);
-                logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms", splitId, tailElts.size(), adjustedSplitEnd, tailBytes, tailItemTime));
+                long tailEltsTime = tailSw.getTime(TimeUnit.MILLISECONDS);
+                logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms", splitId, tailElts.size(), adjustedSplitEnd, tailBytes, tailEltsTime));
                 //}
             }
 
@@ -643,7 +643,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // ReadableChannelWithValue<U[], ReadableChannelWithCounter<byte[], ?>, ?> headEltChannel = null;
         ReadableChannel<U[]> headEltChannel = null;
         try (SeekableReadableChannel<byte[]> headByteBufferedChannel = headByteBuffer.newReadableChannel()) {
-            // One ugly cast here in order to avoid distributing all the long names and generics in the code
             StopWatch headSw = StopWatch.createStarted();
 
             headBytes = isFirstSplit
@@ -658,6 +657,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     headRecordTime));
 
             if (!isFirstSplit && headBytes >= 0) {
+                // One ugly cast here in order to avoid distributing all the long names and generics in the code
                 headEltChannel = (ReadableChannelWithValue<U[], ReadableChannelWithCounter<byte[], ?>, ?>) headEltBuffer.getDataSupplier();
             }
         }
@@ -748,6 +748,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 headStream = effectiveInputStream(headStream);
             }
             */
+        } else if (tailRecordOffset < 0) {
+            // We previously gave up on the search for a tail record offset within a limited range of data
+            // But because we found a head record we now we need to find the tail record
+
+            //
+
+
         }
             // Sanity check for non-encoded data: The body must immediately follow
             // the (adjusted) split start + the know header size
@@ -763,6 +770,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 */
 
         //}
+
 
         boolean writeOutSegments = false;
 
@@ -892,7 +900,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
             // The byte channel must be conditionally bounded
 
-            // Issue: the headItemBuffer must be capped at the split point
+            // HeadItemBuffer must be capped at the split point (this is the case now)
             result = aggregate(isFirstSplit, bodyEltStream, tailElts);
 
             boolean inspectBufferSizes = false;

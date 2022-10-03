@@ -88,6 +88,11 @@
             <artifactId>aksw-commons-collectors</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
+        </dependency>
+
 
         <!-- For the rx operators for grouping consecutive triples/quads/items -->
         <dependency>
