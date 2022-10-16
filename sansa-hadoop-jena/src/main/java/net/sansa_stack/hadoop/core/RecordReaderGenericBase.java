@@ -6,22 +6,17 @@ import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 import net.sansa_stack.hadoop.util.InputStreamWithCloseLogging;
 import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
-import net.sansa_stack.hadoop.util.SeekableInputStream;
 import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
 import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
 import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
-import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
-import net.sansa_stack.nio.util.ReadableByteChannelWithConditionalBound;
 import org.aksw.commons.io.buffer.array.ArrayOps;
 import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
-import org.aksw.commons.io.buffer.plain.Buffer;
+import org.aksw.commons.io.hadoop.SeekableInputStream;
 import org.aksw.commons.io.input.*;
 import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.util.stream.SequentialGroupBySpec;
 import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BoundedInputStream;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
@@ -38,17 +33,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -193,8 +185,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // We may need to wrap it with a decoder below
         // var stream: InputStream with fs.Seekable = split.getPath.getFileSystem(context.getConfiguration).open(split.getPath)
         org.apache.hadoop.fs.Path path = split.getPath();
-        rawStream = path.getFileSystem(context.getConfiguration())
-                .open(path);
+        rawStream = path.getFileSystem(context.getConfiguration()).open(path);
 
 //    if (rawStream.isInstanceOf[AbstractInterruptibleChannel]) {
 //      doNotCloseOnInterrupt(rawStream.asInstanceOf[AbstractInterruptibleChannel])
@@ -354,7 +345,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         long exceededSplitPos = rawPos - splitPos;
         boolean virtualEofReached = exceededSplitPos >= 0;
         if (virtualEofReached) {
-            int maxExpectedExcess = isEncoded ? 1 : 0;
+            int maxExpectedExcess = 0; // isEncoded ? 1 : 0;
 
             if (exceededSplitPos > maxExpectedExcess) {
                 logger.warn(String.format("Split %s: Exceeded split pos by %d bytes", splitId, exceededSplitPos));
@@ -377,7 +368,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param tailElts The first set of group items after in the next split
      * @return
      */
-    protected Stream<T> aggregate(boolean isFirstSplit, Stream<U> splitFlow, List<U> tailElts) {
+    protected Stream<T> aggregate(boolean isFirstSplit, Stream<U> splitFlow, Stream<U> tailElts) {
         // We need to be careful to not return null as a flow item:
         // FlowableOperatorSequentialGroupBy returns a stream of (key, accumulator) pairs
         // Returning a null accumulator is ok as long it resides within the pair
@@ -389,7 +380,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 accumulating::accumulate);
 
         Stream<T> result = StreamOperatorSequentialGroupBy.create(spec)
-                .transform(Stream.concat(splitFlow, tailElts.stream()))
+                .transform(Stream.concat(splitFlow, tailElts))
                 .map(e -> accumulating.accumulatedValue(e.getValue()));
         if (!isFirstSplit) {
             result = result.skip(1);
@@ -484,42 +475,44 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return foundValidRecordOffset;
     }
 
-    protected Stream<T> createRecordFlow() throws IOException {
 
-        // Except for the first split, the first element may parse successfully but may
-        // actually be an incomplete record that is cut off at the split boundary and that would
-        // thus be interpreted incorrectly. For example, a quad followed by a triple such as
-        // "<g> | <s> <p> <o> . <s> <p> <o> ." with "|" indicating the
-        // split boundary would be incorrectly seen as a triple in the default graph.
-        // The second element may be wrongly connected to the incomplete record, so the third element
-        // should be safe. Once we find the start of the third record we
-        // then need to find probeRecordCount further elements to validate the starting position.
-        // Hence, we need to read up to (3 + probeElementCount) * maxRecordLength bytes
+    /* Head state */
+    Predicate<Long> posValidator;
+    Function<Long, Long> posToSplitId;
 
-        // TODO The comment above needs to be updated; by now there is accumulation so we only have to skip 1 element
-        int skipEltCount = 2;
-        long maxExtraByteCount = (skipEltCount + probeEltCount) * maxRecordLength;
+    long headBytes = -1;
+    // Set the stream to the start of the split and get the head buffer
+    // Note that we will use the stream later in its state to read the body part
+    long knownDecodedDataLength = isEncoded ? -1 : splitLength; // TODO Rename to decodedSplitLength
 
-        // Set the stream to the end of the split and get the tail buffer
-        Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitEnd, splitEnd + maxExtraByteCount);
-        long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
 
-        List<U> tailElts = Collections.emptyList();
-        long tailRecordOffset;
-        long tailBytes;
+    /* Tail state */
+    protected int skipRegionCount = 2;
+    protected long maxExtraByteCount = Long.MAX_VALUE;
+    protected long tailRecordOffset = -1;
+    protected long tailBytes = -1;
+    protected BufferOverReadableChannel<U[]> tailEltBuffer;
+    protected BufferOverReadableChannel<byte[]> tailByteBuffer;
+    protected List<U> tailElts = Collections.emptyList();
 
+
+//    protected void detectTail(InputStream in) {
+//        tailByteBuffer = BufferOverReadableChannel.createForBytes(
+//                new BoundedInputStream(in, maxExtraByteCount), 1024 * 1024);
+
+    protected void detectTail(BufferOverReadableChannel<byte[]> tailByteBuffer) {
         BufferOverReadableChannel<U[]> tailEltBuffer = BufferOverReadableChannel.createForObjects(probeEltCount);
-        BufferOverReadableChannel<byte[]> tailByteBuffer = BufferOverReadableChannel.createForBytes(
-                new BoundedInputStream(stream, maxExtraByteCount), 1024 * 1024);
 
         try (SeekableReadableChannel<byte[]> tailByteChannel = tailByteBuffer.newReadableChannel()) {
             StopWatch tailSw = StopWatch.createStarted();
-            tailRecordOffset = skipToNthRecord(skipEltCount, tailByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, pos -> true, tailEltBuffer, this::prober);
+            tailRecordOffset = skipToNthRegionInSplit(skipRegionCount, tailByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, pos -> true, posToSplitId, tailEltBuffer, this::prober);
 
             // If no record is found in the tail then take all its known bytes because
             // we assume we hit the last few splits of the stream and there simply are no further record
             // starts anymore
             tailBytes = tailRecordOffset < 0 ? tailByteBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset);
+
+            System.err.println("Tail bytes: " + tailBytes);
 
             if (tailRecordOffset >= 0) {
                 // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
@@ -527,30 +520,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // tailNav.position(tailBytes);
                 // lines(tailNav).limit(100).forEach(System.out::println);
 
-//                try (ReadableChannel<U[]> tailEltSupplier = Optional.ofNullable(
-//                        tailEltBuffer.getDataSupplier()).orElseGet(() -> ReadableChannels.empty(ArrayOps.forObjects()))) {
-
                 SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(accumulating::classify, () -> (List<U>) new ArrayList(1 * 1024), Collection::add);
-
-
-                // Concat the buffer of probed items with the parsing stream (the latter without buffering)
-                // try (Stream<U> tailEltStream = Stream.concat(
-                // ReadableChannels.newStream(tailEltBuffer.getBuffer().newReadableChannel()),
-                //       ReadableChannels.newStream(tailEltSupplier))) {
-                // Remove the buffering from tailEltStream
-                // ReadableChannel<U[]> debufferedEltChannel = debufferEltStream(tailEltBuffer, tailByteBuffer); //, tailEltBuffer.getDataSupplier());
 
                 try (Stream<U> tailEltStream = debufferedEltStream(tailEltBuffer)) {
                     tailElts = StreamOperatorSequentialGroupBy.create(spec).transform(tailEltStream).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyList());
                 }
 
-                /*
-                tailItems = StreamOperatorSequentialGroupBy.create(spec)
-                        .transform(parseFromSeekable(tailNav, false))
-                        .map(Map.Entry::getValue)
-                        .findFirst().orElse(Collections.emptyList());
-                 */
-
+                long adjustedSplitEnd = -1;
                 long tailEltsTime = tailSw.getTime(TimeUnit.MILLISECONDS);
                 logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms", splitId, tailElts.size(), adjustedSplitEnd, tailBytes, tailEltsTime));
                 //}
@@ -568,369 +544,198 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // TODO Unless due to IOExceptions e.g. when the network went down
             throw new RuntimeException("Should never come here");
         }
+    }
 
-        // Displacement was needed due to hadoop reading one byte past split boundaries
-        // With DeferredSeekablePushbackInputStream this should no longer be needed
-        // // TailBuffer in encoded setting is displaced by 1 byte
-        int displacement = isEncoded ? 1 : 0;
+    protected Stream<T> createRecordFlow() throws IOException {
+        System.err.println("Processing split " + splitId);
 
-        SeekableReadableChannel<byte[]> tailChannel = tailByteBuffer.newReadableChannel();
-        // tailChannel.nextPos(displacement);
-        tailChannel.position(displacement);
+        // Except for the first split, the first region may parse successfully but may
+        // actually be an incomplete element that is cut off at the split boundary and that would
+        // thus be interpreted incorrectly. For example, a quad followed by a triple such as
+        // "<s> | <p> <o> <g> . <s> <p> <o> ." with "|" indicating the
+        // split boundary would be incorrectly seen as a triple in the default graph.
+        // The second element may be wrongly connected to the incomplete record, so the third region
+        // should be safe. Once we find the start of the third region we
+        // then need to find probeRecordCount further elements to validate the starting position.
 
-        InputStream tailByteStream = new BoundedInputStream(ReadableChannels.newInputStream(tailChannel), tailBytes - displacement);
+        // int skipRegionCount = 2;
+        // long maxExtraByteCount = (skipRegionCount + probeEltCount) * maxRecordLength;
 
-        // If there is a tailRecord then inject the postamble
-        InputStream postambleStream = tailRecordOffset < 0
-                ? new ByteArrayInputStream(EMPTY_BYTE_ARRAY)
-                : new ByteArrayInputStream(postambleBytes);
+        // Set the stream to the end of the split and get the tail buffer
+        Map.Entry<Long, Long> adjustedTailSplitBounds = setStreamToInterval(splitStart, Long.MAX_VALUE); //splitEnd + maxExtraByteCount);
+        //long adjustedSplitEnd = adjustedTailSplitBounds.getKey();
+
+        // TODO Somehow make the stream capable of limiting itself on read across the split boundary
+        //  if a head region has been detected.
+
+        if (splitStart == 132970) {
+            System.err.println("DEBUG POINT");
+        }
 
 
-        // Set the stream to the start of the split and get the head buffer
-        // Note that we will use the stream later in its state to read the body part
-        long knownDecodedDataLength[] = new long[]{ isEncoded ? -1 : splitLength };
+        // SeekableReadableChannel<byte[]> sstream = SeekableInputStreams.wrap(stream);
+        SeekableSourceOverSplit source = isEncoded
+                ? SeekableSourceOverSplit.createForBlockEncodedStream(stream, splitEnd, postambleBytes)
+                : SeekableSourceOverSplit.createForNonEncodedStream(stream, splitEnd, postambleBytes);
 
-        Map.Entry<Long, Long> adjustedHeadSplitBounds = setStreamToInterval(splitStart, adjustedSplitEnd);
-        long adjustedSplitStart = adjustedHeadSplitBounds.getKey();
+        SeekableSourceOverSplit.Channel headByteChannel = source.newReadableChannel();
 
         // Pos validator: Returns true as long as the position is not past the split bound w.r.t. decoded data
-        Predicate<Long> posValidator = pos -> {
-            boolean r = knownDecodedDataLength[0] < 0 || pos < knownDecodedDataLength[0];
+        posValidator = pos -> {
+            boolean r = !source.getHeadBuffer().isDataSupplierConsumed() || pos < source.getHeadBuffer().getKnownDataSize();
             // logger.info("Validation request: " + pos + " known size=" + knownDecodedDataLength[0] + " valid=" + r);
             return r;
         };
 
-        // In the following snippet note that ReadableByteChannelWithConditionalBound's
-        // callback mechanism is only used to detect the split length of the decoded data.
-        // It is NOT used to flag the end of the stream.
-        InputStream splitDetectingHeadStream =
-                Channels.newInputStream(
-                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelFromInputStream(stream),
-                                self -> {
-                                    if (knownDecodedDataLength[0] < 0) {
-                                        boolean foundBound = didHitSplitBound(
-                                                stream,
-                                                adjustedSplitEnd);
-
-                                        if (foundBound) {
-                                            knownDecodedDataLength[0] = self.getBytesRead();
-                                            logger.info(String.format("Split %s: Head stream encountered split end; decoded data length = %d", splitId,  knownDecodedDataLength[0]));
-                                        }
-                                    }
-
-                                    // Never signal eof
-                                    return false;
-                                }));
-
-        InputStream splitBoundedHeadByteStream =
-                Channels.newInputStream(
-                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelFromInputStream(splitDetectingHeadStream),
-                                xstream -> didHitSplitBound(stream, adjustedSplitEnd)));
-
-        // The body is the head plus the tail
-        InputStream bodyByteStream = new SequenceInputStream(Collections.enumeration(
-                Arrays.asList(splitBoundedHeadByteStream, tailByteStream, postambleStream)));
-
-        ReadableChannel<byte[]> headByteChannelRaw = ReadableChannels.wrap(bodyByteStream); // ReadableChannels.wrap(new BoundedInputStream(bodyByteStream, desiredExtraBytes));
-        ReadableChannelSwitchable<byte[]> headByteChannelSwitchable = new ReadableChannelSwitchable<>(headByteChannelRaw);
+        Function<Long, Long> idfn = TailBufferChannel.splitIdFn(splitStart, splitLength);
+        posToSplitId = !isEncoded ? idfn :
+            pos -> {
+                long blockOffset = source.getBlockForPos(pos);
+                long sid = idfn.apply(blockOffset);
+                return sid;
+            };
 
         BufferOverReadableChannel<U[]> headEltBuffer = BufferOverReadableChannel.createForObjects(probeEltCount);
 
-        BufferOverReadableChannel<byte[]> headByteBuffer = BufferOverReadableChannel.createForBytes(headByteChannelSwitchable, 1024 * 1024);
-        int headBytes;
-        // ReadableChannelWithValue<U[], ReadableChannelWithCounter<byte[], ?>, ?> headEltChannel = null;
+        StopWatch headSw = StopWatch.createStarted();
+
+        headBytes = isFirstSplit
+                ? 0
+                : Ints.checkedCast(skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, posValidator, posToSplitId, headEltBuffer, this::prober));
+
+        long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
+        logger.info(String.format("Split %s: Found head record at pos %d with %d bytes read in %d ms",
+                splitId,
+                headBytes,
+                -1, // source.getKnownDataSize(),
+                headRecordTime));
+
+        if (false) {
+            try (SeekableReadableChannel<byte[]> channel = source.newReadableChannel(headBytes)) {
+                System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(channel), StandardCharsets.UTF_8));
+            }
+            return Stream.empty();
+        }
+
         ReadableChannel<U[]> headEltChannel = null;
-        try (SeekableReadableChannel<byte[]> headByteBufferedChannel = headByteBuffer.newReadableChannel()) {
-            StopWatch headSw = StopWatch.createStarted();
+        Stream<U> headItems = null;
 
-            headBytes = isFirstSplit
-                    ? 0
-                    : Ints.checkedCast(skipToNthRecord(skipEltCount, headByteBufferedChannel, 0, 0, maxRecordLength, maxExtraByteCount, posValidator, headEltBuffer, this::prober));
-
-            long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
-            logger.info(String.format("Split %s: Found head record at pos %d with %d bytes read in %d ms",
-                    splitId,
-                    headBytes,
-                    headByteBuffer.getKnownDataSize(),
-                    headRecordTime));
-
-            if (!isFirstSplit && headBytes >= 0) {
-                // One ugly cast here in order to avoid distributing all the long names and generics in the code
-                headEltChannel = (ReadableChannelWithValue<U[], ReadableChannelWithCounter<byte[], ?>, ?>) headEltBuffer.getDataSupplier();
-            }
+        if (!isFirstSplit && headBytes >= 0) {
+            // One ugly cast here in order to avoid distributing all the long names and generics in the code
+            // Extract the byte channel on which the parser currently runs
+            ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?> typedHeadEltChannel = (ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?>) headEltBuffer.getDataSupplier();
+            headEltChannel = typedHeadEltChannel;
+            headByteChannel = (SeekableSourceOverSplit.Channel)typedHeadEltChannel.getValue().getDecoratee();
+        } else {
+            headItems = parseFromSeekable(headByteChannel, false);
         }
 
+        // Block reads from the base stream in order to decide the next course of action.
+        Lock lock = headByteChannel.getReadWriteLock().writeLock();
+        lock.lock();
+        try {
+            if (headByteChannel.isHeadStream()) {
+                // (a) If the tail buffer has not yet been touched then schedule tail search as the stream's transition action
+                SeekableSourceOverSplit.Channel finalHeadByteChannel = headByteChannel;
+                headByteChannel.setTransitionAction(() -> {
+                    System.err.println("Pos before: " + finalHeadByteChannel.position());
+                    detectTail(source.getTailBuffer());
+                    System.err.println("Pos after: " + finalHeadByteChannel.position());
 
-        // debufferEltStream(headEltBuffer, headByteBuffer);
-
-
-        ReadableChannelWithCounter<byte[], ?> headByteChannel;
-
-        // println("Raw stream position [" + Thread.currentThread() + "]: " + stream.getPos)
-
-        // long deltaSplitStart = adjustedSplitStart - splitStart;
-        // logger.debug(String.format("Adjusted split start %d to %d [%d]", splitStart, adjustedSplitStart, deltaSplitStart);
-
-        // Stream is now positioned at beginning of body region
-        // And head and tail buffers have been populated
-        logger.debug(String.format("Adjusted [%d, %d) to [%d, %d) | delta: (%d, %d)",
-                splitStart, splitEnd,
-                adjustedSplitStart, adjustedSplitEnd,
-                adjustedSplitStart - splitStart,
-                adjustedSplitEnd - splitEnd));
-        // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
-
-        // Set up the body stream whose read method returns
-        // -1 upon reaching the split boundry
-/*
-        InputStream splitBoundedBodyStream =
-                Channels.newInputStream(
-                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
-                                new ReadableByteChannelFromInputStream(stream),
-                                xstream -> didHitSplitBound(stream, adjustedSplitEnd)));
-*/
-
-
-        // Find the second record in the next split - i.e. after splitEnd (inclusive)
-        // This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
-        // such as <g> { } | <g> { }   (where '|' denotes the split boundary)
-
-        // If we are at start 0, we parse from the beginning - otherwise we skip the first record
-
-        // println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
-        // println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
-
-        // Assemble the overall stream
-        InputStream preambleStream = new ByteArrayInputStream(preambleBytes);
-        InputStream headStream = null;
-        // InputStream tailStream = null;
-        // InputStream postambleStream = null;
-
-        if (headBytes < 0) {
-            // FIXME There are two possibilities now why we couldn't find a record
-            //  - There were errors in the data
-            //  - There is a record that goes across this split
-            logger.warn(String.format("Split %s: No data found. Possible reasons: " +
-                    "(1) A large record spanning this split, " +
-                    "(2) Syntax error(s) in the data," +
-                    "(3) Some bug in the implementation", splitId));
-
-            tailByteStream.close();
-
-            // No data from this split
-            headStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
-            // splitBoundedBodyStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
-            tailByteStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
-            postambleStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
-        } else if (false) {
-
-            // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
-            // We need to check the headLength here
-            long headLength = knownDecodedDataLength[0] < 0
-                    ? headByteBuffer.getKnownDataSize()
-                    : knownDecodedDataLength[0];
-
-            SeekableReadableChannel<byte[]> headChannel = headByteBuffer.newReadableChannel();
-            if (headBytes != 0) {
-                // The method nextPos may read bytes from the head buffer if no bytes have been read yet!
-                // So only call nextPos when we have to and know for sure we had prior reads. This is indicated by
-                // a non-zero value of headBytes.
-                // headChannel.nextPos(headBytes);
-                headChannel.position(headBytes);
-            }
-
-            headStream = new BoundedInputStream(ReadableChannels.newInputStream(headChannel), headLength - headBytes);
-
-            /* This should no longer be needed
-            if (!isFirstSplit) {
-                headStream = effectiveInputStream(headStream);
-            }
-            */
-        } else if (tailRecordOffset < 0) {
-            // We previously gave up on the search for a tail record offset within a limited range of data
-            // But because we found a head record we now we need to find the tail record
-
-            //
-
-
-        }
-            // Sanity check for non-encoded data: The body must immediately follow
-            // the (adjusted) split start + the know header size
-        /*
-            if (!isEncoded) {
-                long expectedBodyOffset = adjustedSplitStart + headByteBuffer.getKnownDataSize();
-                // println(s"adjustedSplitStart=$adjustedSplitStart + known head buffer size = ${headBuffer.getKnownDataSize} = $expectedBodyOffset - actual body offset = ${stream.getPos}")
-
-                if (expectedBodyOffset != stream.getPos()) {
-                    throw new RuntimeException("Expected body offset does not match actual one: adjustedSplitStart = " + adjustedSplitStart + " known head buffer size = " + headByteBuffer.getKnownDataSize() + ", expected body offset = " + expectedBodyOffset + ", actual body offset = " + stream.getPos());
-                }
-            }
-*/
-
-        //}
-
-
-        boolean writeOutSegments = false;
-
-        if (writeOutSegments) {
-            // String splitName = split.getPath().getName();
-
-            Path basePath = SystemUtils.getJavaIoTmpDir().toPath().toAbsolutePath();
-
-            logger.info("Writing segment " + splitName + " " + splitStart + " to " + basePath);
-
-            // Path basePath = Paths.get("/mnt/LinuxData/tailRecordOffset/");
-
-            Path preambleFile = basePath.resolve(splitName + "_" + splitStart + ".preamble.dat");
-            Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.dat");
-            Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.dat");
-            Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.dat");
-            Path postambleFile = basePath.resolve(splitName + "_" + splitStart + ".postamble.dat");
-            Files.copy(preambleStream, preambleFile);
-            Files.copy(headStream, headFile);
-            // Files.copy(splitBoundedBodyStream, bodyFile);
-            Files.copy(tailByteStream, tailFile);
-            Files.copy(postambleStream, postambleFile);
-            // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
-            preambleStream = Files.newInputStream(preambleFile, StandardOpenOption.READ);
-            headStream = Files.newInputStream(headFile, StandardOpenOption.READ);
-            // splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ);
-            tailByteStream = Files.newInputStream(tailFile, StandardOpenOption.READ);
-            postambleStream = Files.newInputStream(postambleFile, StandardOpenOption.READ);
-        }
-
-
-
-
-        Stream<T> result = null;
-        if (headBytes >= 0) {
-
-            // If probing the head records read past the tail record offset we have to reread the data in order to ensure
-            // we use the right bounds
-            // Otherwise, we can update the head buffers data supplier's limit to the tail offset
-
-
-                /*
-                InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
-                                Arrays.asList(preambleStream, headStream, splitBoundedBodyStream, tailStream, postambleStream))),
-                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logClose);
-                 */
-            // ReadableChannel<byte[]> tailChannel = ReadableChannels.wrap(tailStream);
-
-            Stream<U> bodyEltStream;
-            if (headEltChannel == null) {
-                bodyEltStream = parse(bodyByteStream, false);
-            }
-            else {
-                headByteChannel = null; // headEltChannel.getValue();
-                /*
-                if (headBytes >= 0) {
-                    headByteChannel = headEltChannel.getValue();
-                } else {
-                    headByteChannel = ReadableChannels.withCounter(ReadableChannels.(parse(splitBoundedBodyStream, false)));
-                }
-                 */
-
-                // Switch the head channel to non-buffering.
-                // This has to be done atomically because the parser may still be reading
-                if (false) {
-                    headByteChannelSwitchable.setDecoratee(() -> {
-                        ReadableChannel<byte[]> r;
-
-                        // TODO Position check has to be synchronized because the parser may yet be reading ahead!
-                    /*
-                    long streamPos = 0;
-                    try {
-                        streamPos = stream.getPos();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    if (tailBytes >= 0) {
+                        long absTailPos = source.getHeadBuffer().getKnownDataSize() + tailBytes;
+                        finalHeadByteChannel.setLimit(absTailPos);
                     }
-                    boolean isHeadPastTail = !posValidator.test(streamPos);
+                });
+            } else {
+                if (true) {
+                    // throw new RuntimeException("Read over tail");
+                }
+                // (b) Otherwise start the tail search immediately. Once the tail region offset is
+                //   found there are 2 possibilities:
+                detectTail(source.getTailBuffer());
+                long pos = headByteChannel.position();
+                long absTailPos = source.getHeadBuffer().getKnownDataSize() + tailBytes;
+                if (pos <= absTailPos) {
+                    //   (b1) The tail region offset is greater than the current byte read offset - in that case just limit the byte stream
+                    if (tailBytes >= 0) {
+                        headByteChannel.setLimit(absTailPos);
+                    }
+                } else {
+                    // Close the (possibly asynchronously running) parser
+                    // TODO Probably we have to release the lock to be safe?
+                    // lock.unlock();
+                    if (headEltBuffer.getDataSupplier() != null) {
+                        headEltBuffer.getDataSupplier().close();
+                    }
+                    //   (b2) We already read past the end; restart the parser.
+                    headEltBuffer.setDataSupplier(null);
+                    headEltBuffer.truncate();
+                    headByteChannel.close();
+                    headByteChannel = source.newReadableChannel();
+                    // lock = headByteChannel.getReadWriteLock().writeLock();
+                    // lock.lock();
+                    headByteChannel.position(headBytes);
+                    if (tailBytes >= 0) {
+                        headByteChannel.setLimit(absTailPos);
+                    }
+                    headItems = parseFromSeekable(headByteChannel, false);
+//                        headEltBuffer.getDataSupplier().close();
+//                        headEltBuffer.truncate();
+//                        headEltBuffer.setDataSupplier(headByteChannel);
+//
+//                        headEltChannel = headEltBuffer
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
 
-                    if (isHeadPastTail) {
-                        throw new RuntimeException("Parsed beyord tail - not yet handled");
-                    } else {
-                     */
+        if (false) {
+            headByteChannel.position(headBytes);
+            //try (SeekableReadableChannel<byte[]> channel = ){
+                System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(headByteChannel), StandardCharsets.UTF_8));
+            //}
+            return Stream.empty();
+        }
+
+        if (headItems == null) {
+            // headEltChannel = headEltBuffer.getDataSupplier();
+            ReadableChannel<U[]> finalHeadEltChannel = headEltChannel;
+            headItems = ReadableChannels.newStream(finalHeadEltChannel)
+                    .onClose(() -> {
                         try {
-                            long n = headByteChannel.getReadCount();
-                            Buffer<byte[]> buffer = headByteBuffer.getBuffer();
-
-                            long size = buffer.size();
-
-                            ReadableChannel<byte[]> unbufferedHeadStream = ReadableChannels.wrap(bodyByteStream);
-
-                            List<ReadableChannel<byte[]>> channels = n <= size
-                                    ? Arrays.asList(buffer.newReadableChannel(n), unbufferedHeadStream)
-                                    : Arrays.asList(unbufferedHeadStream);
-
-
-                            // headByteChannelSwitchable.getDecoratee().close();
-
-                            r = ReadableChannels.concat(channels);
-                        } catch (Exception e) {
+                            finalHeadEltChannel.close();
+                        } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        //}
-                        return r;
                     });
 
-                    if (headByteChannelSwitchable.getDecoratee() == null) {
-                        throw new RuntimeException("Parsed beyond tail - not handled yet");
-                    }
-                }
-                /*
-                Stream<U> headItems = ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel());
-                Stream<U> bodyItems = ReadableChannels.newStream(headEltBuffer.getDataSupplier())
-                        .onClose(() -> {
-                            try {
-                                headEltBuffer.getDataSupplier().close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-                bodyEltStream = Stream.concat(headItems, bodyItems);
-                 */
-                bodyEltStream = debufferedEltStream(headEltBuffer);
-            }
+            headItems = Stream.concat(ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel()), headItems);
+            // headItems = ReadableChannels.newStream(headEltBuffer.newReadableChannel());
+        }
+        Stream<U> lazyTailElts = Stream.of(1).flatMap(x -> {
+            System.err.println("Yielding " + tailElts.size() + " tail elements");
+            return tailElts.stream();
+        });
 
 
-            // parse(new SequenceInputStream(Collections.enumeration(Arrays.asList(splitBoundedBodyStream, tailStream))), false);
 
-            // The byte channel must be conditionally bounded
+        Stream<T> result = aggregate(isFirstSplit, headItems, lazyTailElts);
 
-            // HeadItemBuffer must be capped at the split point (this is the case now)
-            result = aggregate(isFirstSplit, bodyEltStream, tailElts);
-
-            boolean inspectBufferSizes = false;
-            if (inspectBufferSizes) {
-                // Load all items into memory and print out the sizes of the byte level buffers
-                // The sizes should be relatively small
-                try (Stream<T> tmp = result) {
-                    result = tmp.collect(Collectors.toList()).stream();
-                }
-                System.out.println("TailByteBuffer.size = " + tailByteBuffer.getBuffer().size());
-                System.out.println("HeadByteBuffer.size = " + headByteBuffer.getBuffer().size());
-            }
-
-            // result = aggregate(isFirstSplit, parse(fullStream, false), tailItems);
-
-            // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
-            // nav.setPos(effectiveRecordRangeStart - splitStart)
-            // nav.limitNext(parseLength)
-            // result = parser(nav)
-            // .onErrorReturnItem(EMPTY_DATASET)
-            // .filter(isNonEmptyDataset)
-        } else {
-            result = Stream.empty();
+        if (true) {
+            List<T> tmp = result.collect(Collectors.toList());
+            System.err.println(String.format("Split %s: Got %d items in total", splitId, tmp.size()));
+            result = tmp.stream();
         }
 
-        //    val cnt = result
-        //      .count()
-        //      .blockingGet()
-        //    System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
+/*
+        System.out.println("Is first split? " + isFirstSplit);
+        headItems.forEach(x -> System.out.println("Head Item: " + x));
+        lazyTailElts.forEach(x -> System.out.println("Tail Item: " + x));
 
+        Stream<T> result = Stream.empty();
+*/
         return result;
     }
 
@@ -1025,7 +830,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @return
      * @throws IOException
      */
-    public static <U> long findNextRecord(
+    public static <U> long findNextRegion(
             CustomPattern recordSearchPattern,
             SeekableReadableChannel<byte[]> nav,
             long splitStart,
@@ -1082,7 +887,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param prober
      * @return
      */
-    long skipToNthRecord(
+    long skipToNthRegionInSplit(
             int n,
             SeekableReadableChannel<byte[]> nav,
             long splitStart,
@@ -1090,9 +895,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             long maxRecordLength,
             long absDataRegionEnd,
             Predicate<Long> posValidator,
+            Function<Long, Long> posToSplitId,
             BufferOverReadableChannel<U[]> outBuffer,
             BiPredicate<SeekableReadableChannel<byte[]>, BufferOverReadableChannel<U[]>> prober) throws IOException {
         long result = -1L;
+
+        long previousSplitId = -1;
 
         // TODO availableDataRegion is a confusing name - what is meant is "the available amount *allowed* for probing"
         //   the *actual* available amount of data may be much less
@@ -1103,7 +911,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Only buffer items on the last iteration
             BufferOverReadableChannel<U[]> effOutBuffer = isLastIteration ? outBuffer : null;
 
-            long candidatePos = findNextRecord(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, posValidator, effOutBuffer, prober);
+            long candidatePos = findNextRegion(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, posValidator, effOutBuffer, prober);
             if (candidatePos < 0) {
 
                 // If there is more than maxRecordLength data available then
@@ -1131,6 +939,21 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // effectiveRecordRangeEnd = dataRegionEnd
                 break;
             } else {
+                // If the current match is in a different split than the previous then start over counting
+                // the matches in the split
+                long splitId = posToSplitId.apply(candidatePos);
+                if (splitId != previousSplitId) {
+                    if (i > 0) {
+                        isLastIteration = false;
+                        // TODO Do we need to extract the byte level data supplier and close it too - or is this done implicitly?
+                        outBuffer.getDataSupplier().close();
+                        outBuffer.truncate();
+                        i = 0;
+                    }
+
+                    previousSplitId = splitId;
+                }
+
                 // If this is the last iteration set the result
                 if (isLastIteration) {
                     result = candidatePos;
@@ -1524,3 +1347,256 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 adjustedStart = core.getPos();
                 stream = new SeekableInputStream(core);
 */
+
+/*
+
+
+        long adjustedSplitStart = -1;
+        // Stream is now positioned at beginning of body region
+        // And head and tail buffers have been populated
+        logger.debug(String.format("Adjusted [%d, %d) to [%d, %d) | delta: (%d, %d)",
+                splitStart, splitEnd,
+                adjustedSplitStart, adjustedSplitEnd,
+                adjustedSplitStart - splitStart,
+                adjustedSplitEnd - splitEnd));
+        // logger.info(s"[head: $headBufferLength] [ $splitLength ] [$tailBufferLength]")
+
+        // Set up the body stream whose read method returns
+        // -1 upon reaching the split boundry
+/*
+        InputStream splitBoundedBodyStream =
+                Channels.newInputStream(
+                        new ReadableByteChannelWithConditionalBound<ReadableByteChannel>(
+                                new ReadableByteChannelFromInputStream(stream),
+                                xstream -> didHitSplitBound(stream, adjustedSplitEnd)));
+* /
+
+
+// Find the second record in the next split - i.e. after splitEnd (inclusive)
+// This is to detect record parts that although cleanly separated by the split boundary still need to be aggregated,
+// such as <g> { } | <g> { }   (where '|' denotes the split boundary)
+
+// If we are at start 0, we parse from the beginning - otherwise we skip the first record
+
+// println("HEAD BUFFER: " + new String(headBuffer, headBytes, headBufferLength - headBytes, StandardCharsets.UTF_8))
+// println("TAIL BUFFER: " + new String(tailBuffer, 0, tailBytes, StandardCharsets.UTF_8))
+
+// Assemble the overall stream
+InputStream preambleStream = new ByteArrayInputStream(preambleBytes);
+    InputStream headStream = null;
+// InputStream tailStream = null;
+// InputStream postambleStream = null;
+
+        if (headBytes < 0) {
+        // FIXME There are two possibilities now why we couldn't find a record
+        //  - There were errors in the data
+        //  - There is a record that goes across this split
+        logger.warn(String.format("Split %s: No data found. Possible reasons: " +
+        "(1) A large record spanning this split, " +
+        "(2) Syntax error(s) in the data," +
+        "(3) Some bug in the implementation", splitId));
+
+        // tailByteStream.close();
+
+        // No data from this split
+        headStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+        // splitBoundedBodyStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+        // tailByteStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+        // postambleStream = new ByteArrayInputStream(EMPTY_BYTE_ARRAY);
+        } else if (false) {
+
+        // headStream = new ByteArrayInputStream(headBuffer, headBytes, headBufferLength - headBytes)
+        // We need to check the headLength here
+            /*
+            long headLength = -1;
+            knownDecodedDataLength[0] < 0
+                    ? headByteBuffer.getKnownDataSize()
+                    : knownDecodedDataLength[0];
+
+            SeekableReadableChannel<byte[]> headChannel = headByteBuffer.newReadableChannel();
+            if (headBytes != 0) {
+                // The method nextPos may read bytes from the head buffer if no bytes have been read yet!
+                // So only call nextPos when we have to and know for sure we had prior reads. This is indicated by
+                // a non-zero value of headBytes.
+                // headChannel.nextPos(headBytes);
+                headChannel.position(headBytes);
+            }
+
+            headStream = new BoundedInputStream(ReadableChannels.newInputStream(headChannel), headLength - headBytes);
+*/
+            /* This should no longer be needed
+            if (!isFirstSplit) {
+                headStream = effectiveInputStream(headStream);
+            }
+            * /
+        } else if (tailRecordOffset < 0) {
+        // We previously gave up on the search for a tail record offset within a limited range of data
+        // But because we found a head record we now we need to find the tail record
+
+        //
+
+
+        }
+
+
+        boolean writeOutSegments = false;
+
+        if (writeOutSegments) {
+        // String splitName = split.getPath().getName();
+
+        Path basePath = SystemUtils.getJavaIoTmpDir().toPath().toAbsolutePath();
+
+        logger.info("Writing segment " + splitName + " " + splitStart + " to " + basePath);
+
+        // Path basePath = Paths.get("/mnt/LinuxData/tailRecordOffset/");
+
+        Path preambleFile = basePath.resolve(splitName + "_" + splitStart + ".preamble.dat");
+        Path headFile = basePath.resolve(splitName + "_" + splitStart + ".head.dat");
+        Path bodyFile = basePath.resolve(splitName + "_" + splitStart + ".body.dat");
+        Path tailFile = basePath.resolve(splitName + "_" + splitStart + ".tail.dat");
+        Path postambleFile = basePath.resolve(splitName + "_" + splitStart + ".postamble.dat");
+        Files.copy(preambleStream, preambleFile);
+        Files.copy(headStream, headFile);
+        // Files.copy(splitBoundedBodyStream, bodyFile);
+        // Files.copy(tailByteStream, tailFile);
+        // Files.copy(postambleStream, postambleFile);
+        // Nicely close streams? Then again, must parts are in-memory buffers and this is debugging code only
+        preambleStream = Files.newInputStream(preambleFile, StandardOpenOption.READ);
+        headStream = Files.newInputStream(headFile, StandardOpenOption.READ);
+        // splitBoundedBodyStream = Files.newInputStream(bodyFile, StandardOpenOption.READ);
+        // tailByteStream = Files.newInputStream(tailFile, StandardOpenOption.READ);
+        // postambleStream = Files.newInputStream(postambleFile, StandardOpenOption.READ);
+        }
+
+
+
+
+        Stream<T> result = null;
+        if (headBytes >= 0) {
+
+        // If probing the head records read past the tail record offset we have to reread the data in order to ensure
+        // we use the right bounds
+        // Otherwise, we can update the head buffers data supplier's limit to the tail offset
+
+
+                /*
+                InputStream fullStream = InputStreamWithCloseLogging.wrap(new SequenceInputStream(Collections.enumeration(
+                                Arrays.asList(preambleStream, headStream, splitBoundedBodyStream, tailStream, postambleStream))),
+                        ExceptionUtils::getStackTrace, RecordReaderGenericBase::logClose);
+                 * /
+        // ReadableChannel<byte[]> tailChannel = ReadableChannels.wrap(tailStream);
+
+        Stream<U> bodyEltStream;
+        if (headEltChannel == null) {
+        bodyEltStream = parse(ReadableChannels.newInputStream(source.newReadableChannel()), false);
+        }
+        else {
+        headByteChannel = null; // headEltChannel.getValue();
+                /*
+                if (headBytes >= 0) {
+                    headByteChannel = headEltChannel.getValue();
+                } else {
+                    headByteChannel = ReadableChannels.withCounter(ReadableChannels.(parse(splitBoundedBodyStream, false)));
+                }
+                 * /
+
+        // Switch the head channel to non-buffering.
+        // This has to be done atomically because the parser may still be reading
+        if (false) {
+//                    headByteChannelSwitchable.setDecoratee(() -> {
+//                        ReadableChannel<byte[]> r;
+
+        // TODO Position check has to be synchronized because the parser may yet be reading ahead!
+                    /*
+                    long streamPos = 0;
+                    try {
+                        streamPos = stream.getPos();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean isHeadPastTail = !posValidator.test(streamPos);
+
+                    if (isHeadPastTail) {
+                        throw new RuntimeException("Parsed beyord tail - not yet handled");
+                    } else {
+                     * /
+//                        try {
+//                            long n = headByteChannel.getReadCount();
+//                            Buffer<byte[]> buffer = headByteBuffer.getBuffer();
+//
+//                            long size = buffer.size();
+//
+//                            ReadableChannel<byte[]> unbufferedHeadStream = ReadableChannels.wrap(bodyByteStream);
+//
+//                            List<ReadableChannel<byte[]>> channels = n <= size
+//                                    ? Arrays.asList(buffer.newReadableChannel(n), unbufferedHeadStream)
+//                                    : Arrays.asList(unbufferedHeadStream);
+//
+//
+//                            // headByteChannelSwitchable.getDecoratee().close();
+//
+//                            r = ReadableChannels.concat(channels);
+//                        } catch (Exception e) {
+//                            throw new RuntimeException(e);
+//                        }
+//                        //}
+//                        return r;
+//                    });
+//
+//                    if (headByteChannelSwitchable.getDecoratee() == null) {
+//                        throw new RuntimeException("Parsed beyond tail - not handled yet");
+//                    }
+        }
+                /*
+                Stream<U> headItems = ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel());
+                Stream<U> bodyItems = ReadableChannels.newStream(headEltBuffer.getDataSupplier())
+                        .onClose(() -> {
+                            try {
+                                headEltBuffer.getDataSupplier().close();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                bodyEltStream = Stream.concat(headItems, bodyItems);
+                 * /
+        bodyEltStream = debufferedEltStream(headEltBuffer);
+        }
+
+
+        // parse(new SequenceInputStream(Collections.enumeration(Arrays.asList(splitBoundedBodyStream, tailStream))), false);
+
+        // The byte channel must be conditionally bounded
+
+        // HeadItemBuffer must be capped at the split point (this is the case now)
+        result = aggregate(isFirstSplit, bodyEltStream, tailElts);
+
+        boolean inspectBufferSizes = false;
+        if (inspectBufferSizes) {
+        // Load all items into memory and print out the sizes of the byte level buffers
+        // The sizes should be relatively small
+        try (Stream<T> tmp = result) {
+        result = tmp.collect(Collectors.toList()).stream();
+        }
+        System.out.println("TailByteBuffer.size = " + tailByteBuffer.getBuffer().size());
+        //System.out.println("HeadByteBuffer.size = " + headByteBuffer.getBuffer().size());
+        }
+
+        // result = aggregate(isFirstSplit, parse(fullStream, false), tailItems);
+
+        // val parseLength = effectiveRecordRangeEnd - effectiveRecordRangeStart
+        // nav.setPos(effectiveRecordRangeStart - splitStart)
+        // nav.limitNext(parseLength)
+        // result = parser(nav)
+        // .onErrorReturnItem(EMPTY_DATASET)
+        // .filter(isNonEmptyDataset)
+        } else {
+        result = Stream.empty();
+        }
+
+        //    val cnt = result
+        //      .count()
+        //      .blockingGet()
+        //    System.err.println("For effective region " + effectiveRecordRangeStart + " - " + effectiveRecordRangeEnd + " got " + cnt + " datasets")
+
+
+ */

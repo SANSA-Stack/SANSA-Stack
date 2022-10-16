@@ -36,7 +36,14 @@ public class DeferredSeekablePushbackInputStream
      * As this may cause data corruption, safe read mode uses an intermediate buffer
      * with additional copying to prevent changing data outside of the reported range.
      */
-    protected boolean safeRead = true;
+    protected ReadMode readMode = ReadMode.BUFFERED;
+
+    private enum ReadMode {
+        UNSAFE, // First reads into the given buffer directly but then unreads the last byte and then reports one fewer byte read.
+                // This is unsafe because the buffer is changed outside of the reported range (but within the allowed range)
+        BUFFERED, // Read the requested amount + 1 into a temp buffer. Limited by TRANSFER_SIZE.
+    }
+
     protected byte fallbackBuffer[] = new byte[TRANSFER_SIZE];
 
     public DeferredSeekablePushbackInputStream(InputStream in) {
@@ -89,17 +96,22 @@ public class DeferredSeekablePushbackInputStream
             l = 2;
             isBufferedRead = true;
         } else { // n > 1
-            if (safeRead) {
+            switch (readMode) {
+            case BUFFERED:
                 int bytesToRead = Math.min(len + 1, TRANSFER_SIZE);
                 out = fallbackBuffer;
                 o = 0;
                 l = bytesToRead;
                 isBufferedRead = true;
-            } else {
+                break;
+            case UNSAFE:
                 out = b;
                 o = off;
                 l = len;
                 isBufferedRead = false;
+                break;
+            default:
+                throw new IllegalStateException("Unknown read mode: " + readMode);
             }
         }
 

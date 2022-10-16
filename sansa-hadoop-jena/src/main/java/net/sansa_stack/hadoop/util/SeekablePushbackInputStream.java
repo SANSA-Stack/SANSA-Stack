@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 
+// Does not appear to be used - delete?
 public class SeekablePushbackInputStream
         extends PushbackInputStream
         implements SeekableDecorator
