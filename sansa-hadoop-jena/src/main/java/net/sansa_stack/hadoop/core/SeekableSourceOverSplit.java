@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.Seekable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -41,6 +42,9 @@ public class SeekableSourceOverSplit
     protected BufferOverReadableChannel<byte[]> postambleBuffer;
 
 
+    protected SeekableReadableChannel<byte[]> debufferedHead;
+
+
     /* A later stream with the same offset overrides a prior one (implies that the prior one was empty). */
     protected NavigableMap<Long, Integer> posToIndex = new TreeMap<>();
 
@@ -54,7 +58,7 @@ public class SeekableSourceOverSplit
     }
 
     /** If true then the headStream can no longer be used. */
-    protected boolean isHeadDebuffered;
+    // protected boolean isHeadDebuffered;
 
     public SeekableSourceOverSplit(BufferOverReadableChannel<byte[]> headBuffer, BufferOverReadableChannel<byte[]> tailBuffer, BufferOverReadableChannel<byte[]> postambleBuffer, NavigableMap absPosToBlockOffset) {
         super();
@@ -73,7 +77,11 @@ public class SeekableSourceOverSplit
     protected BufferOverReadableChannel<byte[]> getBufferByIndex(int index) {
         BufferOverReadableChannel<byte[]> result;
         switch (index) {
-            case 0: result = headBuffer; break;
+            case 0: result = headBuffer;
+                if (debufferedHead != null) {
+                    throw new IllegalStateException("Should never be called if in debuffered state");
+                }
+            break;
             case 1: result = tailBuffer; break;
             case 2: result = postambleBuffer; break;
             default: result = null; break;
@@ -144,7 +152,7 @@ public class SeekableSourceOverSplit
                     System.err.println("Block detected: " + after + " -> " + readCount);
                     absPosToBlockOffset.put(readCount, after);
                 }
-                if (result >= 0) {
+                if (result > 0) {
                     readCount += result;
                 }
                 return result;
@@ -183,13 +191,27 @@ public class SeekableSourceOverSplit
         return new SeekableSourceOverSplit(headBuffer, tailBuffer, postambleBuffer, blockOffsetToAbsPos);
     }
 
+    public long getHeadSize() {
+        long index = posToIndex.entrySet().stream()
+                .filter(e -> e.getValue() == 1)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Head size not yet detected"));
+        return index;
+    }
 
     @Override
     public Channel newReadableChannel() throws IOException {
+
+        if (debufferedHead != null) {
+            throw new RuntimeException("Already debuffered");
+        }
+
         // We cannot use the util method BufferOverReadableChannel.newBufferedChannel because
         //  the resulting channel is not seekable...
 
         // BufferOverReadableChannel.newBufferedChannel(headBuffer);
+        // headBuffer.newReadableChannel()
         return new Channel(headBuffer.newReadableChannel(), 0, -1, null);
     }
 
@@ -224,7 +246,7 @@ public class SeekableSourceOverSplit
 
         protected Runnable transitionAction;
 
-        protected ReadWriteLock rwl = new ReentrantReadWriteLock();
+        protected ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
 
         public Channel(SeekableReadableChannel<byte[]> currentStream, long currentStreamOffset, long requestedPos, Runnable transitionAction) {
             this.currentStream = currentStream;
@@ -244,9 +266,44 @@ public class SeekableSourceOverSplit
             return result;
         }
 
-        /* public void debufferHead() {
-            BufferOverReadableChannel.newBufferedChannel(headBuffer);
-        } */
+        protected boolean isDebuffered() {
+            return debufferedHead != null;
+        }
+
+        public void debufferHead() {
+            if (!rwl.isWriteLocked()) {
+                throw new IllegalStateException("Debuffering requires the channel's write lock to be locked");
+            }
+
+            if (isDebuffered()) {
+                throw new RuntimeException("Already debuffered");
+            }
+
+            if (isHeadStream()) {
+                long pos = position();
+                long bufferSize = headBuffer.getKnownDataSize();
+                ReadableChannel<byte[]> bufferChannel;
+
+                ReadableChannel<byte[]> headDataSupplier = headBuffer.getDataSupplier();
+                headBuffer.setDataSupplier(null); // TODO Set a always failing one because it should no longer be used.
+                try {
+                    bufferChannel = pos < bufferSize
+                            ? headBuffer.getBuffer().newReadableChannel(pos)
+                            : null;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+
+                ReadableChannel debuffered = bufferChannel == null
+                        ? headDataSupplier
+                        : ReadableChannels.concat(Arrays.asList(bufferChannel, headDataSupplier));
+
+                debufferedHead = SeekableReadableChannels.wrapForwardSeekable(debuffered, pos);
+                currentStream = debufferedHead;
+            }
+            // BufferOverReadableChannel.newBufferedChannel(headBuffer);
+        }
 
         @Override
         public SeekableReadableChannel<byte[]> cloneObject() {
@@ -269,41 +326,55 @@ public class SeekableSourceOverSplit
             this.requestedPos = pos;
         }
 
+
         protected void applyPosition() throws IOException {
             long currentAbsPos = getInternalPosition();
 
             while (true) {
                 long requestedBaseOffset = posToIndex.floorKey(requestedPos);
-                BufferOverReadableChannel currentBuffer = getBufferByBaseOffset(requestedBaseOffset);
-                if (requestedBaseOffset != currentStreamOffset) {
-                    currentStream.close();
-                    currentStream = currentBuffer.newReadableChannel();
-                    currentStreamOffset = requestedBaseOffset;
-                }
+                Integer requestedIndex = posToIndex.get(requestedBaseOffset);
 
                 long requiredAdditionalBytes = requestedPos - currentAbsPos;
                 long currentRelPos = requestedPos - requestedBaseOffset;
-                if (requiredAdditionalBytes > 0) {
-                    // TODO Make loadFully accept a long argument
-                    currentBuffer.loadFully(Ints.checkedCast(currentRelPos), true);
-                }
 
-                long knownDataSize = currentBuffer.getKnownDataSize();
-                if (currentRelPos < knownDataSize || (currentRelPos == knownDataSize && !currentBuffer.isDataSupplierConsumed())) {
+                if (requestedIndex == 0 && isDebuffered()) {
+                    System.err.println("Debuffered stream pos:" + currentStream.position());
+                    System.err.println("Requested pos: " + currentRelPos);
                     currentStream.position(currentRelPos);
                     break;
+                    // currentStreamOffset = 0;
                 } else {
-                    int currentStreamIdx = posToIndex.get(currentStreamOffset);
-                    if (currentStreamIdx == 0 && currentBuffer.isDataSupplierConsumed()) {
-                        setupTailBuffer();
+
+                    BufferOverReadableChannel requestedBuffer = getBufferByBaseOffset(requestedBaseOffset);
+                    if (requestedBaseOffset != currentStreamOffset) {
+                        currentStream.close();
+                        // currentStream = BufferOverReadableChannel.newBufferedChannel(currentBuffer);
+                        currentStream = requestedBuffer.newReadableChannel();
+                        currentStreamOffset = requestedBaseOffset;
                     }
 
-                    long nextRequestedBaseOffset = posToIndex.floorKey(requestedPos);
-                    if (requestedBaseOffset == nextRequestedBaseOffset) {
-                        currentStream.position(knownDataSize);
+                    if (requiredAdditionalBytes > 0) {
+                        // TODO Make loadFully accept a long argument
+                        requestedBuffer.loadFully(Ints.checkedCast(currentRelPos), true);
+                    }
+
+                    long knownDataSize = requestedBuffer.getKnownDataSize();
+                    if (currentRelPos < knownDataSize || (currentRelPos == knownDataSize && !requestedBuffer.isDataSupplierConsumed())) {
+                        currentStream.position(currentRelPos);
                         break;
                     } else {
-                        continue;
+                        int currentStreamIdx = posToIndex.get(currentStreamOffset);
+                        if (currentStreamIdx == 0 && requestedBuffer.isDataSupplierConsumed()) {
+                            setupTailBuffer();
+                        }
+
+                        long nextRequestedBaseOffset = posToIndex.floorKey(requestedPos);
+                        if (requestedBaseOffset == nextRequestedBaseOffset) {
+                            currentStream.position(knownDataSize);
+                            break;
+                        } else {
+                            continue;
+                        }
                     }
                 }
             }
@@ -353,9 +424,21 @@ public class SeekableSourceOverSplit
                             result = currentStream.read(array, position, l);
                             if (result == -1) {
                                 Object cs = currentStream;
-                                long currentSize = getBufferByBaseOffset(currentStreamOffset).getKnownDataSize();
+                                long currentSize = isHeadStream() && isDebuffered()
+                                        ? currentStream.position() - currentStreamOffset
+                                        : getBufferByBaseOffset(currentStreamOffset).getKnownDataSize();
+
+//                                long csPos = currentStream.position();
+//                                long currentSize = csPos - currentStreamOffset; // getBufferByBaseOffset(currentStreamOffset).getKnownDataSize();
+
+
                                 boolean exhaustedHeadStream = isHeadStream();
-                                position(currentStreamOffset + currentSize);
+                                long newPos = currentStreamOffset + currentSize;
+                                position(newPos);
+                                if (exhaustedHeadStream) {
+                                    posToIndex.put(newPos, 1);
+                                    // setupTailBuffer();
+                                }
                                 applyPosition();
 
                                 // If we did not move to a new stream then we reached the end

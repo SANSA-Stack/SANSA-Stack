@@ -620,21 +620,33 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ReadableChannel<U[]> headEltChannel = null;
         Stream<U> headItems = null;
 
-        if (!isFirstSplit && headBytes >= 0) {
+        if (headBytes < 0) {
+            return Stream.empty();
+        }
+
+
+        if (!isFirstSplit) {
             // One ugly cast here in order to avoid distributing all the long names and generics in the code
             // Extract the byte channel on which the parser currently runs
             ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?> typedHeadEltChannel = (ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?>) headEltBuffer.getDataSupplier();
-            headEltChannel = typedHeadEltChannel;
             headByteChannel = (SeekableSourceOverSplit.Channel)typedHeadEltChannel.getValue().getDecoratee();
+            headEltChannel = typedHeadEltChannel;
+            // headEltChannel = headEltBuffer.newReadableChannel()
+            // BufferOverReadableChannel.debuffer(typedHeadEltChannel); // typedHeadEltChannel;
         } else {
             headItems = parseFromSeekable(headByteChannel, false);
         }
 
+
+
         // Block reads from the base stream in order to decide the next course of action.
         Lock lock = headByteChannel.getReadWriteLock().writeLock();
         lock.lock();
+
         try {
             if (headByteChannel.isHeadStream()) {
+                headByteChannel.debufferHead();
+
                 // (a) If the tail buffer has not yet been touched then schedule tail search as the stream's transition action
                 SeekableSourceOverSplit.Channel finalHeadByteChannel = headByteChannel;
                 headByteChannel.setTransitionAction(() -> {
@@ -643,7 +655,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     System.err.println("Pos after: " + finalHeadByteChannel.position());
 
                     if (tailBytes >= 0) {
-                        long absTailPos = source.getHeadBuffer().getKnownDataSize() + tailBytes;
+                        long absTailPos = source.getHeadSize() + tailBytes;
+                        // long absTailPos = source.getHeadBuffer().getKnownDataSize() + tailBytes;
                         finalHeadByteChannel.setLimit(absTailPos);
                     }
                 });
@@ -662,13 +675,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                         headByteChannel.setLimit(absTailPos);
                     }
                 } else {
+                    //   (b2) We already read past the end; restart the parser.
                     // Close the (possibly asynchronously running) parser
                     // TODO Probably we have to release the lock to be safe?
                     // lock.unlock();
                     if (headEltBuffer.getDataSupplier() != null) {
                         headEltBuffer.getDataSupplier().close();
                     }
-                    //   (b2) We already read past the end; restart the parser.
                     headEltBuffer.setDataSupplier(null);
                     headEltBuffer.truncate();
                     headByteChannel.close();
@@ -714,6 +727,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             headItems = Stream.concat(ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel()), headItems);
             // headItems = ReadableChannels.newStream(headEltBuffer.newReadableChannel());
         }
+
         Stream<U> lazyTailElts = Stream.of(1).flatMap(x -> {
             System.err.println("Yielding " + tailElts.size() + " tail elements");
             return tailElts.stream();
