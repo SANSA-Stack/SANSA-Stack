@@ -478,6 +478,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     /* Head state */
     Predicate<Long> posValidator;
+    Predicate<Long> readPosValidator;
     Function<Long, Long> posToSplitId;
 
     long headBytes = -1;
@@ -505,7 +506,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         try (SeekableReadableChannel<byte[]> tailByteChannel = tailByteBuffer.newReadableChannel()) {
             StopWatch tailSw = StopWatch.createStarted();
-            tailRecordOffset = skipToNthRegionInSplit(skipRegionCount, tailByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, pos -> true, posToSplitId, tailEltBuffer, this::prober);
+            tailRecordOffset = skipToNthRegionInSplit(skipRegionCount, tailByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, pos -> true, pos -> true, posToSplitId, tailEltBuffer, this::prober);
 
             // If no record is found in the tail then take all its known bytes because
             // we assume we hit the last few splits of the stream and there simply are no further record
@@ -587,6 +588,18 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             return r;
         };
 
+        readPosValidator = pos -> {
+            boolean r = true;
+            boolean inHead = posValidator.test(pos);
+            if (!inHead) {
+                long size = source.getHeadBuffer().getKnownDataSize();
+                long maxPos = size + 1000000; // Allow that many more bytes for read during pattern matching
+                // TODO Make configurable
+                r = pos < maxPos;
+            }
+            return r;
+        };
+
         Function<Long, Long> idfn = TailBufferChannel.splitIdFn(splitStart, splitLength);
         posToSplitId = !isEncoded ? idfn :
             pos -> {
@@ -601,7 +614,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         headBytes = isFirstSplit
                 ? 0
-                : Ints.checkedCast(skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, posValidator, posToSplitId, headEltBuffer, this::prober));
+                : Ints.checkedCast(skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, readPosValidator, posValidator, posToSplitId, headEltBuffer, this::prober));
 
         long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
         logger.info(String.format("Split %s: Found head record at pos %d with %d bytes read in %d ms",
@@ -833,6 +846,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
     }*/
 
+    public static class ReadTooFarException
+        extends RuntimeException {
+
+    }
     /**
      * @param nav
      * @param splitStart
@@ -851,7 +868,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
-            Predicate<Long> posValidator,
+            Predicate<Long> matcherReadPosValidator, // Runtime validation
+            Predicate<Long> posValidator, // Validate the position of a found match
             BufferOverReadableChannel<U[]> outBuffer,
             BiPredicate<SeekableReadableChannel<byte[]>, BufferOverReadableChannel<U[]>> prober) throws IOException {
         // Set up absolute positions
@@ -875,7 +893,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // seekable.limitNext(relDataRegionEnd)
             // TODO The original code used limitNext but do we need that
             //  if we set the matcher region anyway?
+
             CharSequence charSequence = ReadableChannels.asCharSequence(seekable);
+            charSequence = new CharSequenceDecorator(charSequence) {
+                @Override
+                public char charAt(int index) {
+                    long readPosInSplit = position + index;
+                    if (!matcherReadPosValidator.test(readPosInSplit)) {
+                        throw new ReadTooFarException();
+                    }
+
+                    // Check whether the index is too far beyond the split point
+                    return super.charAt(index);
+                }
+            };
             CustomMatcher fwdMatcher = recordSearchPattern.matcher(charSequence);
             fwdMatcher.region(0, relProbeRegionEnd);
 
@@ -908,6 +939,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             long absProbeRegionStart,
             long maxRecordLength,
             long absDataRegionEnd,
+            Predicate<Long> matcherReadPosValidator, // Runtime validation
             Predicate<Long> posValidator,
             Function<Long, Long> posToSplitId,
             BufferOverReadableChannel<U[]> outBuffer,
@@ -925,7 +957,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Only buffer items on the last iteration
             BufferOverReadableChannel<U[]> effOutBuffer = isLastIteration ? outBuffer : null;
 
-            long candidatePos = findNextRegion(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, posValidator, effOutBuffer, prober);
+            long candidatePos = findNextRegion(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, matcherReadPosValidator, posValidator, effOutBuffer, prober);
             if (candidatePos < 0) {
 
                 // If there is more than maxRecordLength data available then
@@ -1067,6 +1099,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 sw.reset();
                 sw.start();
             }
+        } catch (ReadTooFarException e) {
+            result = -1;
         }
 
         return result;
