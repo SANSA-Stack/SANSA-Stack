@@ -12,6 +12,7 @@ import org.aksw.commons.util.lock.LockUtils;
 import org.apache.hadoop.fs.Seekable;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -23,8 +24,23 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SeekableSourceOverSplit
-    implements SeekableReadableChannelSource<byte[]>
+    implements SeekableReadableChannelSource<byte[]>, Closeable
 {
+    @Override
+    public void close() throws IOException {
+        if (headBuffer.getDataSupplier() != null && headBuffer.getDataSupplier().isOpen()) {
+            headBuffer.getDataSupplier().close();
+        }
+        if (tailBuffer.getDataSupplier() != null && tailBuffer.getDataSupplier().isOpen()) {
+            tailBuffer.getDataSupplier().close();
+        }
+        if (postambleBuffer.getDataSupplier() != null&& postambleBuffer.getDataSupplier().isOpen()) {
+            postambleBuffer.getDataSupplier().close();
+        }
+        if (debufferedHead != null) {
+            debufferedHead.close();
+        }
+    }
     // protected SeekableReadableChannel<byte[]> base;
 
     /** The total number of bytes that need to be read from base until the split boundary is reached.
@@ -149,7 +165,7 @@ public class SeekableSourceOverSplit
                 long after = inn.position();
 
                 if (after != before) {
-                    System.err.println("Block detected: " + after + " -> " + readCount);
+                    // System.err.println("Block detected: " + after + " -> " + readCount);
                     absPosToBlockOffset.put(readCount, after);
                 }
                 if (result > 0) {

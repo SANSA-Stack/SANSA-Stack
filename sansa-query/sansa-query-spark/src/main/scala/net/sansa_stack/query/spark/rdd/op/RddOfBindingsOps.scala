@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.rdd.op
 
 import java.util
-
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.ResultSetSparkImpl
 import net.sansa_stack.query.spark.engine.{ExecutionDispatch, OpExecutorImpl}
@@ -23,6 +22,7 @@ import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.classTag
 
@@ -212,7 +212,8 @@ object RddOfBindingsOps {
         override def compare(x: NodeValue, y: NodeValue): Int = NodeValue.compareAlways(x, y)
       }
 
-      rdd.sortBy(bindingToKey, isAscending)(order, classTag[NodeValue])
+      // sortBy immediately triggers parsing the input rdd; for this reason use cache/persist.
+      rdd.persist(StorageLevel.MEMORY_AND_DISK).sortBy(bindingToKey, isAscending)(order, classTag[NodeValue])
     }
   }
 

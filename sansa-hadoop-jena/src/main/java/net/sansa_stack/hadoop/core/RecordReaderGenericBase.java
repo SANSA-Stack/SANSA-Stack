@@ -543,7 +543,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         } catch (Throwable e) {
             // The logic that analyses and possibly gathers tail elements should never fail
             // TODO Unless due to IOExceptions e.g. when the network went down
-            throw new RuntimeException("Should never come here");
+            throw new RuntimeException("Should never come here", e);
         }
     }
 
@@ -569,9 +569,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // TODO Somehow make the stream capable of limiting itself on read across the split boundary
         //  if a head region has been detected.
 
-        if (splitStart == 132970) {
-            System.err.println("DEBUG POINT");
-        }
+//        if (splitStart == 132970) {
+//            System.err.println("DEBUG POINT");
+//        }
 
 
         // SeekableReadableChannel<byte[]> sstream = SeekableInputStreams.wrap(stream);
@@ -642,6 +642,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // One ugly cast here in order to avoid distributing all the long names and generics in the code
             // Extract the byte channel on which the parser currently runs
             ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?> typedHeadEltChannel = (ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?>) headEltBuffer.getDataSupplier();
+            headByteChannel.close();
             headByteChannel = (SeekableSourceOverSplit.Channel)typedHeadEltChannel.getValue().getDecoratee();
             headEltChannel = typedHeadEltChannel;
             // headEltChannel = headEltBuffer.newReadableChannel()
@@ -727,8 +728,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         if (headItems == null) {
             // headEltChannel = headEltBuffer.getDataSupplier();
-            ReadableChannel<U[]> finalHeadEltChannel = headEltChannel;
-            headItems = ReadableChannels.newStream(finalHeadEltChannel)
+            headItems = ReadableChannels.newStream(headEltChannel);
+            headItems = Stream.concat(ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel()), headItems);
+            // headItems = ReadableChannels.newStream(headEltBuffer.newReadableChannel());
+        }
+
+        ReadableChannel<U[]> finalHeadEltChannel = headEltChannel;
+        if (finalHeadEltChannel != null) {
+            headItems = headItems
                     .onClose(() -> {
                         try {
                             finalHeadEltChannel.close();
@@ -736,10 +743,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                             throw new RuntimeException(e);
                         }
                     });
-
-            headItems = Stream.concat(ReadableChannels.newStream(headEltBuffer.getBuffer().newReadableChannel()), headItems);
-            // headItems = ReadableChannels.newStream(headEltBuffer.newReadableChannel());
         }
+
 
         Stream<U> lazyTailElts = Stream.of(1).flatMap(x -> {
             System.err.println("Yielding " + tailElts.size() + " tail elements");
@@ -747,10 +752,18 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         });
 
 
+        SeekableSourceOverSplit.Channel finalHeadByteChannel1 = headByteChannel;
+        Stream<T> result = aggregate(isFirstSplit, headItems, lazyTailElts)
+                .onClose(() -> {
+                    finalHeadByteChannel1.close();
+                    try {
+                        source.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
 
-        Stream<T> result = aggregate(isFirstSplit, headItems, lazyTailElts);
-
-        if (true) {
+        if (false) {
             List<T> tmp = result.collect(Collectors.toList());
             System.err.println(String.format("Split %s: Got %d items in total", splitId, tmp.size()));
             result = tmp.stream();
