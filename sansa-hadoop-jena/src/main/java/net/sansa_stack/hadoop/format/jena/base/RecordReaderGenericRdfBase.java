@@ -16,6 +16,7 @@ import org.apache.jena.riot.system.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 public abstract class RecordReaderGenericRdfBase<U, G, A, T>
         extends RecordReaderGenericBase<U, G, A, T>
@@ -57,6 +58,22 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
         // preambleBytes = baos.toByteArray();
     }
 
+
+    private static class CountingPredicate<T>
+        implements Predicate<T>
+    {
+        protected long threshold;
+        protected long currentValue = 0;
+
+        public CountingPredicate(long threshold) {
+            this.threshold = threshold;
+        }
+
+        @Override
+        public boolean test(T t) {
+            return (currentValue++) < threshold;
+        }
+    }
     protected AsyncParserBuilder setupParser(InputStream in, boolean isProbe) {
         AsyncParserBuilder result = AsyncParser.of(in, lang, baseIri)
                 .mutateSources(parser -> parser
@@ -65,10 +82,13 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
                         .resolver(IRIxResolverUtils.newIRIxResolverAsGiven()));
 
         if (isProbe) {
+            // TODO Make the threshold for disabling premature dispatch configurable
             result = result
-                    .setChunkSize(100)
-                    .mutateSources(parser -> parser.errorHandler(ErrorHandlerFactory.errorHandlerSimple()));
+                    .setChunkSize(1000)
+                    .mutateSources(parser -> parser.errorHandler(ErrorHandlerFactory.errorHandlerSimple()))
+                    .setPrematureDispatch(new CountingPredicate<>(1000));
         }
+
 
         // Stream<Quad> result = RDFDataMgrRx.createFlowableQuads(() -> in, lang, baseIri).blockingStream();
         // System.out.println("isParallel: " + result.isParallel());

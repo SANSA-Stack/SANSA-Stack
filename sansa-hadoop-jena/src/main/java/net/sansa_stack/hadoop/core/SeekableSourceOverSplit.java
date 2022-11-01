@@ -529,10 +529,13 @@ public class SeekableSourceOverSplit
         }
 
         protected void transition() {
-            System.err.println("TRANSITIONED TO TAIL on byte: " + getHeadBuffer().getKnownDataSize());
             if (transitionAction != null) {
                 transitionAction.run();
             }
+        }
+
+        SeekableSourceOverSplit getEnclosingInstance() {
+            return SeekableSourceOverSplit.this;
         }
     }
 }

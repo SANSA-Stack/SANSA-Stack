@@ -2,6 +2,7 @@ package net.sansa_stack.spark.cli.main;
 
 import net.sansa_stack.spark.cli.cmd.CmdBase;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMain;
+import org.aksw.commons.util.derby.DerbyUtils;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
@@ -13,7 +14,10 @@ public class MainCliSansaSpark {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaMain.class);
 
     // Required to init registries such as result set formats
-    static { JenaSystem.init(); }
+    static {
+        DerbyUtils.disableDerbyLog();
+        JenaSystem.init();
+    }
 
     public static void main(String[] args) {
         int exitCode = mainCore(args);

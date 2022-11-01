@@ -112,6 +112,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected long minRecordLength;
     protected int probeEltCount;
 
+    protected boolean enableStats = true;
+
 
     protected final Accumulating<U, G, A, T> accumulating;
 
@@ -154,6 +156,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     protected String splitName;
     protected String splitId;
+
+    protected long totalEltCount = 0;
+    protected long totalRecordCount = 0;
 
     public RecordReaderGenericBase(RecordReaderConf conf, Accumulating<U, G, A, T> accumulating) {
         this.minRecordLengthKey = conf.getMinRecordLengthKey();
@@ -381,7 +386,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         Stream<T> result = StreamOperatorSequentialGroupBy.create(spec)
                 .transform(Stream.concat(splitFlow, tailElts))
-                .map(e -> accumulating.accumulatedValue(e.getValue()));
+                .map(e -> e.getValue() == null ? null : accumulating.accumulatedValue(e.getValue()));
         if (!isFirstSplit) {
             result = result.skip(1);
         }
@@ -481,7 +486,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     Predicate<Long> readPosValidator;
     Function<Long, Long> posToSplitId;
 
-    long headBytes = -1;
+    ProbeResult headBytes = null; //-1;
     // Set the stream to the start of the split and get the head buffer
     // Note that we will use the stream later in its state to read the body part
     long knownDecodedDataLength = isEncoded ? -1 : splitLength; // TODO Rename to decodedSplitLength
@@ -490,12 +495,29 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     /* Tail state */
     protected int skipRegionCount = 2;
     protected long maxExtraByteCount = Long.MAX_VALUE;
-    protected long tailRecordOffset = -1;
+    protected ProbeResult tailRecordOffset = null;
     protected long tailBytes = -1;
     protected BufferOverReadableChannel<U[]> tailEltBuffer;
     protected BufferOverReadableChannel<byte[]> tailByteBuffer;
     protected List<U> tailElts = Collections.emptyList();
+    protected long tailEltsTime;
 
+    public Stats getStats() {
+        Stats result = new Stats();
+
+        result
+            .setSplitStart(splitStart)
+            .setSplitEnd(splitEnd)
+            .setRegionStart(headBytes == null ? -1 : headBytes.candidatePos())
+            .setRegionEnd(tailBytes)
+            .setTailElementCount(tailElts == null ? -1 : tailElts.size())
+            .setTotalElementCount(totalEltCount)
+            .setTotalRecordCount(totalRecordCount);
+
+            ;
+
+        return result;
+    }
 
 //    protected void detectTail(InputStream in) {
 //        tailByteBuffer = BufferOverReadableChannel.createForBytes(
@@ -511,24 +533,24 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // If no record is found in the tail then take all its known bytes because
             // we assume we hit the last few splits of the stream and there simply are no further record
             // starts anymore
-            tailBytes = tailRecordOffset < 0 ? tailByteBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset);
+            tailBytes = tailRecordOffset.candidatePos() < 0 ? tailByteBuffer.getKnownDataSize() : Ints.checkedCast(tailRecordOffset.candidatePos());
 
-            System.err.println("Tail bytes: " + tailBytes);
+            logger.info(String.format("Split %s: Got %d tail bytes within %.3f s", splitId, tailBytes, tailSw.getTime(TimeUnit.MILLISECONDS) * 0.001));
 
-            if (tailRecordOffset >= 0) {
+            if (tailRecordOffset.candidatePos() >= 0) {
                 // Now that we found an offset in the tail region, read out one more complete list of items that belongs to one group
                 // Note, that these items may need to be aggregated with items from the current split - that's why we retain them as a list
                 // tailNav.position(tailBytes);
                 // lines(tailNav).limit(100).forEach(System.out::println);
 
-                SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(accumulating::classify, () -> (List<U>) new ArrayList(1 * 1024), Collection::add);
+                SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(accumulating::classify, () -> (List<U>) new ArrayList<>(1 * 1024), Collection::add);
 
                 try (Stream<U> tailEltStream = debufferedEltStream(tailEltBuffer)) {
                     tailElts = StreamOperatorSequentialGroupBy.create(spec).transform(tailEltStream).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyList());
                 }
 
                 long adjustedSplitEnd = -1;
-                long tailEltsTime = tailSw.getTime(TimeUnit.MILLISECONDS);
+                tailEltsTime = tailSw.getTime(TimeUnit.MILLISECONDS);
                 logger.info(String.format("Split %s: Got %d tail items at pos %d within %d bytes read in %d ms", splitId, tailElts.size(), adjustedSplitEnd, tailBytes, tailEltsTime));
                 //}
             }
@@ -569,11 +591,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // TODO Somehow make the stream capable of limiting itself on read across the split boundary
         //  if a head region has been detected.
 
-//        if (splitStart == 132970) {
-//            System.err.println("DEBUG POINT");
-//        }
-
-
         // SeekableReadableChannel<byte[]> sstream = SeekableInputStreams.wrap(stream);
         SeekableSourceOverSplit source = isEncoded
                 ? SeekableSourceOverSplit.createForBlockEncodedStream(stream, splitEnd, postambleBytes)
@@ -613,18 +630,18 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         StopWatch headSw = StopWatch.createStarted();
 
         headBytes = isFirstSplit
-                ? 0
-                : Ints.checkedCast(skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, readPosValidator, posValidator, posToSplitId, headEltBuffer, this::prober));
+                ? new ProbeResult(0, 0)
+                : skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, readPosValidator, posValidator, posToSplitId, headEltBuffer, this::prober);
 
         long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
-        logger.info(String.format("Split %s: Found head record at pos %d with %d bytes read in %d ms",
+        logger.info(String.format("Split %s: Found head region offset at pos %d in %.3f s",
                 splitId,
-                headBytes,
-                -1, // source.getKnownDataSize(),
-                headRecordTime));
+                headBytes.candidatePos(),
+                // -1, // source.getKnownDataSize(),
+                headSw.getTime(TimeUnit.MILLISECONDS) * 0.001f));
 
         if (false) {
-            try (SeekableReadableChannel<byte[]> channel = source.newReadableChannel(headBytes)) {
+            try (SeekableReadableChannel<byte[]> channel = source.newReadableChannel(headBytes.candidatePos())) {
                 System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(channel), StandardCharsets.UTF_8));
             }
             return Stream.empty();
@@ -633,7 +650,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ReadableChannel<U[]> headEltChannel = null;
         Stream<U> headItems = null;
 
-        if (headBytes < 0) {
+        if (headBytes.candidatePos() < 0) {
             return Stream.empty();
         }
 
@@ -664,6 +681,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // (a) If the tail buffer has not yet been touched then schedule tail search as the stream's transition action
                 SeekableSourceOverSplit.Channel finalHeadByteChannel = headByteChannel;
                 headByteChannel.setTransitionAction(() -> {
+                    logger.info("Transitioned to tail on byte: " + finalHeadByteChannel.getEnclosingInstance().getHeadBuffer().getKnownDataSize());
+
                     System.err.println("Pos before: " + finalHeadByteChannel.position());
                     detectTail(source.getTailBuffer());
                     System.err.println("Pos after: " + finalHeadByteChannel.position());
@@ -691,18 +710,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 } else {
                     //   (b2) We already read past the end; restart the parser.
                     // Close the (possibly asynchronously running) parser
-                    // TODO Probably we have to release the lock to be safe?
-                    // lock.unlock();
+                    // Danger of deadlock: We have to release the lock because the close method wants acquire the lock too!
+                    //
+                    lock.unlock();
                     if (headEltBuffer.getDataSupplier() != null) {
                         headEltBuffer.getDataSupplier().close();
                     }
+                    lock.lock();
                     headEltBuffer.setDataSupplier(null);
                     headEltBuffer.truncate();
                     headByteChannel.close();
                     headByteChannel = source.newReadableChannel();
                     // lock = headByteChannel.getReadWriteLock().writeLock();
                     // lock.lock();
-                    headByteChannel.position(headBytes);
+                    headByteChannel.position(headBytes.candidatePos());
                     if (tailBytes >= 0) {
                         headByteChannel.setLimit(absTailPos);
                     }
@@ -719,7 +740,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
 
         if (false) {
-            headByteChannel.position(headBytes);
+            headByteChannel.position(headBytes.candidatePos());
             //try (SeekableReadableChannel<byte[]> channel = ){
                 System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(headByteChannel), StandardCharsets.UTF_8));
             //}
@@ -746,11 +767,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
 
 
+        // This stream has to be lazy because the tailElts attribute is only
+        // initialized when the split boundary is hit
         Stream<U> lazyTailElts = Stream.of(1).flatMap(x -> {
             System.err.println("Yielding " + tailElts.size() + " tail elements");
             return tailElts.stream();
         });
 
+        if (enableStats) {
+            headItems = headItems.peek(x -> ++totalEltCount);
+        }
 
         SeekableSourceOverSplit.Channel finalHeadByteChannel1 = headByteChannel;
         Stream<T> result = aggregate(isFirstSplit, headItems, lazyTailElts)
@@ -767,6 +793,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             List<T> tmp = result.collect(Collectors.toList());
             System.err.println(String.format("Split %s: Got %d items in total", splitId, tmp.size()));
             result = tmp.stream();
+        }
+
+        if (enableStats) {
+            result = result.peek(x -> ++totalRecordCount);
         }
 
 /*
@@ -874,7 +904,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @return
      * @throws IOException
      */
-    public static <U> long findNextRegion(
+    public static <U> ProbeResult findNextRegion(
             CustomPattern recordSearchPattern,
             SeekableReadableChannel<byte[]> nav,
             long splitStart,
@@ -923,12 +953,36 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             CustomMatcher fwdMatcher = recordSearchPattern.matcher(charSequence);
             fwdMatcher.region(0, relProbeRegionEnd);
 
-            long matchPos = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, outBuffer, prober);
+            ProbeResult matchPosR = findFirstPositionWithProbeSuccess(seekable, posValidator, fwdMatcher, true, outBuffer, prober);
+            long matchPos = matchPosR.candidatePos();
 
-            long result = matchPos >= 0
+            long adjustedMatchPos = matchPos >= 0
                     ? matchPos + splitStart
                     : -1;
-            return result;
+
+            return new ProbeResult(adjustedMatchPos, matchPosR.probeCount());
+
+            // return result;
+        }
+    }
+
+
+    static class ProbeResult {
+        protected long candidatePos;
+        protected long probeCount;
+
+        public ProbeResult(long candidatePos, long probeCount) {
+            super();
+            this.candidatePos = candidatePos;
+            this.probeCount = probeCount;
+        }
+
+        public long candidatePos() {
+            return candidatePos;
+        }
+
+        public long probeCount() {
+            return probeCount;
         }
     }
 
@@ -945,7 +999,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param prober
      * @return
      */
-    long skipToNthRegionInSplit(
+    ProbeResult skipToNthRegionInSplit(
             int n,
             SeekableReadableChannel<byte[]> nav,
             long splitStart,
@@ -957,7 +1011,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             Function<Long, Long> posToSplitId,
             BufferOverReadableChannel<U[]> outBuffer,
             BiPredicate<SeekableReadableChannel<byte[]>, BufferOverReadableChannel<U[]>> prober) throws IOException {
-        long result = -1L;
+        ProbeResult result = null; // -1L;
 
         long previousSplitId = -1;
 
@@ -970,7 +1024,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Only buffer items on the last iteration
             BufferOverReadableChannel<U[]> effOutBuffer = isLastIteration ? outBuffer : null;
 
-            long candidatePos = findNextRegion(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, matcherReadPosValidator, posValidator, effOutBuffer, prober);
+            result = findNextRegion(recordStartPattern, nav, splitStart, nextProbePos, maxRecordLength, absDataRegionEnd, matcherReadPosValidator, posValidator, effOutBuffer, prober);
+            long candidatePos = result.candidatePos();
             if (candidatePos < 0) {
 
                 // If there is more than maxRecordLength data available then
@@ -1015,7 +1070,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
                 // If this is the last iteration set the result
                 if (isLastIteration) {
-                    result = candidatePos;
+                    // result = candidatePosR;
+                    // nothing to do
                 } else {
                     // If not in the last iteration then update the probe position
                     nextProbePos = candidatePos + minRecordLength;
@@ -1027,7 +1083,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     }
 
     /**
-     * Uses the matcher to find candidate probing positions, and returns the first positoin
+     * Uses the matcher to find candidate probing positions, and returns the first position
      * where probing succeeds.
      * Matching ranges are part of the matcher configuration
      *
@@ -1039,7 +1095,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param prober
      * @return
      */
-    public static <U> long findFirstPositionWithProbeSuccess(
+    public static <U> ProbeResult findFirstPositionWithProbeSuccess(
             SeekableReadableChannel<byte[]> rawSeekable,
             Predicate<Long> posValidator,
             CustomMatcher m,
@@ -1048,6 +1104,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             BiPredicate<SeekableReadableChannel<byte[]>, BufferOverReadableChannel<U[]>> prober) throws IOException {
 
         long result = -1l;
+        long probeCount = 0;
 
         try (SeekableReadableChannel<byte[]> seekable = rawSeekable.cloneObject()) {
             long absMatcherStartPos = seekable.position();
@@ -1074,6 +1131,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
                 int absPos = Ints.checkedCast(absMatcherStartPos + matchPos);
 
+                ++probeCount;
                 boolean validAbsPos = posValidator.test((long) absPos);
                 // System.out.println("ValidPos: " + validAbsPos);
                 if (!validAbsPos) {
@@ -1113,10 +1171,11 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 sw.start();
             }
         } catch (ReadTooFarException e) {
+            logger.info("Matcher raised 'read too far' exception which indicates that the read threshold for bytes past the split end has been reached");
             result = -1;
         }
 
-        return result;
+        return new ProbeResult(result, probeCount);
     }
 
 

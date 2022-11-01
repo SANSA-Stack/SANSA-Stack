@@ -10,6 +10,7 @@ import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Node;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
@@ -53,7 +54,9 @@ public class RecordReaderRdfTrigDataset
 
             // TODO Allow for a custom graph factory here
             // Graph graph = GraphFactory.createDefaultGraph();
-            return DatasetOneNgImpl.create(graphName);
+            DatasetOneNg result = DatasetOneNgImpl.create(graphName);
+            result.begin(ReadWrite.WRITE);
+            return result;
             // return DatasetFactoryEx.createInsertOrderPreservingDataset();
         }
 
@@ -64,6 +67,7 @@ public class RecordReaderRdfTrigDataset
 
         @Override
         public DatasetOneNg accumulatedValue(DatasetOneNg accumulator) {
+            accumulator.commit();
             return accumulator;
         }
     }
