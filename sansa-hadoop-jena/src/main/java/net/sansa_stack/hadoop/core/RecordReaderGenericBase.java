@@ -1,18 +1,41 @@
 package net.sansa_stack.hadoop.core;
 
-import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
-import net.sansa_stack.hadoop.core.pattern.CustomPattern;
-import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
-import net.sansa_stack.hadoop.util.InputStreamWithCloseLogging;
-import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
-import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
-import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
-import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
+import java.nio.channels.Channels;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.aksw.commons.io.buffer.array.ArrayOps;
 import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
 import org.aksw.commons.io.hadoop.SeekableInputStream;
-import org.aksw.commons.io.input.*;
+import org.aksw.commons.io.input.CharSequenceDecorator;
+import org.aksw.commons.io.input.ReadableChannel;
+import org.aksw.commons.io.input.ReadableChannelOverIterator;
+import org.aksw.commons.io.input.ReadableChannelSwitchable;
+import org.aksw.commons.io.input.ReadableChannelWithValue;
+import org.aksw.commons.io.input.ReadableChannels;
+import org.aksw.commons.io.input.SeekableReadableChannel;
 import org.aksw.commons.io.seekable.api.Seekable;
 import org.aksw.commons.util.stream.SequentialGroupBySpec;
 import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
@@ -22,7 +45,12 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.*;
+import org.apache.hadoop.io.compress.CodecPool;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.io.compress.Decompressor;
+import org.apache.hadoop.io.compress.SplitCompressionInputStream;
+import org.apache.hadoop.io.compress.SplittableCompressionCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -31,19 +59,15 @@ import org.apache.jena.ext.com.google.common.primitives.Ints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.channels.Channels;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import io.reactivex.rxjava3.core.Flowable;
+import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
+import net.sansa_stack.hadoop.util.InputStreamWithCloseLogging;
+import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
+import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
+import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
+import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
 
 /**
  * A generic record reader that uses a callback mechanism to detect a consecutive sequence of records
@@ -480,6 +504,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         return foundValidRecordOffset;
     }
 
+    SeekableSourceOverSplit source;
+
 
     /* Head state */
     Predicate<Long> posValidator;
@@ -502,18 +528,26 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected List<U> tailElts = Collections.emptyList();
     protected long tailEltsTime;
 
+
+    protected Boolean regionStartSearchReadOverSplitEnd = null;
+    protected Boolean regionStartSearchReadOverRegionEnd = null;
+
     public Stats getStats() {
         Stats result = new Stats();
 
         result
             .setSplitStart(splitStart)
             .setSplitEnd(splitEnd)
-            .setRegionStart(headBytes == null ? -1 : headBytes.candidatePos())
-            .setRegionEnd(tailBytes)
+            .setRegionStartProbeResult(headBytes)
+            .setRegionEndProbeResult(tailRecordOffset)
+            .setRegionStartSearchReadOverSplitEnd(regionStartSearchReadOverSplitEnd)
+            .setRegionStartSearchReadOverRegionEnd(regionStartSearchReadOverRegionEnd)
+            // .setRegionStart(headBytes == null ? -1 : headBytes.candidatePos())
             .setTailElementCount(tailElts == null ? -1 : tailElts.size())
+            // .setTailRecordCount(totalRecordCount);
             .setTotalElementCount(totalEltCount)
-            .setTotalRecordCount(totalRecordCount);
-
+            .setTotalRecordCount(totalRecordCount)
+            .setTotalBytesRead(source.getKnownSize())
             ;
 
         return result;
@@ -592,7 +626,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         //  if a head region has been detected.
 
         // SeekableReadableChannel<byte[]> sstream = SeekableInputStreams.wrap(stream);
-        SeekableSourceOverSplit source = isEncoded
+         source = isEncoded
                 ? SeekableSourceOverSplit.createForBlockEncodedStream(stream, splitEnd, postambleBytes)
                 : SeekableSourceOverSplit.createForNonEncodedStream(stream, splitEnd, postambleBytes);
 
@@ -630,7 +664,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         StopWatch headSw = StopWatch.createStarted();
 
         headBytes = isFirstSplit
-                ? new ProbeResult(0, 0)
+                ? new ProbeResult(0, 0, Duration.ZERO)
                 : skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, readPosValidator, posValidator, posToSplitId, headEltBuffer, this::prober);
 
         long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
@@ -676,6 +710,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         try {
             if (headByteChannel.isHeadStream()) {
+                regionStartSearchReadOverSplitEnd = false;
+                regionStartSearchReadOverRegionEnd = false;
+
                 headByteChannel.debufferHead();
 
                 // (a) If the tail buffer has not yet been touched then schedule tail search as the stream's transition action
@@ -694,6 +731,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     }
                 });
             } else {
+                regionStartSearchReadOverSplitEnd = true;
                 if (true) {
                     // throw new RuntimeException("Read over tail");
                 }
@@ -702,7 +740,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 detectTail(source.getTailBuffer());
                 long pos = headByteChannel.position();
                 long absTailPos = source.getHeadBuffer().getKnownDataSize() + tailBytes;
-                if (pos <= absTailPos) {
+                regionStartSearchReadOverRegionEnd = pos > absTailPos;
+
+                // if (pos <= absTailPos) {
+                if (!regionStartSearchReadOverRegionEnd) {
                     //   (b1) The tail region offset is greater than the current byte read offset - in that case just limit the byte stream
                     if (tailBytes >= 0) {
                         headByteChannel.setLimit(absTailPos);
@@ -960,7 +1001,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     ? matchPos + splitStart
                     : -1;
 
-            return new ProbeResult(adjustedMatchPos, matchPosR.probeCount());
+            return new ProbeResult(adjustedMatchPos, matchPosR.probeCount(), matchPosR.totalDuration());
 
             // return result;
         }
@@ -970,11 +1011,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     static class ProbeResult {
         protected long candidatePos;
         protected long probeCount;
+        protected Duration totalDuration;
 
-        public ProbeResult(long candidatePos, long probeCount) {
+        public ProbeResult(long candidatePos, long probeCount, Duration totalDuration) {
             super();
             this.candidatePos = candidatePos;
             this.probeCount = probeCount;
+            this.totalDuration = totalDuration;
         }
 
         public long candidatePos() {
@@ -983,6 +1026,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         public long probeCount() {
             return probeCount;
+        }
+
+        public Duration totalDuration() {
+            return totalDuration;
+        }
+
+        @Override
+        public String toString() {
+            return "ProbeResult [candidatePos=" + candidatePos + ", probeCount=" + probeCount + ", totalDuration="
+                    + totalDuration + "]";
         }
     }
 
@@ -1106,6 +1159,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         long result = -1l;
         long probeCount = 0;
 
+        StopWatch swTotal = StopWatch.createStarted();
         try (SeekableReadableChannel<byte[]> seekable = rawSeekable.cloneObject()) {
             long absMatcherStartPos = seekable.position();
 
@@ -1175,7 +1229,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             result = -1;
         }
 
-        return new ProbeResult(result, probeCount);
+        return new ProbeResult(result, probeCount, Duration.ofMillis(swTotal.getTime(TimeUnit.MILLISECONDS)));
     }
 
 

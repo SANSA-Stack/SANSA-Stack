@@ -3,10 +3,7 @@ package net.sansa_stack.hadoop;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.apache.hadoop.mapreduce.InputFormat;
-import org.apache.jena.query.Dataset;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 

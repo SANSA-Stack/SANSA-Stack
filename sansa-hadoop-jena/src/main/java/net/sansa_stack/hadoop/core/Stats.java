@@ -1,7 +1,8 @@
 package net.sansa_stack.hadoop.core;
 
 import java.io.Serializable;
-import java.time.Duration;
+
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase.ProbeResult;
 
 public class Stats
     implements Serializable
@@ -11,29 +12,33 @@ public class Stats
     protected long splitStart;
     protected long splitEnd;
 
-    protected long regionStart;
-    protected Duration regionStartSearchTime;
+//    protected long regionStart;
+//    protected Duration regionStartSearchTime;
 
-    protected boolean regionStartSearchReadOverSplitEnd;
+    protected Boolean regionStartSearchReadOverSplitEnd;
 
     /** If the search read over the region end it means that the parser had
      * to be restarted with the detected region start and end offsets.
      * This attribute can only be true if regionStartSearchReadOverSplitEnd is also true.
      */
-    protected boolean regionStartSearchReadOverRegionEnd;
+    protected Boolean regionStartSearchReadOverRegionEnd;
+
+    protected ProbeResult regionStartProbeResult;
+    protected ProbeResult regionEndProbeResult;
 
     protected long totalElementCount;
     protected long tailElementCount;
-    protected long tailRecordCount; // should be 1 at most
 
     protected long totalRecordCount;
 
-    protected long regionEnd;
-    protected Duration regionEndTime;
+    protected Long totalBytesRead;
+
+//    protected long regionEnd;
+//    protected Duration regionEndTime;
 
     // Number probing attempts
-    protected long headProbeCount;
-    protected long tailProbeCount;
+//    protected long headProbeCount;
+//    protected long tailProbeCount;
 
     // protected List<Long> probePosSample;
 
@@ -55,38 +60,38 @@ public class Stats
         return this;
     }
 
-    public long getRegionStart() {
-        return regionStart;
-    }
-
-    public Stats setRegionStart(long regionStart) {
-        this.regionStart = regionStart;
-        return this;
-    }
-
-    public Duration getRegionStartSearchTime() {
-        return regionStartSearchTime;
-    }
-
-    public Stats setRegionStartSearchTime(Duration regionStartSearchTime) {
-        this.regionStartSearchTime = regionStartSearchTime;
-        return this;
-    }
+//    public long getRegionStart() {
+//        return regionStart;
+//    }
+//
+//    public Stats setRegionStart(long regionStart) {
+//        this.regionStart = regionStart;
+//        return this;
+//    }
+//
+//    public Duration getRegionStartSearchTime() {
+//        return regionStartSearchTime;
+//    }
+//
+//    public Stats setRegionStartSearchTime(Duration regionStartSearchTime) {
+//        this.regionStartSearchTime = regionStartSearchTime;
+//        return this;
+//    }
 
     public boolean isRegionStartSearchReadOverSplitEnd() {
         return regionStartSearchReadOverSplitEnd;
     }
 
-    public Stats setRegionStartSearchReadOverSplitEnd(boolean regionStartSearchReadOverSplitEnd) {
+    public Stats setRegionStartSearchReadOverSplitEnd(Boolean regionStartSearchReadOverSplitEnd) {
         this.regionStartSearchReadOverSplitEnd = regionStartSearchReadOverSplitEnd;
         return this;
     }
 
-    public boolean isRegionStartSearchReadOverRegionEnd() {
+    public Boolean isRegionStartSearchReadOverRegionEnd() {
         return regionStartSearchReadOverRegionEnd;
     }
 
-    public Stats setRegionStartSearchReadOverRegionEnd(boolean regionStartSearchReadOverRegionEnd) {
+    public Stats setRegionStartSearchReadOverRegionEnd(Boolean regionStartSearchReadOverRegionEnd) {
         this.regionStartSearchReadOverRegionEnd = regionStartSearchReadOverRegionEnd;
         return this;
     }
@@ -118,67 +123,67 @@ public class Stats
         return this;
     }
 
-    public long getRegionEnd() {
-        return regionEnd;
-    }
-
-    public Stats setRegionEnd(long regionEnd) {
-        this.regionEnd = regionEnd;
-        return this;
-    }
-
-    public Duration getRegionEndTime() {
-        return regionEndTime;
-    }
-
-    public Stats setRegionEndTime(Duration regionEndTime) {
-        this.regionEndTime = regionEndTime;
-        return this;
-    }
-
-    public long getTailRecordCount() {
-        return tailRecordCount;
-    }
-
-    public void setTailRecordCount(long tailRecordCount) {
-        this.tailRecordCount = tailRecordCount;
-    }
+//    public long getRegionEnd() {
+//        return regionEnd;
+//    }
+//
+//    public Stats setRegionEnd(long regionEnd) {
+//        this.regionEnd = regionEnd;
+//        return this;
+//    }
+//
+//    public Duration getRegionEndTime() {
+//        return regionEndTime;
+//    }
+//
+//    public Stats setRegionEndTime(Duration regionEndTime) {
+//        this.regionEndTime = regionEndTime;
+//        return this;
+//    }
 
     public long getTotalRecordCount() {
         return totalRecordCount;
     }
 
-    public void setTotalRecordCount(long totalRecordCount) {
+    public Stats setTotalRecordCount(long totalRecordCount) {
         this.totalRecordCount = totalRecordCount;
-    }
-
-    public long getHeadProbeCount() {
-        return headProbeCount;
-    }
-
-    public Stats setHeadProbeCount(long headProbeCount) {
-        this.headProbeCount = headProbeCount;
         return this;
     }
 
-    public long getTailProbeCount() {
-        return tailProbeCount;
+    public ProbeResult getRegionStartProbeResult() {
+        return regionStartProbeResult;
     }
 
-    public Stats setTailProbeCount(long tailProbeCount) {
-        this.tailProbeCount = tailProbeCount;
+    public Stats setRegionStartProbeResult(ProbeResult regionStartProbeResult) {
+        this.regionStartProbeResult = regionStartProbeResult;
+        return this;
+    }
+
+    public ProbeResult getRegionEndProbeResult() {
+        return regionEndProbeResult;
+    }
+
+    public Stats setRegionEndProbeResult(ProbeResult regionEndProbeResult) {
+        this.regionEndProbeResult = regionEndProbeResult;
+        return this;
+    }
+
+    public Long getTotalBytesRead() {
+        return totalBytesRead;
+    }
+
+    public Stats setTotalBytesRead(Long totalBytesRead) {
+        this.totalBytesRead = totalBytesRead;
         return this;
     }
 
     @Override
     public String toString() {
-        return "Stats [splitStart=" + splitStart + ", splitEnd=" + splitEnd + ", regionStart=" + regionStart
-                + ", regionStartSearchTime=" + regionStartSearchTime + ", regionStartSearchReadOverSplitEnd="
+        return "Stats [splitStart=" + splitStart + ", splitEnd=" + splitEnd + ", regionStartSearchReadOverSplitEnd="
                 + regionStartSearchReadOverSplitEnd + ", regionStartSearchReadOverRegionEnd="
-                + regionStartSearchReadOverRegionEnd + ", totalElementCount=" + totalElementCount
-                + ", tailElementCount=" + tailElementCount + ", tailRecordCount=" + tailRecordCount
-                + ", totalRecordCount=" + totalRecordCount + ", regionEnd=" + regionEnd + ", regionEndTime="
-                + regionEndTime + ", headProbeCount=" + headProbeCount + ", tailProbeCount=" + tailProbeCount + "]";
+                + regionStartSearchReadOverRegionEnd + ", regionStartProbeResult=" + regionStartProbeResult
+                + ", regionEndProbeResult=" + regionEndProbeResult + ", totalElementCount=" + totalElementCount
+                + ", tailElementCount=" + tailElementCount
+                + ", totalRecordCount=" + totalRecordCount + ", totalBytesRead=" + totalBytesRead + "]";
     }
-
 }

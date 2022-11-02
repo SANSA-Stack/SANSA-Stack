@@ -48,7 +48,7 @@ public class CmdUtils {
 
         if (System.getProperty("spark.master") == null) {
             String defaultMaster = "local[*]";
-            logger.info("'spark.master' not set - assuming default " + defaultMaster);
+            logger.info("'spark.master' not set - defaulting to: " + defaultMaster);
             result = result.master(defaultMaster);
         }
         return result;

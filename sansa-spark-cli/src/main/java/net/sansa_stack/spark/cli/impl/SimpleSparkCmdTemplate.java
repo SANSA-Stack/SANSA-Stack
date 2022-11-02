@@ -1,18 +1,20 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.spark.cli.cmd.CmdMixinSparkInput;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import net.sansa_stack.spark.cli.cmd.CmdMixinSparkInput;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 
 public abstract class SimpleSparkCmdTemplate<T>
     implements Callable<T>
@@ -21,8 +23,12 @@ public abstract class SimpleSparkCmdTemplate<T>
 
     protected String appName;
     protected List<String> inputFiles;
+
     protected SparkSession.Builder sparkSessionBuilder;
     protected SparkSession sparkSession;
+    protected Configuration hadoopConfiguration;
+
+    protected JavaSparkContext sparkContext;
     protected CmdMixinSparkInput inputSpec;
     protected RdfSourceCollection rdfSources;
 
@@ -50,8 +56,11 @@ public abstract class SimpleSparkCmdTemplate<T>
 
         sparkSession = sparkSessionBuilder.getOrCreate();
 
-        Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
-        CmdUtils.validatePaths(inputFiles, hadoopConf);
+        // Cache spark context and hadoop conf attributes for convenient access
+        sparkContext = new JavaSparkContext(sparkSession.sparkContext());
+        hadoopConfiguration = sparkContext.hadoopConfiguration();
+
+        CmdUtils.validatePaths(inputFiles, hadoopConfiguration);
 
         RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 

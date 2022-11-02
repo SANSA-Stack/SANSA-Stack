@@ -37,6 +37,10 @@ public class RdfSourceFromResourceImpl
         this.lang = lang;
     }
 
+    public Path getPath() {
+        return path;
+    }
+
     @Override
     public Lang getLang() {
         return lang;

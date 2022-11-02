@@ -1,20 +1,19 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
-import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset;
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
-import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
+
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import scala.Tuple2;
 
 public class RddRdfLoaders {
 
     /** Create a default RddRdfLoader */
-    public static <T> RddRdfLoader create(Class<T> clazz, Class<? extends FileInputFormat<LongWritable, T>> fileInputFormat) {
+    public static <T> RddRdfLoader<T> create(Class<T> clazz, Class<? extends FileInputFormat<LongWritable, T>> fileInputFormat) {
         return new RddRdfLoaderImpl<>(clazz, fileInputFormat);
     }
 

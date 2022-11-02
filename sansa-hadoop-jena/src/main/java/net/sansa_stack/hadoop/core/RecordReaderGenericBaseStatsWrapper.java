@@ -1,7 +1,7 @@
 package net.sansa_stack.hadoop.core;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -13,11 +13,10 @@ public class RecordReaderGenericBaseStatsWrapper
 {
     protected Stats stats = null;
     protected RecordReaderGenericBase<?, ?, ?, ?> decoratee;
-    protected boolean closeRequested = false;
-    protected boolean finished = false;
 
     public RecordReaderGenericBaseStatsWrapper(RecordReaderGenericBase<?, ?, ?, ?> decoratee) {
         super();
+        Objects.requireNonNull(decoratee);
         this.decoratee = decoratee;
     }
 
@@ -29,12 +28,11 @@ public class RecordReaderGenericBaseStatsWrapper
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
         boolean result = false;
-        if (!finished) {
+        if (stats == null) {
             boolean wasInterrupted;
             while (!(wasInterrupted = Thread.interrupted()) && decoratee.nextKeyValue()) {
                 decoratee.nextKeyValue();
             }
-            finished = true;
 
             stats = decoratee.getStats();
             result = true;
@@ -45,7 +43,7 @@ public class RecordReaderGenericBaseStatsWrapper
 
     @Override
     public LongWritable getCurrentKey() throws IOException, InterruptedException {
-        return new LongWritable(0);
+        return stats == null ? null : new LongWritable(0);
     }
 
     @Override

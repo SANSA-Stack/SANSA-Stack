@@ -1,27 +1,37 @@
 package net.sansa_stack.hadoop.core;
 
 
-import com.google.common.primitives.Ints;
-import net.sansa_stack.hadoop.util.DeferredSeekablePushbackInputStream;
-import org.aksw.commons.io.buffer.array.ArrayOps;
-import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
-import org.aksw.commons.io.hadoop.SeekableInputStream;
-import org.aksw.commons.io.hadoop.SeekableInputStreams;
-import org.aksw.commons.io.input.*;
-import org.aksw.commons.util.lock.LockUtils;
-import org.apache.hadoop.fs.Seekable;
-
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.aksw.commons.io.buffer.array.ArrayOps;
+import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
+import org.aksw.commons.io.hadoop.SeekableInputStream;
+import org.aksw.commons.io.hadoop.SeekableInputStreams;
+import org.aksw.commons.io.input.ReadableChannel;
+import org.aksw.commons.io.input.ReadableChannelWithConditionalBound;
+import org.aksw.commons.io.input.ReadableChannels;
+import org.aksw.commons.io.input.SeekableReadableChannel;
+import org.aksw.commons.io.input.SeekableReadableChannelBase;
+import org.aksw.commons.io.input.SeekableReadableChannelSource;
+import org.aksw.commons.io.input.SeekableReadableChannelWithLimit;
+import org.aksw.commons.io.input.SeekableReadableChannels;
+import org.aksw.commons.util.lock.LockUtils;
+import org.apache.hadoop.fs.Seekable;
+
+import com.google.common.primitives.Ints;
+
+import net.sansa_stack.hadoop.util.DeferredSeekablePushbackInputStream;
 
 public class SeekableSourceOverSplit
     implements SeekableReadableChannelSource<byte[]>, Closeable
@@ -71,6 +81,14 @@ public class SeekableSourceOverSplit
         Map.Entry<Long, Long> e = absPosToBlockOffset.floorEntry(pos);
         // absPosToBlockOffset.headMap(pos, true).size();
         return e.getValue();
+    }
+
+    public long getKnownSize() {
+        Entry<Long, Integer> offsetAndBufferId = posToIndex.lastEntry();
+        long bufferSize = getBufferByIndex(offsetAndBufferId.getValue()).getKnownDataSize();
+
+        long result = offsetAndBufferId.getKey() + bufferSize;
+        return result;
     }
 
     /** If true then the headStream can no longer be used. */

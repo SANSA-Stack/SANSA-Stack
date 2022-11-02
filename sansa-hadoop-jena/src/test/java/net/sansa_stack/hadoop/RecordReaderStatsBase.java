@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.hadoop.core.FileInputFormatStats;
+import net.sansa_stack.hadoop.core.InputFormatStats;
 import net.sansa_stack.hadoop.core.Stats;
 import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
 
@@ -51,7 +51,6 @@ public abstract class RecordReaderStatsBase {
 
     @Test
     public void test() throws IOException, InterruptedException {
-
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
         // conf.set(RecordReaderRdfTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
@@ -67,9 +66,7 @@ public abstract class RecordReaderStatsBase {
         Job job = Job.getInstance(conf);
         // TrigFileInputFormat inputFormat = new TrigFileInputFormat();
         InputFormat<?, ?> baseInputFormat = createInputFormat();
-        InputFormat<?, Stats> inputFormat = new FileInputFormatStats(baseInputFormat);
-
-
+        InputFormat<?, Stats> inputFormat = new InputFormatStats(baseInputFormat);
 
         // add input path of the file
         org.apache.hadoop.fs.Path testHadoopPath = new org.apache.hadoop.fs.Path(testPath.toString());
@@ -77,13 +74,9 @@ public abstract class RecordReaderStatsBase {
 
         // call once to compute the prefixes
         // inputFormat.getSplits(job);
-
-
         try (Stream<Stats> stats = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)) {
             stats.forEach(x -> System.out.println(x));
         }
-
-
     }
 
 }
