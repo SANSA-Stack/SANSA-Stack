@@ -10,11 +10,12 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.jena.rdf.model.Resource;
 
 import com.google.common.base.Preconditions;
 
 public class InputFormatStats
-    extends InputFormat<LongWritable, Stats>
+    extends InputFormat<LongWritable, Resource>
 {
     protected InputFormat<?, ?> decoratee;
 
@@ -43,7 +44,7 @@ public class InputFormatStats
     }
 
     @Override
-    public RecordReader<LongWritable, Stats> createRecordReader(InputSplit split, TaskAttemptContext context)
+    public RecordReader<LongWritable, Resource> createRecordReader(InputSplit split, TaskAttemptContext context)
             throws IOException, InterruptedException {
         ensureInit(context.getConfiguration());
         RecordReader<?, ?> reader = decoratee.createRecordReader(split, context);

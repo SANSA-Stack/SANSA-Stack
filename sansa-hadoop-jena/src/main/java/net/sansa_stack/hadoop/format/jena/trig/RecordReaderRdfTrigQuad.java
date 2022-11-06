@@ -22,6 +22,10 @@ public class RecordReaderRdfTrigQuad
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.trig.quad.record.probecount";
     public static final String PREFIXES_MAXLENGTH_KEY = "mapreduce.input.trig.quad.prefixes.maxlength";
 
+    protected static final CustomPattern trigFwdPatternTmp = CustomPatternJava
+            .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
+                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
     protected static final CustomPattern trigFwdPattern = CustomPatternJava.compile(
             String.join("|",
                     "@?base",

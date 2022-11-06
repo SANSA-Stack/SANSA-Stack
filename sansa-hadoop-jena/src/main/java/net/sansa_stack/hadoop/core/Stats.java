@@ -2,8 +2,6 @@ package net.sansa_stack.hadoop.core;
 
 import java.io.Serializable;
 
-import net.sansa_stack.hadoop.core.RecordReaderGenericBase.ProbeResult;
-
 public class Stats
     implements Serializable
 {

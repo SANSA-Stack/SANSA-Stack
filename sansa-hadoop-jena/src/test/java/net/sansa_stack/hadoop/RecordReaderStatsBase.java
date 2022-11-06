@@ -7,20 +7,21 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
-import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sansa_stack.hadoop.core.InputFormatStats;
-import net.sansa_stack.hadoop.core.Stats;
-import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
+import net.sansa_stack.hadoop.core.Stats2;
 
 public abstract class RecordReaderStatsBase {
 
@@ -66,7 +67,7 @@ public abstract class RecordReaderStatsBase {
         Job job = Job.getInstance(conf);
         // TrigFileInputFormat inputFormat = new TrigFileInputFormat();
         InputFormat<?, ?> baseInputFormat = createInputFormat();
-        InputFormat<?, Stats> inputFormat = new InputFormatStats(baseInputFormat);
+        InputFormat<?, Resource> inputFormat = new InputFormatStats(baseInputFormat);
 
         // add input path of the file
         org.apache.hadoop.fs.Path testHadoopPath = new org.apache.hadoop.fs.Path(testPath.toString());
@@ -74,8 +75,8 @@ public abstract class RecordReaderStatsBase {
 
         // call once to compute the prefixes
         // inputFormat.getSplits(job);
-        try (Stream<Stats> stats = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)) {
-            stats.forEach(x -> System.out.println(x));
+        try (Stream<Stats2> stats = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits).map(r -> r.as(Stats2.class))) {
+            stats.forEach(x -> RDFDataMgr.write(System.out, x.getModel(), RDFFormat.TURTLE_PRETTY));
         }
     }
 

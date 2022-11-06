@@ -76,6 +76,8 @@ public class SeekableSourceOverSplit
 
     protected NavigableMap<Long, Long> absPosToBlockOffset = null;
 
+//    protected boolean isEndReached = false;
+    
 
     public long getBlockForPos(long pos) {
         Map.Entry<Long, Long> e = absPosToBlockOffset.floorEntry(pos);
@@ -83,9 +85,13 @@ public class SeekableSourceOverSplit
         return e.getValue();
     }
 
+//    public boolean isEndReached() {
+//    	return isEndReached;
+//    }
+    
     public long getKnownSize() {
         Entry<Long, Integer> offsetAndBufferId = posToIndex.lastEntry();
-        long bufferSize = getBufferByIndex(offsetAndBufferId.getValue()).getKnownDataSize();
+        long bufferSize = getBufferByIndexUnsafe(offsetAndBufferId.getValue()).getKnownDataSize();
 
         long result = offsetAndBufferId.getKey() + bufferSize;
         return result;
@@ -94,7 +100,7 @@ public class SeekableSourceOverSplit
     /** If true then the headStream can no longer be used. */
     // protected boolean isHeadDebuffered;
 
-    public SeekableSourceOverSplit(BufferOverReadableChannel<byte[]> headBuffer, BufferOverReadableChannel<byte[]> tailBuffer, BufferOverReadableChannel<byte[]> postambleBuffer, NavigableMap absPosToBlockOffset) {
+    public SeekableSourceOverSplit(BufferOverReadableChannel<byte[]> headBuffer, BufferOverReadableChannel<byte[]> tailBuffer, BufferOverReadableChannel<byte[]> postambleBuffer, NavigableMap<Long, Long> absPosToBlockOffset) {
         super();
         this.headBuffer = headBuffer;
         this.tailBuffer = tailBuffer;
@@ -103,19 +109,32 @@ public class SeekableSourceOverSplit
         this.posToIndex.put(0l, 0);
     }
 
+    /**
+     * @return null if the underlying stream is not based on blocks; otherwise a map of byte-offsets (staring from zero) to block offsets
+     */
+    public NavigableMap<Long, Long> getAbsPosToBlockOffset() {
+        return absPosToBlockOffset;
+    }
+
     protected BufferOverReadableChannel<byte[]> getBufferByBaseOffset(long baseOffset) {
         Integer index = posToIndex.get(baseOffset);
         return getBufferByIndex(index);
     }
 
+
     protected BufferOverReadableChannel<byte[]> getBufferByIndex(int index) {
+        // Sanity check
+        if (index == 0 && debufferedHead != null) {
+            throw new IllegalStateException("Should never be called if in debuffered state");
+        }
+        return getBufferByIndexUnsafe(index);
+    }
+
+
+    protected BufferOverReadableChannel<byte[]> getBufferByIndexUnsafe(int index) {
         BufferOverReadableChannel<byte[]> result;
         switch (index) {
-            case 0: result = headBuffer;
-                if (debufferedHead != null) {
-                    throw new IllegalStateException("Should never be called if in debuffered state");
-                }
-            break;
+            case 0: result = headBuffer; break;
             case 1: result = tailBuffer; break;
             case 2: result = postambleBuffer; break;
             default: result = null; break;
@@ -161,7 +180,7 @@ public class SeekableSourceOverSplit
 
     public static SeekableSourceOverSplit createForNonEncodedStream(SeekableInputStream in, long splitPoint, byte[] postambleBytes) {
         SeekableReadableChannel<byte[]> baseStream = SeekableInputStreams.wrap(in);
-        SeekableReadableChannel<byte[]> headStream = new SeekableReadableChannelWithLimit(baseStream, splitPoint);
+        SeekableReadableChannel<byte[]> headStream = new SeekableReadableChannelWithLimit<>(baseStream, splitPoint);
 
         return create(baseStream, headStream, postambleBytes, null);
     }
@@ -500,6 +519,7 @@ public class SeekableSourceOverSplit
                 }
             }
             if (result == -1) {
+            	// isEndReached = true;            	
                 // System.out.println("EOF reached");
             }
             return result;

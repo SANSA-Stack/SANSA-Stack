@@ -2,13 +2,18 @@ package net.sansa_stack.spark.cli.impl;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.aksw.commons.io.util.StdIo;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
@@ -16,7 +21,7 @@ import org.apache.spark.api.java.JavaRDD;
 import com.google.common.base.Preconditions;
 
 import net.sansa_stack.hadoop.core.InputFormatStats;
-import net.sansa_stack.hadoop.core.Stats;
+import net.sansa_stack.hadoop.core.Stats2;
 import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyze;
 import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
@@ -47,11 +52,14 @@ public class CmdSansaAnalyzeImpl {
                     hc.set("delegate", delegateClassName);
 
                     Path path = rdfSource.getPath();
-                    JavaRDD<Stats> rdd = sparkContext.newAPIHadoopFile(path.toString(), InputFormatStats.class, LongWritable.class, Stats.class, hc)
+                    JavaRDD<Resource> rdd = sparkContext.newAPIHadoopFile(path.toString(), InputFormatStats.class, LongWritable.class, Resource.class, hc)
                                 .map(x -> x._2);
 
-                    List<Stats> stats = rdd.collect();
-                    System.out.println(stats);
+                    List<Stats2> stats = rdd.collect().stream().map(r -> r.as(Stats2.class)).collect(Collectors.toList());
+
+                    for (Stats2 stat : stats) {
+                        RDFDataMgr.write(StdIo.openStdOut(), stat.getModel(), RDFFormat.TURTLE);
+                    }
                 }
             }
         }.call();
