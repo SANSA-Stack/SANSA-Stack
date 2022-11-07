@@ -125,24 +125,16 @@ public class CustomPatternCsv
     }
 
     public class CustomMatcherCsv
-        implements CustomMatcher
+        extends CustomMatcherBase
     {
-        protected CharSequence charSequence;
-        protected int regionStart;
-        protected int regionEnd;
         protected int newlineMatchStart = -1;
 
         protected boolean nextQuoteExamined = false;
         protected int nextQuoteEnd = -1;
         protected int nextQuoteStart = -1;
 
-        protected int pos;
-
-
         public CustomMatcherCsv(CharSequence charSequence) {
-            this.charSequence = charSequence;
-            this.regionStart = 0;
-            this.regionEnd = charSequence.length();
+        	super(charSequence);
         }
 
         @Override
@@ -152,7 +144,6 @@ public class CustomPatternCsv
 
             this.pos = start;
         }
-
 
         @Override
         public boolean find() {
@@ -243,18 +234,8 @@ public class CustomPatternCsv
         }
 
         @Override
-        public int start(int group) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public int end() {
             return newlineMatchStart + 1;
-        }
-
-        @Override
-        public int end(int group) {
-            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -268,16 +249,6 @@ public class CustomPatternCsv
             result = Character.toString(charSequence.charAt(newlineMatchStart));
             return result;
             // throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String group(int group) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int groupCount() {
-            return 0;
         }
     }
 
