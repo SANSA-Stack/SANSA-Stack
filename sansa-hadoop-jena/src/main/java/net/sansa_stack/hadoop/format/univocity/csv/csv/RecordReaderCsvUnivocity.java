@@ -110,7 +110,7 @@ public class RecordReaderCsvUnivocity
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                null));
+                null)); // RecordSearchPattern is set in initialize()
     }
 
     public RecordReaderCsvUnivocity(RecordReaderConf conf) {
@@ -197,6 +197,7 @@ public class RecordReaderCsvUnivocity
                 result = row;
             }
 
+            // if (row != null) { System.err.println("GOT ROW: " + Arrays.asList(row)); }
             return result;
         }
 

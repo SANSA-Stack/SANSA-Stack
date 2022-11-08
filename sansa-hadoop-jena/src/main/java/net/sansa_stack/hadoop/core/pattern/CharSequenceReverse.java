@@ -13,7 +13,7 @@ public class CharSequenceReverse
     protected int reverseEnd; // 0 <= reverseEnd <= reverseStart
 
     public CharSequenceReverse(CharSequence base, int reverseStart) {
-        this(base, reverseStart, - 1);
+        this(base, reverseStart, -1);
     }
     public CharSequenceReverse(CharSequence base, int reverseStart, int reverseEnd) {
         this.base = base;
