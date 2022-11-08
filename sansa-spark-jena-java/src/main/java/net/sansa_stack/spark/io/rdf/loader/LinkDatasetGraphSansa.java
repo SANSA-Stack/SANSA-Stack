@@ -63,7 +63,7 @@ public class LinkDatasetGraphSansa
         try {
             StreamRDF sink = sinkFactory.get();
             Path path = new Path(s);
-            AsyncRdfParserHadoop.parse(path, conf, sink);
+            AsyncRdfParserHadoop.parse(path, null, conf, sink);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

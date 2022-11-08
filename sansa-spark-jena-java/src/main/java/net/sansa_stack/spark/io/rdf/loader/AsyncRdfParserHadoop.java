@@ -25,6 +25,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RDFFormatVariant;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.shared.PrefixMapping;
@@ -130,11 +132,25 @@ public class AsyncRdfParserHadoop {
 
     // Create a separate sink for each thread?
 
-    public static void parse(Path file, Configuration conf, StreamRDF sink) throws Exception {
+    /**
+     *
+     * @param file
+     * @param rdfFormat The language of the file. If it is null then probing will be performed.
+     * @param conf
+     * @param sink
+     * @throws Exception
+     */
+    public static void parse(Path file, RDFFormat rdfFormat, Configuration conf, StreamRDF sink) throws Exception {
         sink.start();
 
         FileSystem fileSystem = file.getFileSystem(conf);
-        Lang lang = RdfSourceFactoryImpl.probeLang(file, fileSystem);
+        Lang lang;
+        if (rdfFormat == null) {
+            lang = RdfSourceFactoryImpl.probeLang(file, fileSystem);
+        } else {
+            lang = rdfFormat.getLang();
+        }
+
         if (RDFLanguages.isQuads(lang)) {
             Builder.forQuad().setConf(conf).setInputFile(file).setSink(sink).run();
         } else if (RDFLanguages.isTriples(lang)) {
