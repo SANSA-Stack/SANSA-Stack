@@ -16,5 +16,4 @@ public class OutputUtils {
         Preconditions.checkArgument(result >= 0, "Hadoop configuration object lacks required value for key " + NUM_SPLITS);
         return result;
     }
-
 }

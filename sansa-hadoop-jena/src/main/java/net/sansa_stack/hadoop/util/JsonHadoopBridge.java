@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.univocity.parsers.csv.CsvParserSettings;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.path.core.Path;
 import org.aksw.commons.path.core.PathOpsStr;

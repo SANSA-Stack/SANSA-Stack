@@ -1,82 +1,38 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
-import com.univocity.parsers.common.AbstractParser;
-import com.univocity.parsers.common.record.Record;
-import io.reactivex.rxjava3.core.Flowable;
-import org.aksw.commons.rx.util.FlowableEx;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.function.Supplier;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.concurrent.Callable;
+import com.univocity.parsers.common.CommonParserSettings;
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 public class UnivocityUtils {
+    
+    public static boolean isDetectionNeeded(CsvParserSettings settings) {
+    	boolean result = settings.isLineSeparatorDetectionEnabled()
+    			|| settings.isDelimiterDetectionEnabled()
+    			|| settings.isQuoteDetectionEnabled();
 
-    /** Configure univocity parser */
-    /*
-    public static void configureFromDialect(CommonParserSettings<?> settings, Dialect dialect) {
-        // Create a copy of the settings
-        DialectMutable d = JsonHadoopBridge.merge(
-                new DialectMutableForwardingJackson<>(new DialectMutableImpl()),
-                new DialectForwardingJackson<>(dialect));
-
-        // CsvwLib.buildEffectiveModel(d, d);
-
-        CsvwUnivocityUtils.configure(d, settings);
-        // CsvwLib.buildEffectiveModel(dialect, d);
-    }
-     */
-
-
-    /**
-     * Create a flowable to a CSV file via hadoop. Allows for retrieval of headers.
-     *
-     * @param path A path (string) to a csv file
-     * @param fileSystem The hadoop filesystem
-     * @param parserFactory A factory for creating parsers over an input stream
-     * @return A cold flowable over the csv data
-     */
-    public static Flowable<Record> readCsvRecords(String path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvRecords(new Path(path), fileSystem, parserFactory);
+    	return result;
     }
 
-    /**
-     * Create a flowable to a CSV file via hadoop. Allows for retrieval of headers.
-     *
-     * @param path A path to a csv file
-     * @param fileSystem The hadoop filesystem
-     * @param parserFactory A factory for creating parsers over an input stream
-     * @return A cold flowable over the csv data
-     */
-    public static Flowable<Record> readCsvRecords(Path path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvRecords(() -> fileSystem.open(path), parserFactory);
+    public static boolean isDetectionNeeded(CommonParserSettings<?> settings) {
+    	boolean result = settings.isLineSeparatorDetectionEnabled();
+    	return result;
     }
 
-    public static Flowable<String[]> readCsvRows(Path path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvRecords(path, fileSystem, parserFactory).map(Record::getValues);
+    public static CsvFormat detectFormat(CsvParser parser, Supplier<Reader> readerSupp) throws IOException {
+    	CsvFormat result;
+    	try (Reader reader = readerSupp.get()) {
+	         parser.beginParsing(reader);
+	         result = parser.getDetectedFormat();
+        } finally {
+	         parser.stopParsing();	    	
+	    }
+    	return result;
     }
 
-    public static Flowable<String[]> readCsvRows(String path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvRecords(path, fileSystem, parserFactory).map(Record::getValues);
-    }
-
-    /**
-     * Create a flowable to a CSV file from a supplier of input streams
-     *
-     * @param inSupp A supplier of input streams
-     * @param parserFactory A factory for creating parsers over an input stream
-     * @return A cold flowable over the csv data
-     */
-    public static Flowable<Record> readCsvRecords(Callable<? extends InputStream> inSupp, UnivocityParserFactory parserFactory) {
-        return FlowableEx.fromEnumerableResource(
-                () -> parserFactory.newInputStreamReader(inSupp.call()),
-                reader -> { AbstractParser<?> r = parserFactory.newParser(); r.beginParsing(reader); return r; },
-                csvParser -> csvParser.parseNextRecord(),
-                (in, csvParser) -> {
-                    if (in != null) {
-                        in.close();
-                    }
-                });
-    }
 }

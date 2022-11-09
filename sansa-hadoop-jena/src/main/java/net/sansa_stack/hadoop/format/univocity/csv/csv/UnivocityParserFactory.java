@@ -1,20 +1,22 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
+import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
+
 import com.univocity.parsers.common.AbstractParser;
 import com.univocity.parsers.common.CommonParserSettings;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.tsv.TsvParser;
 import com.univocity.parsers.tsv.TsvParserSettings;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import org.aksw.commons.model.csvw.domain.api.Dialect;
-import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
-import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 
 public class UnivocityParserFactory {
     protected boolean isCsv;
@@ -28,7 +30,15 @@ public class UnivocityParserFactory {
         this.csvSettings = csvSettings;
         this.tsvSettings = tsvSettings;
     }
-
+    
+    public CsvParserSettings getCsvSettings() {
+		return csvSettings;
+	}
+    
+    public TsvParserSettings getTsvSettings() {
+		return tsvSettings;
+	}
+    
     public static UnivocityParserFactory createDefault(Boolean skipHeaders) {
         CsvParserSettings defaultCsvSettings = new CsvParserSettings();
         applyDefaults(defaultCsvSettings, skipHeaders);
@@ -40,7 +50,7 @@ public class UnivocityParserFactory {
     }
 
     public static void applyDefaults(CommonParserSettings settings, Boolean skipHeaders) {
-        settings.setMaxCharsPerColumn(500000);
+        settings.setMaxCharsPerColumn(-1); //500000);
         settings.setAutoClosingEnabled(false);
         //settings.setLineSeparatorDetectionEnabled(true);
         settings.setLineSeparatorDetectionEnabled(false);
@@ -65,6 +75,7 @@ public class UnivocityParserFactory {
             CsvParserSettings settings = csvSettings.clone();
             CsvwUnivocityUtils.configureCsvFormat(settings.getFormat(), dialect);
             CsvwUnivocityUtils.configureCommonSettings(settings, dialect);
+            CsvwUnivocityUtils.configureDetection(settings, dialect);
             result = new UnivocityParserFactory(true, cs, settings, tsvSettings);
         }
 

@@ -1,14 +1,20 @@
 package net.sansa_stack.spark.io.csv.input;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
+import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
+import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -16,67 +22,98 @@ import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import com.univocity.parsers.csv.CsvParser;
+
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
 
 public class CsvDataSources {
-
+	private static final Logger logger = LoggerFactory.getLogger(CsvDataSources.class);
+	
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String path,
             UnivocityHadoopConf csvConf) throws IOException
     {
-        Dialect dialect = csvConf.getDialect();
+        FileSystem fs = FileSystem.get(sc.hadoopConfiguration());
 
+        Dialect dialect = csvConf.getDialect();
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);
 
-        FileSystem fs = FileSystem.get(sc.hadoopConfiguration());
+        // Auto detect any missing CSV settings
+        if (!csvConf.isTabs()) {
+        	DialectMutable copy = new DialectMutableImpl();
+        	dialect.copyInto(copy);
+        	
+        	Set<String> detectedProperties;
+			try {
+				UnivocityParserFactory finalParserFactory = parserFactory;
+				detectedProperties = CsvwUnivocityUtils.configureDialect(copy, parserFactory.getCsvSettings(),
+						() -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(fs.open(new Path(path))));
+			} catch (Exception e) {
+				throw new IOException();
+			}
 
-        String[] sampleRow = UnivocityUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
-        List<String> headers;
+        	logger.info("For source " + path + " auto-detected csv properties: " + detectedProperties);
+
+        	dialect = copy;
+        	csvConf = new UnivocityHadoopConf(copy);
+        	csvConf.setTabs(false);
+        	parserFactory = UnivocityParserFactory.createDefault(false).configure(csvConf);
+        }
+
+        String[] sampleRow = UnivocityRxUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
+        int n = sampleRow.length;
+
+        Var[][] headers = new Var[n][];
         // If the headers are not skipped then custom headers are required
         if (!Boolean.FALSE.equals(dialect.getHeader())) {
-            headers = Arrays.asList(sampleRow);
-        } else {
-            int n = sampleRow.length;
-            headers = new ArrayList<>(n);
             for (int i = 0; i < n; ++i) {
-                headers.add(CsvwLib.getExcelColumnLabel(i));
+            	String str = sampleRow[i];
+            	if (str != null) {
+            		str = str.replace(" ", "_");
+            	}
+            	headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
+            }
+        } else {
+            for (int i = 0; i < n; ++i) {
+                headers[i] = new Var[] { Var.alloc(CsvwLib.getExcelColumnLabel(i)) };
             }
             // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
         }
 
-        List<Var> vars = Var.varList(headers);
-
-        return createRddOfBindings(sc, path, csvConf, row -> createBinding(vars, row));
+        return createRddOfBindings(sc, path, csvConf, row -> createBinding(headers, row));
     }
 
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String path,
             UnivocityHadoopConf univocityConf,
-            Function<List<String>, Binding> mapper)
+            Function<String[], Binding> mapper)
     {
         Configuration conf = sc.hadoopConfiguration();
         FileInputFormatCsvUnivocity.setUnivocityConfig(conf, univocityConf);
 
-        JavaRDD<List<String>> rdd;
+        JavaRDD<String[]> rdd;
         if (false) {
             // FileInputFormatCsv.setCsvFormat(conf, csvFormat);
             // Commons-CSV
             rdd = sc.newAPIHadoopFile(path, net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv.class, LongWritable.class, List.class, conf)
-                    .map(t -> (List<String>) t._2);
+                    .map(t -> (List<String>)t._2)
+            		.map(t -> t.toArray(new String[0]));
         } else {
             // Univocity CSV
             rdd = sc.newAPIHadoopFile(path,
                     FileInputFormatCsvUnivocity.class, LongWritable.class, String[].class, conf)
-                    .map(t -> Arrays.asList( t._2));
+                    // .map(t -> Arrays.asList(t._2));
+            		.map(t -> t._2);
         }
         JavaRDD<Binding> bindingRdd = rdd.map(mapper);
         return bindingRdd;
@@ -86,20 +123,21 @@ public class CsvDataSources {
      * Util method to create a binding from a list of variables and a list of strings. The latter will be converted to plain literals.
      * The given lists must have the same length.
      */
-    public static Binding createBinding(List<Var> headings, List<String> strs) {
+    public static Binding createBinding(Var[][] headings, String[] strs) {
         BindingBuilder builder = BindingBuilder.create();
-        Iterator<Var> itVar = headings.iterator();
-        Iterator<String> itStr = strs.iterator();
-
-        while (itVar.hasNext()) {
-            Var var = itVar.next();
-            String str = itStr.hasNext() ? itStr.next() : null;
-
-            if (str != null) {
-                builder.add(var, NodeFactory.createLiteral(str));
-            }
-        }
-
+        int n = Math.min(headings.length, strs.length);
+        for (int i = 0; i < n; ++i) {
+        	Var[] vars = headings[i];
+    		String str = strs[i];
+    		if (str != null) {
+    			int varlen = vars.length;
+    			Node node = NodeFactory.createLiteral(str);
+        		for (int j = 0; j < varlen; ++j) {
+        			Var var = vars[j];
+        			builder.add(var, node);
+        		}
+    		}
+        }        
         Binding result = builder.build();
         return result;
     }
