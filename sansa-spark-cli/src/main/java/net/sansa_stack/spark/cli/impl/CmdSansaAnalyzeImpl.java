@@ -1,36 +1,35 @@
 package net.sansa_stack.spark.cli.impl;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.aksw.commons.io.util.StdIo;
+import com.google.common.base.Preconditions;
+import net.sansa_stack.hadoop.core.InputFormatStats;
+import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyze;
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
+import net.sansa_stack.spark.io.rdf.input.impl.RddRdfLoaderRegistryImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFromResourceImpl;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 
-import com.google.common.base.Preconditions;
-
-import net.sansa_stack.hadoop.core.InputFormatStats;
-import net.sansa_stack.hadoop.core.Stats2;
-import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyze;
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.impl.RddRdfLoaderRegistryImpl;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFromResourceImpl;
+import java.io.IOException;
 
 public class CmdSansaAnalyzeImpl {
 
     public static int run(CmdSansaAnalyze cmd) throws IOException {
+
+        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        rddRdfWriterFactory.setUseElephas(true);
+        rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         new SimpleSparkCmdTemplate<>("Sansa Analyze Data in Splits", cmd.inputConfig, cmd.inputFiles) {
             @Override
@@ -52,14 +51,19 @@ public class CmdSansaAnalyzeImpl {
                     hc.set("delegate", delegateClassName);
 
                     Path path = rdfSource.getPath();
-                    JavaRDD<Resource> rdd = sparkContext.newAPIHadoopFile(path.toString(), InputFormatStats.class, LongWritable.class, Resource.class, hc)
-                                .map(x -> x._2);
+                    JavaRDD<Model> rdd = sparkContext.newAPIHadoopFile(path.toString(), InputFormatStats.class, LongWritable.class, Resource.class, hc)
+                                .map(x -> x._2.getModel());
 
+                    RdfSource tgt = RdfSources.ofModels(rdd);
+                    CmdSansaMapImpl.writeOutRdfSources(tgt, rddRdfWriterFactory);
+/*
+                    CmdSansaMapImpl.writeOutRdfSources(rdf);
                     List<Stats2> stats = rdd.collect().stream().map(r -> r.as(Stats2.class)).collect(Collectors.toList());
 
                     for (Stats2 stat : stats) {
                         RDFDataMgr.write(StdIo.openStdOut(), stat.getModel(), RDFFormat.TURTLE);
                     }
+ */
                 }
             }
         }.call();

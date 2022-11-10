@@ -70,7 +70,6 @@ public abstract class RecordReaderRdfTestBase<T> {
         Assert.assertTrue("Datasets were not isomorphic - see output above", isIso);
     }
 
-
     @Test
     public void test() throws IOException, InterruptedException {
 

@@ -41,6 +41,7 @@ import org.aksw.commons.io.input.ReadableChannelWithValue;
 import org.aksw.commons.io.input.ReadableChannels;
 import org.aksw.commons.io.input.SeekableReadableChannel;
 import org.aksw.commons.io.seekable.api.Seekable;
+import org.aksw.commons.util.stack_trace.StackTraceUtils;
 import org.aksw.commons.util.stream.SequentialGroupBySpec;
 import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
 import org.apache.commons.io.IOUtils;
@@ -63,6 +64,8 @@ import org.apache.jena.ext.com.google.common.primitives.Ints;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -587,19 +590,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected void detectTail(BufferOverReadableChannel<byte[]> tailByteBuffer) {
         BufferOverReadableChannel<U[]> tailEltBuffer = BufferOverReadableChannel.createForObjects(probeEltCount);
 
-        
         long maxExtraBytes = 1_000_000;
         LongPredicate tailCharPosValidator = pos -> {
-        	boolean r = true;        	
-        	if (tailByteBuffer.isDataSupplierConsumed()) {
-        		long maxPos = tailByteBuffer.getKnownDataSize() + maxExtraBytes;
-        		r = pos < maxPos;
-        	}
-        	return r;
+            boolean r = true;
+            if (tailByteBuffer.isDataSupplierConsumed()) {
+                long maxPos = tailByteBuffer.getKnownDataSize() + maxExtraBytes;
+                r = pos < maxPos;
+            }
+            return r;
         };
 
-
-        
         try (SeekableReadableChannel<byte[]> tailByteChannel = tailByteBuffer.newReadableChannel()) {
             StopWatch tailSw = StopWatch.createStarted();
             tailRecordOffset = skipToNthRegionInSplit(skipRegionCount, tailByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, tailCharPosValidator, pos -> true, posToSplitId, tailEltBuffer, this::prober);
@@ -684,7 +684,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             return r;
         };
 
-        
+
         long maxExtraBytes = 1_000_000;
         readPosValidator = pos -> {
             boolean r = true;
@@ -757,6 +757,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         try {
             if (headByteChannel.isHeadStream()) {
+                // System.out.println("CASE1");
                 regionStartSearchReadOverSplitEnd = false;
                 regionStartSearchReadOverRegionEnd = false;
 
@@ -767,9 +768,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 headByteChannel.setTransitionAction(() -> {
                     logger.info("Transitioned to tail on byte: " + finalHeadByteChannel.getEnclosingInstance().getHeadBuffer().getKnownDataSize());
 
-                    System.err.println("Pos before: " + finalHeadByteChannel.position());
+                    // System.err.println("Pos before: " + finalHeadByteChannel.position());
                     detectTail(source.getTailBuffer());
-                    System.err.println("Pos after: " + finalHeadByteChannel.position());
+                    // System.err.println("Pos after: " + finalHeadByteChannel.position());
 
                     if (tailBytes >= 0) {
                         long absTailPos = source.getHeadSize() + tailBytes;
@@ -778,6 +779,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     }
                 });
             } else {
+                // System.out.println("CASE2");
                 regionStartSearchReadOverSplitEnd = true;
                 if (true) {
                     // throw new RuntimeException("Read over tail");
@@ -791,11 +793,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
                 // if (pos <= absTailPos) {
                 if (!regionStartSearchReadOverRegionEnd) {
+                    // System.out.println("CASE2A");
+
                     //   (b1) The tail region offset is greater than the current byte read offset - in that case just limit the byte stream
                     if (tailBytes >= 0) {
                         headByteChannel.setLimit(absTailPos);
                     }
                 } else {
+                    // System.out.println("CASE2B");
                     //   (b2) We already read past the end; restart the parser.
                     // Close the (possibly asynchronously running) parser
                     // Danger of deadlock: We have to release the lock because the close method wants acquire the lock too!
@@ -858,7 +863,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // This stream has to be lazy because the tailElts attribute is only
         // initialized when the split boundary is hit
         Stream<U> lazyTailElts = Stream.of(1).flatMap(x -> {
-            System.err.println("Yielding " + tailElts.size() + " tail elements");
+            logger.info("Yielding " + tailElts.size() + " tail elements");
             return tailElts.stream();
         });
 
@@ -1302,6 +1307,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
     @Override
     public void close() throws IOException {
+        // TODO Add a config option to log summary stats
+        boolean logSummaryStats = false;
+        if (logSummaryStats) {
+            RDFDataMgr.write(System.err, getStats().getModel(), RDFFormat.TURTLE_PRETTY);
+        }
+
         try {
             if (recordFlowCloseable != null) {
                 recordFlowCloseable.run();

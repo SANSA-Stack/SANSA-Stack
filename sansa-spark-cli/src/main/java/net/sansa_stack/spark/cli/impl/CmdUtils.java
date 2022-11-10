@@ -77,6 +77,7 @@ public class CmdUtils {
                 .setTargetFile(out.getTargetFile())
                 // .setUseElephas(true)
                 .setDeletePartitionFolderAfterMerge(true)
+                .setAllowOverwriteFiles(out.isOverwriteAllowed())
                 .validate();
 
         return result;

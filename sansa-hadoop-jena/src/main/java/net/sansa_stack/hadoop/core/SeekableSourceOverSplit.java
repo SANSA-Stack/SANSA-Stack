@@ -77,7 +77,7 @@ public class SeekableSourceOverSplit
     protected NavigableMap<Long, Long> absPosToBlockOffset = null;
 
 //    protected boolean isEndReached = false;
-    
+
 
     public long getBlockForPos(long pos) {
         Map.Entry<Long, Long> e = absPosToBlockOffset.floorEntry(pos);
@@ -88,7 +88,7 @@ public class SeekableSourceOverSplit
 //    public boolean isEndReached() {
 //    	return isEndReached;
 //    }
-    
+
     public long getKnownSize() {
         Entry<Long, Integer> offsetAndBufferId = posToIndex.lastEntry();
         long bufferSize = getBufferByIndexUnsafe(offsetAndBufferId.getValue()).getKnownDataSize();
@@ -315,7 +315,11 @@ public class SeekableSourceOverSplit
         /** True iff the next call to read() reads from the head stream */
         public boolean isHeadStream() {
             int streamId = posToIndex.get(currentStreamOffset);
-            boolean result = streamId == 0;
+
+            // We may be positioned exactly at the end of the head stream:
+            // In this case, the read() method call has already placed the entry for the tail offset
+            // and called the transition action
+            boolean result = streamId == 0 && posToIndex.size() == 1;
             return result;
         }
 
@@ -476,8 +480,9 @@ public class SeekableSourceOverSplit
                         } else {
                             result = currentStream.read(array, position, l);
                             if (result == -1) {
+                                boolean ihs = isHeadStream();
                                 Object cs = currentStream;
-                                long currentSize = isHeadStream() && isDebuffered()
+                                long currentSize = ihs && isDebuffered()
                                         ? currentStream.position() - currentStreamOffset
                                         : getBufferByBaseOffset(currentStreamOffset).getKnownDataSize();
 
@@ -485,7 +490,7 @@ public class SeekableSourceOverSplit
 //                                long currentSize = csPos - currentStreamOffset; // getBufferByBaseOffset(currentStreamOffset).getKnownDataSize();
 
 
-                                boolean exhaustedHeadStream = isHeadStream();
+                                boolean exhaustedHeadStream = ihs; // We exhausted the stream by reading -1 -  && headBuffer.isDataSupplierConsumed(); // isHeadStream();
                                 long newPos = currentStreamOffset + currentSize;
                                 position(newPos);
                                 if (exhaustedHeadStream) {
@@ -519,9 +524,10 @@ public class SeekableSourceOverSplit
                 }
             }
             if (result == -1) {
-            	// isEndReached = true;            	
+                // isEndReached = true;
                 // System.out.println("EOF reached");
             }
+
             return result;
         }
 

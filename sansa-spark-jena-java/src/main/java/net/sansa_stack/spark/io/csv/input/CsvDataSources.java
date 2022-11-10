@@ -1,9 +1,9 @@
 package net.sansa_stack.spark.io.csv.input;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
@@ -30,17 +30,18 @@ import com.univocity.parsers.csv.CsvParser;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 
 public class CsvDataSources {
-	private static final Logger logger = LoggerFactory.getLogger(CsvDataSources.class);
-	
+    private static final Logger logger = LoggerFactory.getLogger(CsvDataSources.class);
+
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
-            String path,
+            String pathStr,
             UnivocityHadoopConf csvConf) throws IOException
     {
         FileSystem fs = FileSystem.get(sc.hadoopConfiguration());
+        Path path = new Path(pathStr);
 
         Dialect dialect = csvConf.getDialect();
         UnivocityParserFactory parserFactory = UnivocityParserFactory
@@ -49,38 +50,46 @@ public class CsvDataSources {
 
         // Auto detect any missing CSV settings
         if (!csvConf.isTabs()) {
-        	DialectMutable copy = new DialectMutableImpl();
-        	dialect.copyInto(copy);
-        	
-        	Set<String> detectedProperties;
-			try {
-				UnivocityParserFactory finalParserFactory = parserFactory;
-				detectedProperties = CsvwUnivocityUtils.configureDialect(copy, parserFactory.getCsvSettings(),
-						() -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(fs.open(new Path(path))));
-			} catch (Exception e) {
-				throw new IOException();
-			}
+            DialectMutable copy = new DialectMutableImpl();
+            dialect.copyInto(copy);
 
-        	logger.info("For source " + path + " auto-detected csv properties: " + detectedProperties);
+            Set<String> detectedProperties;
+            try {
+                UnivocityParserFactory finalParserFactory = parserFactory;
+                detectedProperties = CsvwUnivocityUtils.configureDialect(copy, parserFactory.getCsvSettings(),
+                        () -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(fs.open(path)));
+            } catch (Exception e) {
+                throw new IOException();
+            }
 
-        	dialect = copy;
-        	csvConf = new UnivocityHadoopConf(copy);
-        	csvConf.setTabs(false);
-        	parserFactory = UnivocityParserFactory.createDefault(false).configure(csvConf);
+            logger.info("For source " + pathStr + " auto-detected csv properties: " + detectedProperties);
+
+            dialect = copy;
+            csvConf = new UnivocityHadoopConf(copy);
+            csvConf.setTabs(false);
+            parserFactory = UnivocityParserFactory.createDefault(false).configure(csvConf);
         }
 
-        String[] sampleRow = UnivocityRxUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
+        // TODO When we probe for the CSV dialect above we could actually
+        // reuse that parser to also extract the headers
+        // Right now we start another parser for the headers
+
+        // String[] sampleRow = UnivocityRxUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
+        String[] sampleRow;
+        try (Stream<String[]> rows = UnivocityUtils.readCsvRows(path, fs, parserFactory)) {
+            sampleRow = rows.findFirst().orElse(new String[0]);
+        }
         int n = sampleRow.length;
 
         Var[][] headers = new Var[n][];
         // If the headers are not skipped then custom headers are required
         if (!Boolean.FALSE.equals(dialect.getHeader())) {
             for (int i = 0; i < n; ++i) {
-            	String str = sampleRow[i];
-            	if (str != null) {
-            		str = str.replace(" ", "_");
-            	}
-            	headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
+                String str = sampleRow[i];
+                if (str != null) {
+                    str = str.replace(" ", "_");
+                }
+                headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
             }
         } else {
             for (int i = 0; i < n; ++i) {
@@ -89,7 +98,7 @@ public class CsvDataSources {
             // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
         }
 
-        return createRddOfBindings(sc, path, csvConf, row -> createBinding(headers, row));
+        return createRddOfBindings(sc, pathStr, csvConf, row -> createBinding(headers, row));
     }
 
     public static JavaRDD<Binding> createRddOfBindings(
@@ -107,37 +116,42 @@ public class CsvDataSources {
             // Commons-CSV
             rdd = sc.newAPIHadoopFile(path, net.sansa_stack.hadoop.format.commons_csv.csv.FileInputFormatCsv.class, LongWritable.class, List.class, conf)
                     .map(t -> (List<String>)t._2)
-            		.map(t -> t.toArray(new String[0]));
+                    .map(t -> t.toArray(new String[0]));
         } else {
             // Univocity CSV
             rdd = sc.newAPIHadoopFile(path,
                     FileInputFormatCsvUnivocity.class, LongWritable.class, String[].class, conf)
                     // .map(t -> Arrays.asList(t._2));
-            		.map(t -> t._2);
+                    .map(t -> t._2);
         }
         JavaRDD<Binding> bindingRdd = rdd.map(mapper);
         return bindingRdd;
     }
 
     /**
-     * Util method to create a binding from a list of variables and a list of strings. The latter will be converted to plain literals.
+     * Util method to create a binding from a list of variables and a list of strings.
+     * The latter will be converted to plain literals.
      * The given lists must have the same length.
+     *
+     * A single column may have zero or more headings.
+     * This allows for the same value to be exposed under multiple variables
+     * in the returned binding.
      */
     public static Binding createBinding(Var[][] headings, String[] strs) {
         BindingBuilder builder = BindingBuilder.create();
         int n = Math.min(headings.length, strs.length);
         for (int i = 0; i < n; ++i) {
-        	Var[] vars = headings[i];
-    		String str = strs[i];
-    		if (str != null) {
-    			int varlen = vars.length;
-    			Node node = NodeFactory.createLiteral(str);
-        		for (int j = 0; j < varlen; ++j) {
-        			Var var = vars[j];
-        			builder.add(var, node);
-        		}
-    		}
-        }        
+            Var[] vars = headings[i];
+            String str = strs[i];
+            if (str != null) {
+                int varlen = vars.length;
+                Node node = NodeFactory.createLiteral(str);
+                for (int j = 0; j < varlen; ++j) {
+                    Var var = vars[j];
+                    builder.add(var, node);
+                }
+            }
+        }
         Binding result = builder.build();
         return result;
     }

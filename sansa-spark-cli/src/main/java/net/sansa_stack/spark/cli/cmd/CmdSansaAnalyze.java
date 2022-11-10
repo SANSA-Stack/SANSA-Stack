@@ -22,6 +22,10 @@ public class CmdSansaAnalyze
     @CommandLine.Parameters(arity = "1..n", description = "Input RDF file(s)")
     public List<String> inputFiles;
 
+    // TODO Replace with a non-spark mixin that only captures output file and (rdf) format
+    @CommandLine.Mixin
+    public CmdMixinSparkOutput outputConfig = new CmdMixinSparkOutput();
+
     @Override
     public Integer call() throws Exception {
         return CmdSansaAnalyzeImpl.run(this);

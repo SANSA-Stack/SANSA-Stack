@@ -21,6 +21,11 @@ public class CmdMixinSparkOutput
             description = "Output file; Merge of files created in out-folder")
     public String outFile = null;
 
+    @CommandLine.Option(names = { "--out-overwrite" }, arity = "0",
+            description = "Overwrite existing output files and/or folders; ",
+            defaultValue = "false", fallbackValue = "true")
+    public boolean outOverwrite;
+
     @CommandLine.Option(names = { "--op", "--out-prefixes" },
             description = "Prefix sources for output. Subject to used prefix analysis. Default: ${DEFAULT-VALUE}",
             defaultValue = "rdf-prefixes/prefix.cc.2019-12-17.ttl")
@@ -55,4 +60,7 @@ public class CmdMixinSparkOutput
     public String getTargetFile() {
         return outFile;
     }
+
+    @Override
+    public boolean isOverwriteAllowed() { return outOverwrite; }
 }

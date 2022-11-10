@@ -8,4 +8,5 @@ public interface RdfOutputConfig {
     String getTargetFile();
     Long getPrefixOutputDeferCount();
     List<String> getPrefixSources();
+    boolean isOverwriteAllowed();
 }

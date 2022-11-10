@@ -18,6 +18,7 @@ public class JavaRddOfResourcesOps {
         return rdd.mapToPair(r -> new Tuple2<>(r.getURI(), r.getModel()));
     }
 
+
     /**
      * Map every IRI resource to a dataset having a single named graph matching the IRI.
      * Any mapping of non-IRI resources will fail.

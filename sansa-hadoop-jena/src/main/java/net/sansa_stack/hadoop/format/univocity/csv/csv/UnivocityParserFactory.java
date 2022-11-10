@@ -18,6 +18,11 @@ import com.univocity.parsers.tsv.TsvParserSettings;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 
+/**
+ * A helper class for setting up a univocity parser for an input stream.
+ * Concretely captures tsv and csv configuration and also a charset
+ * attribute.
+ */
 public class UnivocityParserFactory {
     protected boolean isCsv;
     protected CsvParserSettings csvSettings;
@@ -30,15 +35,15 @@ public class UnivocityParserFactory {
         this.csvSettings = csvSettings;
         this.tsvSettings = tsvSettings;
     }
-    
+
     public CsvParserSettings getCsvSettings() {
-		return csvSettings;
-	}
-    
+        return csvSettings;
+    }
+
     public TsvParserSettings getTsvSettings() {
-		return tsvSettings;
-	}
-    
+        return tsvSettings;
+    }
+
     public static UnivocityParserFactory createDefault(Boolean skipHeaders) {
         CsvParserSettings defaultCsvSettings = new CsvParserSettings();
         applyDefaults(defaultCsvSettings, skipHeaders);

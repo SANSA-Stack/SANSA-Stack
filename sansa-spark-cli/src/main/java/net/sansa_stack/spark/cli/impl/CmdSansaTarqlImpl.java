@@ -42,7 +42,6 @@ public class CmdSansaTarqlImpl {
 
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
         rddRdfWriterFactory.setUseElephas(true);
-
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
