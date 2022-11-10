@@ -1,8 +1,10 @@
 package net.sansa_stack.spark.io.csv.input;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
 import org.aksw.commons.model.csvw.domain.api.Dialect;
@@ -11,7 +13,6 @@ import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.graph.Node;
@@ -31,6 +32,7 @@ import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
+import net.sansa_stack.hadoop.util.FileSystemUtils;
 
 public class CsvDataSources {
     private static final Logger logger = LoggerFactory.getLogger(CsvDataSources.class);
@@ -40,8 +42,8 @@ public class CsvDataSources {
             String pathStr,
             UnivocityHadoopConf csvConf) throws IOException
     {
-        FileSystem fs = FileSystem.get(sc.hadoopConfiguration());
         Path path = new Path(pathStr);
+        Callable<InputStream> inputStreamFactory = () -> FileSystemUtils.newInputStream(path, sc.hadoopConfiguration());
 
         Dialect dialect = csvConf.getDialect();
         UnivocityParserFactory parserFactory = UnivocityParserFactory
@@ -57,7 +59,7 @@ public class CsvDataSources {
             try {
                 UnivocityParserFactory finalParserFactory = parserFactory;
                 detectedProperties = CsvwUnivocityUtils.configureDialect(copy, parserFactory.getCsvSettings(),
-                        () -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(fs.open(path)));
+                        () -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(inputStreamFactory.call()));
             } catch (Exception e) {
                 throw new IOException();
             }
@@ -76,7 +78,7 @@ public class CsvDataSources {
 
         // String[] sampleRow = UnivocityRxUtils.readCsvRows(path, fs, parserFactory).firstElement().blockingGet();
         String[] sampleRow;
-        try (Stream<String[]> rows = UnivocityUtils.readCsvRows(path, fs, parserFactory)) {
+        try (Stream<String[]> rows = UnivocityUtils.readCsvRows(inputStreamFactory, parserFactory)) {
             sampleRow = rows.findFirst().orElse(new String[0]);
         }
         int n = sampleRow.length;

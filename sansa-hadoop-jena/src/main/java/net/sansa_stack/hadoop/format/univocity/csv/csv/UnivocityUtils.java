@@ -9,8 +9,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.aksw.commons.collections.utils.StreamUtils;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 import com.univocity.parsers.common.AbstractParser;
 import com.univocity.parsers.common.CommonParserSettings;
@@ -53,9 +51,9 @@ public class UnivocityUtils {
      * @param parserFactory A factory for creating parsers over an input stream
      * @return A cold flowable over the csv data
      */
-    public static Stream<Record> readCsvRecords(String path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvRecords(new Path(path), fileSystem, parserFactory);
-    }
+//    public static Stream<Record> readCsvRecords(String path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
+//        return readCsvRecords(new Path(path), fileSystem, parserFactory);
+//    }
 
     /**
      * Create a flowable to a CSV file via hadoop. Allows for retrieval of headers.
@@ -65,17 +63,17 @@ public class UnivocityUtils {
      * @param parserFactory A factory for creating parsers over an input stream
      * @return A cold flowable over the csv data
      */
-    public static Stream<Record> readCsvRecords(Path path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvElements(() -> fileSystem.open(path), parserFactory, AbstractParser::parseNextRecord);
+    public static Stream<Record> readCsvRecords(Callable<? extends InputStream> inputStreamFactory, UnivocityParserFactory parserFactory) {
+        return readCsvElements(inputStreamFactory, parserFactory, AbstractParser::parseNextRecord);
     }
 
-    public static Stream<String[]> readCsvRows(Path path, FileSystem fileSystem, UnivocityParserFactory parserFactory) {
-        return readCsvElements(path, fileSystem, parserFactory, AbstractParser::parseNext);
+    public static Stream<String[]> readCsvRows(Callable<? extends InputStream> inputStreamFactory, UnivocityParserFactory parserFactory) {
+        return readCsvElements(inputStreamFactory, parserFactory, AbstractParser::parseNext);
     }
 
-    public static <T> Stream<T> readCsvElements(Path path, FileSystem fileSystem, UnivocityParserFactory parserFactory, Function<AbstractParser<?>, T> extractElement) {
-        return readCsvElements(() -> fileSystem.open(path), parserFactory, extractElement);
-    }
+//    public static <T> Stream<T> readCsvElements(Callable<? extends InputStream> inputStreamFactory, UnivocityParserFactory parserFactory, Function<AbstractParser<?>, T> extractElement) {
+//        return readCsvElements(inputStreamFactory, parserFactory, extractElement);
+//    }
 
     /**
      * Create a stream to a CSV file from a supplier of input streams
@@ -92,11 +90,13 @@ public class UnivocityUtils {
                 () -> parserFactory.newInputStreamReader(inSupp.call()),
                 reader -> { AbstractParser<?> r = parserFactory.newParser(); r.beginParsing(reader); return r; },
                 csvParser -> extractElement.apply(csvParser),
-                (record, parser) -> record != null,
+                (record, parser) -> record == null,
                 (in, csvParser) -> {
-                    if (in != null) {
-                        in.close();
-                    }
+                    // stopParsing() closes the underlying stream (according to its javadoc).
+                    csvParser.stopParsing();
+//                    if (in != null) {
+//                        in.close();
+//                    }
                 });
     }
 }
