@@ -1,16 +1,18 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.picocli.PicocliMixinCsvw;
+
+import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-
-import java.util.List;
-import java.util.concurrent.Callable;
 
 @Command(name = "tarql",
         description = "Map one or more CSV files to RDF via a single SPARQL query",
@@ -59,9 +61,11 @@ public class CmdSansaTarql
     @Parameters(arity = "1..n", description = "tarql query file following by one or more csv file")
     public List<String> inputFiles;
 
-    
-    @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; same as '--out-format ntriples'")
+    @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; turns any quad/triple based output to nquads/ntriples")
     public boolean ntriples = false;
+    
+    @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unqiue, first name takes precedence.", defaultValue = "row")
+    public List<String> columnNamingSchemes = new ArrayList<>();    
     
     @Override
     public Integer call() throws Exception {

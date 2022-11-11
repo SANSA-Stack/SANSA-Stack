@@ -1,7 +1,5 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.util.JsonHadoopBridge;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -13,6 +11,9 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import net.sansa_stack.hadoop.util.JsonHadoopBridge;
 
 public class FileInputFormatCsvUnivocity
         extends FileInputFormat<LongWritable, String[]> {
@@ -47,5 +48,4 @@ public class FileInputFormatCsvUnivocity
     public RecordReader<LongWritable, String[]> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
         return new RecordReaderCsvUnivocity();
     }
-
 }

@@ -2,6 +2,7 @@ package net.sansa_stack.spark.io.csv.input;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -9,7 +10,6 @@ import java.util.stream.Stream;
 
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
-import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
@@ -42,23 +43,41 @@ public class CsvDataSources {
             String pathStr,
             UnivocityHadoopConf csvConf) throws IOException
     {
+    	return createRddOfBindings(sc, pathStr, csvConf, Arrays.asList("row"));
+    }
+
+    public static JavaRDD<Binding> createRddOfBindings(
+            JavaSparkContext sc,
+            String pathStr,
+            UnivocityHadoopConf baseCsvConf,
+            List<String> columnNamingSchemes
+            ) throws IOException
+    {
         Path path = new Path(pathStr);
         Callable<InputStream> inputStreamFactory = () -> FileSystemUtils.newInputStream(path, sc.hadoopConfiguration());
 
-        Dialect dialect = csvConf.getDialect();
+        Dialect dialect = baseCsvConf.getDialect();        
+        Long headerRowCountBak = dialect.getHeaderRowCount();
+        boolean hasHeaders = !Long.valueOf(0).equals(headerRowCountBak);
+        
+        DialectMutable copy = new DialectMutableImpl();
+        dialect.copyInto(copy);
+        copy.setHeaderRowCount(0l);
+        
+        UnivocityHadoopConf csvConf = new UnivocityHadoopConf(copy);
+
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);
 
         // Auto detect any missing CSV settings
-        if (!csvConf.isTabs()) {
-            DialectMutable copy = new DialectMutableImpl();
-            dialect.copyInto(copy);
-
+        if (!baseCsvConf.isTabs()) {
+        	CsvParserSettings csvSettings = parserFactory.getCsvSettings();
+        	
             Set<String> detectedProperties;
             try {
                 UnivocityParserFactory finalParserFactory = parserFactory;
-                detectedProperties = CsvwUnivocityUtils.configureDialect(copy, parserFactory.getCsvSettings(),
+                detectedProperties = CsvwUnivocityUtils.configureDialect(copy, csvSettings,
                         () -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(inputStreamFactory.call()));
             } catch (Exception e) {
                 throw new IOException();
@@ -66,12 +85,14 @@ public class CsvDataSources {
 
             logger.info("For source " + pathStr + " auto-detected csv properties: " + detectedProperties);
 
-            dialect = copy;
-            csvConf = new UnivocityHadoopConf(copy);
+            // csvConf = new UnivocityHadoopConf(copy);
             csvConf.setTabs(false);
-            parserFactory = UnivocityParserFactory.createDefault(false).configure(csvConf);
+            
+            parserFactory = UnivocityParserFactory
+                    .createDefault(false)
+                    .configure(csvConf);
         }
-
+        
         // TODO When we probe for the CSV dialect above we could actually
         // reuse that parser to also extract the headers
         // Right now we start another parser for the headers
@@ -81,25 +102,42 @@ public class CsvDataSources {
         try (Stream<String[]> rows = UnivocityUtils.readCsvRows(inputStreamFactory, parserFactory)) {
             sampleRow = rows.findFirst().orElse(new String[0]);
         }
+        
+        copy.setHeaderRowCount(headerRowCountBak);
+        
         int n = sampleRow.length;
 
+        String[][] columnNames = ColumnNamingScheme.createColumnHeadings(columnNamingSchemes, sampleRow, !hasHeaders);
         Var[][] headers = new Var[n][];
-        // If the headers are not skipped then custom headers are required
-        if (!Boolean.FALSE.equals(dialect.getHeader())) {
-            for (int i = 0; i < n; ++i) {
-                String str = sampleRow[i];
-                if (str != null) {
-                    str = str.replace(" ", "_");
-                }
-                headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
-            }
-        } else {
-            for (int i = 0; i < n; ++i) {
-                headers[i] = new Var[] { Var.alloc(CsvwLib.getExcelColumnLabel(i)) };
-            }
-            // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
+        for (int i = 0; i < n; ++i) {
+        	String[] strs = columnNames[i];
+        	Var[] h = new Var[strs.length];
+        	headers[i] = h;
+        	for (int j = 0; j < strs.length; ++j) {
+        		h[j] = Var.alloc(strs[j]);
+        	}
         }
+        
+//        
+//        // If the headers are not skipped then custom headers are required
+//        if (!Boolean.FALSE.equals(dialect.getHeader())) {
+//            for (int i = 0; i < n; ++i) {
+//                String str = sampleRow[i];
+//                if (str != null) {
+//                    str = str.replace(" ", "_");
+//                }
+//                headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
+//            }
+//        } else {
+//            for (int i = 0; i < n; ++i) {
+//                headers[i] = new Var[] { Var.alloc(CsvwLib.getExcelColumnLabel(i)) };
+//            }
+//            // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
+//        }
+//
+//        Var[][] headers = new Var[n][];
 
+        
         return createRddOfBindings(sc, pathStr, csvConf, row -> createBinding(headers, row));
     }
 

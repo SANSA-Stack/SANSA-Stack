@@ -33,6 +33,8 @@ import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
 public class CmdSansaTarqlImpl {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
+    
+    
     public static int run(CmdSansaTarql cmd) throws Exception {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = cmd.inputFiles.subList(1, cmd.inputFiles.size());
@@ -55,8 +57,6 @@ public class CmdSansaTarqlImpl {
             throw new IllegalArgumentException("Query must be of CONSTRUCT type (triples or quads)");
         }
 
-
-        
         RDFFormat fmt = rddRdfWriterFactory.getOutputFormat(); 
         if (fmt == null) {
         	fmt = query.isConstructQuad() ? RDFFormat.TRIG_BLOCKS : RDFFormat.TURTLE_BLOCKS;
@@ -85,11 +85,11 @@ public class CmdSansaTarqlImpl {
         csvCliOptions.copyInto(univocityConf.getDialect());
         univocityConf.setTabs(cmd.tabs);
 
-        FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
+        // FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
 
         JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, csvFiles,
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
-                        univocityConf));
+                        univocityConf, cmd.columnNamingSchemes));
 
         RdfSource rdfSource;
         if (query.isConstructQuad()) {

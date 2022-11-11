@@ -133,7 +133,8 @@ public class RecordReaderCsvUnivocity
         this.recordStartPattern = CustomPatternCsv.create(config);
         // createStartOfCsvRecordPattern(cellMaxLength);
 
-        postProcessRowSkipCount = Optional.ofNullable(parserConf.getDialect().getHeaderRowCount()).orElse(0l);
+        // By default assume a header row
+        postProcessRowSkipCount = Optional.ofNullable(parserConf.getDialect().getHeaderRowCount()).orElse(1l);
 
 
         // Configure the parser to parse all rows
