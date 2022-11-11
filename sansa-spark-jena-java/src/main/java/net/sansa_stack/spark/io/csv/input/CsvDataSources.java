@@ -62,10 +62,11 @@ public class CsvDataSources {
         
         DialectMutable copy = new DialectMutableImpl();
         dialect.copyInto(copy);
+        
+        // Don't skip any rows while we sample the first row
         copy.setHeaderRowCount(0l);
         
         UnivocityHadoopConf csvConf = new UnivocityHadoopConf(copy);
-
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);
@@ -77,17 +78,17 @@ public class CsvDataSources {
             Set<String> detectedProperties;
             try {
                 UnivocityParserFactory finalParserFactory = parserFactory;
-                detectedProperties = CsvwUnivocityUtils.configureDialect(copy, csvSettings,
-                        () -> (CsvParser)finalParserFactory.newParser(), () -> finalParserFactory.newInputStreamReader(inputStreamFactory.call()));
+                detectedProperties = CsvwUnivocityUtils.configureDialect(
+                		copy, csvSettings,
+                        () -> (CsvParser)finalParserFactory.newParser(),
+                        () -> finalParserFactory.newInputStreamReader(inputStreamFactory.call()));
             } catch (Exception e) {
                 throw new IOException();
             }
 
             logger.info("For source " + pathStr + " auto-detected csv properties: " + detectedProperties);
 
-            // csvConf = new UnivocityHadoopConf(copy);
-            csvConf.setTabs(false);
-            
+            csvConf.setTabs(false);            
             parserFactory = UnivocityParserFactory
                     .createDefault(false)
                     .configure(csvConf);
@@ -103,6 +104,7 @@ public class CsvDataSources {
             sampleRow = rows.findFirst().orElse(new String[0]);
         }
         
+        // Pass on the configuration with the original header row config
         copy.setHeaderRowCount(headerRowCountBak);
         
         int n = sampleRow.length;
@@ -117,27 +119,7 @@ public class CsvDataSources {
         		h[j] = Var.alloc(strs[j]);
         	}
         }
-        
-//        
-//        // If the headers are not skipped then custom headers are required
-//        if (!Boolean.FALSE.equals(dialect.getHeader())) {
-//            for (int i = 0; i < n; ++i) {
-//                String str = sampleRow[i];
-//                if (str != null) {
-//                    str = str.replace(" ", "_");
-//                }
-//                headers[i] = str == null ? new Var[] {} : new Var[] { Var.alloc(str) };
-//            }
-//        } else {
-//            for (int i = 0; i < n; ++i) {
-//                headers[i] = new Var[] { Var.alloc(CsvwLib.getExcelColumnLabel(i)) };
-//            }
-//            // throw new IllegalArgumentException("A custom mapper for bindings must be supplied if there is no header row");
-//        }
-//
-//        Var[][] headers = new Var[n][];
 
-        
         return createRddOfBindings(sc, pathStr, csvConf, row -> createBinding(headers, row));
     }
 
