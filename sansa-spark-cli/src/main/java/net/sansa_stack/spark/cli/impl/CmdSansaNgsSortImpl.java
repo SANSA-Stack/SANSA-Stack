@@ -1,40 +1,25 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
-import net.sansa_stack.spark.cli.cmd.CmdSansaNgsSort;
-import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
-import net.sansa_stack.spark.io.csv.input.CsvDataSources;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
-import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.aksw.jenax.stmt.core.SparqlStmtMgr;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Query;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import net.sansa_stack.spark.cli.cmd.CmdSansaNgsSort;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 
 /**
  * Sort / distinctify a collection of named graphs.
@@ -55,6 +40,7 @@ public class CmdSansaNgsSortImpl {
         Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        rddRdfWriterFactory.validate();
 
         CmdUtils.validatePaths(inputStrs, hadoopConf);
 

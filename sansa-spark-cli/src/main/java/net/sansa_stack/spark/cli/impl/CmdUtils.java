@@ -22,7 +22,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -66,10 +68,27 @@ public class CmdUtils {
                 prefixes.setNsPrefixes(tmp);
             }
         }
+        
+        RddRdfWriterFactory result = RddRdfWriterFactory.create();
+        
+        // Try to derive the output format from the file name (if given)
+        if (out.getOutputFormat() != null) {
+            result = result.setOutputFormat(out.getOutputFormat());
+        }
 
-        RddRdfWriterFactory result = RddRdfWriterFactory.create()
+        RDFFormat fmt = result.getOutputFormat();
+        if (fmt == null) {
+        	String fileName = out.getTargetFile();
+        	Lang lang = RDFDataMgr.determineLang(fileName, null, null);
+        	if (lang != null) {
+            	fmt = StreamRDFWriter.defaultSerialization(lang);
+
+            	result = result.setOutputFormat(fmt);
+        	}
+        }            
+        
+        result = result
                 .setGlobalPrefixMapping(prefixes)
-                .setOutputFormat(out.getOutputFormat())
                 .setMapQuadsToTriplesForTripleLangs(true)
                 .setDeferOutputForUsedPrefixes(out.getPrefixOutputDeferCount())
                 // .setAllowOverwriteFiles(true)
@@ -77,8 +96,8 @@ public class CmdUtils {
                 .setTargetFile(out.getTargetFile())
                 // .setUseElephas(true)
                 .setDeletePartitionFolderAfterMerge(true)
-                .setAllowOverwriteFiles(out.isOverwriteAllowed())
-                .validate();
+                .setAllowOverwriteFiles(out.isOverwriteAllowed());
+                //.validate();
 
         return result;
     }

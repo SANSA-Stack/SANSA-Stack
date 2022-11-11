@@ -668,6 +668,7 @@ public class RddRdfWriter<T>
 
     public static void validate(RddRdfWriterSettings<?> settings) {
         RDFFormat outputFormat = settings.getOutputFormat();
+
         if (!StreamRDFWriter.registered(outputFormat)) {
             throw new IllegalArgumentException(outputFormat + " is not a streaming format");
         }

@@ -59,6 +59,10 @@ public class CmdSansaTarql
     @Parameters(arity = "1..n", description = "tarql query file following by one or more csv file")
     public List<String> inputFiles;
 
+    
+    @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; same as '--out-format ntriples'", defaultValue="false")
+    public boolean ntriples;
+    
     @Override
     public Integer call() throws Exception {
         return CmdSansaTarqlImpl.run(this);

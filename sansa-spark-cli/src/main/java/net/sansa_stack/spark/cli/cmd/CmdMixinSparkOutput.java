@@ -9,8 +9,7 @@ public class CmdMixinSparkOutput
     implements RdfOutputConfig
 {
     @CommandLine.Option(names = { "-o", "--out-format" },
-            description = "Output format. Default: ${DEFAULT-VALUE}",
-            defaultValue = "trig/blocks")
+            description = "Output format. Default: ${DEFAULT-VALUE}")
     public String outFormat = null;
 
     @CommandLine.Option(names = { "--out-folder" },

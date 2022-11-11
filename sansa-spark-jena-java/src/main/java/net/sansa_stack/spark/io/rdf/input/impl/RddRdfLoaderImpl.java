@@ -11,30 +11,18 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
 
 import net.sansa_stack.hadoop.format.jena.base.CanParseRdf;
+import net.sansa_stack.spark.io.rdf.input.api.RddLoaderBase;
 import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 
 public class RddRdfLoaderImpl<T>
-    implements RddRdfLoader<T>
+    extends RddLoaderBase<LongWritable, T>
+	implements RddRdfLoader<T>
 {
-    protected Class<T> clazz;
-    protected Class<? extends FileInputFormat<LongWritable, T>> fileInputFormatClass;
-
     public RddRdfLoaderImpl(Class<T> clazz, Class<? extends FileInputFormat<LongWritable, T>> fileInputFormatClass) {
-        this.clazz = clazz;
-        this.fileInputFormatClass = fileInputFormatClass;
-    }
+		super(clazz, fileInputFormatClass);
+	}
 
-    @Override
-    public Class<T> getValueClass() {
-        return clazz;
-    }
-
-    @Override
-    public Class<? extends FileInputFormat<LongWritable, T>> getFileInputFormatClass() {
-        return fileInputFormatClass;
-    }
-
-    @Override
+	@Override
     public RDD<T> load(SparkContext sparkContext, String path) {
         return RddRdfLoaders.createRdd(sparkContext, path, clazz, fileInputFormatClass);
     }

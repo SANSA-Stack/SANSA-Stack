@@ -17,6 +17,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
@@ -30,6 +31,11 @@ public class CmdSansaAnalyzeImpl {
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
         rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
+        
+        if (rddRdfWriterFactory.getOutputFormat() == null) {
+        	rddRdfWriterFactory.setOutputFormat(RDFFormat.TURTLE_PRETTY);
+        }
+        rddRdfWriterFactory.validate();
 
         new SimpleSparkCmdTemplate<>("Sansa Analyze Data in Splits", cmd.inputConfig, cmd.inputFiles) {
             @Override

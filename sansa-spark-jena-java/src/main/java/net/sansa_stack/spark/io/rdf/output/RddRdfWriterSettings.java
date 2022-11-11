@@ -156,12 +156,17 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
 
     /** Raises an exception if the format is not found */
     public SELF setOutputFormat(String formatName) {
-        RDFFormat fmt = Optional.ofNullable(RDFLanguagesEx.findRdfFormat(formatName))
-                .orElseThrow(() -> new IllegalArgumentException("Unknown format: " + formatName));
-
+    	RDFFormat fmt = formatName == null
+    			? null
+    			: Optional.ofNullable(RDFLanguagesEx.findRdfFormat(formatName))
+	                .orElseThrow(() -> new IllegalArgumentException("Unknown format: " + formatName));
         return setOutputFormat(fmt);
     }
 
+    public RDFFormat getFallbackOutputFormat() {
+        return outputFormat;
+    }
+    
     public boolean isAllowOverwriteFiles() {
         return allowOverwriteFiles;
     }
@@ -223,4 +228,5 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         this.postProcessingSettings = postProcessingSettings;
         return self();
     }
+    
 }

@@ -54,6 +54,7 @@ public class CmdSansaMapImpl {
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
     RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+    rddRdfWriterFactory.validate();
     rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
 
