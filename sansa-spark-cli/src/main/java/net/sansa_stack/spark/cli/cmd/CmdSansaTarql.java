@@ -60,8 +60,8 @@ public class CmdSansaTarql
     public List<String> inputFiles;
 
     
-    @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; same as '--out-format ntriples'", defaultValue="false")
-    public boolean ntriples;
+    @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; same as '--out-format ntriples'")
+    public boolean ntriples = false;
     
     @Override
     public Integer call() throws Exception {

@@ -3,13 +3,14 @@ package net.sansa_stack.spark.cli.impl;
 import java.util.List;
 
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
-import org.aksw.jena_sparql_api.common.DefaultPrefixes;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.query.Query;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -35,29 +36,39 @@ public class CmdSansaTarqlImpl {
     public static int run(CmdSansaTarql cmd) throws Exception {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = cmd.inputFiles.subList(1, cmd.inputFiles.size());
-        Query query = SparqlStmtMgr.loadQuery(queryFile, DefaultPrefixes.get());
+
+        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+
+        // Parse the query against the configured prefixes - then reconfigure the prefixes
+        // to those used in the query
+        // The tradeoff iss that prefixes generated in the query via the sparql IRI() function
+        // may not be recognized this way (if built from string; IRI(STR(ns:), 'foo') will recognize 'ns:') 
+        PrefixMapping prefixes = rddRdfWriterFactory.getGlobalPrefixMapping();
+        Query query = SparqlStmtMgr.loadQuery(queryFile, prefixes);
+        QueryUtils.optimizePrefixes(query);
+        prefixes.clearNsPrefixMap();
+        prefixes.setNsPrefixes(query.getPrefixMapping());
+
         logger.info("Loaded query " + query);
 
         if (!query.isConstructType() && !query.isConstructQuad()) {
             throw new IllegalArgumentException("Query must be of CONSTRUCT type (triples or quads)");
         }
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
-        RDFFormat fmt = rddRdfWriterFactory.getOutputFormat(); 
+
         
+        RDFFormat fmt = rddRdfWriterFactory.getOutputFormat(); 
         if (fmt == null) {
         	fmt = query.isConstructQuad() ? RDFFormat.TRIG_BLOCKS : RDFFormat.TURTLE_BLOCKS;
         	rddRdfWriterFactory.setOutputFormat(fmt);
         }
-
         if (cmd.ntriples) {
         	Lang lang = fmt.getLang();
         	fmt = RDFLanguages.isQuads(lang) ? RDFFormat.NQUADS : RDFFormat.NTRIPLES;
         }
         
-        rddRdfWriterFactory.validate();
-
         rddRdfWriterFactory.setUseElephas(true);
+        rddRdfWriterFactory.validate();
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
