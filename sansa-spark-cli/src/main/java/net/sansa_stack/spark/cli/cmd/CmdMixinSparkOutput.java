@@ -21,9 +21,8 @@ public class CmdMixinSparkOutput
     public String outFile = null;
 
     @CommandLine.Option(names = { "--out-overwrite" }, arity = "0",
-            description = "Overwrite existing output files and/or folders; ",
-            defaultValue = "false", fallbackValue = "true")
-    public boolean outOverwrite;
+            description = "Overwrite existing output files and/or folders; ")
+    public boolean outOverwrite = false;
 
     @CommandLine.Option(names = { "--op", "--out-prefixes" },
             description = "Prefix sources for output. Subject to used prefix analysis. Default: ${DEFAULT-VALUE}",

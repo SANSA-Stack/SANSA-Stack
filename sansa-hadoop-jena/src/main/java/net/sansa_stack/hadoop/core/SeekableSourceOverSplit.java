@@ -27,6 +27,7 @@ import org.aksw.commons.io.input.SeekableReadableChannelSource;
 import org.aksw.commons.io.input.SeekableReadableChannelWithLimit;
 import org.aksw.commons.io.input.SeekableReadableChannels;
 import org.aksw.commons.util.lock.LockUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.Seekable;
 
 import com.google.common.primitives.Ints;
@@ -50,6 +51,7 @@ public class SeekableSourceOverSplit
         if (debufferedHead != null) {
             debufferedHead.close();
         }
+        baseStream.close();
     }
     // protected SeekableReadableChannel<byte[]> base;
 
@@ -58,6 +60,8 @@ public class SeekableSourceOverSplit
     // protected long knownDecodedDataLength; // [] = new long[]{ isEncoded ? -1 : splitLength };
 
     // The head stream has a conditional bound at the split end
+    protected ReadableChannel<byte[]> baseStream;
+
     protected BufferOverReadableChannel<byte[]> headBuffer;
     protected BufferOverReadableChannel<byte[]> tailBuffer;
 
@@ -100,8 +104,9 @@ public class SeekableSourceOverSplit
     /** If true then the headStream can no longer be used. */
     // protected boolean isHeadDebuffered;
 
-    public SeekableSourceOverSplit(BufferOverReadableChannel<byte[]> headBuffer, BufferOverReadableChannel<byte[]> tailBuffer, BufferOverReadableChannel<byte[]> postambleBuffer, NavigableMap<Long, Long> absPosToBlockOffset) {
+    public SeekableSourceOverSplit(ReadableChannel<byte[]> baseStream, BufferOverReadableChannel<byte[]> headBuffer, BufferOverReadableChannel<byte[]> tailBuffer, BufferOverReadableChannel<byte[]> postambleBuffer, NavigableMap<Long, Long> absPosToBlockOffset) {
         super();
+        this.baseStream = baseStream;
         this.headBuffer = headBuffer;
         this.tailBuffer = tailBuffer;
         this.postambleBuffer = postambleBuffer;
@@ -180,7 +185,7 @@ public class SeekableSourceOverSplit
 
     public static SeekableSourceOverSplit createForNonEncodedStream(SeekableInputStream in, long splitPoint, byte[] postambleBytes) {
         SeekableReadableChannel<byte[]> baseStream = SeekableInputStreams.wrap(in);
-        SeekableReadableChannel<byte[]> headStream = new SeekableReadableChannelWithLimit<>(baseStream, splitPoint);
+        SeekableReadableChannel<byte[]> headStream = new SeekableReadableChannelWithLimit<>(SeekableReadableChannels.closeShield(baseStream), splitPoint);
 
         return create(baseStream, headStream, postambleBytes, null);
     }
@@ -233,7 +238,7 @@ public class SeekableSourceOverSplit
                 return isEof;
             });
 
-        return create(baseStream, headStream, postambleBytes, absPosToBlockOffset);
+        return create(baseStream, ReadableChannels.closeShield(headStream), postambleBytes, absPosToBlockOffset);
     }
 
     protected static SeekableSourceOverSplit create(
@@ -241,7 +246,7 @@ public class SeekableSourceOverSplit
         BufferOverReadableChannel<byte[]> headBuffer = BufferOverReadableChannel.createForBytes(headStream, 8192);
         BufferOverReadableChannel<byte[]> tailBuffer = BufferOverReadableChannel.createForBytes(baseStream, 8192);
         BufferOverReadableChannel<byte[]> postambleBuffer = BufferOverReadableChannel.createForBytes(ReadableChannels.wrap(new ByteArrayInputStream(postambleBytes)), 8192);
-        return new SeekableSourceOverSplit(headBuffer, tailBuffer, postambleBuffer, blockOffsetToAbsPos);
+        return new SeekableSourceOverSplit(baseStream, headBuffer, tailBuffer, postambleBuffer, blockOffsetToAbsPos);
     }
 
     public long getHeadSize() {
@@ -265,7 +270,8 @@ public class SeekableSourceOverSplit
 
         // BufferOverReadableChannel.newBufferedChannel(headBuffer);
         // headBuffer.newReadableChannel()
-        return new Channel(headBuffer.newReadableChannel(), 0, -1, null);
+        SeekableReadableChannel<byte[]> baseChannel = headBuffer.newReadableChannel();
+        return new Channel(baseChannel, 0, -1, null);
     }
 
 //    @Override
@@ -351,12 +357,12 @@ public class SeekableSourceOverSplit
                     throw new RuntimeException(e);
                 }
 
-
                 ReadableChannel debuffered = bufferChannel == null
                         ? headDataSupplier
                         : ReadableChannels.concat(Arrays.asList(bufferChannel, headDataSupplier));
 
                 debufferedHead = SeekableReadableChannels.wrapForwardSeekable(debuffered, pos);
+                IOUtils.closeQuietly(currentStream);
                 currentStream = debufferedHead;
             }
             // BufferOverReadableChannel.newBufferedChannel(headBuffer);

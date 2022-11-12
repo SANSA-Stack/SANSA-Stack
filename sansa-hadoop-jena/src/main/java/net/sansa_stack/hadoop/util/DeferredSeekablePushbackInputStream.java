@@ -1,5 +1,7 @@
 package net.sansa_stack.hadoop.util;
 
+import org.aksw.commons.util.stack_trace.StackTraceUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.fs.Seekable;
 
 import java.io.IOException;
@@ -134,8 +136,19 @@ public class DeferredSeekablePushbackInputStream
         return n;
     }
 
+    @Override
+    public synchronized void close() throws IOException {
+        // System.out.println("Closed: " + ObjectUtils.identityToString(this ) + " - " + StackTraceUtils.toString(Thread.currentThread().getStackTrace()));
+        super.close();
+    }
+
     /** This method is assumed to be invoked with len >= 2 */
     protected int readInternal(byte[] b, int off, int len) throws IOException {
+        // ensureOpen() is private
+        if (in == null) {
+            throw new IOException("Stream closed");
+        }
+
         int result;
 
         // Available amount of data in the pushback buffer

@@ -45,6 +45,7 @@ import org.aksw.commons.util.stack_trace.StackTraceUtils;
 import org.aksw.commons.util.stream.SequentialGroupBySpec;
 import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
@@ -646,11 +647,6 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected Stream<T> createRecordFlow() throws IOException {
         logger.info("Processing split " + splitId);
 
-
-        if (splitStart == 7985954816l) {
-            System.err.println("DEBUG POINT");
-        }
-
         // Except for the first split, the first region may parse successfully but may
         // actually be an incomplete element that is cut off at the split boundary and that would
         // thus be interpreted incorrectly. For example, a quad followed by a triple such as
@@ -676,7 +672,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 : SeekableSourceOverSplit.createForNonEncodedStream(stream, splitEnd, postambleBytes);
 
         SeekableSourceOverSplit.Channel headByteChannel = source.newReadableChannel();
-
+        // System.out.println(splitId + ": Opened " + ObjectUtils.identityToString(headByteChannel));
         // Pos validator: Returns true as long as the position is not past the split bound w.r.t. decoded data
         posValidator = pos -> {
             boolean r = !source.getHeadBuffer().isDataSupplierConsumed() || pos < source.getHeadBuffer().getKnownDataSize();
@@ -732,7 +728,16 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         Stream<U> headItems = null;
 
         if (headBytes.candidatePos() < 0) {
-            return Stream.empty();
+            SeekableSourceOverSplit.Channel finalHeadByteChannel2 = headByteChannel;
+            return Stream.<T>empty().onClose(() -> {
+                try {
+                    finalHeadByteChannel2.close();
+                    source.close();
+                    // this.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
 
 
@@ -874,6 +879,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         SeekableSourceOverSplit.Channel finalHeadByteChannel1 = headByteChannel;
         Stream<T> result = aggregate(isFirstSplit, headItems, lazyTailElts)
                 .onClose(() -> {
+                	// System.out.println(splitId + " Closed: " + ObjectUtils.identityToString(finalHeadByteChannel1));
                     finalHeadByteChannel1.close();
                     try {
                         source.close();

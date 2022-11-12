@@ -66,8 +66,6 @@ public class RddRdfLoaderRegistryImpl
                 Lang.NQUADS,
                 Quad.class,
                 RddRdfLoaders.create(Quad.class, FileInputFormatRdfNQuads.class));
-
-
     }
 
 
