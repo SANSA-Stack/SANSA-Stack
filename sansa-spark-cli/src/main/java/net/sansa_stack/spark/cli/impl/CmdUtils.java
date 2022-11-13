@@ -2,12 +2,10 @@ package net.sansa_stack.spark.cli.impl;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table.Cell;
+import com.google.common.collect.Tables;
 
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
@@ -106,31 +106,30 @@ public class CmdUtils {
 
         Set<String> result = paths.stream()
                 .map(pathStr -> {
-                    Map.Entry<FileSystem, Path> r = null;
+                    Cell<String, FileSystem, Path> r = null;
                     try {
                         URI uri = new URI(pathStr);
                         // TODO Use try-with-resources for the filesystem?
                         FileSystem fs = FileSystem.get(uri, hadoopConf);
                         Path path = new Path(pathStr);
-                        fs.resolvePath(path);
-                        r = new AbstractMap.SimpleEntry<>(fs, path);
+                        path = fs.resolvePath(path);
+                        r = Tables.immutableCell(pathStr, fs, path);
                     } catch (Exception e) {
                         logger.error(ExceptionUtils.getRootCauseMessage(e));
                     }
                     return r;
                 })
                 .filter(Objects::nonNull)
-                .filter(x -> {
+                .filter(cell -> {
                     boolean isFile = false;
                     try {
-                        isFile = x.getKey().isFile(x.getValue());
+                        isFile = cell.getColumnKey().getFileStatus(cell.getValue()).isFile();
                     } catch (IOException e) {
                         logger.error(ExceptionUtils.getRootCauseMessage(e));
                     }
                     return isFile;
                 })
-                .map(Map.Entry::getValue)
-                .map(Object::toString)
+                .map(Cell::getRowKey)
                 .collect(Collectors.toSet());
 
         return result;

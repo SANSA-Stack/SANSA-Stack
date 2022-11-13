@@ -1,10 +1,14 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import net.sansa_stack.spark.rdd.function.JavaRddFunction;
-import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.apache.jena.ext.com.google.common.collect.Streams;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -14,15 +18,25 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.broadcast.Broadcast;
+
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import scala.Tuple2;
 
-import javax.sql.RowSet;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-
 public class JavaRddOfDatasetsOps {
+	
+    public static JavaRDD<Quad> flatMapToQuads(JavaRDD<? extends Dataset> rdd) {
+    	// TODO Does the iterator close itself on end? If not then we should take care of it.
+        return rdd.flatMap(ds -> ds.asDatasetGraph().find());
+    }
+
+    /** Maps a dataset to triples - emits quads from named graphs as triples by dropping the named graph */
+    public static JavaRDD<Triple> flatMapToTriples(JavaRDD<? extends Dataset> rdd) {
+    	// TODO Does the iterator close itself on end? If not then we should take care of it.
+        return rdd.flatMap(ds -> Iter.iter(ds.asDatasetGraph().find()).map(Quad::asTriple));
+    }
+
+	
     public static JavaPairRDD<String, Model> flatMapToNamedModels(JavaRDD<? extends Dataset> rdd) {
         // TODO Add a flag to include the default graph under a certain name such as
         // Quad.defaultGraph

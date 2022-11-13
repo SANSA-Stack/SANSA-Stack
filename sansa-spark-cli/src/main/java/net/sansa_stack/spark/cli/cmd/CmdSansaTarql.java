@@ -67,6 +67,9 @@ public class CmdSansaTarql
     @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unqiue, first name takes precedence.", defaultValue = "row")
     public List<String> columnNamingSchemes = new ArrayList<>();    
     
+    @Option(names = { "--construct" }, arity="0", description = "Only emit output triples/quads from construct queries rather than a row's internal dataset.")
+    public boolean constructMode = false;
+
     @Override
     public Integer call() throws Exception {
         return CmdSansaTarqlImpl.run(this);

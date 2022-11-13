@@ -29,6 +29,8 @@ import org.aksw.commons.io.input.SeekableReadableChannels;
 import org.aksw.commons.util.lock.LockUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.Seekable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.primitives.Ints;
 
@@ -37,6 +39,8 @@ import net.sansa_stack.hadoop.util.DeferredSeekablePushbackInputStream;
 public class SeekableSourceOverSplit
     implements SeekableReadableChannelSource<byte[]>, Closeable
 {
+    private static final Logger logger = LoggerFactory.getLogger(SeekableSourceOverSplit.class);
+    	
     @Override
     public void close() throws IOException {
         if (headBuffer.getDataSupplier() != null && headBuffer.getDataSupplier().isOpen()) {
@@ -194,7 +198,10 @@ public class SeekableSourceOverSplit
 
         // Not ideal to use the position without a guaranteed prior read
         absPosToBlockOffset.put(0l, inn.position());
-        System.err.println("Initial block: " + absPosToBlockOffset);
+        
+        if (logger.isDebugEnabled()) {
+        	logger.debug("Detected first block in encoded stream at offset: " + absPosToBlockOffset);
+        }
 
         // Wrap the input stream such that the position always refers to the next byte being read
         InputStream in1 = new DeferredSeekablePushbackInputStream(inn) {
