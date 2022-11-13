@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
+import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.aksw.jenax.stmt.core.SparqlStmtQuery;
@@ -78,7 +79,10 @@ public class CmdSansaTarqlImpl {
         // The tradeoff is that prefixes generated in the query via the sparql IRI() function
         // may not be recognized this way (if built from string; IRI(STR(ns:), 'foo') will recognize 'ns:') 
         PrefixMapping prefixes = rddRdfWriterFactory.getGlobalPrefixMapping();
-        List<SparqlStmt> stmts = SparqlStmtMgr.loadSparqlStmts(queryFile, prefixes);
+        SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(prefixes);
+        processor.process(queryFile);
+        List<SparqlStmt> stmts = processor.getPlainSparqlStmts();
+        //List<SparqlStmt> stmts = SparqlStmtMgr.loadSparqlStmts(queryFile, prefixes);
 
         // If no argument is given then check whether the first query's from clause can act as a source
         // Convention: The from clause of subsequent queries may refer to previously generated graphs
