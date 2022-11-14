@@ -166,12 +166,12 @@ public class CmdSansaTarqlImpl {
                 input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
                         univocityConf, cmd.columnNamingSchemes));
 
-        boolean constructMode = cmd.constructMode;
+        boolean accumulationMode = cmd.accumulationMode;
         RdfSource rdfSource;
         if (RDFLanguages.isQuads(outLang)) {
-            rdfSource = RdfSources.ofQuads(JavaRddOfBindingsOps.tarqlQuads(initialRdd, stmts, constructMode));
+            rdfSource = RdfSources.ofQuads(JavaRddOfBindingsOps.tarqlQuads(initialRdd, stmts, accumulationMode));
         } else if (RDFLanguages.isTriples(outLang)){
-            rdfSource = RdfSources.ofTriples(JavaRddOfBindingsOps.tarqlTriples(initialRdd, stmts, constructMode));
+            rdfSource = RdfSources.ofTriples(JavaRddOfBindingsOps.tarqlTriples(initialRdd, stmts, accumulationMode));
         } else {
             throw new IllegalArgumentException("Unsupported output language: " + outLang);
         }

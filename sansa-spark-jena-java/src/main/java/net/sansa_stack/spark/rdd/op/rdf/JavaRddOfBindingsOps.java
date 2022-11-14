@@ -118,7 +118,7 @@ public class JavaRddOfBindingsOps {
         return binding -> Iter.asStream(base.apply(binding).find());
     }
 
-    public static Function<Binding, DatasetGraph> compileTarqlMapperGeneral(Collection<SparqlStmt> stmts, boolean constructMode) {
+    public static Function<Binding, DatasetGraph> compileTarqlMapperGeneral(Collection<SparqlStmt> stmts, boolean accumulationMode) {
         List<TriConsumer<Binding, ExecutionContext, DatasetGraph>> actions = stmts.stream().map(stmt -> {
             TriConsumer<Binding, ExecutionContext, DatasetGraph> r;
             if (stmt.isQuery()) {
@@ -170,7 +170,7 @@ public class JavaRddOfBindingsOps {
                 Txn.executeWrite(inputDs, () -> {
                     for (TriConsumer<Binding, ExecutionContext, DatasetGraph> action : actions) {
                         action.accept(binding, execCxt, r);
-                        if (!constructMode) {
+                        if (accumulationMode) {
                             inputDs.addAll(r);
                         }
                     }
@@ -178,7 +178,7 @@ public class JavaRddOfBindingsOps {
             });
             // System.err.println("Construct mode; created " + Iter.count(r.find()) + " quads");
             // System.err.println("Binding " + binding + " - actions: " + actions.size());
-            return constructMode ? r : inputDs;
+            return accumulationMode ? inputDs : r;
         };
 //        if (constructMode) {
 //            result = binding -> {
@@ -236,16 +236,16 @@ public class JavaRddOfBindingsOps {
      * Construct queries and select queries are print out to STDERR.
      * Use {@link UpdateUtils.constructToInsert} to convert construct queries.
      */
-    public static <T> JavaRDD<T> tarqlDatasets(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean constructMode, SerializableFunction<DatasetGraph, Stream<T>> finisher) {
+    public static <T> JavaRDD<T> tarqlDatasets(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode, SerializableFunction<DatasetGraph, Stream<T>> finisher) {
         boolean usesRowNum = mentionesRowNum(stmts);
         rdd = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
         return JavaRddOps.mapPartitions(rdd, upstream -> {
-            Function<Binding, DatasetGraph> mapper = compileTarqlMapperGeneral(stmts, constructMode);
+            Function<Binding, DatasetGraph> mapper = compileTarqlMapperGeneral(stmts, accumulationMode);
             return upstream.map(mapper).flatMap(dg -> finisher.apply(dg));
         });
     }
 
-    public static JavaRDD<Triple> tarqlTriples(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean constructMode) {
+    public static JavaRDD<Triple> tarqlTriples(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode) {
         JavaRDD<Triple> result;
 
         // If we are in constructMode and there are no update statements then use the fast track
@@ -253,8 +253,7 @@ public class JavaRddOfBindingsOps {
         // TODO We can also use fast track if the queries are pattern free so that they cannot refer to the
         // output of a prior query
         boolean allQueries = stmts.stream().allMatch(SparqlStmt::isQuery);
-        boolean canUseFastTrack =
-                (constructMode && allQueries) || (allQueries && stmts.size() < 2);
+        boolean canUseFastTrack = allQueries && (!accumulationMode || stmts.size() < 2);
 
         boolean usesRowNum = mentionesRowNum(stmts);
         rdd = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
@@ -267,12 +266,12 @@ public class JavaRddOfBindingsOps {
                 return mapper.apply(bindings);
             });
         } else {
-            result = tarqlDatasets(rdd, stmts, constructMode, dg -> Iter.asStream(dg.find()).map(Quad::asTriple));
+            result = tarqlDatasets(rdd, stmts, accumulationMode, dg -> Iter.asStream(dg.find()).map(Quad::asTriple));
         }
         return result;
     }
 
-    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean constructMode) {
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode) {
         JavaRDD<Quad> result;
 
         // If we are in constructMode and there are no update statements then use the fast track
@@ -280,8 +279,7 @@ public class JavaRddOfBindingsOps {
         // TODO We can also use fast track if the queries are pattern free so that they cannot refer to the
         // output of a prior query
         boolean allQueries = stmts.stream().allMatch(SparqlStmt::isQuery);
-        boolean canUseFastTrack =
-                (constructMode && allQueries) || (allQueries && stmts.size() < 2);
+        boolean canUseFastTrack = allQueries && (!accumulationMode || stmts.size() < 2);
 
         boolean usesRowNum = mentionesRowNum(stmts);
         rdd = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
@@ -295,7 +293,7 @@ public class JavaRddOfBindingsOps {
             });
         } else {
             // result = JavaRddOfDatasetsOps.flatMapToQuads(tarqlDatasets(rdd, stmts, constructMode));
-            result = tarqlDatasets(rdd, stmts, constructMode, dg -> Iter.asStream(dg.find()));
+            result = tarqlDatasets(rdd, stmts, accumulationMode, dg -> Iter.asStream(dg.find()));
         }
         return result;
     }

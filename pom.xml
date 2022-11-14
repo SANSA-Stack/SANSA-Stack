@@ -63,7 +63,7 @@
         <scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
         <flink.version>1.11.2</flink.version>
-        <spark.version>3.3.0</spark.version>
+        <spark.version>3.3.1</spark.version>
         <!-- Spark Testing isn't always in sync, so we have to check for latest version and adapt here -->
         <spark.testing.version>3.0.1_1.0.0</spark.testing.version>
 

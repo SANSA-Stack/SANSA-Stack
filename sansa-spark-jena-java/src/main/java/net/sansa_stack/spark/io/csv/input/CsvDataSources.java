@@ -12,11 +12,13 @@ import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
+import org.aksw.jenax.arq.util.triple.ModelUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
@@ -26,6 +28,7 @@ import org.apache.spark.api.java.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.StandardSystemProperty;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -43,7 +46,7 @@ public class CsvDataSources {
             String pathStr,
             UnivocityHadoopConf csvConf) throws IOException
     {
-    	return createRddOfBindings(sc, pathStr, csvConf, Arrays.asList("row"));
+        return createRddOfBindings(sc, pathStr, csvConf, Arrays.asList("row"));
     }
 
     public static JavaRDD<Binding> createRddOfBindings(
@@ -56,30 +59,30 @@ public class CsvDataSources {
         Path path = new Path(pathStr);
         Callable<InputStream> inputStreamFactory = () -> FileSystemUtils.newInputStream(path, sc.hadoopConfiguration());
 
-        Dialect dialect = baseCsvConf.getDialect();        
+        Dialect dialect = baseCsvConf.getDialect();
         Long headerRowCountBak = dialect.getHeaderRowCount();
         boolean hasHeaders = !Long.valueOf(0).equals(headerRowCountBak);
-        
-        DialectMutable copy = new DialectMutableImpl();
-        dialect.copyInto(copy);
-        
+
+        DialectMutable effectiveDialect = new DialectMutableImpl();
+        dialect.copyInto(effectiveDialect);
+
         // Don't skip any rows while we sample the first row
-        copy.setHeaderRowCount(0l);
-        
-        UnivocityHadoopConf csvConf = new UnivocityHadoopConf(copy);
+        effectiveDialect.setHeaderRowCount(0l);
+
+        UnivocityHadoopConf csvConf = new UnivocityHadoopConf(effectiveDialect);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);
 
         // Auto detect any missing CSV settings
         if (!baseCsvConf.isTabs()) {
-        	CsvParserSettings csvSettings = parserFactory.getCsvSettings();
-        	
+            CsvParserSettings csvSettings = parserFactory.getCsvSettings();
+
             Set<String> detectedProperties;
             try {
                 UnivocityParserFactory finalParserFactory = parserFactory;
                 detectedProperties = CsvwUnivocityUtils.configureDialect(
-                		copy, csvSettings,
+                        effectiveDialect, csvSettings,
                         () -> (CsvParser)finalParserFactory.newParser(),
                         () -> finalParserFactory.newInputStreamReader(inputStreamFactory.call()));
             } catch (Exception e) {
@@ -88,12 +91,12 @@ public class CsvDataSources {
 
             logger.info("For source " + pathStr + " auto-detected csv properties: " + detectedProperties);
 
-            csvConf.setTabs(false);            
+            csvConf.setTabs(false);
             parserFactory = UnivocityParserFactory
                     .createDefault(false)
                     .configure(csvConf);
         }
-        
+
         // TODO When we probe for the CSV dialect above we could actually
         // reuse that parser to also extract the headers
         // Right now we start another parser for the headers
@@ -103,21 +106,25 @@ public class CsvDataSources {
         try (Stream<String[]> rows = UnivocityUtils.readCsvRows(inputStreamFactory, parserFactory)) {
             sampleRow = rows.findFirst().orElse(new String[0]);
         }
-        
+
         // Pass on the configuration with the original header row config
-        copy.setHeaderRowCount(headerRowCountBak);
-        
+        effectiveDialect.setHeaderRowCount(headerRowCountBak);
+
         int n = sampleRow.length;
 
         String[][] columnNames = ColumnNamingScheme.createColumnHeadings(columnNamingSchemes, sampleRow, !hasHeaders);
         Var[][] headers = new Var[n][];
         for (int i = 0; i < n; ++i) {
-        	String[] strs = columnNames[i];
-        	Var[] h = new Var[strs.length];
-        	headers[i] = h;
-        	for (int j = 0; j < strs.length; ++j) {
-        		h[j] = Var.alloc(strs[j]);
-        	}
+            String[] strs = columnNames[i];
+            Var[] h = new Var[strs.length];
+            headers[i] = h;
+            for (int j = 0; j < strs.length; ++j) {
+                h[j] = Var.alloc(strs[j]);
+            }
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(String.format("Effective CSV dialect for %s:%s%s", pathStr, StandardSystemProperty.LINE_SEPARATOR.value(), effectiveDialect));
         }
 
         return createRddOfBindings(sc, pathStr, csvConf, row -> createBinding(headers, row));
