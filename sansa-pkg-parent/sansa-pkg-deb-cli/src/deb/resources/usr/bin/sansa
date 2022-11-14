@@ -6,6 +6,7 @@ LIB_DIR="/usr/share/sansa-cli/"
 MAIN_CLASS="net.sansa_stack.spark.cli.main.MainCliSansaSpark"
 
 # Extra options for Java 17; Source: https://stackoverflow.com/questions/73465937/apache-spark-3-3-0-breaks-on-java-17-with-cannot-access-class-sun-nio-ch-direct
+# On Java 11 sansa works without these options althought warnings are shown
 EXTRA_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED \
     --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
     --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
