@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.stmt.core.SparqlStmt;
-import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.aksw.jenax.stmt.core.SparqlStmtQuery;
 import org.aksw.jenax.stmt.core.SparqlStmtUpdate;
 import org.aksw.jenax.stmt.util.SparqlStmtUtils;
@@ -40,34 +39,33 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 
 /**
  * Called from the Java class [[CmdSansaTarql]]
  */
 public class CmdSansaTarqlImpl {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
-    
+
     public static Map<String, String> getOptionsFromIriFragment(String iri) {
-    	Map<String, String> result = Collections.emptyMap();
-    	int hashOffset = iri.lastIndexOf('#');
-    	if (hashOffset >= 0) {
-    		String str = iri.substring(hashOffset + 1);
-    		List<String> options = Arrays.asList(str.split(";"));
-    		result = options.stream()
-    				.map(option -> {
-    			int sep = option.indexOf('=');
-    			Entry<String, String> r = sep >= 0
-    					? new SimpleEntry<>(option.substring(0, sep), option.substring(sep + 1))
-    					: new SimpleEntry<>(option, "")
-    					;
-    			return r;
-    		})
-			.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-    	}
-    	return result;
+        Map<String, String> result = Collections.emptyMap();
+        int hashOffset = iri.lastIndexOf('#');
+        if (hashOffset >= 0) {
+            String str = iri.substring(hashOffset + 1);
+            List<String> options = Arrays.asList(str.split(";"));
+            result = options.stream()
+                    .map(option -> {
+                int sep = option.indexOf('=');
+                Entry<String, String> r = sep >= 0
+                        ? new SimpleEntry<>(option.substring(0, sep), option.substring(sep + 1))
+                        : new SimpleEntry<>(option, "")
+                        ;
+                return r;
+            })
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        }
+        return result;
     }
-    
+
     public static int run(CmdSansaTarql cmd) throws Exception {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = new ArrayList<>(cmd.inputFiles.subList(1, cmd.inputFiles.size()));
@@ -77,9 +75,9 @@ public class CmdSansaTarqlImpl {
         // Parse the query against the configured prefixes - then reconfigure the prefixes
         // to those used in the query
         // The tradeoff is that prefixes generated in the query via the sparql IRI() function
-        // may not be recognized this way (if built from string; IRI(STR(ns:), 'foo') will recognize 'ns:') 
+        // may not be recognized this way (if built from string; IRI(STR(ns:), 'foo') will recognize 'ns:')
         PrefixMapping prefixes = rddRdfWriterFactory.getGlobalPrefixMapping();
-        SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(prefixes);
+        SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(prefixes, null);
         processor.process(queryFile);
         List<SparqlStmt> stmts = processor.getPlainSparqlStmts();
         //List<SparqlStmt> stmts = SparqlStmtMgr.loadSparqlStmts(queryFile, prefixes);
@@ -87,63 +85,63 @@ public class CmdSansaTarqlImpl {
         // If no argument is given then check whether the first query's from clause can act as a source
         // Convention: The from clause of subsequent queries may refer to previously generated graphs
 
-    	if (stmts.isEmpty()) {
-    		throw new IllegalArgumentException("No queries for mapping detected");
-    	}
+        if (stmts.isEmpty()) {
+            throw new IllegalArgumentException("No queries for mapping detected");
+        }
 
         if (csvFiles.isEmpty()) {
-        	SparqlStmt firstStmt = stmts.get(0);
-        	List<String> graphUris;
-        	if (firstStmt.isQuery()) {
-        		Query query = firstStmt.getQuery();
-        		graphUris = new ArrayList<>(query.getGraphURIs());
-        		query.getGraphURIs().clear();        		
-        	} else {
-        		throw new UnsupportedOperationException("Extracting CSV source from update request not implemented");
-        	}
-        	
-        	Preconditions.checkArgument(!graphUris.isEmpty(), "No CSV file specified and none could be derived from the first query");
-        	Preconditions.checkArgument(graphUris.size() == 1, "Either exactly one FROM clause expected or a CSV file needes to be provided");
-        	String csvUrl = graphUris.get(0);
-        	// csvUrl = csvUrl.replaceAll("^file://", ""); // Cut away the file protocol if present
-        	csvFiles.add(csvUrl);
+            SparqlStmt firstStmt = stmts.get(0);
+            List<String> graphUris;
+            if (firstStmt.isQuery()) {
+                Query query = firstStmt.getQuery();
+                graphUris = new ArrayList<>(query.getGraphURIs());
+                query.getGraphURIs().clear();
+            } else {
+                throw new UnsupportedOperationException("Extracting CSV source from update request not implemented");
+            }
+
+            Preconditions.checkArgument(!graphUris.isEmpty(), "No CSV file specified and none could be derived from the first query");
+            Preconditions.checkArgument(graphUris.size() == 1, "Either exactly one FROM clause expected or a CSV file needes to be provided");
+            String csvUrl = graphUris.get(0);
+            // csvUrl = csvUrl.replaceAll("^file://", ""); // Cut away the file protocol if present
+            csvFiles.add(csvUrl);
         }
-        
+
         PrefixMap usedPrefixes = PrefixMapFactory.create();
         for (SparqlStmt stmt : stmts) {
-        	// TODO optimizePrefixes should not modify in-place
+            // TODO optimizePrefixes should not modify in-place because it desyncs with the original string
             SparqlStmtUtils.optimizePrefixes(stmt);
-            PrefixMapping pm = SparqlStmtUtils.getPrefixMapping(stmt);
+            PrefixMapping pm = stmt.getPrefixMapping();
             if (pm != null) {
-            	usedPrefixes.putAll(pm);
+                usedPrefixes.putAll(pm);
             }
         }
-        
+
         // Post processing because we need to update the original query strings such that
         //  they only make use of the optimized prefixes
         stmts = stmts.stream().map(stmt -> stmt.isQuery()
-	        		? new SparqlStmtQuery(stmt.getQuery())
-	        		: new SparqlStmtUpdate(stmt.getUpdateRequest()))
-        	.collect(Collectors.toList());
+                    ? new SparqlStmtQuery(stmt.getQuery())
+                    : new SparqlStmtUpdate(stmt.getUpdateRequest()))
+            .collect(Collectors.toList());
 
         rddRdfWriterFactory.setGlobalPrefixMapping(usedPrefixes.getMapping());
         logger.info("Loaded statements " + stmts);
 
-        RDFFormat fmt = rddRdfWriterFactory.getOutputFormat(); 
+        RDFFormat fmt = rddRdfWriterFactory.getOutputFormat();
         if (fmt == null) {
-        	// TODO We also need to analyze the insert statements whether they make use of named graphs
-        	boolean mayProduceQuads = JavaRddOfBindingsOps.mayProduceQuads(stmts);
-        	
-        	fmt = mayProduceQuads ? RDFFormat.TRIG_BLOCKS : RDFFormat.TURTLE_BLOCKS;
-        	rddRdfWriterFactory.setOutputFormat(fmt);
+            // TODO We also need to analyze the insert statements whether they make use of named graphs
+            boolean mayProduceQuads = JavaRddOfBindingsOps.mayProduceQuads(stmts);
+
+            fmt = mayProduceQuads ? RDFFormat.TRIG_BLOCKS : RDFFormat.TURTLE_BLOCKS;
+            rddRdfWriterFactory.setOutputFormat(fmt);
         }
         if (cmd.ntriples) {
-        	Lang lang = fmt.getLang();
-        	fmt = RDFLanguages.isQuads(lang) ? RDFFormat.NQUADS : RDFFormat.NTRIPLES;
+            Lang lang = fmt.getLang();
+            fmt = RDFLanguages.isQuads(lang) ? RDFFormat.NQUADS : RDFFormat.NTRIPLES;
         }
-        
+
         Lang outLang = fmt.getLang();
-        
+
         rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);

@@ -24,19 +24,24 @@ import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import scala.Tuple2;
 
 public class JavaRddOfDatasetsOps {
-	
+
     public static JavaRDD<Quad> flatMapToQuads(JavaRDD<? extends Dataset> rdd) {
-    	// TODO Does the iterator close itself on end? If not then we should take care of it.
-        return rdd.flatMap(ds -> ds.asDatasetGraph().find());
+        // TODO Does the iterator close itself on end? If not then we should take care of it.
+        // return rdd.flatMap(ds -> ds.asDatasetGraph().find());
+        return JavaRddOps.mapPartitions(rdd, dss ->
+                dss.flatMap(ds -> Iter.asStream(ds.asDatasetGraph().find())));
     }
 
     /** Maps a dataset to triples - emits quads from named graphs as triples by dropping the named graph */
     public static JavaRDD<Triple> flatMapToTriples(JavaRDD<? extends Dataset> rdd) {
-    	// TODO Does the iterator close itself on end? If not then we should take care of it.
-        return rdd.flatMap(ds -> Iter.iter(ds.asDatasetGraph().find()).map(Quad::asTriple));
+        // TODO Does the iterator close itself on end? If not then we should take care of it.
+        // return rdd.flatMap(ds -> Iter.iter(ds.asDatasetGraph().find()).map(Quad::asTriple));
+        return JavaRddOps.mapPartitions(rdd, dss ->
+                dss.flatMap(ds -> Iter.asStream(ds.asDatasetGraph().find())
+                .map(Quad::asTriple)));
     }
 
-	
+
     public static JavaPairRDD<String, Model> flatMapToNamedModels(JavaRDD<? extends Dataset> rdd) {
         // TODO Add a flag to include the default graph under a certain name such as
         // Quad.defaultGraph

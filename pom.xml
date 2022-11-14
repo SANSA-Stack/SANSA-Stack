@@ -402,44 +402,12 @@
             </dependency>
             -->
 
-            <!-- Our exception utils -->
-            <dependency>
+	    <dependency>
                 <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-utils</artifactId>
-                <version>${aksw-commons.version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-lambdas-serializable</artifactId>
-                <version>${aksw-commons.version}</version>
-            </dependency>
-
-            <!-- Framework for building nestable aggregators; used in SchemaMapper and RecordReaderGenericBase -->
-            <dependency>
-                <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-collectors</artifactId>
-                <version>${aksw-commons.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-io-utils</artifactId>
-                <version>${aksw-commons.version}</version>
-            </dependency>
-
-            <!-- CSVW Bindings for univocity (hadoop) and our CLI -->
-            <dependency>
-                <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-models-csvw-univocity</artifactId>
-                <version>${aksw-commons.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aksw.commons</groupId>
-                <artifactId>aksw-commons-models-csvw-picocli</artifactId>
-                <version>${aksw-commons.version}</version>
+                <artifactId>aksw-commons-bom</artifactId>
+		<version>${aksw-commons.version}</version>
+		<type>pom</type>
+		<scope>import</scope>
             </dependency>
 
             <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
