@@ -158,7 +158,7 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
           // Append ">" to all matched local parts: "foo:car" --> "foo:car>"
           trimmedExpr = pattern.replaceAllIn(trimmedExpr, m => s"${m.matched}>")
           // Expand prefix: "foo:car>" --> "http://foo.org/res#car>"
-          trimmedExpr = trimmedExpr.replace(p.toCharArray, v.toCharArray)
+          trimmedExpr = trimmedExpr.replace(p, v)
         }
       }
 
@@ -169,7 +169,7 @@ class FunctionalSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
 
       if (prefixes.contains(FunctionalSyntaxParsing._empty)) {
         pattern.findAllIn(trimmedExpr).foreach(hit => {
-          val full = hit.replace(":".toCharArray, v.toCharArray)
+          val full = hit.replace(":", v)
           trimmedExpr = trimmedExpr.replace(hit, full + ">")
         })
       }
