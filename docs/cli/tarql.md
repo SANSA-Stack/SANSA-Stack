@@ -116,9 +116,15 @@ sansa tarql mapping.rq input.csv --out-file /tmp/output.ttl
 sansa tarql mapping.rq input.csv --iriasgiven --out-file /tmp/output.ttl
 ```
 
-* Options for spark/hadoop can be supplied via the `JAVA_OPTS` environment variable. Also, `--out-overwrite` deletes any existing hadoop files.
+* Add the `--out-overwrite` option to delete any prior hadoop output. This operation uses a safe-guard against accidental recursive folder deletion: If the output folder contains any non-hadoop files then an exception will be raised.
+
+* When using the deb/rpm packges then options for hadoop/spark can be supplied via the `JAVA_OPTS` environment variable.
 ```bash
 JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv --out-overwrite --out-folder /tmp/out-folder
 ```
 
+* When running directly with `java` then the hadoop/spark options can be provided as usual via `-D`:
+```
+java -Dspark.master=local[4] -jar sansa-version.jar tarql
+```
 
