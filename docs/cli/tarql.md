@@ -102,15 +102,17 @@ Map one or more CSV files to RDF via a single SPARQL query
 ## Examples
 
 The `sansa` command is available either by installing the debian/rpm packages or by running the jar bundle directly using `java -jar sansa-version.jar`
+Depending on the Java version you may need to add `--add-opens` declarations as documented [here](index.md).
 
 * Basic Invocation
 ```bash
-sansa tarql mapping.rq input.csv
+sansa tarql mapping.rq input.csv --out-file /tmp/output.ttl
 ```
 
 Options for spark/hadoop can be supplied via the `JAVA_OPTS` environment variable:
+Also, `--out-overwrite` deletes any existing hadoop files.
 ```
-JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv
+JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv --out-overwrite --out-folder /tmp/out-folder
 ```
 
 
