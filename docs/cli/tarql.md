@@ -9,13 +9,13 @@ nav_order: 1
 
 [TARQL (https://tarql.github.io/)](https://tarql.github.io/) is a tool for mapping tabular data to RDF via SPARQL queries.
 This works by first converting each CSV row to a SPARQL binding and then evaluating the SPARQL query  w.r.t. to that binding.
-Sansa features an Apache Spark based implementation that allows for processing a CSV file in parallel.
+Sansa features an Apache Spark based re-implementation that allows for processing a CSV file in parallel.
 
 The implementation is also based on ApacheJena and our own "JenaX" extension project.
 
 ## Important
 
-Parallel processing requires specifying `--out-file` and/or `--out-folder`t! If neither argument is given then output is streamed to STDOUT using a single thread (using `RDD.toLocalIterator`).
+Parallel processing requires specifying `--out-file` and/or `--out-folder`! If neither argument is given then output is streamed to STDOUT using a single thread (using `RDD.toLocalIterator`).
 
 ## TARQL Compatibility
 
