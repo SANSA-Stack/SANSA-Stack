@@ -28,7 +28,7 @@ The design of Sansa tarql is aimed to ease the transition to or from the origina
 
 ### Notable limitations:
 
-* The extension functions `tarql:expandPrefix(?prefix)` and `tarql:expandPrefixedName(?qname) expands` are not yet supported.
+* The extension functions `tarql:expandPrefix(?prefix)` and `tarql:expandPrefixedName(?qname)` are not yet supported.
 
 ## CLI Options
 
