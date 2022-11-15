@@ -30,7 +30,7 @@ public class InputFormatStats
 
     public void ensureInit(Configuration hc) {
         if (decoratee == null) {
-            String className = hc.get("delegate");
+            String className = hc.get(SansaHadoopConstants.DELEGATE);
             Preconditions.checkNotNull(className, "Delegate class not set - must be a fully qualified class name that is a subclass of " + RecordReaderGenericBase.class.getName());
 
             Class<?> clz;

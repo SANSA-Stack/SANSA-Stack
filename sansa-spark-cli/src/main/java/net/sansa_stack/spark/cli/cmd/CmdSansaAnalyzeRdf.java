@@ -4,12 +4,12 @@ package net.sansa_stack.spark.cli.cmd;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaAnalyzeImpl;
+import net.sansa_stack.spark.cli.impl.CmdSansaAnalyzeRdfImpl;
 import picocli.CommandLine;
 
 @CommandLine.Command(name = "analyze",
-        description = "Analyze triples/quads")
-public class CmdSansaAnalyze
+        description = "Analyze parsing of RDF triples/quads")
+public class CmdSansaAnalyzeRdf
         extends CmdBase
         implements Callable<Integer>
 {
@@ -28,6 +28,6 @@ public class CmdSansaAnalyze
 
     @Override
     public Integer call() throws Exception {
-        return CmdSansaAnalyzeImpl.run(this);
+        return CmdSansaAnalyzeRdfImpl.run(this);
     }
 }

@@ -1,9 +1,10 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
-import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesOptimize;
-import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesUsed;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.triple.TripleUtils;
@@ -16,8 +17,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
+import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesOptimize;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 
 
 /**
@@ -26,11 +28,11 @@ import java.util.*;
 public class CmdSansaPrefixesOptimizeImpl {
   private static Logger logger = LoggerFactory.getLogger(CmdSansaPrefixesOptimizeImpl.class);
 
-  public static int run(CmdSansaPrefixesOptimize cmd) throws IOException {
+  public static int run(CmdSansaPrefixesOptimize cmd) throws Exception {
 
-    new SimpleSparkCmdTemplate<>("Sansa Prefixes Optimize", cmd.inputConfig, cmd.inputFiles) {
+    new SimpleSparkCmdRdfTemplate<>("Sansa Prefixes Optimize", cmd.inputConfig, cmd.inputFiles) {
       @Override
-      protected void process() {
+      protected void process()  throws Exception {
         JavaRDD<Node> rdd;
         if (rdfSources.usesQuads()) {
           rdd = rdfSources.asQuads().toJavaRDD().flatMap(quad -> (QuadUtils.quadToList(quad).iterator()));

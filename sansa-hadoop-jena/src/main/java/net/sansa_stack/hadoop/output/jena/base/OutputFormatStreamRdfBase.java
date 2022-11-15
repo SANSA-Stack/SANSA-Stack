@@ -32,6 +32,11 @@ public abstract class OutputFormatStreamRdfBase<T>
     @Override
     public RecordWriter<Long, T> getRecordWriter(TaskAttemptContext job) throws IOException, InterruptedException {
         Configuration conf = job.getConfiguration();
+
+//        if (!conf.getBoolean(SansaHadoopConstants.OUTPUT_VALIDATE_DISABLE, false)) {
+//            checkOutputSpecs(job);
+//        }
+
         int splitCount = OutputUtils.getSplitCount(conf);
 
         TaskAttemptID taskAttemptId = job.getTaskAttemptID();

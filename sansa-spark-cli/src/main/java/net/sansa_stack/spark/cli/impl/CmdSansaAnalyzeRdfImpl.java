@@ -1,14 +1,5 @@
 package net.sansa_stack.spark.cli.impl;
 
-import com.google.common.base.Preconditions;
-import net.sansa_stack.hadoop.core.InputFormatStats;
-import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyze;
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
-import net.sansa_stack.spark.io.rdf.input.impl.RddRdfLoaderRegistryImpl;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFromResourceImpl;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -22,24 +13,33 @@ import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.io.IOException;
+import com.google.common.base.Preconditions;
 
-public class CmdSansaAnalyzeImpl {
+import net.sansa_stack.hadoop.core.InputFormatStats;
+import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyzeRdf;
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
+import net.sansa_stack.spark.io.rdf.input.impl.RddRdfLoaderRegistryImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFromResourceImpl;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 
-    public static int run(CmdSansaAnalyze cmd) throws IOException {
+public class CmdSansaAnalyzeRdfImpl {
+
+    public static int run(CmdSansaAnalyzeRdf cmd) throws Exception {
 
         RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
         rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
-        
+
         if (rddRdfWriterFactory.getOutputFormat() == null) {
-        	rddRdfWriterFactory.setOutputFormat(RDFFormat.TURTLE_PRETTY);
+            rddRdfWriterFactory.setOutputFormat(RDFFormat.TURTLE_PRETTY);
         }
         rddRdfWriterFactory.validate();
 
-        new SimpleSparkCmdTemplate<>("Sansa Analyze Data in Splits", cmd.inputConfig, cmd.inputFiles) {
+        new SimpleSparkCmdRdfTemplate<>("Sansa Analyze Data in Splits", cmd.inputConfig, cmd.inputFiles) {
             @Override
-            protected void process() {
+            protected void process() throws Exception {
                 for (RdfSource member : rdfSources.getMembers()) {
                     Preconditions.checkArgument(member instanceof RdfSourceFromResourceImpl, "Rdf Source must be an instance of " + RdfSourceFromResourceImpl.class);
                     RdfSourceFromResourceImpl rdfSource = (RdfSourceFromResourceImpl)member;

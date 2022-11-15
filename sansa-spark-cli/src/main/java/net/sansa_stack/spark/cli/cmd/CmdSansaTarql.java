@@ -33,14 +33,14 @@ public class CmdSansaTarql
     @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
     public boolean tabs = false;
 
+    @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unqiue, first name takes precedence.", defaultValue = "row")
+    public List<String> columnNamingSchemes = new ArrayList<>();
+
     @Parameters(arity = "1..n", description = "tarql query file following by one or more csv file")
     public List<String> inputFiles;
 
     @Option(names = { "--ntriples" }, arity="0", description = "Tarql compatibility flag; turns any quad/triple based output to nquads/ntriples")
     public boolean ntriples = false;
-
-    @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unqiue, first name takes precedence.", defaultValue = "row")
-    public List<String> columnNamingSchemes = new ArrayList<>();
 
     @Option(names = { "--accumulate" }, arity="0", description = "Accumulate every row's intermediate mapping output in a dataset which subsequent mappings can query")
     public boolean accumulationMode = false;

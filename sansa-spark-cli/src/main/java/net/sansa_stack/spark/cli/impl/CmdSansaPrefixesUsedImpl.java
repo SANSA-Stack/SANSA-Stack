@@ -1,8 +1,7 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
-import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesUsed;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import java.util.Map;
+
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.triple.TripleUtils;
@@ -15,8 +14,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Map;
+import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.cli.cmd.CmdSansaPrefixesUsed;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 
 
 /**
@@ -25,11 +25,11 @@ import java.util.Map;
 public class CmdSansaPrefixesUsedImpl {
   private static Logger logger = LoggerFactory.getLogger(CmdSansaPrefixesUsedImpl.class);
 
-  public static int run(CmdSansaPrefixesUsed cmd) throws IOException {
+  public static int run(CmdSansaPrefixesUsed cmd) throws Exception {
 
-    new SimpleSparkCmdTemplate<>("Sansa Prefixes Used", cmd.inputConfig, cmd.inputFiles) {
+    new SimpleSparkCmdRdfTemplate<>("Sansa Prefixes Used", cmd.inputConfig, cmd.inputFiles) {
       @Override
-      protected void process() {
+      protected void process()  throws Exception {
         Model model = rdfSources.peekDeclaredPrefixes();
 
         JavaRDD<Node> rdd;

@@ -11,11 +11,6 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.spark.cli.cmd.CmdMixinSparkInput;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
-
 public abstract class SimpleSparkCmdTemplate<T>
     implements Callable<T>
 {
@@ -29,15 +24,11 @@ public abstract class SimpleSparkCmdTemplate<T>
     protected Configuration hadoopConfiguration;
 
     protected JavaSparkContext sparkContext;
-    protected CmdMixinSparkInput inputSpec;
-    protected RdfSourceCollection rdfSources;
 
     public SimpleSparkCmdTemplate(
             String appName,
-            CmdMixinSparkInput inputSpec,
             List<String> inputFiles) {
         this.appName = appName;
-        this.inputSpec = inputSpec;
         this.inputFiles = inputFiles;
     }
 
@@ -49,7 +40,10 @@ public abstract class SimpleSparkCmdTemplate<T>
     protected void finalizeSparkSessionBuilder() {
     }
 
-    public T call() {
+    protected void processInputs() {
+    }
+
+    public T call() throws Exception {
 
         initSparkSessionBuilder();
         finalizeSparkSessionBuilder();
@@ -62,9 +56,7 @@ public abstract class SimpleSparkCmdTemplate<T>
 
         CmdUtils.validatePaths(inputFiles, hadoopConfiguration);
 
-        RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
-
-        rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, inputFiles, inputSpec);
+        processInputs();
 
         StopWatch stopwatch = StopWatch.createStarted();
 
@@ -75,5 +67,5 @@ public abstract class SimpleSparkCmdTemplate<T>
         return null;
     }
 
-    protected abstract void process();
+    protected abstract void process() throws Exception;
 }

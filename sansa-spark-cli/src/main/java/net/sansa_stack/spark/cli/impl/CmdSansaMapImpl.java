@@ -94,20 +94,20 @@ public class CmdSansaMapImpl {
     RddRdfWriter<?> rddRdfWriter;
 
     if (rdfSources.usesQuads()) {
-      JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD();
-      rddRdfWriter = rddRdfWriterFactory.forQuad(rdd);
+        JavaRDD<Quad> rdd = rdfSources.asQuads().toJavaRDD();
+        rddRdfWriter = rddRdfWriterFactory.forQuad(rdd);
     } else {
-      JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
+        JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
 
-      rddRdfWriter = rddRdfWriterFactory.forTriple(rdd);
+        rddRdfWriter = rddRdfWriterFactory.forTriple(rdd);
     }
     rddRdfWriter.runUnchecked();
 
     Map<String, String> usedPm = Optional.ofNullable(rddRdfWriter.getGlobalPrefixMapping())
             .map(PrefixMapping::getNsPrefixMap).orElse(null);
     if (usedPm != null) {
-      int usedPmCount = usedPm.size();
-      logger.info(String.format("Optimization of prefixes reduced their number from %d to %d (of which %d originated from the sources)", initialPrefixCount, usedPmCount, declaredPrefixCount));
+        int usedPmCount = usedPm.size();
+        logger.info(String.format("RDF writer was configured with %d prefixes. %d prefixes remained after processing. %d unique prefixes were derived from the sources.", initialPrefixCount, usedPmCount, declaredPrefixCount));
     }
 
     logger.info(String.format("Processing time: %.3f seconds", stopwatch.getTime(TimeUnit.MILLISECONDS) / 1000.0f));

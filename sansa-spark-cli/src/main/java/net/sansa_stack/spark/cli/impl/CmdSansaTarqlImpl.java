@@ -153,9 +153,8 @@ public class CmdSansaTarqlImpl {
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 
         // Put the CSV options from the CLI into the hadoop context
-        Configuration hadoopConf = javaSparkContext.hadoopConfiguration();
+        // Configuration hadoopConf = javaSparkContext.hadoopConfiguration();
         UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
-
         DialectMutable csvCliOptions = cmd.csvOptions;
         csvCliOptions.copyInto(univocityConf.getDialect());
         univocityConf.setTabs(cmd.tabs);

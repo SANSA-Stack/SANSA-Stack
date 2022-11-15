@@ -1,17 +1,21 @@
 package net.sansa_stack.hadoop.output.jena.base;
 
+import java.io.OutputStream;
+import java.util.function.Function;
+
 import org.aksw.jenax.arq.util.prefix.PrefixMapAdapter;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.system.*;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFOps;
+import org.apache.jena.riot.system.StreamRDFWrapper;
+import org.apache.jena.riot.system.StreamRDFWriter;
+import org.apache.jena.riot.system.SyntaxLabels;
 import org.apache.jena.riot.writer.WriterStreamRDFBase;
-import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
-
-import java.io.OutputStream;
-import java.util.function.Function;
 
 public class StreamRDFUtils {
     /**
