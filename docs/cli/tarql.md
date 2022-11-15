@@ -128,6 +128,20 @@ JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv --out-overw
 java -Dspark.master=local[4] -jar sansa-version.jar tarql
 ```
 
+## Minimal Example with Docker
+
+A docker image of sansa is available under `aklakan/sansa`.
+
+```bash
+docker pull aklakan/sansa
+echo -e 'http://example.org/foo,foo\nhttp://example.org/bar,bar' > /tmp/data.csv
+echo "CONSTRUCT { ?s <http://www.w3.org/2000/01/rdf-schema#label> ?b } { BIND (IRI(?a) AS ?s) }" > /tmp/mapping.rq 
+docker run -v /tmp:/data -it aklakan/sansa tarql --delimiter , --no-header-row /data/mapping.rq /data/data.csv --out-format ntriples
+```
+
+* Remark: The presence of `--delimiter ,` is due to the univocity CSV parser incorrectly auto-detecting it as `:`.
+
+
 ## Performance Comparison
 
 ![Tarql Comparison Chart](2022-11-15-tarql-comparison-chart.png)
