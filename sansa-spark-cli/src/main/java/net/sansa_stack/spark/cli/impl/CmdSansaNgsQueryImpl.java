@@ -1,13 +1,9 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
-import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
-import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
@@ -17,15 +13,20 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.ResultSetMgr;
+import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
+import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
+import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 
 /**
  * Called from the Java class [[CmdSansaNgsQuery]]
@@ -38,17 +39,23 @@ public class CmdSansaNgsQueryImpl {
   public static Integer run(CmdSansaNgsQuery cmd) {
 
     List<Lang> resultSetFormats = RDFLanguagesEx.getResultSetFormats();
-    Lang outLang = RDFLanguagesEx.findLang(cmd.outputConfig.outFormat, resultSetFormats);
+    Lang outLang;
+
+    Query query = SparqlStmtMgr.loadQuery(cmd.queryFile);
+    logger.info("Loaded query " + query);
+
+    if (cmd.outputConfig.outFormat != null) {
+        outLang = RDFLanguagesEx.findLang(cmd.outputConfig.outFormat, resultSetFormats);
+    } else {
+        // TODO Default based on the query type
+        outLang = ResultSetLang.RS_JSON;
+    }
 
     if (outLang == null) {
-      throw new IllegalArgumentException("No result set format found for " + cmd.outputConfig.outFormat);
+        throw new IllegalArgumentException("No result set format found for " + cmd.outputConfig.outFormat);
     }
 
     logger.info("Detected registered result set format: " + outLang);
-
-    Query query = SparqlStmtMgr.loadQuery(cmd.queryFile);
-
-    logger.info("Loaded query " + query);
 
     // cmd.outputConfig.outFormat
     // RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);

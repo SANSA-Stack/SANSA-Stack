@@ -1,14 +1,13 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesHeadImpl;
-import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesUsedImpl;
-import picocli.CommandLine;
-
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import net.sansa_stack.spark.cli.impl.CmdSansaPrefixesHeadImpl;
+import picocli.CommandLine;
+
 @CommandLine.Command(name = "head",
-        description = "Collect the head prefixes")
+        description = "Collect the prefixes at the beginning of the given sources")
 public class CmdSansaPrefixesHead
         extends CmdBase
         implements Callable<Integer>

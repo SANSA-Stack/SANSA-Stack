@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 import net.sansa_stack.spark.cli.impl.CmdSansaAnalyzeRdfImpl;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "analyze",
+@CommandLine.Command(name = "rdf",
         description = "Analyze parsing of RDF triples/quads")
 public class CmdSansaAnalyzeRdf
         extends CmdBase

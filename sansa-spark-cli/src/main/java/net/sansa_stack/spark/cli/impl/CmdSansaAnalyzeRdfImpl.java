@@ -15,8 +15,9 @@ import org.apache.spark.api.java.JavaRDD;
 
 import com.google.common.base.Preconditions;
 
-import net.sansa_stack.hadoop.core.InputFormatStats;
 import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyzeRdf;
+import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
+import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
@@ -33,7 +34,7 @@ public class CmdSansaAnalyzeRdfImpl {
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         if (rddRdfWriterFactory.getOutputFormat() == null) {
-            rddRdfWriterFactory.setOutputFormat(RDFFormat.TURTLE_PRETTY);
+            rddRdfWriterFactory.setOutputFormat(RDFFormat.TURTLE_BLOCKS);
         }
         rddRdfWriterFactory.validate();
 
@@ -53,12 +54,12 @@ public class CmdSansaAnalyzeRdfImpl {
                     Class<? extends FileInputFormat<LongWritable, ?>> inputFormatClass = rdfLoader.getFileInputFormatClass();
 
                     Configuration hc = new Configuration(hadoopConfiguration);
-                    String delegateClassName = inputFormatClass.getName();
-                    hc.set("delegate", delegateClassName);
-
                     Path path = rdfSource.getPath();
-                    JavaRDD<Model> rdd = sparkContext.newAPIHadoopFile(path.toString(), InputFormatStats.class, LongWritable.class, Resource.class, hc)
-                                .map(x -> x._2.getModel());
+
+                    @SuppressWarnings({ "rawtypes", "unchecked" })
+                    HadoopInputData hid = new HadoopInputData(path.toString(), inputFormatClass, LongWritable.class, rdfLoader.getValueClass(), hc, null);
+                    HadoopInputData<LongWritable, Resource, JavaRDD<Model>> wrappedHid = InputFormatUtils.wrapWithAnalyzer(hid);
+                    JavaRDD<Model> rdd = InputFormatUtils.createRdd(sparkContext, wrappedHid);
 
                     RdfSource tgt = RdfSources.ofModels(rdd);
                     CmdSansaMapImpl.writeOutRdfSources(tgt, rddRdfWriterFactory);
