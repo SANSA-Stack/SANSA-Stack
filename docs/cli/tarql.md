@@ -128,3 +128,13 @@ JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv --out-overw
 java -Dspark.master=local[4] -jar sansa-version.jar tarql
 ```
 
+## Performance Comparison
+
+![Tarql Comparison Chart](2022-11-15-tarql-comparison-chart.png)
+
+* Tarql 1.3 is based on [tarql pull request 99](https://github.com/tarql/tarql/pull/99) which uprades the code base to Jena 4.
+* Mapping time is the time needed to write out the whole mapping once. In the hadoop/spark setting multiple files are written out at once.
+* Merge time is the time needed to concatenate the prior output into a single file.
+* Although a thorough analysis of time difference between tarql 1.2 (Jena 3) and tarql 1.3 (Jena 4) has yet to be conducted, it is most likely related to IRI processing.
+* Jena 4's IRI function not only adds validation overhead but also global synchronization which impacts performance of parallel processing (see [JENA-1470](https://github.com/apache/jena/issues/1470)).
+
