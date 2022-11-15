@@ -34,9 +34,9 @@ The design of Sansa tarql is aimed to ease the transition to or from the origina
 ## CLI Options
 
 ```bash
-Usage: sansa tarql [-hHrstuVX] [--accumulate] [--header-row] [--ntriples]
-                   [--optimize-prefixes] [--out-overwrite] [--pretty]
-                   [-d=<delimiter>] [-e=<encoding>] [-o=<outFormat>]
+Usage: sansa tarql [-hHrstuVX] [--accumulate] [--header-row] [--iriasgiven]
+                   [--ntriples] [--optimize-prefixes] [--out-overwrite]
+                   [--pretty] [-d=<delimiter>] [-e=<encoding>] [-o=<outFormat>]
                    [--oup=<deferOutputForUsedPrefixes>] [--out-file=<outFile>]
                    [--out-folder=<outFolder>] [-p=<quoteEscapeChar>]
                    [-q=<quoteChar>] [--sort-partitions=<sortPartitions>]
@@ -60,6 +60,8 @@ Map one or more CSV files to RDF via a single SPARQL query
                                unqiue, first name takes precedence.
       --header-row           Input file's first row is a header with variable
                                names (default)
+      --iriasgiven           Use an alternative IRI() implementation that is
+                               non-validating but fast
       --ntriples             Tarql compatibility flag; turns any quad/triple
                                based output to nquads/ntriples
   -o, --out-format=<outFormat>
@@ -78,7 +80,7 @@ Map one or more CSV files to RDF via a single SPARQL query
       --out-file=<outFile>   Output file; Merge of files created in out-folder
       --out-folder=<outFolder>
                              Output folder
-      --out-overwrite        Overwrite existing output files and/or folders;
+      --out-overwrite        Overwrite existing output files and/or folders
   -p, --escapechar=<quoteEscapeChar>
                              Quote escape character
       --pretty               Enables --sort, --unique and --optimize-prefixes
@@ -96,6 +98,7 @@ Map one or more CSV files to RDF via a single SPARQL query
                                operation
   -V, --version              Print version information and exit.
   -X                         Debug mode; enables full stack traces
+
 ```
 
 
@@ -109,9 +112,13 @@ Depending on the Java version you may need to add `--add-opens` declarations as 
 sansa tarql mapping.rq input.csv --out-file /tmp/output.ttl
 ```
 
-Options for spark/hadoop can be supplied via the `JAVA_OPTS` environment variable:
-Also, `--out-overwrite` deletes any existing hadoop files.
+* Faster processing of the IRI() function by disabling validation. Only use this if you can ensure the generated IRIs will be valid.
+```bash
+sansa tarql mapping.rq input.csv --iriasgiven --out-file /tmp/output.ttl
 ```
+
+* Options for spark/hadoop can be supplied via the `JAVA_OPTS` environment variable. Also, `--out-overwrite` deletes any existing hadoop files.
+```bash
 JAVA_OPTS="-Dspark.master=local[4]" sansa tarql mapping.rq input.csv --out-overwrite --out-folder /tmp/out-folder
 ```
 

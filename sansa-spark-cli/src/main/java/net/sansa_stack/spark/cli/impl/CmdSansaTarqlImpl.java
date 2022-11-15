@@ -11,11 +11,12 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
+import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven;
+import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven.ExprTransformIriToIriAsGiven;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtQuery;
 import org.aksw.jenax.stmt.core.SparqlStmtUpdate;
 import org.aksw.jenax.stmt.util.SparqlStmtUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.query.Query;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
@@ -24,6 +25,11 @@ import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.expr.E_IRI;
+import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprFunction1;
+import org.apache.jena.sparql.expr.ExprTransformCopy;
+import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -44,7 +50,11 @@ import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfBindingsOps;
  * Called from the Java class [[CmdSansaTarql]]
  */
 public class CmdSansaTarqlImpl {
+
+    static { JenaSystem.init(); }
+
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
+
 
     public static Map<String, String> getOptionsFromIriFragment(String iri) {
         Map<String, String> result = Collections.emptyMap();
@@ -80,6 +90,14 @@ public class CmdSansaTarqlImpl {
         SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(prefixes, null);
         processor.process(queryFile);
         List<SparqlStmt> stmts = processor.getPlainSparqlStmts();
+
+        if (cmd.useIriAsGiven) {
+            stmts = stmts.stream()
+                    .map(stmt -> SparqlStmtUtils.applyElementTransform(stmt, ExprTransformIriToIriAsGiven::transformElt))
+                    .collect(Collectors.toList());
+        }
+
+
         //List<SparqlStmt> stmts = SparqlStmtMgr.loadSparqlStmts(queryFile, prefixes);
 
         // If no argument is given then check whether the first query's from clause can act as a source

@@ -45,6 +45,10 @@ public class CmdSansaTarql
     @Option(names = { "--accumulate" }, arity="0", description = "Accumulate every row's intermediate mapping output in a dataset which subsequent mappings can query")
     public boolean accumulationMode = false;
 
+    @Option(names = { "--iriasgiven" }, arity="0", description = "Use an alternative IRI() implementation that is non-validating but fast")
+    public boolean useIriAsGiven = false;
+
+
     @Override
     public Integer call() throws Exception {
         return CmdSansaTarqlImpl.run(this);
