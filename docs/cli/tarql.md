@@ -7,7 +7,7 @@ nav_order: 1
 
 # Sansa Tarql
 
-[TARQL](https://tarql.github.io/) is a tool for mapping tabular data to RDF via SPARQL queries.
+[TARQL (https://tarql.github.io/)](https://tarql.github.io/) is a tool for mapping tabular data to RDF via SPARQL queries.
 This works by first converting each CSV row to a SPARQL binding and then evaluating the SPARQL query  w.r.t. to that binding.
 Sansa features an Apache Spark based implementation that allows for processing a CSV file in parallel.
 
@@ -28,7 +28,6 @@ The design of Sansa tarql is aimed to ease the transition to or from the origina
 
 ### Notable limitations:
 
-* Options in a hash fragment of an URL (e.g. `FROM <myfile.csv#encoding=iso-8859-1>`) are not yet supported.
 * The extension functions `tarql:expandPrefix(?prefix)` and `tarql:expandPrefixedName(?qname) expands` are not yet supported.
 
 ## CLI Options

@@ -125,7 +125,7 @@ public class RecordReaderCsvUnivocity
 
         UnivocityHadoopConf parserConf = FileInputFormatCsvUnivocity.getUnivocityConfig(conf);
         DialectMutable tmp = new DialectMutableImpl();
-        parserConf.getDialect().copyInto(tmp);
+        parserConf.getDialect().copyInto(tmp, false);
         requestedDialect = tmp;
 
         long cellMaxLength = conf.getLong(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);

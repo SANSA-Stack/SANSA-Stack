@@ -39,7 +39,7 @@ public class CmdSansaAnalyzeCsvImpl {
 
                     UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
                     DialectMutable csvCliOptions = cmd.csvOptions;
-                    csvCliOptions.copyInto(univocityConf.getDialect());
+                    csvCliOptions.copyInto(univocityConf.getDialect(), false);
                     univocityConf.setTabs(cmd.tabs);
 
                     HadoopInputData<?, ?, ?> baseInputFormatData = CsvDataSources.configureHadoop(conf, inputPath, univocityConf, cmd.columnNamingSchemes);

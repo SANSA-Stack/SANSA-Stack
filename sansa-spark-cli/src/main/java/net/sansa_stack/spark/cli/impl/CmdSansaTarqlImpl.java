@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
-import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven.ExprTransformIriToIriAsGiven;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtQuery;
@@ -25,10 +24,6 @@ import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.expr.E_IRI;
-import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.expr.ExprFunction1;
-import org.apache.jena.sparql.expr.ExprTransformCopy;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -37,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
@@ -56,24 +52,67 @@ public class CmdSansaTarqlImpl {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
 
-    public static Map<String, String> getOptionsFromIriFragment(String iri) {
+    /** Parse tarql options as valid in an IRI hash fragment.
+     *
+     */
+    public static Map<String, String> parseOptions(String str) {
         Map<String, String> result = Collections.emptyMap();
-        int hashOffset = iri.lastIndexOf('#');
-        if (hashOffset >= 0) {
-            String str = iri.substring(hashOffset + 1);
-            List<String> options = Arrays.asList(str.split(";"));
-            result = options.stream()
-                    .map(option -> {
-                int sep = option.indexOf('=');
-                Entry<String, String> r = sep >= 0
-                        ? new SimpleEntry<>(option.substring(0, sep), option.substring(sep + 1))
-                        : new SimpleEntry<>(option, "")
-                        ;
-                return r;
-            })
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-        }
+        List<String> options = Arrays.asList(str.split(";"));
+        result = options.stream()
+                .map(option -> {
+            int sep = option.indexOf('=');
+            Entry<String, String> r = sep >= 0
+                    ? new SimpleEntry<>(option.substring(0, sep), option.substring(sep + 1))
+                    : new SimpleEntry<>(option, "")
+                    ;
+            return r;
+        })
+        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
         return result;
+    }
+
+    // Mapping according to https://tarql.github.io/
+    public static void configureDialectFromOptions(DialectMutable dialect, Map<String, String> map) {
+        String str;
+
+        if ((str = map.get("header")) != null) {
+            if (str.equals("present")) {
+                dialect.setHeaderRowCount(1l);
+            } else if (str.equals("absent")) {
+                dialect.setHeaderRowCount(0l);
+            }
+        }
+
+        if ((str = map.get("delimiter")) != null) {
+            Map<String, String> remap = ImmutableMap.<String, String>builder()
+                    .put("comma", ",")
+                    .put("tab", "\t")
+                    .put("semicolon", ";")
+                    .build();
+            dialect.setDelimiter(remap.getOrDefault(str, str));
+        }
+
+        if ((str = map.get("quotechar")) != null) {
+            Map<String, String> remap = ImmutableMap.<String, String>builder()
+                    .put("none", "")
+                    .put("singlequote", "'")
+                    .put("doublequote", "\"")
+                    .build();
+            dialect.setQuoteChar(remap.getOrDefault(str, str));
+        }
+
+        if ((str = map.get("escapechar")) != null) {
+            Map<String, String> remap = ImmutableMap.<String, String>builder()
+                    .put("none", "")
+                    .put("backslash", "\\")
+                    .put("doublequote", "\"")
+                    .build();
+            dialect.setQuoteEscapeChar(remap.getOrDefault(str, str));
+        }
+
+        if ((str = map.get("encoding")) != null) {
+            dialect.setEncoding(str);
+        }
     }
 
     public static int run(CmdSansaTarql cmd) throws Exception {
@@ -91,13 +130,6 @@ public class CmdSansaTarqlImpl {
         processor.process(queryFile);
         List<SparqlStmt> stmts = processor.getPlainSparqlStmts();
 
-        if (cmd.useIriAsGiven) {
-            stmts = stmts.stream()
-                    .map(stmt -> SparqlStmtUtils.applyElementTransform(stmt, ExprTransformIriToIriAsGiven::transformElt))
-                    .collect(Collectors.toList());
-        }
-
-
         //List<SparqlStmt> stmts = SparqlStmtMgr.loadSparqlStmts(queryFile, prefixes);
 
         // If no argument is given then check whether the first query's from clause can act as a source
@@ -106,6 +138,8 @@ public class CmdSansaTarqlImpl {
         if (stmts.isEmpty()) {
             throw new IllegalArgumentException("No queries for mapping detected");
         }
+
+        UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
 
         if (csvFiles.isEmpty()) {
             SparqlStmt firstStmt = stmts.get(0);
@@ -120,10 +154,24 @@ public class CmdSansaTarqlImpl {
 
             Preconditions.checkArgument(!graphUris.isEmpty(), "No CSV file specified and none could be derived from the first query");
             Preconditions.checkArgument(graphUris.size() == 1, "Either exactly one FROM clause expected or a CSV file needes to be provided");
-            String csvUrl = graphUris.get(0);
+            String csvUrlWithHashFragment = graphUris.get(0);
+
+            int hashPos = csvUrlWithHashFragment.lastIndexOf('#');
+            String csvUrl = hashPos < 0 ? csvUrlWithHashFragment : csvUrlWithHashFragment.substring(0, hashPos);
+
+            if (hashPos >= 0) {
+                Map<String, String> options = parseOptions(csvUrlWithHashFragment.substring(hashPos + 1));
+                configureDialectFromOptions(univocityConf.getDialect(), options);
+            }
+
             // csvUrl = csvUrl.replaceAll("^file://", ""); // Cut away the file protocol if present
             csvFiles.add(csvUrl);
         }
+
+        // CLI dialect options take precedence
+        DialectMutable csvCliOptions = cmd.csvOptions;
+        csvCliOptions.copyInto(univocityConf.getDialect(), false);
+        univocityConf.setTabs(cmd.tabs);
 
         PrefixMap usedPrefixes = PrefixMapFactory.create();
         for (SparqlStmt stmt : stmts) {
@@ -133,6 +181,12 @@ public class CmdSansaTarqlImpl {
             if (pm != null) {
                 usedPrefixes.putAll(pm);
             }
+        }
+
+        if (cmd.useIriAsGiven) {
+            stmts = stmts.stream()
+                    .map(stmt -> SparqlStmtUtils.applyElementTransform(stmt, ExprTransformIriToIriAsGiven::transformElt))
+                    .collect(Collectors.toList());
         }
 
         // Post processing because we need to update the original query strings such that
@@ -172,10 +226,6 @@ public class CmdSansaTarqlImpl {
 
         // Put the CSV options from the CLI into the hadoop context
         // Configuration hadoopConf = javaSparkContext.hadoopConfiguration();
-        UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
-        DialectMutable csvCliOptions = cmd.csvOptions;
-        csvCliOptions.copyInto(univocityConf.getDialect());
-        univocityConf.setTabs(cmd.tabs);
 
         // FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
 

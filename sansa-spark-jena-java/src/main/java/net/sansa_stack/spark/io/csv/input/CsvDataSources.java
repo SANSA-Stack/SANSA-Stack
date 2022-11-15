@@ -75,7 +75,7 @@ public class CsvDataSources {
         boolean hasHeaders = !Long.valueOf(0).equals(headerRowCountBak);
 
         DialectMutable effectiveDialect = new DialectMutableImpl();
-        dialect.copyInto(effectiveDialect);
+        dialect.copyInto(effectiveDialect, false);
 
         // Don't skip any rows while we sample the first row
         effectiveDialect.setHeaderRowCount(0l);
