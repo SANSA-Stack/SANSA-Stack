@@ -138,3 +138,65 @@ java -Dspark.master=local[4] -jar sansa-version.jar tarql
 * Although a thorough analysis of time difference between tarql 1.2 (Jena 3) and tarql 1.3 (Jena 4) has yet to be conducted, it is most likely related to IRI processing.
 * Jena 4's IRI function not only adds validation overhead but also global synchronization which impacts performance of parallel processing (see [JENA-1470](https://github.com/apache/jena/issues/1470)).
 
+## Inspecting CSV files
+
+The CSV parser is capable of parsing multiline CSV files, however there may be issues in the data or bugs in the parser.
+The `sansa analyze csv` command can be used to obtain per-split report in RDF for a given CSV file. This report includes information such as the number of records produced, the time it took and the number of
+probing attempts to find a region offset.
+
+```bash
+sansa analyze csv --out-file stats.ttl input.csv
+sansa anylze csv --out-file stats.ttl --delimiter , --encoding utf-8 input.csv
+```
+
+
+The output of the stats file can be processed with the following sparql query:
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX eg: <http://www.example.org/>
+
+SELECT
+*
+#?splitStart ?totalTime
+#?splitStart ?totalElementCount
+#?splitStart ?totalBytesRead
+#?splitStart ?startTime
+#?splitStart ?startOffset
+#?splitStart ?startProbeCount
+#?splitStart ?endTime
+#?splitStart ?endOffset
+#?splitStart ?endProbeCount
+{
+  ?s
+    eg:splitStart ?splitStart ;
+    eg:totalTime ?totalTime .
+    OPTIONAL { ?s eg:totalBytesRead ?totalBytesRead  }
+    OPTIONAL { ?s eg:totalElementCount ?totalElementCount }
+
+    OPTIONAL { ?s eg:regionStartProbeResult/eg:totalDuration ?startTime }
+    OPTIONAL { ?s eg:regionStartProbeResult/eg:candidatePos ?startOffset }
+    OPTIONAL { ?s eg:regionStartProbeResult/eg:probeCount ?startProbeCount }
+
+    OPTIONAL { ?s eg:regionEndProbeResult/eg:totalDuration ?endTime }
+    OPTIONAL { ?s eg:regionEndProbeResult/eg:candidatePos ?endOffset }
+    OPTIONAL { ?s eg:regionEndProbeResult/eg:probeCount ?endProbeCount }
+}
+ORDER BY ?splitStart
+```
+
+One way to visualize this data is as follows:
+
+* Start a local SPARQL endpoint using the triple store of your choice.
+For example, with the [RDF Processing Toolkit](https://github.com/SmartDataAnalytics/RdfProcessingToolkit) the command `rpt integrate --server stats.ttl` starts an endpoint under `http://localhost:8642/sparql`.
+
+* Visit [Yasgui](https://yasgui.triply.cc/) and configure it to your local endpoint
+
+* Copy&Paste the SPARQL query above. By default this should show the statistics as a table.
+By selecting the `chart` tab in Yasgui and adapting the projection of the query the different attributes can be visualized.
+
+An example visualization of an issue where the parsing of two splits takes an excessive amount of time is shown below:
+
+![Yasgui Chart over Sansa CSV Analyze Report](2022-11-21-sansa-csv-analyze-yasgui.png)
+
+
