@@ -1,14 +1,13 @@
 package net.sansa_stack.query.spark.engine;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
+import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpVisitor;
 import org.apache.jena.sparql.algebra.op.*;
-import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.rdd.RDD;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class ExecutionDispatch
         implements OpVisitor {
@@ -195,6 +194,11 @@ public class ExecutionDispatch
 
     @Override
     public void visit(OpTopN opTop) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void visit(OpLateral opLateral) {
         throw new UnsupportedOperationException();
     }
 }

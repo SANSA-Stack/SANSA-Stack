@@ -96,12 +96,12 @@ object RddOfBindingsOps {
 
 
     // For each ExprVar convert the involvd arq aggregator
-    val subAggMap = new util.LinkedHashMap[Var, ParallelAggregator[Binding, Node, _]]
+    val subAggMap = new util.LinkedHashMap[Var, ParallelAggregator[Binding, Void, Node, _]]
 
     // I gave up on trying to get this working with fluent style + lambdas
     // due to compiler (tough NOT THE IDE) complaining about type errors; here's a working for loop instead:
     for (exprAgg <- aggregators.asScala) {
-      val pagg = ConvertArqAggregator.convert(exprAgg.getAggregator)
+      val pagg : ParallelAggregator[Binding, Void, Node, _] = ConvertArqAggregator.convert(exprAgg.getAggregator)
       subAggMap.put(exprAgg.getVar, pagg)
     }
 
@@ -113,14 +113,14 @@ object RddOfBindingsOps {
 //      aggregators.asScala.map(x => (x.getVar, ConvertArqAggregator.convert(x.getAggregator)))
 //        .toMap.asJava
 
-    val agg: AggInputBroadcastMap[Binding, Var, Node] = AggBuilder.inputBroadcastMap(subAggMap)
+    val agg: AggInputBroadcastMap[Binding, Void, Var, Node] = AggBuilder.inputBroadcastMap(subAggMap)
     val groupVarsBc = rdd.context.broadcast(groupVars)
     val aggBc = rdd.context.broadcast(agg)
 
     val result: RDD[Binding] = rdd
       .mapPartitions(it => {
         val agg = aggBc.value
-        val groupKeyToAcc = new util.LinkedHashMap[Binding, AccInputBroadcastMap[Binding, Var, Node]]()
+        val groupKeyToAcc = new util.LinkedHashMap[Binding, AccInputBroadcastMap[Binding, Void, Var, Node]]()
 
         for (binding <- it) {
           val groupKey: Binding = VarExprListUtils.copyProject(groupVarsBc.value, binding, null)

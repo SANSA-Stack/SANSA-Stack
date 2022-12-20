@@ -155,4 +155,7 @@ object SparqlOpVisitor extends OpVisitor {
   override def visit(opTopN: OpTopN): Unit = {
   }
 
+  override def visit(op: OpLateral): Unit = {
+  }
+
 }
