@@ -15,6 +15,8 @@ public class CharSequenceReverse
     public CharSequenceReverse(CharSequence base, int reverseStart) {
         this(base, reverseStart, -1);
     }
+
+    /** Create a char sequence from the start offset <b>down to</b> the end offset */
     public CharSequenceReverse(CharSequence base, int reverseStart, int reverseEnd) {
         this.base = base;
         this.reverseStart = reverseStart; // Start is inclusive
@@ -25,7 +27,7 @@ public class CharSequenceReverse
         // System.out.println("Reverse string - len=" + rstr.length() + " start: " + reverseStart + " end: " + reverseEnd);
         // System.out.println(rstr);
 
-        Preconditions.checkArgument(reverseEnd >= -1, String.format("reverseEnd (%d) must be >= 0", reverseEnd));
+        Preconditions.checkArgument(reverseEnd >= -1, String.format("reverseEnd (%d) must be >= -1", reverseEnd));
         Preconditions.checkArgument(reverseStart >= reverseEnd, String.format("reverseStart (%d) must be >= reverseEnd (%d)", reverseStart, reverseEnd));
     }
 
@@ -44,8 +46,14 @@ public class CharSequenceReverse
         Preconditions.checkArgument(start <= end, String.format("start (%d) must be <= end (%d)", start, end));
         int effStart = reverseStart - start;
         int effEnd = reverseStart - end;
-        Preconditions.checkArgument(effStart >= 0 && effEnd >= 0, String.format("Effective start (%d) and effective end (%d) must be >= 0", effStart, effEnd));
+        Preconditions.checkArgument(effStart >= 0 && effEnd >= -1, String.format("Effective start (%d) and effective end (%d) must be >= 0", effStart, effEnd));
         return new CharSequenceReverse(base, effStart, effEnd);
+    }
+
+    @Override
+    public String toString() {
+        String result = CharSequences.toString(this);
+        return result;
     }
 
     @Override

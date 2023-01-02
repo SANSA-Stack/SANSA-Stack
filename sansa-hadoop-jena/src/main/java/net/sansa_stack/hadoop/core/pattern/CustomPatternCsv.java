@@ -1,11 +1,13 @@
 package net.sansa_stack.hadoop.core.pattern;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Matcher that searches for record starts (the first character following a newline) that are NOT within a
  * multiline field.
+ *
+ * FIXME: Should this pattern match "end of file"? A problem arises if no newline exists: does that mean that there too much data without newline or did we hit the end of file?
+ *
  */
 public class CustomPatternCsv
     implements CustomPattern
@@ -13,28 +15,30 @@ public class CustomPatternCsv
     public static class Config {
         protected char quoteChar;
         protected char escapeChar;
-        protected String delimiter;
+        protected String delimiter; // field separator
         protected String lineTerminatorPattern;
         protected int maxConsecutiveEscapeChars;
+        protected int columnMaxLength;
 
-        public Config(char quoteChar, char escapeChar, String delimiter, String lineTerminatorPattern, int maxConsecutiveEscapeChars) {
+        public Config(char quoteChar, char escapeChar, String delimiter, String lineTerminatorPattern, int columnMaxLength, int maxConsecutiveEscapeChars) {
             this.quoteChar = quoteChar;
             this.escapeChar = escapeChar;
             this.delimiter = delimiter;
             this.lineTerminatorPattern = lineTerminatorPattern;
+            this.columnMaxLength = columnMaxLength;
             this.maxConsecutiveEscapeChars = maxConsecutiveEscapeChars;
         }
 
-        public static Config createExcel() {
-            return create('"');
+        public static Config createExcel(int columnMaxLength) {
+            return create('"', columnMaxLength);
         }
 
-        public static Config create(char quoteChar) {
-            return create(quoteChar, quoteChar);
+        public static Config create(char quoteChar, int columnMaxLength) {
+            return create(quoteChar, quoteChar, columnMaxLength);
         }
 
-        public static Config create(char quoteChar, char escapeChar) {
-            return new Config(quoteChar, escapeChar, Pattern.quote( ","), "\r?\n\r?", 32);
+        public static Config create(char quoteChar, char escapeChar, int columnMaxLength) {
+            return new Config(quoteChar, escapeChar, Pattern.quote( ","), "\r?\n\r?", columnMaxLength, 32);
         }
 
         public char getQuoteChar() {
@@ -56,28 +60,59 @@ public class CustomPatternCsv
         public int getMaxConsecutiveEscapeChars() {
             return maxConsecutiveEscapeChars;
         }
+
+        public int getColumnMaxLength() {
+            return columnMaxLength;
+        }
+    }
+
+    /** Pattern for matching an effective quote in forward direction.
+     * An effective quote is a quote that is not escaped. */
+    public static CustomPattern createFwdQuotePattern(Config dialect) {
+        // The part after the quote is in a lookahead in order to match that part with transient bounds
+        String patternStr = "(quote)(?=((term)|(delim)|$))";
+        String str = substitute(patternStr, dialect);
+        return CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
     }
 
     // In reverse matching the escape character is seen after the quote character
-    public static CustomPattern createBwdQuotePattern(Config dialect) {
-        String patternStr = "(quote)((term)|(delim)|$)";
+    public static CustomPattern createBwdPatternClosingQuote(Config dialect) {
+        String patternStr = "(quote)(?=((term)|(delim)|$))";
         String str = substitute(patternStr, dialect);
-        
-//        String str = patternStr;
-//        str = str.replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())));
-//        str = str.replace("(delim)", Pattern.quote(dialect.getDelimiter()));
-//        str = str.replace("(term)", dialect.getLineTerminatorPattern());
+        CustomPattern result = CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
+        return result;
+    }
 
+    // Closing quote:
+    // Match a separator or newline followed by an effective quote TODO Is that correct?
+    // ((newline)|(sep))(quote)(?!((esc)(esc))+)
+    public static CustomPattern createBwdPatternClosingQuote2(Config dialect) {
+        String patternStr = "(quote)(?=((term)|(delim)|$))";
+        String str = substitute(patternStr, dialect);
         CustomPattern result = CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
         return result;
     }
 
     public static CustomPattern createIsEscapedBwdPattern(Config dialect) {
-    	// A quote is not escaped if there is an odd number of escape symbols
-    	String isEscapedBwdPatternStr = "^((esc)(esc))*(esc)([^(esc)]|$)";
-    	String str = substitute(isEscapedBwdPatternStr, dialect);
-    	return CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
+        // A quote is NOT escaped if it is preceded by an odd number of escape symbols
+        String isEscapedBwdPatternStr = "^((esc)(esc))*(esc)([^(esc)]|$)";
+        String str = substitute(isEscapedBwdPatternStr, dialect);
+        return CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
     }
+
+    public static String substitute(String patternStr, Config dialect) {
+        String str = patternStr;
+        str = str.replace("(esc)", Pattern.quote(Character.toString(dialect.getEscapeChar()))); // escape character as pattern literal
+        str = str.replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())));
+        str = str.replace("(delim)", dialect.getDelimiter());
+        str = str.replace("(term)", dialect.getLineTerminatorPattern());
+        str = str.replace("(nesc)", Integer.toString(dialect.getMaxConsecutiveEscapeChars()));
+        return str;
+    }
+//  String str = patternStr;
+//  str = str.replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())));
+//  str = str.replace("(delim)", Pattern.quote(dialect.getDelimiter()));
+//  str = str.replace("(term)", dialect.getLineTerminatorPattern());
 
     public static CustomPattern createFwdQuotePatternOld(Config dialect) {
         // String equoteFieldEnd = "(?<!((?<!\\\\)(\\\\\\\\){0,10}))\"(\r?\n|,|$)";
@@ -88,27 +123,11 @@ public class CustomPatternCsv
         return CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
     }
 
-    public static CustomPattern createFwdQuotePattern(Config dialect) {
-    	String patternStr = "(quote)((term)|(delim)|$)";
-        String str = substitute(patternStr, dialect);
-    	return CustomPatternJava.compile(str, Pattern.DOTALL | Pattern.MULTILINE);
-    }
-    
-    public static String substitute(String patternStr, Config dialect) {
-        String str = patternStr;
-        str = str.replace("(esc)", Pattern.quote(Character.toString(dialect.getEscapeChar()))); // escape character as pattern literal
-        str = str.replace("(quote)", Pattern.quote(Character.toString(dialect.getQuoteChar())));
-        str = str.replace("(delim)", dialect.getDelimiter());
-        str = str.replace("(term)", dialect.getLineTerminatorPattern());
-        str = str.replace("(nesc)", Integer.toString(dialect.getMaxConsecutiveEscapeChars()));
-    	return str;
-    }
-
     public static CustomPatternCsv create(Config dialect) {
         CustomPattern firstCharOnNewLinePattern;
         CustomPattern endOfQuotedFieldFwdPattern;
         CustomPattern startOfQuotedFieldBwdPattern;
-        
+
         String str = "(?<=" + dialect.getLineTerminatorPattern() + ").";
         // System.out.println(Pattern.quote(str));
         firstCharOnNewLinePattern = CustomPatternJava.compile(str, Pattern.DOTALL);
@@ -116,42 +135,47 @@ public class CustomPatternCsv
         char quoteChar = dialect.getQuoteChar();
         char escapeChar = dialect.getEscapeChar();
         if (quoteChar == escapeChar) {
-        	endOfQuotedFieldFwdPattern = new CustomPatternFiltered(
-            		createFwdQuotePattern(dialect),
-            		createIsEscapedBwdPattern(dialect)
+            endOfQuotedFieldFwdPattern = new CustomPatternFiltered(
+                    createFwdQuotePattern(dialect),
+                    createIsEscapedBwdPattern(dialect)
             );
             // endOfQuotedFieldFwdPattern = createFwdQuotePattern(dialect);
             startOfQuotedFieldBwdPattern = endOfQuotedFieldFwdPattern;
         } else {
-        	// Slight limitation: The assumption here is that the field separator is not the escape char
-        	// So if we find {@code ,"} then the double quote is a record offset
+            // Slight limitation: The assumption here is that the field separator is not the escape char
+            // So if we find {@code ,"} then the double quote is a record offset
             // endOfQuotedFieldFwdPattern = createFwdQuotePattern(dialect);
-        	endOfQuotedFieldFwdPattern = new CustomPatternFiltered(
-            		createFwdQuotePattern(dialect),
-            		createIsEscapedBwdPattern(dialect)
+            endOfQuotedFieldFwdPattern = new CustomPatternFiltered(
+                    createFwdQuotePattern(dialect),
+                    createIsEscapedBwdPattern(dialect)
             );
 
             // endOfQuotedFieldFwdPattern = createFwdQuotePattern(dialect);
-            startOfQuotedFieldBwdPattern = createBwdQuotePattern(dialect);
+            startOfQuotedFieldBwdPattern = createBwdPatternClosingQuote(dialect);
         }
 
-        return new CustomPatternCsv(firstCharOnNewLinePattern, endOfQuotedFieldFwdPattern, startOfQuotedFieldBwdPattern);
+        return new CustomPatternCsv(dialect.getColumnMaxLength(), firstCharOnNewLinePattern, endOfQuotedFieldFwdPattern, startOfQuotedFieldBwdPattern);
     }
 
+    protected int columnMaxLength;
     protected CustomPattern firstCharOnNewLinePattern;
-    protected CustomPattern endOfQuotedFieldFwdPattern;    
+    protected CustomPattern endOfQuotedFieldFwdPattern;
     protected CustomPattern startOfQuotedFieldBwdPattern;
 
-    public CustomPatternCsv(CustomPattern firstCharAfterNewlinePattern, CustomPattern endOfQuotedFieldFwdPattern, CustomPattern startOfQuotedFieldBwdPattern) {
+    public CustomPatternCsv(int columnMaxLength, CustomPattern firstCharAfterNewlinePattern, CustomPattern endOfQuotedFieldFwdPattern, CustomPattern startOfQuotedFieldBwdPattern) {
         this.firstCharOnNewLinePattern = firstCharAfterNewlinePattern;
         this.endOfQuotedFieldFwdPattern = endOfQuotedFieldFwdPattern;
         this.startOfQuotedFieldBwdPattern = startOfQuotedFieldBwdPattern;
+        this.columnMaxLength = columnMaxLength;
     }
 
     @Override
     public CustomMatcher matcher(CharSequence charSequence) {
         return new CustomMatcherCsv(charSequence);
+        // return new CustomMatcherCsv2(charSequence, null);
     }
+
+
 
     public class CustomMatcherCsv
         extends CustomMatcherBase
@@ -162,9 +186,26 @@ public class CustomPatternCsv
         protected int nextQuoteStart = -1;
 
         public CustomMatcherCsv(CharSequence charSequence) {
-        	super(charSequence);
+            super(charSequence);
         }
 
+
+        /**
+         * The find method operates as follows:
+         *
+         * 1.) set startPos to 0
+         * 2.) Find the first character after a newline after startPos - save this position and candidatePos
+         * 3.) Verify that the newline is a new row start:
+         *       Check backwards up to the startPos (not exceeding it) - if there is no start of an escaped field then the newline is a row start and break
+         * 4.) Set startPos to candidatePos and got to 2
+         *
+         * Notes:
+         * - An empty quoted field: Assume the following data:
+         * "","",hello
+         * "",""$
+         * The issue is that a quoted empty field may look exactly like an escaped double quote.
+         *
+         */
         @Override
         public boolean find() {
             if (pos < 0) {
@@ -186,22 +227,30 @@ public class CustomPatternCsv
                         // search the next line after the quote end
                         nextQuoteExamined = false;
                         pos = nextQuoteEnd + 1;
-                        firstCharOnNewLineMatcher.region(pos, regionEnd);
+
+                        int requestedLength = regionEnd - pos;
+
+                        int relPos = pos - regionStart;
+                        int allowedLength = Math.min(requestedLength, columnMaxLength - relPos);
+
+                        // firstCharOnNewLineMatcher.region(pos, regionEnd);
+                        firstCharOnNewLineMatcher.region(pos, pos + allowedLength);
                         continue;
                     }
 
                     if (!nextQuoteExamined) {
-                        // Check if there is an equote before a field delimiter
+                        // Check if there is an effective end quote before a field delimiter
                         CustomMatcher endMatcher = endOfQuotedFieldFwdPattern.matcher(charSequence);
                         endMatcher.region(firstCharPos, regionEnd);
                         // endMatcher.region(firstCharPos + 1, regionEnd);
                         if (endMatcher.find()) {
                             nextQuoteEnd = endMatcher.start();
-	                            
+
                             int reverseRegionStart = nextQuoteEnd - 1;
                             int reverseSearchLength = reverseRegionStart - firstCharPos;
 
-                            // Is there a matching equote?
+                            // Is there a matching effective starting quote?
+                            // TODO We should check for such candidate offsets during the forward scan
                             CharSequence reverse = new CharSequenceReverse(charSequence, reverseRegionStart);
                             CustomMatcher startMatcher = startOfQuotedFieldBwdPattern.matcher(reverse);
                             startMatcher.region(0, reverseSearchLength);

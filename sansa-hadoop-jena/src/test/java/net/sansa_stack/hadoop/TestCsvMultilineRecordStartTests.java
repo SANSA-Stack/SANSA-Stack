@@ -1,26 +1,31 @@
 package net.sansa_stack.hadoop;
 
-import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
-import net.sansa_stack.hadoop.core.pattern.CustomPattern;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.google.re2j.Pattern;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv2;
 
 @RunWith(Parameterized.class)
 public class TestCsvMultilineRecordStartTests {
 
     @Parameterized.Parameters(name = "{index}: test {0}")
     public static Iterable<?> data() {
+        int MAX_COLUMN_LENGTH = 300000;
 
-        CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel());
+        // CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel(MAX_COLUMN_LENGTH));
+        CustomPattern excelPattern = CustomPatternCsv2.create(DialectMutableImpl.create()
+                .setQuoteChar("\"").setQuoteEscapeChar("\"").setDelimiter(",").setLineTerminatorList(Arrays.asList(
+                        "\n", "\r\n", "\n\r", "\r\n\r")));
 
         // expected: 4, 8, 35
         CsvTestCase excel1 = CsvTestCase.create("csv-excel-1", excelPattern, String.join("\n",
@@ -46,8 +51,23 @@ public class TestCsvMultilineRecordStartTests {
                         "e,f"),
                 17);
 
+        // Single line - there is no character after a multiline so no match position is returned
+        CsvTestCase excel4 = CsvTestCase.create("csv-excel-4", excelPattern, String.join("\n",
+                "a,b")
+                // No match positions
+                );
+
+        // Single line - there is no character after a multiline so no match position is returned
+        CsvTestCase excel5 = CsvTestCase.create("csv-excel-5", excelPattern, String.join("\n",
+                "a,\"\",\"\",b",
+                "c,\"\",\"\"\"\",d",
+                "e,\"\",\"\",f"),
+                // No match positions
+                10, 22);
+
+
         // escape with backslash
-        CustomPattern customPatternA = CustomPatternCsv.create(CustomPatternCsv.Config.create('"', '\\'));
+        CustomPattern customPatternA = CustomPatternCsv.create(CustomPatternCsv.Config.create('"', '\\', MAX_COLUMN_LENGTH));
 
         CsvTestCase customA1 = CsvTestCase.create("csv-a1", customPatternA, String.join("\n",
                         "a,b",
@@ -61,6 +81,8 @@ public class TestCsvMultilineRecordStartTests {
                 excel1,
                 excel2,
                 excel3,
+                excel4,
+                excel5,
                 customA1);
 
         return result;
