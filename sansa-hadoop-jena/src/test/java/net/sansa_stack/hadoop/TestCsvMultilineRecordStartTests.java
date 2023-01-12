@@ -25,7 +25,7 @@ public class TestCsvMultilineRecordStartTests {
         // CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel(MAX_COLUMN_LENGTH));
         CustomPattern excelPattern = CustomPatternCsv2.create(DialectMutableImpl.create()
                 .setQuoteChar("\"").setQuoteEscapeChar("\"").setDelimiter(",").setLineTerminatorList(Arrays.asList(
-                        "\n", "\r\n", "\n\r", "\r\n\r")));
+                        "\n", "\r\n", "\n\r", "\r\n\r")), 1000);
 
         // expected: 4, 8, 35
         CsvTestCase excel1 = CsvTestCase.create("csv-excel-1", excelPattern, String.join("\n",
@@ -105,6 +105,7 @@ public class TestCsvMultilineRecordStartTests {
         List<Integer> actualMatchPositions = new ArrayList<>();
         while (m.find()) {
             int actualMatch = m.start();
+            // if (actualMatch == 0) continue;
             actualMatchPositions.add(actualMatch);
             // System.out.println("newline at pos: " + actualMatch + " --- group: " + m.group());
         }

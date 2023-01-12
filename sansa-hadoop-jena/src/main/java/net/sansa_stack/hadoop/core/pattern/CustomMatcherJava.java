@@ -55,4 +55,14 @@ public class CustomMatcherJava
     public int groupCount() {
         return matcher.groupCount();
     }
+
+    @Override
+    public int start(String name) {
+        return matcher.start(name);
+    }
+
+    @Override
+    public int end(String name) {
+        return matcher.end(name);
+    }
 }

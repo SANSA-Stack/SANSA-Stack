@@ -132,7 +132,7 @@ public class RecordReaderCsvUnivocity
         int cellMaxLength = conf.getInt(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
         // CustomPatternCsv.Config config = CustomPatternCsvFromCsvw.adapt(requestedDialect, cellMaxLength);
         // this.recordStartPattern = CustomPatternCsv.create(config);
-        this.recordStartPattern = CustomPatternCsv2.create(requestedDialect);
+        this.recordStartPattern = CustomPatternCsv2.create(requestedDialect, 1000);
 
         // createStartOfCsvRecordPattern(cellMaxLength);
 

@@ -175,8 +175,6 @@ public class CustomPatternCsv
         // return new CustomMatcherCsv2(charSequence, null);
     }
 
-
-
     public class CustomMatcherCsv
         extends CustomMatcherBase
     {
