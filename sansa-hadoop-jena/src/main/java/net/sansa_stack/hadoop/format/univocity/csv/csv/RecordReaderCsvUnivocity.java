@@ -7,9 +7,9 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvOld;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv2;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvw;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvwOld;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
@@ -132,7 +132,7 @@ public class RecordReaderCsvUnivocity
         int cellMaxLength = conf.getInt(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
         // CustomPatternCsv.Config config = CustomPatternCsvFromCsvw.adapt(requestedDialect, cellMaxLength);
         // this.recordStartPattern = CustomPatternCsv.create(config);
-        this.recordStartPattern = CustomPatternCsv2.create(requestedDialect, 1000);
+        this.recordStartPattern = CustomPatternCsv.create(requestedDialect, 1000);
 
         // createStartOfCsvRecordPattern(cellMaxLength);
 

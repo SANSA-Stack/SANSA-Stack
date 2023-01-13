@@ -13,19 +13,18 @@ import org.junit.runners.Parameterized;
 import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv2;
 
 @RunWith(Parameterized.class)
 public class TestCsvMultilineRecordStartTests {
 
     @Parameterized.Parameters(name = "{index}: test {0}")
     public static Iterable<?> data() {
-        int MAX_COLUMN_LENGTH = 300000;
+        // int MAX_COLUMN_LENGTH = 300000;
 
         // CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel(MAX_COLUMN_LENGTH));
-        CustomPattern excelPattern = CustomPatternCsv2.create(DialectMutableImpl.create()
-                .setQuoteChar("\"").setQuoteEscapeChar("\"").setDelimiter(",").setLineTerminatorList(Arrays.asList(
-                        "\n", "\r\n", "\n\r", "\r\n\r")), 1000);
+        CustomPattern excelPattern = CustomPatternCsv.create(DialectMutableImpl.create()
+                // setQuoteChar("\"").setQuoteEscapeChar("\"").setDelimiter(",").setLineTerminatorList(Arrays.asList("\n", "\r\n", "\n\r", "\r\n\r"))
+                , 1000);
 
         // expected: 4, 8, 35
         CsvTestCase excel1 = CsvTestCase.create("csv-excel-1", excelPattern, String.join("\n",
@@ -67,7 +66,8 @@ public class TestCsvMultilineRecordStartTests {
 
 
         // escape with backslash
-        CustomPattern customPatternA = CustomPatternCsv.create(CustomPatternCsv.Config.create('"', '\\', MAX_COLUMN_LENGTH));
+        // CustomPattern customPatternA = CustomPatternCsv2.create(CustomPatternCsvOld.Config.create('"', '\\', MAX_COLUMN_LENGTH));
+        CustomPattern customPatternA = CustomPatternCsv.create(DialectMutableImpl.create().setQuoteEscapeChar("\\"), 1000);
 
         CsvTestCase customA1 = CsvTestCase.create("csv-a1", customPatternA, String.join("\n",
                         "a,b",
