@@ -73,9 +73,9 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.7.0-SNAPSHOT</jena.version>
-        <jenax.version>4.7.0-1-SNAPSHOT</jenax.version>
-        <r2rml-jena-api.version>4.7.0-1-SNAPSHOT</r2rml-jena-api.version>
+        <jena.version>4.8.0-SNAPSHOT</jena.version>
+        <jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
+        <r2rml-jena-api.version>4.8.0-1-SNAPSHOT</r2rml-jena-api.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -2150,7 +2150,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.4</version>
+                    <version>0.8.8</version>
                     <executions>
                         <execution>
                             <id>prepare-agent</id>
