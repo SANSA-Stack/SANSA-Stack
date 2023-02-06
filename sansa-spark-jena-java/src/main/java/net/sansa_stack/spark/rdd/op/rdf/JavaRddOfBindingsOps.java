@@ -14,11 +14,14 @@ import org.aksw.commons.util.function.TriConsumer;
 import org.aksw.commons.util.stream.StreamFunction;
 import org.aksw.jenax.arq.util.update.UpdateUtils;
 import org.aksw.jenax.stmt.core.SparqlStmt;
+import org.aksw.jenax.stmt.core.SparqlStmtQuery;
 import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
@@ -231,6 +234,11 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
+    /** Method for the typical case of mapping an RDD of bindings via a construct query to an RDD of datasets. */
+    public static JavaRDD<Dataset> tarqlDatasets(JavaRDD<Binding> rdd, Query query) {
+        return tarqlDatasets(rdd, Collections.singleton(new SparqlStmtQuery(query)), false, dsg -> Stream.of(DatasetFactory.wrap(dsg)));
+    }
+
     /**
      * Turns each row into a dataset based on SPARQL update statements.
      * Construct queries and select queries are print out to STDERR.
@@ -269,6 +277,10 @@ public class JavaRddOfBindingsOps {
             result = tarqlDatasets(rdd, stmts, accumulationMode, dg -> Iter.asStream(dg.find()).map(Quad::asTriple));
         }
         return result;
+    }
+
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query) {
+        return tarqlQuads(rdd, Collections.singleton(new SparqlStmtQuery(query)), false);
     }
 
     public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode) {
