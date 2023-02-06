@@ -24,7 +24,7 @@ public class TestCsvMultilineRecordStartTests {
         // CustomPattern excelPattern = CustomPatternCsv.create(CustomPatternCsv.Config.createExcel(MAX_COLUMN_LENGTH));
         CustomPattern excelPattern = CustomPatternCsv.create(DialectMutableImpl.create()
                 // setQuoteChar("\"").setQuoteEscapeChar("\"").setDelimiter(",").setLineTerminatorList(Arrays.asList("\n", "\r\n", "\n\r", "\r\n\r"))
-                , 1000);
+                , 1000, Integer.MAX_VALUE);
 
         // expected: 4, 8, 35
         CsvTestCase excel1 = CsvTestCase.create("csv-excel-1", excelPattern, String.join("\n",
@@ -67,7 +67,7 @@ public class TestCsvMultilineRecordStartTests {
 
         // escape with backslash
         // CustomPattern customPatternA = CustomPatternCsv2.create(CustomPatternCsvOld.Config.create('"', '\\', MAX_COLUMN_LENGTH));
-        CustomPattern customPatternA = CustomPatternCsv.create(DialectMutableImpl.create().setQuoteEscapeChar("\\"), 1000);
+        CustomPattern customPatternA = CustomPatternCsv.create(DialectMutableImpl.create().setQuoteEscapeChar("\\"), 1000, Integer.MAX_VALUE);
 
         CsvTestCase customA1 = CsvTestCase.create("csv-a1", customPatternA, String.join("\n",
                         "a,b",

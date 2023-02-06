@@ -20,6 +20,10 @@ public class CustomPatternCsv
     protected CustomPattern fieldSeparatorAndNewlinePattern;
     protected int multilineFieldMaxLines;
 
+
+    // FIXME cellMaxLength is not yet wired up
+    protected int cellMaxLength;
+
     public static Pattern createPattern(Dialect dialect) {
         List<String> ts = dialect.getLineTerminatorList();
         if (ts == null || ts.isEmpty()) {
@@ -38,22 +42,23 @@ public class CustomPatternCsv
     }
 
     public static CustomPattern create(int multilineFieldMaxLines) {
-        return create(null, multilineFieldMaxLines);
+        return create(null, multilineFieldMaxLines, Integer.MAX_VALUE);
     }
 
-    public static CustomPattern create(Dialect dialect, int multilineFieldMaxLines) {
+    public static CustomPattern create(Dialect dialect, int multilineFieldMaxLines, int cellMaxLength) {
         DialectMutable copy = new DialectMutableImpl();
         dialect.copyInto(copy, true);
         CsvwLib.buildEffectiveModel(dialect, copy);
 
-        return new CustomPatternCsv(dialect, multilineFieldMaxLines);
+        return new CustomPatternCsv(dialect, multilineFieldMaxLines, cellMaxLength);
     }
 
-    protected CustomPatternCsv(Dialect dialect, int multilineFieldMaxLines) {
+    protected CustomPatternCsv(Dialect dialect, int multilineFieldMaxLines, int cellMaxLength) {
         super();
         this.dialect = dialect;
         this.fieldSeparatorAndNewlinePattern = new CustomPatternJava(createPattern(dialect));
         this.multilineFieldMaxLines = multilineFieldMaxLines;
+        this.cellMaxLength = cellMaxLength;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package net.sansa_stack.hadoop.format.jena.base;
 
-import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 
 public class RecordReaderConf {

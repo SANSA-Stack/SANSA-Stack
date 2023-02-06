@@ -1,18 +1,13 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Streams;
-import com.univocity.parsers.common.AbstractParser;
-import io.reactivex.rxjava3.core.Flowable;
-import net.sansa_stack.hadoop.core.Accumulating;
-import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
-import net.sansa_stack.hadoop.core.pattern.CustomPattern;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvOld;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternCsvFromCsvwOld;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
-import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.stream.Stream;
+
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
@@ -21,14 +16,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
+import com.univocity.parsers.common.AbstractParser;
+
+import io.reactivex.rxjava3.core.Flowable;
+import net.sansa_stack.hadoop.core.Accumulating;
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
+import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
@@ -55,8 +52,11 @@ public class RecordReaderCsvUnivocity
      * The maximum length of a CSV cell containing new lines
      *
      */
-    public static final String CELL_MAXLENGTH_KEY = "mapreduce.input.csv.cell.maxlength";
-    public static final int CELL_MAXLENGTH_DEFAULT_VALUE = 300000;
+    public static final String CELL_MAXLENGTH_KEY = "mapreduce.input.csv.cell.maxlength"; // TODO Should we also be able to limit a single line's length?
+    public static final int CELL_MAXLENGTH_DEFAULT_VALUE = 500000;
+
+    public static final String CELL_MAXLINES_KEY = "mapreduce.input.csv.cell.maxlines";
+    public static final int CELL_MAXLINES_DEFAULT_VALUE = 1000;
 
     /* Factory for parsers (csv/tsv) according to configuration. Initialized during initialize() */
     protected Dialect requestedDialect;
@@ -78,27 +78,27 @@ public class RecordReaderCsvUnivocity
      *          might be within a csv cell
      * @return The corresponding regex pattern
      */
-    public static CustomPattern createStartOfCsvRecordPattern(long maxCharsPerColumn) {
-        // TODO There must not be an odd number of consecutive quote chars -
-        //  the pattern just captures 1 sole char
-        return CustomPatternJava.compile(
-                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
-                Pattern.DOTALL);
-    }
+//    public static CustomPattern createStartOfCsvRecordPattern(long maxCharsPerColumn) {
+//        // TODO There must not be an odd number of consecutive quote chars -
+//        //  the pattern just captures 1 sole char
+//        return CustomPatternJava.compile(
+//                "(?<=\n(?!((?<![^\"]\"[^\"]).){0," + maxCharsPerColumn + "}\"(\r?\n|,|$))).",
+//                Pattern.DOTALL);
+//    }
 
-    public static Pattern createStartOfCsvRecordPattern(long n, char quoteChar, char quoteEscapeChar, char quoteEscapeEscapeChar) {
-        // Pattern for matching a non-escaped quote char
-        String quoteCharPattern;
-        if (quoteChar == quoteEscapeChar) {
-            quoteCharPattern = "[^" + quoteChar + "]" + quoteChar + "[^" + quoteChar + "]";
-        } else {
-            quoteCharPattern = "[^" + quoteEscapeEscapeChar + "]" + "[^" + quoteEscapeChar + "]" + quoteChar;
-        }
-
-        return Pattern.compile(
-                "(?<=\n(?!((?<!" + quoteCharPattern + ").){0," + n + "}\"(\r?\n|,|$))).",
-                Pattern.DOTALL);
-    }
+//    public static Pattern createStartOfCsvRecordPattern(long n, char quoteChar, char quoteEscapeChar, char quoteEscapeEscapeChar) {
+//        // Pattern for matching a non-escaped quote char
+//        String quoteCharPattern;
+//        if (quoteChar == quoteEscapeChar) {
+//            quoteCharPattern = "[^" + quoteChar + "]" + quoteChar + "[^" + quoteChar + "]";
+//        } else {
+//            quoteCharPattern = "[^" + quoteEscapeEscapeChar + "]" + "[^" + quoteEscapeChar + "]" + quoteChar;
+//        }
+//
+//        return Pattern.compile(
+//                "(?<=\n(?!((?<!" + quoteCharPattern + ").){0," + n + "}\"(\r?\n|,|$))).",
+//                Pattern.DOTALL);
+//    }
 
 
     // Failed regexes
@@ -130,9 +130,11 @@ public class RecordReaderCsvUnivocity
         requestedDialect = tmp;
 
         int cellMaxLength = conf.getInt(CELL_MAXLENGTH_KEY, CELL_MAXLENGTH_DEFAULT_VALUE);
+        int cellMaxLines = conf.getInt(CELL_MAXLINES_KEY, CELL_MAXLINES_DEFAULT_VALUE);
+
         // CustomPatternCsv.Config config = CustomPatternCsvFromCsvw.adapt(requestedDialect, cellMaxLength);
         // this.recordStartPattern = CustomPatternCsv.create(config);
-        this.recordStartPattern = CustomPatternCsv.create(requestedDialect, 1000);
+        this.recordStartPattern = CustomPatternCsv.create(requestedDialect, cellMaxLines, cellMaxLength);
 
         // createStartOfCsvRecordPattern(cellMaxLength);
 

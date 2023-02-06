@@ -1,12 +1,14 @@
 package net.sansa_stack.hadoop.format.commons_csv.csv;
 
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Streams;
-import net.sansa_stack.hadoop.core.Accumulating;
-import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
-import net.sansa_stack.hadoop.core.pattern.CustomPattern;
-import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
-import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -16,14 +18,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Streams;
+
+import net.sansa_stack.hadoop.core.Accumulating;
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.pattern.CustomPattern;
+import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
