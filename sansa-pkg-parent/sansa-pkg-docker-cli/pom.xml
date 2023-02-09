@@ -50,7 +50,11 @@
 					<to>
 					    <!-- TODO We should reuse the AKSW repo as the official one -->
 						<!-- <image>docker.io/sansa/sansa-stack</image> -->
-						<image>docker.io/aklakan/sansa</image>
+						<image>docker.io/aksw/sansa</image>
+						<tags>
+							<tag>${project.version}</tag>
+							<tag>latest</tag>
+						</tags>
 					</to>
 					<from>
 						<image>eclipse-temurin:11-jre</image>
