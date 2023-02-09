@@ -75,9 +75,11 @@ public abstract class RecordReaderStatsBase {
 
         // call once to compute the prefixes
         // inputFormat.getSplits(job);
-        try (Stream<Stats2> stats = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits).map(r -> r.as(Stats2.class))) {
-            stats.forEach(x -> RDFDataMgr.write(System.out, x.getModel(), RDFFormat.TURTLE_PRETTY));
+        boolean printOutStats = false;
+        if (printOutStats) {
+            try (Stream<Stats2> stats = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits).map(r -> r.as(Stats2.class))) {
+                stats.forEach(x -> RDFDataMgr.write(System.out, x.getModel(), RDFFormat.TURTLE_PRETTY));
+            }
         }
     }
-
 }

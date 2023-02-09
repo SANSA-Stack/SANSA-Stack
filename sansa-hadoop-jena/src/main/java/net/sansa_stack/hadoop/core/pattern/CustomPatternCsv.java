@@ -12,10 +12,14 @@ import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 
 import net.sansa_stack.hadoop.core.pattern.CustomPatternReplay.CustomMatcherReplay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustomPatternCsv
     implements CustomPattern
 {
+    private static final Logger logger = LoggerFactory.getLogger(CustomPatternCsv.class);
+
     protected Dialect dialect;
     protected CustomPattern fieldSeparatorAndNewlinePattern;
     protected int multilineFieldMaxLines;
@@ -283,8 +287,10 @@ public class CustomPatternCsv
             }
 
             if (result) {
-                System.out.println("[" + lastMatchedFields.stream().collect(Collectors.joining("||")) + "]");
-                System.out.println();
+                if (logger.isTraceEnabled()) {
+                    logger.trace("[" + lastMatchedFields.stream().collect(Collectors.joining("||")) + "]");
+                    //System.out.println();
+                }
             }
 
             return result;
@@ -431,7 +437,9 @@ public class CustomPatternCsv
 
                     int n = matcher.getLastMatchedFields().size();
                     int quoteErrorCount = matcher.getQuoteErrorCount();
-                    System.out.println("quoteErrorCount: " + quoteErrorCount);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("quoteErrorCount: " + quoteErrorCount);
+                    }
                     if (lastFieldCount == -1) {
                         lastFieldCount = n;
                     }

@@ -240,7 +240,9 @@ public class SeekableSourceOverSplit
                 // long splitId = posToSplitId.apply(pos);
                 boolean isEof = pos >= splitPoint;
                 if (isEof) {
-                    System.err.println("Found first block after split " + splitPoint + " at " + pos);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Found first block after split " + splitPoint + " at " + pos);
+                    }
                 }
                 return isEof;
             });
@@ -408,8 +410,8 @@ public class SeekableSourceOverSplit
                 long currentRelPos = requestedPos - requestedBaseOffset;
 
                 if (requestedIndex == 0 && isDebuffered()) {
-                    System.err.println("Debuffered stream pos:" + currentStream.position());
-                    System.err.println("Requested pos: " + currentRelPos);
+                    // logger.debug("Debuffered stream pos:" + currentStream.position());
+                    // logger.debug("Requested pos: " + currentRelPos);
                     currentStream.position(currentRelPos);
                     break;
                     // currentStreamOffset = 0;
