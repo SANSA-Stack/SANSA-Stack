@@ -4,12 +4,15 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
+import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven.ExprTransformIriToIriAsGiven;
 import org.aksw.jenax.stmt.core.SparqlStmt;
@@ -23,6 +26,7 @@ import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
@@ -115,6 +119,62 @@ public class CmdSansaTarqlImpl {
         }
     }
 
+    public static class MapTask {
+        protected String source;
+        protected Dialect dialect;
+        protected boolean tabs;
+
+        // unused - remove?
+        protected List<String> columnNamingSchemes;
+        protected List<SparqlStmt> stmts = new ArrayList<>();
+
+        public MapTask(String source, Dialect csvDialect, boolean tabs, List<String> columnNamingSchemes) {
+            super();
+            this.source = source;
+            this.dialect = csvDialect;
+            this.tabs = tabs;
+            this.columnNamingSchemes = columnNamingSchemes;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        public Dialect getDialect() {
+            return dialect;
+        }
+
+        public boolean isTabs() {
+            return tabs;
+        }
+
+        public List<String> getColumnNamingSchemes() {
+            return columnNamingSchemes;
+        }
+
+        public List<SparqlStmt> getStmts() {
+            return stmts;
+        }
+
+        public static MapTask create(String url) { // Dialect baseDialect, boolean tabs, List<String> columnNamingSchemes) {
+            int hashPos = url.lastIndexOf('#');
+            String csvUrl = hashPos < 0 ? url : url.substring(0, hashPos);
+
+            DialectMutable dialect = DialectMutableImpl.create();
+            if (hashPos >= 0) {
+                Map<String, String> options = parseOptions(url.substring(hashPos + 1));
+//                if (baseDialect != null) {
+//                    baseDialect.copyInto(dialect, false);
+//                }
+                configureDialectFromOptions(dialect, options);
+            }
+
+            boolean tabs = "\\t".equals(dialect.getDelimiter());
+            MapTask result = new MapTask(csvUrl, dialect, tabs, null); //, columnNamingSchemes);
+            return result;
+        }
+    }
+
     public static int run(CmdSansaTarql cmd) throws Exception {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = new ArrayList<>(cmd.inputFiles.subList(1, cmd.inputFiles.size()));
@@ -139,43 +199,10 @@ public class CmdSansaTarqlImpl {
             throw new IllegalArgumentException("No queries for mapping detected");
         }
 
-        UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
-
-        if (csvFiles.isEmpty()) {
-            SparqlStmt firstStmt = stmts.get(0);
-            List<String> graphUris;
-            if (firstStmt.isQuery()) {
-                Query query = firstStmt.getQuery();
-                graphUris = new ArrayList<>(query.getGraphURIs());
-                query.getGraphURIs().clear();
-            } else {
-                throw new UnsupportedOperationException("Extracting CSV source from update request not implemented");
-            }
-
-            Preconditions.checkArgument(!graphUris.isEmpty(), "No CSV file specified and none could be derived from the first query");
-            Preconditions.checkArgument(graphUris.size() == 1, "Either exactly one FROM clause expected or a CSV file needes to be provided");
-            String csvUrlWithHashFragment = graphUris.get(0);
-
-            int hashPos = csvUrlWithHashFragment.lastIndexOf('#');
-            String csvUrl = hashPos < 0 ? csvUrlWithHashFragment : csvUrlWithHashFragment.substring(0, hashPos);
-
-            if (hashPos >= 0) {
-                Map<String, String> options = parseOptions(csvUrlWithHashFragment.substring(hashPos + 1));
-                configureDialectFromOptions(univocityConf.getDialect(), options);
-            }
-
-            // csvUrl = csvUrl.replaceAll("^file://", ""); // Cut away the file protocol if present
-            csvFiles.add(csvUrl);
-        }
-
-        // CLI dialect options take precedence
-        DialectMutable csvCliOptions = cmd.csvOptions;
-        csvCliOptions.copyInto(univocityConf.getDialect(), false);
-        univocityConf.setTabs(cmd.tabs);
 
         PrefixMap usedPrefixes = PrefixMapFactory.create();
         for (SparqlStmt stmt : stmts) {
-            // TODO optimizePrefixes should not modify in-place because it desyncs with the original string
+            // TODO optimizePrefixes should not modify in-place because it desyncs with the stmts's original string
             SparqlStmtUtils.optimizePrefixes(stmt);
             PrefixMapping pm = stmt.getPrefixMapping();
             if (pm != null) {
@@ -195,6 +222,41 @@ public class CmdSansaTarqlImpl {
                     ? new SparqlStmtQuery(stmt.getQuery())
                     : new SparqlStmtUpdate(stmt.getUpdateRequest()))
             .collect(Collectors.toList());
+
+
+        Map<String, MapTask> sourceToTask = new LinkedHashMap<>();
+
+        // If no CSV file is given we can try to derive them from the mappings
+        if (csvFiles.isEmpty()) {
+            String currentSource = null;
+            for (SparqlStmt stmt : stmts) {
+                List<String> graphUris;
+                if (stmt.isQuery()) {
+                    Query query = stmt.getQuery();
+                    graphUris = new ArrayList<>(query.getGraphURIs());
+                    query.getGraphURIs().clear();
+                } else {
+                    throw new UnsupportedOperationException("Extracting CSV source from update request not yet implemented");
+                }
+                if (currentSource == null) {
+                    Preconditions.checkArgument(!graphUris.isEmpty(), "No CSV file specified and none could be derived from the first query");
+                    Preconditions.checkArgument(graphUris.size() == 1, "Either exactly one FROM clause expected or a CSV file needes to be provided");
+                }
+                currentSource = graphUris.get(0);
+                MapTask mapTask = sourceToTask.computeIfAbsent(currentSource, cs -> MapTask.create(cs));
+                mapTask.getStmts().add(stmt);
+            }
+        } else {
+            for (String csvFile : csvFiles) {
+                MapTask mapTask = sourceToTask.computeIfAbsent(csvFile, cs -> MapTask.create(cs));
+                mapTask.getStmts().addAll(stmts);
+            }
+        }
+
+        // CLI dialect options take precedence
+//        DialectMutable csvCliOptions = cmd.csvOptions;
+//        csvCliOptions.copyInto(univocityConf.getDialect(), false);
+//        univocityConf.setTabs(cmd.tabs);
 
         rddRdfWriterFactory.setGlobalPrefixMapping(usedPrefixes.getMapping());
         logger.info("Loaded statements " + stmts);
@@ -229,19 +291,30 @@ public class CmdSansaTarqlImpl {
 
         // FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
 
-        JavaRDD<Binding> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, csvFiles,
-                input -> CsvDataSources.createRddOfBindings(javaSparkContext, input,
-                        univocityConf, cmd.columnNamingSchemes));
-
         boolean accumulationMode = cmd.accumulationMode;
-        RdfSource rdfSource;
-        if (RDFLanguages.isQuads(outLang)) {
-            rdfSource = RdfSources.ofQuads(JavaRddOfBindingsOps.tarqlQuads(initialRdd, stmts, accumulationMode));
-        } else if (RDFLanguages.isTriples(outLang)){
-            rdfSource = RdfSources.ofTriples(JavaRddOfBindingsOps.tarqlTriples(initialRdd, stmts, accumulationMode));
-        } else {
-            throw new IllegalArgumentException("Unsupported output language: " + outLang);
-        }
+        JavaRDD<Quad> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, sourceToTask.values(),
+            MapTask::getSource,
+            task -> {
+                String source = task.getSource();
+
+                UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
+                univocityConf.setTabs(cmd.tabs ? true : task.isTabs()); // cmd overrides option
+                task.getDialect().copyInto(univocityConf.getDialect(), false);
+
+                JavaRDD<Binding> baseRdd = CsvDataSources.createRddOfBindings(javaSparkContext, source,
+                        univocityConf, cmd.columnNamingSchemes);
+                JavaRDD<Quad> r = JavaRddOfBindingsOps.tarqlQuads(baseRdd, task.getStmts(), accumulationMode);
+                return r;
+            });
+
+        RdfSource rdfSource = RdfSources.ofQuads(initialRdd);
+//        if (RDFLanguages.isQuads(outLang)) {
+//            rdfSource = RdfSources.ofQuads(initialRdd); //JavaRddOfBindingsOps.tarqlQuads(initialRdd, stmts, accumulationMode));
+//        } else if (RDFLanguages.isTriples(outLang)){
+//            rdfSource = RdfSources.ofTriples(initialRdd.map(Quad::asTriple));
+//        } else {
+//            throw new IllegalArgumentException("Unsupported output language: " + outLang);
+//        }
 
         CmdSansaMapImpl.writeOutRdfSources(rdfSource, rddRdfWriterFactory);
 

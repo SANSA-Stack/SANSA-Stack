@@ -1,16 +1,16 @@
 package net.sansa_stack.spark.io.rdf.output;
 
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import org.aksw.commons.io.util.StdIo;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
-
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
     protected Path partitionFolder;
@@ -156,17 +156,17 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
 
     /** Raises an exception if the format is not found */
     public SELF setOutputFormat(String formatName) {
-    	RDFFormat fmt = formatName == null
-    			? null
-    			: Optional.ofNullable(RDFLanguagesEx.findRdfFormat(formatName))
-	                .orElseThrow(() -> new IllegalArgumentException("Unknown format: " + formatName));
+        RDFFormat fmt = formatName == null
+                ? null
+                : Optional.ofNullable(RDFLanguagesEx.findRdfFormat(formatName))
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown format: " + formatName));
         return setOutputFormat(fmt);
     }
 
     public RDFFormat getFallbackOutputFormat() {
         return outputFormat;
     }
-    
+
     public boolean isAllowOverwriteFiles() {
         return allowOverwriteFiles;
     }
@@ -228,5 +228,5 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         this.postProcessingSettings = postProcessingSettings;
         return self();
     }
-    
+
 }

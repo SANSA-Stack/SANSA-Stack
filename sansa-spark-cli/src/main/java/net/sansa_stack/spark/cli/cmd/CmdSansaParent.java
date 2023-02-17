@@ -8,14 +8,14 @@ import picocli.CommandLine.Option;
         description = "SANSA Command Line Tool",
         subcommands = {
                 CmdSansaCount.class, CmdSansaPrefixesParent.class, CmdSansaMap.class,
-                CmdSansaTarql.class, CmdSansaNgs.class, CmdSansaAnalyzeParent.class
+                CmdSansaTarql.class, CmdSansaNgs.class, CmdSansaAnalyzeParent.class,
+                CmdSansaRmlParent.class
 })
-public class CmdSansaMain extends CmdBase {
+public class CmdSansaParent extends CmdBase {
 
     @Option(names = { "-h", "--help" }, usageHelp = true)
     public boolean help = false;
 
     @Option(names = { "-v", "--version" }, versionHelp = true)
     public boolean version = false;
-
 }

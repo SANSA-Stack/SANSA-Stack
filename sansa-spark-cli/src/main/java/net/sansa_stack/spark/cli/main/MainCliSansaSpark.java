@@ -1,7 +1,7 @@
 package net.sansa_stack.spark.cli.main;
 
 import net.sansa_stack.spark.cli.cmd.CmdBase;
-import net.sansa_stack.spark.cli.cmd.CmdSansaMain;
+import net.sansa_stack.spark.cli.cmd.CmdSansaParent;
 import org.aksw.commons.util.derby.DerbyUtils;
 import org.aksw.commons.util.exception.ExceptionUtilsAksw;
 import org.apache.jena.sys.JenaSystem;
@@ -11,7 +11,7 @@ import picocli.CommandLine;
 
 public class MainCliSansaSpark {
 
-    private static final Logger logger = LoggerFactory.getLogger(CmdSansaMain.class);
+    private static final Logger logger = LoggerFactory.getLogger(CmdSansaParent.class);
 
     // Required to init registries such as result set formats
     static {
@@ -25,7 +25,7 @@ public class MainCliSansaSpark {
     }
 
     public static int mainCore(String[] args) {
-        int result = new CommandLine(new CmdSansaMain())
+        int result = new CommandLine(new CmdSansaParent())
                 .setExecutionExceptionHandler((ex, commandLine, parseResult) -> {
                     CmdBase cmd = commandLine.getCommand();
                     boolean debugMode = cmd.debugMode;

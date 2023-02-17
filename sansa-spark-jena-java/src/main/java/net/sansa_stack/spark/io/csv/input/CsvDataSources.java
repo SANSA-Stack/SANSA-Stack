@@ -12,6 +12,7 @@ import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
+import org.aksw.jenax.arq.util.var.VarUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -130,7 +131,7 @@ public class CsvDataSources {
             Var[] h = new Var[strs.length];
             headers[i] = h;
             for (int j = 0; j < strs.length; ++j) {
-                h[j] = Var.alloc(strs[j]);
+                h[j] =  VarUtils.safeVar(strs[j]); // Var.alloc(strs[j]);
             }
         }
 

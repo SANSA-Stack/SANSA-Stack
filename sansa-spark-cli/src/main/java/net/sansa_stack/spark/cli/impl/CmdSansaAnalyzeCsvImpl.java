@@ -1,5 +1,8 @@
 package net.sansa_stack.spark.cli.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
@@ -33,7 +36,7 @@ public class CmdSansaAnalyzeCsvImpl {
         new SimpleSparkCmdTemplate<>("Sansa Analyze Data in Splits", cmd.inputFiles) {
             @Override
             protected void process() throws Exception {
-
+                List<JavaRDD<Model>> rdds = new ArrayList<>();
                 for (String  inputPath : inputFiles) {
                     Configuration conf = new Configuration(sparkContext.hadoopConfiguration());
 
@@ -45,8 +48,15 @@ public class CmdSansaAnalyzeCsvImpl {
                     HadoopInputData<?, ?, ?> baseInputFormatData = CsvDataSources.configureHadoop(conf, inputPath, univocityConf, cmd.columnNamingSchemes);
                     HadoopInputData<LongWritable, Resource, JavaRDD<Model>> wrappedInputFormatData = InputFormatUtils.wrapWithAnalyzer(baseInputFormatData);
                     JavaRDD<Model> rdd = InputFormatUtils.createRdd(sparkContext, wrappedInputFormatData);
+                    rdds.add(rdd);
+                }
 
-                    RdfSource tgt = RdfSources.ofModels(rdd);
+                if (!rdds.isEmpty()) {
+                    JavaRDD<Model> unionRdd = rdds.size() == 1
+                            ? rdds.get(0)
+                            : sparkContext.union(rdds.toArray(new JavaRDD[0]));
+
+                    RdfSource tgt = RdfSources.ofModels(unionRdd);
                     CmdSansaMapImpl.writeOutRdfSources(tgt, rddRdfWriterFactory);
                 }
             }

@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
@@ -68,9 +69,9 @@ public class CmdUtils {
                 prefixes.setNsPrefixes(tmp);
             }
         }
-        
+
         RddRdfWriterFactory result = RddRdfWriterFactory.create();
-        
+
         // Try to derive the output format from the file name (if given)
         if (out.getOutputFormat() != null) {
             result = result.setOutputFormat(out.getOutputFormat());
@@ -78,15 +79,15 @@ public class CmdUtils {
 
         RDFFormat fmt = result.getOutputFormat();
         if (fmt == null) {
-        	String fileName = out.getTargetFile();
-        	Lang lang = RDFDataMgr.determineLang(fileName, null, null);
-        	if (lang != null) {
-            	fmt = StreamRDFWriter.defaultSerialization(lang);
+            String fileName = out.getTargetFile();
+            Lang lang = RDFDataMgr.determineLang(fileName, null, null);
+            if (lang != null) {
+                fmt = StreamRDFWriter.defaultSerialization(lang);
 
-            	result = result.setOutputFormat(fmt);
-        	}
-        }            
-        
+                result = result.setOutputFormat(fmt);
+            }
+        }
+
         result = result
                 .setGlobalPrefixMapping(prefixes)
                 .setMapQuadsToTriplesForTripleLangs(true)
@@ -168,19 +169,32 @@ public class CmdUtils {
         return result;
     }
 
-
     public static <T> JavaRDD<T> createUnionRdd(
             JavaSparkContext javaSparkContext,
             Collection<String> inputs,
-            ThrowingFunction<String, JavaRDD<T>> mapper) throws IOException {
+            ThrowingFunction<String, JavaRDD<T>> mapper) {
+        return createUnionRdd(javaSparkContext, inputs, in -> in, mapper);
+    }
+
+    /**
+     * Only creates a union rdd from the given collection of input objects if all
+     * paths obtained from the input via the 'inputToPath' function are accessible.
+     */
+    public static <T, X> JavaRDD<T> createUnionRdd(
+            JavaSparkContext javaSparkContext,
+            Collection<X> inputs,
+            Function<? super X, String> inputToPath,
+            ThrowingFunction<? super X, JavaRDD<T>> mapper) {
+
+        List<String> paths = inputs.stream().map(inputToPath).collect(Collectors.toList());
 
         Configuration configuration = javaSparkContext.hadoopConfiguration();
-        validatePaths(inputs, configuration);
+        validatePaths(paths, configuration);
 
         List<JavaRDD<T>> initialRdds = new ArrayList<>();
-        for (String path : inputs) {
+        for (X input : inputs) {
             try {
-                JavaRDD<T> contrib = mapper.apply(path);
+                JavaRDD<T> contrib = mapper.apply(input);
                 initialRdds.add(contrib);
             } catch (Exception e) {
                 throw new RuntimeException(e);
