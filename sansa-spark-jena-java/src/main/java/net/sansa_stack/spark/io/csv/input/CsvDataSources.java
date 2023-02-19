@@ -12,6 +12,9 @@ import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.CsvwUnivocityUtils;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
+import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
+import org.aksw.commons.model.csvw.univocity.UnivocityUtils;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -31,10 +34,7 @@ import com.google.common.base.StandardSystemProperty;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import net.sansa_stack.hadoop.util.FileSystemUtils;
 import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
 import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
@@ -45,7 +45,7 @@ public class CsvDataSources {
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String pathStr,
-            UnivocityHadoopConf csvConf) throws IOException
+            UnivocityCsvwConf csvConf) throws IOException
     {
         return createRddOfBindings(sc, pathStr, csvConf, Arrays.asList("row"));
     }
@@ -53,7 +53,7 @@ public class CsvDataSources {
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String pathStr,
-            UnivocityHadoopConf baseCsvConf,
+            UnivocityCsvwConf baseCsvConf,
             List<String> columnNamingSchemes
             ) throws IOException
     {
@@ -66,7 +66,7 @@ public class CsvDataSources {
     public static HadoopInputData<LongWritable, String[], JavaRDD<Binding>> configureHadoop(
             Configuration conf,
             String pathStr,
-            UnivocityHadoopConf baseCsvConf,
+            UnivocityCsvwConf baseCsvConf,
             List<String> columnNamingSchemes) throws IOException {
         Path path = new Path(pathStr);
         Callable<InputStream> inputStreamFactory = () -> FileSystemUtils.newInputStream(path, conf);
@@ -81,7 +81,7 @@ public class CsvDataSources {
         // Don't skip any rows while we sample the first row
         effectiveDialect.setHeaderRowCount(0l);
 
-        UnivocityHadoopConf csvConf = new UnivocityHadoopConf(effectiveDialect);
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);
@@ -148,7 +148,7 @@ public class CsvDataSources {
     public static JavaRDD<Binding> createRddOfBindings(
             JavaSparkContext sc,
             String path,
-            UnivocityHadoopConf univocityConf,
+            UnivocityCsvwConf univocityConf,
             Function<String[], Binding> mapper)
     {
         Configuration conf = sc.hadoopConfiguration();

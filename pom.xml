@@ -1374,14 +1374,14 @@
                 <version>8.1.0</version>
             </dependency>
 
-            <!-- FasterXML -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-		<version>${ver.jackson}</version>
-		<type>pom</type>
-		<scope>import</scope>
-            </dependency>
+			<!-- FasterXML -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${ver.jackson}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
             <!-- slf4j Logger dependencies -->
             <dependency>

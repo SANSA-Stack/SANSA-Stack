@@ -11,6 +11,8 @@ import java.util.stream.Stream;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
+import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -25,7 +27,6 @@ import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternCsv;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 
 /**
  * A generic parser implementation for CSV with the offset-seeking condition that
@@ -124,7 +125,7 @@ public class RecordReaderCsvUnivocity
 
         Configuration conf = context.getConfiguration();
 
-        UnivocityHadoopConf parserConf = FileInputFormatCsvUnivocity.getUnivocityConfig(conf);
+        UnivocityCsvwConf parserConf = FileInputFormatCsvUnivocity.getUnivocityConfig(conf);
         DialectMutable tmp = new DialectMutableImpl();
         parserConf.getDialect().copyInto(tmp, false);
         requestedDialect = tmp;

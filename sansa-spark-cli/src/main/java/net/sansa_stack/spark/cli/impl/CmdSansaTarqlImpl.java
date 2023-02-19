@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven.ExprTransformIriToIriAsGiven;
 import org.aksw.jenax.stmt.core.SparqlStmt;
@@ -38,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
@@ -297,7 +297,7 @@ public class CmdSansaTarqlImpl {
             task -> {
                 String source = task.getSource();
 
-                UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
+                UnivocityCsvwConf univocityConf = new UnivocityCsvwConf();
                 univocityConf.setTabs(cmd.tabs ? true : task.isTabs()); // cmd overrides option
                 task.getDialect().copyInto(univocityConf.getDialect(), false);
 

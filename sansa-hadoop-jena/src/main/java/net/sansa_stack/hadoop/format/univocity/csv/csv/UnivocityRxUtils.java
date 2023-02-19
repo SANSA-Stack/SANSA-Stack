@@ -3,6 +3,7 @@ package net.sansa_stack.hadoop.format.univocity.csv.csv;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
+import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.aksw.commons.rx.util.FlowableEx;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

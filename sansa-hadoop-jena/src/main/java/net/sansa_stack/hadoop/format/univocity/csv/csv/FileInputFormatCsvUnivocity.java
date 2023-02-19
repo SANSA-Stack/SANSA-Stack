@@ -1,5 +1,6 @@
 package net.sansa_stack.hadoop.format.univocity.csv.csv;
 
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -12,7 +13,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.hadoop.util.JsonHadoopBridge;
 
 public class FileInputFormatCsvUnivocity
@@ -22,14 +22,14 @@ public class FileInputFormatCsvUnivocity
     public static final String NS_CSV_FORMAT = "mapreduce.input.csv.univocity";
 
     private static JsonHadoopBridge adapter = JsonHadoopBridge.createFromPrototype(
-            new UnivocityHadoopConf(), NS_CSV_FORMAT);
+            new UnivocityCsvwConf(), NS_CSV_FORMAT);
 
-    public static void setUnivocityConfig(Configuration conf, UnivocityHadoopConf csv) {
+    public static void setUnivocityConfig(Configuration conf, UnivocityCsvwConf csv) {
         adapter.write(conf, csv);
     }
 
-    public static UnivocityHadoopConf getUnivocityConfig(Configuration conf) {
-        UnivocityHadoopConf result = adapter.read(conf, new UnivocityHadoopConf());
+    public static UnivocityCsvwConf getUnivocityConfig(Configuration conf) {
+        UnivocityCsvwConf result = adapter.read(conf, new UnivocityCsvwConf());
         return result;
     }
 

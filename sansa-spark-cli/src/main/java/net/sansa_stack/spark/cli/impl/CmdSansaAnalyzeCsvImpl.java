@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.rdf.model.Model;
@@ -11,7 +12,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.spark.api.java.JavaRDD;
 
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
 import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyzeCsv;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
@@ -40,7 +40,7 @@ public class CmdSansaAnalyzeCsvImpl {
                 for (String  inputPath : inputFiles) {
                     Configuration conf = new Configuration(sparkContext.hadoopConfiguration());
 
-                    UnivocityHadoopConf univocityConf = new UnivocityHadoopConf();
+                    UnivocityCsvwConf univocityConf = new UnivocityCsvwConf();
                     DialectMutable csvCliOptions = cmd.csvOptions;
                     csvCliOptions.copyInto(univocityConf.getDialect(), false);
                     univocityConf.setTabs(cmd.tabs);

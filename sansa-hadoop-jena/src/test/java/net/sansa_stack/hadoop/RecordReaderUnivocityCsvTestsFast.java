@@ -1,22 +1,24 @@
 package net.sansa_stack.hadoop;
 
-import com.google.common.collect.Range;
-import com.univocity.parsers.common.record.Record;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityParserFactory;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputFormat;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
+import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import com.google.common.collect.Range;
+import com.univocity.parsers.common.record.Record;
+
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
 
 @RunWith(Parameterized.class)
 public class RecordReaderUnivocityCsvTestsFast
@@ -30,7 +32,7 @@ public class RecordReaderUnivocityCsvTestsFast
     @Override
     protected void configureHadoop(Configuration conf) {
         super.configureHadoop(conf);
-        UnivocityHadoopConf csvConf = new UnivocityHadoopConf();
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf();
         // TODO What should be the default csv settings w.r.t. to headers?
         // Probably headers should be assumed
         csvConf.getDialect().setHeaderRowCount(1l);

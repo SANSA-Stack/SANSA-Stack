@@ -1,5 +1,18 @@
 package net.sansa_stack.hadoop.util;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
+import org.aksw.commons.path.core.Path;
+import org.aksw.commons.path.core.PathOpsStr;
+import org.apache.hadoop.conf.Configuration;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -8,19 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.univocity.parsers.csv.CsvParserSettings;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityRxUtils;
-import org.aksw.commons.model.csvw.domain.api.Dialect;
-import org.aksw.commons.path.core.Path;
-import org.aksw.commons.path.core.PathOpsStr;
-import org.apache.hadoop.conf.Configuration;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Jackson-based mapper that can read/write java beans from/to a hadoop configuration object
@@ -202,7 +202,7 @@ public class JsonHadoopBridge {
     public static void main(String[] args) throws JsonProcessingException {
         CsvParserSettings settings = new CsvParserSettings();
 
-        UnivocityHadoopConf conf = new UnivocityHadoopConf();
+        UnivocityCsvwConf conf = new UnivocityCsvwConf();
         Dialect dialect = conf.getDialect()
                 .setEncoding(StandardCharsets.ISO_8859_1.name())
                 .setCommentPrefix(".")
