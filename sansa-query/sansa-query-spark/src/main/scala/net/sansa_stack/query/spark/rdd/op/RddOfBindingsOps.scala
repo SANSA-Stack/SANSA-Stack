@@ -9,6 +9,7 @@ import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
+import org.aksw.jenax.arq.decisiontree.api.E_SerializableIdentity
 import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
@@ -18,7 +19,7 @@ import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingProject}
-import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList, NodeValue}
+import org.apache.jena.sparql.expr.{E_Coalesce, Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
@@ -78,7 +79,12 @@ object RddOfBindingsOps {
   }
 
   def filter(rdd: RDD[Binding], exprs: ExprList): RDD[Binding] = {
-    rdd.filter(binding => exprs.getList.stream().allMatch(_.eval(binding, null).getBoolean))
+    // 'Hack' to inject the ExprList into the filter operation
+    val serializableExpr = E_SerializableIdentity.wrap(new E_Coalesce(exprs))
+    rdd.filter(binding => {
+      val el = serializableExpr.getArg.asInstanceOf[E_Coalesce].getArgs
+      el.stream().allMatch(_.eval(binding, null).getBoolean)
+    })
   }
 
 

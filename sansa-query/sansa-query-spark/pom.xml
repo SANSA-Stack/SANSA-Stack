@@ -17,6 +17,18 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.aksw.r2rml</groupId>
+            <artifactId>rml-jena-arq</artifactId>
+            <version>4.8.0-1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-plugins-bundle</artifactId>
+            <version>4.8.0-1-SNAPSHOT</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
             <scope>test</scope>

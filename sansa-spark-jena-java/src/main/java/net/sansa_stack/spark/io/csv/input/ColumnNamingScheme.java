@@ -42,7 +42,7 @@ public interface ColumnNamingScheme {
 	}
 
 	/**
-	 * Merges multiple namings such that always only the first naming is retained.
+	 * Merges multiple namings such that always only the first one is retained.
 	 * 
 	 * @param elements
 	 * @return

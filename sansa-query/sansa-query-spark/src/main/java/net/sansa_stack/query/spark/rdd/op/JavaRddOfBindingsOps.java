@@ -30,6 +30,9 @@ public class JavaRddOfBindingsOps {
                                                       Query query, Context cxt) {
         Op op = Algebra.compile(query);
 
+        // op = Algebra.optimize(op);
+        System.err.println("Algebra: " + op);
+
         // Set up an execution context
         cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
         cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());

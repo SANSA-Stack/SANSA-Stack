@@ -3,6 +3,7 @@ package net.sansa_stack.spark.cli.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactories;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.apache.hadoop.conf.Configuration;
@@ -45,7 +46,7 @@ public class CmdSansaAnalyzeCsvImpl {
                     csvCliOptions.copyInto(univocityConf.getDialect(), false);
                     univocityConf.setTabs(cmd.tabs);
 
-                    HadoopInputData<?, ?, ?> baseInputFormatData = CsvDataSources.configureHadoop(conf, inputPath, univocityConf, cmd.columnNamingSchemes);
+                    HadoopInputData<?, ?, ?> baseInputFormatData = CsvDataSources.configureHadoop(conf, inputPath, univocityConf, cmd.columnNamingSchemes, CsvRowMapperFactories::rowMapperFactoryBinding);
                     HadoopInputData<LongWritable, Resource, JavaRDD<Model>> wrappedInputFormatData = InputFormatUtils.wrapWithAnalyzer(baseInputFormatData);
                     JavaRDD<Model> rdd = InputFormatUtils.createRdd(sparkContext, wrappedInputFormatData);
                     rdds.add(rdd);

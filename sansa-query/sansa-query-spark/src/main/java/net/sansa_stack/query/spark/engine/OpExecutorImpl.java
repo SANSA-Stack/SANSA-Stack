@@ -1,19 +1,37 @@
 package net.sansa_stack.query.spark.engine;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
+import com.google.maps.internal.ratelimiter.LongMath;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.rml.jena.impl.RmlLib;
+import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
+import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpAsQuery;
+import org.apache.jena.sparql.algebra.OpVars;
 import org.apache.jena.sparql.algebra.op.*;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.util.Symbol;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
+import org.rdfhdt.hdt.iterator.utils.Iter;
+import scala.Tuple2;
+
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 public class OpExecutorImpl
@@ -94,6 +112,12 @@ public class OpExecutorImpl
                 result = RddOfDatasetsOps.flatMapWithSparqlSelect(rddOfDataset.rdd(), query).toJavaRDD();
 
                 success = true;
+            } else if ("rml.source:".equals(serviceUri)) {
+                JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
+                LogicalSource logicalSource = RmlLib.getLogicalSource(op);
+                Preconditions.checkArgument(logicalSource != null, "No logical source detected in " + op);
+                result = RmlSourcesSpark.processSource(sc, logicalSource, null, execCxt);
+                success = true;
             }
         }
 
@@ -140,6 +164,56 @@ public class OpExecutorImpl
     //  @Override public  JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd): JavaRDD<Binding> =
     @Override
     public JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd) {
-        throw new UnsupportedOperationException();
+        JavaRDD<Binding> base = execToRdd(op.getSubOp(), rdd).toJavaRDD();
+
+        long start = op.getStart();
+        long length = op.getLength();
+
+        long begin = start == Query.NOLIMIT ? 0 : start;
+        long end = length == Query.NOLIMIT ? Long.MAX_VALUE : LongMath.saturatedAdd(begin, length);
+
+        JavaRDD<Binding> result = base.zipWithIndex().filter(t -> t._2 >= begin && t._2 < end).map(t -> t._1);
+        return result;
     }
+
+    @Override
+    public JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> input) {
+        Op lhsOp = op.getLeft();
+        Op rhsOp = op.getRight();
+
+        Set<Var> lhsVars = OpVars.visibleVars(lhsOp);
+        Set<Var> rhsVars = OpVars.visibleVars(rhsOp);
+
+         Set<Var> joinVars = new LinkedHashSet<>(Sets.intersection(lhsVars, rhsVars));
+
+        JavaRDD<Binding> lhsRdd = execToRdd(lhsOp, input).toJavaRDD();
+        JavaRDD<Binding> rhsRdd = execToRdd(rhsOp, root(input)).toJavaRDD();
+
+        JavaPairRDD<Object, Binding> lhsPairRdd = hashForJoin(lhsRdd, joinVars);
+        JavaPairRDD<Object, Binding> rhsPairRdd = hashForJoin(rhsRdd, joinVars);
+
+        JavaRDD<Binding> result = lhsPairRdd.join(rhsPairRdd)
+                .map(t -> t._2)
+                .filter(t -> Algebra.compatible(t._1, t._2))
+                .map(t -> Binding.builder(t._1).addAll(t._2).build());
+
+        return result;
+    }
+
+    public static JavaPairRDD<Object, Binding> hashForJoin(JavaRDD<Binding> rdd, Set<Var> joinVars) {
+        return rdd.mapPartitionsToPair(itBindings ->
+                Iter.map(itBindings, binding -> {
+                    Long hash = JoinLib.hash(joinVars, binding);
+                    return new Tuple2<>(hash, binding);
+                })
+        );
+
+    }
+
+    /** Create an RDD with a single empty binding */
+    protected JavaRDD<Binding> root(JavaRDD<Binding> prototype) {
+        JavaSparkContext sc = JavaSparkContextUtils.fromRdd(prototype);
+        return sc.parallelize(Arrays.asList(BindingFactory.root()));
+    }
+
 }

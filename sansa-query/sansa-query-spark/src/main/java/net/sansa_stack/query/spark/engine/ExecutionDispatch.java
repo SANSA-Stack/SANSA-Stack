@@ -112,14 +112,10 @@ public class ExecutionDispatch
     }
 
     @Override
-    public void visit(OpExtend opExtend) {
-        stack.push(opExecutor.execute(opExtend, stack.pop()));
-    }
+    public void visit(OpExtend opExtend) { stack.push(opExecutor.execute(opExtend, stack.pop())); }
 
     @Override
-    public void visit(OpJoin opJoin) {
-        throw new UnsupportedOperationException();
-    }
+    public void visit(OpJoin opJoin) { stack.push(opExecutor.execute(opJoin, stack.pop())); }
 
     @Override
     public void visit(OpLeftJoin opLeftJoin) {

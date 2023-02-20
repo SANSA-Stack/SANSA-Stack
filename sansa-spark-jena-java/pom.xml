@@ -96,6 +96,10 @@
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-plugins-bundle</artifactId>
+        </dependency>
 
         <!--
         <dependency>
