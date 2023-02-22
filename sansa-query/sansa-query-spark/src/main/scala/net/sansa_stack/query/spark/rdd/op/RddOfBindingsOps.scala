@@ -9,6 +9,7 @@ import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
+import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
 import org.aksw.jenax.arq.util.expr.E_SerializableIdentity
 import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
 import org.apache.jena.graph.Node
@@ -225,16 +226,18 @@ object RddOfBindingsOps {
 
   def extend(rdd: RDD[Binding], varExprList: VarExprList): RDD[Binding] = {
     // TODO We should pass an execCxt
-    val execCxt = null
+    // val execCxt = null
 
     var broadcastVel = rdd.context.broadcast(varExprList)
-    rdd.mapPartitions(_.map(b => {
-      val r: BindingBuilder = BindingFactory.builder
-      val contrib = VarExprListUtils.copyProject(broadcastVel.value, b, execCxt)
-      r.addAll(b)
-      r.addAll(contrib)
-      r.build
-    }))
+    rdd.mapPartitions(it => {
+      val execCxt = ExecutionContextUtils.createFunctionEnv();
+      it.map(b => {
+        val r: BindingBuilder = BindingFactory.builder(b)
+        val contrib = VarExprListUtils.copyProject(broadcastVel.value, b, execCxt)
+        r.addAll(contrib)
+        r.build
+      })
+    })
   }
 
 
