@@ -8,19 +8,34 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
+import org.aksw.jenax.arq.util.var.VarUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
 
 public interface ColumnNamingScheme {
 	public String[][] create(String[] row);
-	
+
 	public static String[][] row(String[] row) {
 		int n = row.length;
 		String[][] r = new String[n][];
 		for (int i = 0; i < n; ++i) {
 			String v = row[i];
-			r[i] = v == null ? new String[0] : new String[] { v.replace(" ", "_") };
+			r[i] = v == null ? new String[0] : new String[] { v };
+		}
+		return r;
+	}
+
+	/**
+	 * Convert the column headings such that they are safe for use with sparql variables.
+	 * Replaces all non-sparql-variable characters with underscore.
+	 * */
+	public static String[][] sparql(String[] row) {
+		int n = row.length;
+		String[][] r = new String[n][];
+		for (int i = 0; i < n; ++i) {
+			String v = row[i];
+			r[i] = v == null ? new String[0] : new String[] { VarUtils.safeVarName(v) };
 		}
 		return r;
 	}
@@ -96,6 +111,8 @@ public interface ColumnNamingScheme {
 				outNames = excel(n);
 			} else if (schemeName.equalsIgnoreCase("row")) {
 				outNames = rowAsExcel ? excel(row.length) : row(row);
+			} else if (schemeName.equalsIgnoreCase("sparql")) {
+				outNames = sparql(row);
 			} else {
 				throw new RuntimeException("Unknown naming scheme: " + schemeNames);
 			}

@@ -9,6 +9,7 @@ import picocli.CommandLine.Option;
         subcommands = {
                 CmdSansaCount.class, CmdSansaPrefixesParent.class, CmdSansaMap.class,
                 CmdSansaTarql.class, CmdSansaNgs.class, CmdSansaAnalyzeParent.class,
+                CmdSansaQuery.class,
                 CmdSansaRmlParent.class
 })
 public class CmdSansaParent extends CmdBase {

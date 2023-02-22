@@ -33,7 +33,7 @@ public class CmdSansaTarql
     @Option(names = { "-t", "--tabs" }, description = "Separators are tabs; default: ${DEFAULT-VALUE}", defaultValue="false")
     public boolean tabs = false;
 
-    @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unique, first name takes precedence.", defaultValue = "row")
+    @Option(names = { "--header-naming" }, arity="1", description = "Which column names to use. Allowed values: 'sparql', 'row', 'excel'. Numerics such as '0', '1' number with that offset. If there are no header rows then 'row' is treated as 'excel'. Column names are unique, first name takes precedence.", defaultValue = "sparql")
     public List<String> columnNamingSchemes = new ArrayList<>();
 
     @Parameters(arity = "1..n", description = "tarql query file following by one or more csv file")
