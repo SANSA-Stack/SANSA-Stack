@@ -173,7 +173,10 @@ public class OpExecutorImpl
         long begin = start == Query.NOLIMIT ? 0 : start;
         long end = length == Query.NOLIMIT ? Long.MAX_VALUE : LongMath.saturatedAdd(begin, length);
 
-        JavaRDD<Binding> result = base.zipWithIndex().filter(t -> t._2 >= begin && t._2 < end).map(t -> t._1);
+        // Do not apply zip with index if the range is [0, max]
+        JavaRDD<Binding> result = (begin == 0 && end == Long.MAX_VALUE)
+                ? base
+                : base.zipWithIndex().filter(t -> t._2 >= begin && t._2 < end).map(t -> t._1);
         return result;
     }
 
