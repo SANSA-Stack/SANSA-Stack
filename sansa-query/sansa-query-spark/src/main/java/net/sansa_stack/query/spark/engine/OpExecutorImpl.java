@@ -8,6 +8,7 @@ import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
+import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
@@ -112,7 +113,7 @@ public class OpExecutorImpl
                 result = RddOfDatasetsOps.flatMapWithSparqlSelect(rddOfDataset.rdd(), query).toJavaRDD();
 
                 success = true;
-            } else if ("rml.source:".equals(serviceUri)) {
+            } else if (SparqlX_Rml_Terms.RML_SOURCE_SERVICE_IRI.equals(serviceUri)) {
                 JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
                 LogicalSource logicalSource = RmlLib.getLogicalSource(op);
                 Preconditions.checkArgument(logicalSource != null, "No logical source detected in " + op);

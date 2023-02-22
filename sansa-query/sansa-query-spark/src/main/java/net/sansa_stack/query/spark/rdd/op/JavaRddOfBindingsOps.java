@@ -6,12 +6,15 @@ import net.sansa_stack.query.spark.engine.ExecutionDispatch;
 import net.sansa_stack.query.spark.engine.OpExecutor;
 import net.sansa_stack.query.spark.engine.OpExecutorImpl;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.Transformer;
+import org.apache.jena.sparql.algebra.optimize.TransformFilterImplicitJoin;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -30,8 +33,9 @@ public class JavaRddOfBindingsOps {
                                                       Query query, Context cxt) {
         Op op = Algebra.compile(query);
 
-        // op = Algebra.optimize(op);
-        System.err.println("Algebra: " + op);
+        // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
+        // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
+        // System.err.println("Algebra: " + op);
 
         // Set up an execution context
         cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
