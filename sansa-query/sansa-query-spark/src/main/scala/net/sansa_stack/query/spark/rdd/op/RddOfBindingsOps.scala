@@ -9,7 +9,7 @@ import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
-import org.aksw.jenax.arq.decisiontree.api.E_SerializableIdentity
+import org.aksw.jenax.arq.util.expr.E_SerializableIdentity
 import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
