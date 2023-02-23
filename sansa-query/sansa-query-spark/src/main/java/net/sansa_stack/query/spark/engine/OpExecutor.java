@@ -19,6 +19,7 @@ public interface OpExecutor {
   JavaRDD<Binding> execute(OpFilter op, JavaRDD<Binding> rdd);
   JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd);
   JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> rdd);
+  JavaRDD<Binding> execute(OpLateral op, JavaRDD<Binding> rdd);
 
   /* Interface definition is not yet complete */
 }

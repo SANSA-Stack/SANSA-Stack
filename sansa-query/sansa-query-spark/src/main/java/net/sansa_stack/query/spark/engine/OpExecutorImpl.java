@@ -6,28 +6,30 @@ import com.google.maps.internal.ratelimiter.LongMath;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
+import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
-import org.apache.jena.sparql.algebra.Algebra;
-import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.OpAsQuery;
-import org.apache.jena.sparql.algebra.OpVars;
+import org.apache.jena.sparql.algebra.*;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.apache.jena.sparql.engine.main.QC;
+import org.apache.jena.sparql.sse.SSE;
+import org.apache.jena.sparql.sse.WriterSSE;
 import org.apache.jena.sparql.util.Symbol;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
-import org.rdfhdt.hdt.iterator.utils.Iter;
 import scala.Tuple2;
 
 import java.util.Arrays;
@@ -123,7 +125,7 @@ public class OpExecutorImpl
         }
 
         if (!success) {
-            throw new IllegalArgumentException("Execution with service " + serviceNode + " is not supportd");
+            throw new IllegalArgumentException("Execution with service " + serviceNode + " is not supported");
         }
 
         return result;
@@ -180,6 +182,7 @@ public class OpExecutorImpl
         return result;
     }
 
+
     @Override
     public JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> input) {
         Op lhsOp = op.getLeft();
@@ -201,6 +204,25 @@ public class OpExecutorImpl
                 .filter(t -> Algebra.compatible(t._1, t._2))
                 .map(t -> Binding.builder(t._1).addAll(t._2).build());
 
+        return result;
+    }
+
+    @Override
+    public JavaRDD<Binding> execute(OpLateral op, JavaRDD<Binding> rdd) {
+        JavaRDD<Binding> base = execToRdd(op.getLeft(), rdd).toJavaRDD();
+        JavaRDD<Binding> result;
+        boolean isPatternFree = OpUtils.isPatternFree(op.getRight());
+        if (isPatternFree) {
+            // Just use flat map without going throw the whole spark machinery
+            String rightSse = op.getRight().toString();
+            result = base.mapPartitions(it -> {
+                Op rightOp = SSE.parseOp(rightSse);
+                ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg();
+                return Iter.iter(it).flatMap(b -> QC.execute(rightOp, b, execCxt));
+            });
+        } else {
+            throw new UnsupportedOperationException("Lateral joins for non-pattern-free ops not yet implemented");
+        }
         return result;
     }
 

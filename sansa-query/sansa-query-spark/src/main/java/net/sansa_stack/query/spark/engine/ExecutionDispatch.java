@@ -194,7 +194,5 @@ public class ExecutionDispatch
     }
 
     @Override
-    public void visit(OpLateral opLateral) {
-        throw new UnsupportedOperationException();
-    }
+    public void visit(OpLateral opLateral) { stack.push(opExecutor.execute(opLateral, stack.pop())); }
 }
