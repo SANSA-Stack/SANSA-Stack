@@ -50,20 +50,29 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt) {
+    public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt, boolean useDag) {
         Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
         List<Query> lateralConstructQueries = queries.stream()
                 .map(query -> QueryGenerationUtils.constructToLateral(query, quadVars, false))
                 .collect(Collectors.toList());
 
-        GenericDag<Op, Var> dag = buildDag(lateralConstructQueries);
-        Op rootOp = dag.getRoots().iterator().next();
-
+        Op rootOp;
+        Map<Var, Op> opDefs;
+        if (useDag) {
+            GenericDag<Op, Var> dag = buildDag(lateralConstructQueries);
+            rootOp = dag.getRoots().iterator().next();
+            opDefs = dag.getVarToExpr();
+        } else {
+            OpDisjunction union = OpDisjunction.create();
+            lateralConstructQueries.stream().map(Algebra::compile).forEach(union::add);
+            rootOp = union;
+            opDefs = new HashMap<>();
+        }
         cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
         cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
         ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
-        OpExecutor opExec = new OpExecutorImpl(execCxt, dag.getVarToExpr());
+        OpExecutor opExec = new OpExecutorImpl(execCxt, opDefs);
         ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
 
         // An RDD with a single binding that doesn't bind any variables
