@@ -34,6 +34,7 @@ import org.apache.spark.rdd.RDD;
 import scala.Tuple2;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class OpExecutorImpl
@@ -69,6 +70,7 @@ public class OpExecutorImpl
         return exec(op, input).rdd();
     }
 
+    @Override
     public JavaRDD<Binding> execute(OpVar op, JavaRDD<Binding> rdd) {
         Var var = op.getVar();
         Op resolvedOp = varToOp.get(var);
@@ -81,6 +83,15 @@ public class OpExecutorImpl
         return RddOfBindingsOps.project(execToRdd(op.getSubOp(), rdd), op.getVars()).toJavaRDD();
     }
     // RddOfBindingOps.project(rdd, op.getVars)
+
+    @Override
+    public JavaRDD<Binding> execute(OpDisjunction op, JavaRDD<Binding> rdd) {
+        List<Op> ops = op.getElements();
+        JavaRDD<Binding>[] rdds = ops.stream().map(o -> execToRdd(o, rdd).toJavaRDD()).collect(Collectors.toList()).toArray(new JavaRDD[0]);
+        JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
+        JavaRDD<Binding> result = sc.union(rdds);
+        return result;
+    }
 
     @Override
     public JavaRDD<Binding> execute(OpGroup op, JavaRDD<Binding> rdd) {

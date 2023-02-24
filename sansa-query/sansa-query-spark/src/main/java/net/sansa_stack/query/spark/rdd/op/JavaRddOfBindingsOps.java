@@ -18,6 +18,7 @@ import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.OpDisjunction;
+import org.apache.jena.sparql.algebra.op.OpLateral;
 import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
@@ -31,6 +32,8 @@ import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JavaRddOfBindingsOps {
+    private static final Logger logger = LoggerFactory.getLogger(JavaRddOfBindingsOps.class);
 
     /** Returns an RDD of a single binding that doesn't bind any variables */
     public static JavaRDD<Binding> unitRdd(JavaSparkContext sparkContext) {
@@ -78,7 +82,8 @@ public class JavaRddOfBindingsOps {
         List<Op> ops = queries.stream().map(Algebra::compile).collect(Collectors.toList());
         OpDisjunction union = OpDisjunction.create();
         ops.forEach(union::add);
-        GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, e -> e instanceof OpService);
+        // Do not descend into the rhs of laterals
+        GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, (p, i, c) -> c instanceof OpService || (p instanceof OpLateral && i != 0));
         dag.addRoot(union);
 
         // Insert cache nodes
@@ -96,9 +101,13 @@ public class JavaRddOfBindingsOps {
                 dag.getVarToExpr().put(v, new OpService(NodeFactory.createURI("rdd:cache"), new OpVar(uncachedVar), false));
             }
         }
+
         dag.collapse();
-//        System.out.println("Roots: " + dag.getRoots());
-//        System.out.println(dag.getVarToExpr());
+        logger.info("Roots: " + dag.getRoots());
+        for (Map.Entry<Var, Op> e : dag.getVarToExpr().entrySet()) {
+            logger.info(e.toString());
+        }
+        // throw new RuntimeException("test");
         return dag;
     }
 

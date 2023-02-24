@@ -1,5 +1,7 @@
 package net.sansa_stack.query.spark.engine;
 
+import org.aksw.commons.util.obj.ObjectUtils;
+import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpVisitor;
 import org.apache.jena.sparql.algebra.op.*;
@@ -114,6 +116,14 @@ public class ExecutionDispatch
     @Override
     public void visit(OpExtend opExtend) { stack.push(opExecutor.execute(opExtend, stack.pop())); }
 
+    public void visit(OpExt opExt) {
+        if (opExt instanceof OpVar) {
+            stack.push(opExecutor.execute((OpVar)opExt, stack.pop()));
+        } else {
+            throw new RuntimeException("Unsupported custom op: " + opExt);
+        }
+    }
+
     @Override
     public void visit(OpJoin opJoin) { stack.push(opExecutor.execute(opJoin, stack.pop())); }
 
@@ -149,7 +159,7 @@ public class ExecutionDispatch
 
     @Override
     public void visit(OpDisjunction opDisjunction) {
-        throw new UnsupportedOperationException();
+        stack.push(opExecutor.execute(opDisjunction, stack.pop()));
     }
 
     @Override

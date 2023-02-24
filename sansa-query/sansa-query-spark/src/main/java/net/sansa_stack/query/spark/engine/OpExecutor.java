@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.engine;
 
+import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
@@ -20,6 +21,8 @@ public interface OpExecutor {
   JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd);
   JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> rdd);
   JavaRDD<Binding> execute(OpLateral op, JavaRDD<Binding> rdd);
+  JavaRDD<Binding> execute(OpVar op, JavaRDD<Binding> rdd);
+  JavaRDD<Binding> execute(OpDisjunction op, JavaRDD<Binding> rdd);
 
   /* Interface definition is not yet complete */
 }
