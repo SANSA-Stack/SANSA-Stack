@@ -83,7 +83,7 @@ public class JavaRddOfBindingsOps {
         OpDisjunction union = OpDisjunction.create();
         ops.forEach(union::add);
         // Do not descend into the rhs of laterals
-        GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, (p, i, c) -> c instanceof OpService || (p instanceof OpLateral && i != 0));
+        GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, (p, i, c) -> p instanceof OpService || (p instanceof OpLateral && i != 0));
         dag.addRoot(union);
 
         // Insert cache nodes
@@ -105,9 +105,9 @@ public class JavaRddOfBindingsOps {
         dag.collapse();
         logger.info("Roots: " + dag.getRoots());
         for (Map.Entry<Var, Op> e : dag.getVarToExpr().entrySet()) {
-            logger.info(e.toString());
+            // logger.info(e.toString());
+            System.err.println(e.toString());
         }
-        // throw new RuntimeException("test");
         return dag;
     }
 

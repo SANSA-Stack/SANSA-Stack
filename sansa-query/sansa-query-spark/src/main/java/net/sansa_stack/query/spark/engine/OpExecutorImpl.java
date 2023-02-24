@@ -31,6 +31,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
+import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
 
 import java.util.*;
@@ -112,7 +113,7 @@ public class OpExecutorImpl
             // TODO Add some registry
             // TODO Consider deprecation and/or removalof rdd:perPartition because of the scalability issues when loading them into RAM
             if (("rdd:cache").equals(serviceUri)) {
-                result = rdd.cache();
+                result = rdd.persist(StorageLevel.MEMORY_AND_DISK());
                 success = true;
             } else if ("rdd:perPartition".equals(serviceUri)) {
                 // Get the RDD[Dataset] from the execution context
