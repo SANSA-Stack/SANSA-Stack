@@ -1,32 +1,20 @@
 package net.sansa_stack.spark.cli.impl;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
+import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaQuery;
-import net.sansa_stack.spark.cli.cmd.CmdSansaTarql;
-import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import org.aksw.commons.collections.IterableUtils;
-import org.aksw.commons.model.csvw.domain.api.Dialect;
-import org.aksw.commons.model.csvw.domain.api.DialectMutable;
-import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
-import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven;
+import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.stmt.core.SparqlStmt;
-import org.aksw.jenax.stmt.core.SparqlStmtQuery;
-import org.aksw.jenax.stmt.core.SparqlStmtUpdate;
-import org.aksw.jenax.stmt.util.SparqlStmtUtils;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -37,7 +25,8 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CmdSansaQueryImpl {
@@ -72,9 +61,13 @@ public class CmdSansaQueryImpl {
 //            }
 //        }
 
+        queries = queries.stream()
+                .map(query -> QueryUtils.applyElementTransform(query, F_BNodeAsGiven.ExprTransformBNodeToBNodeAsGiven::transformElt))
+                .collect(Collectors.toList());
+
         if (cmd.useIriAsGiven) {
-            stmts = stmts.stream()
-                    .map(stmt -> SparqlStmtUtils.applyElementTransform(stmt, E_IriAsGiven.ExprTransformIriToIriAsGiven::transformElt))
+            queries = queries.stream()
+                    .map(query -> QueryUtils.applyElementTransform(query, E_IriAsGiven.ExprTransformIriToIriAsGiven::transformElt))
                     .collect(Collectors.toList());
         }
 
