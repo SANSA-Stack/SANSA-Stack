@@ -102,8 +102,9 @@ public class CmdSansaQueryImpl {
 
         switch (queryType) {
             case CONSTRUCT: {
-                List<JavaRDD<Quad>> rdds = queries.stream().map(query -> JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, query, null)).collect(Collectors.toList());
-                JavaRDD<Quad> rdd = javaSparkContext.union(rdds.toArray(new JavaRDD[0]));
+                JavaRDD<Quad> rdd = JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, queries, null);
+                // List<JavaRDD<Quad>> rdds = queries.stream().map(query -> JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, query, null)).collect(Collectors.toList());
+                // JavaRDD<Quad> rdd = javaSparkContext.union(rdds.toArray(new JavaRDD[0]));
                 RdfSource rdfSource = RdfSources.ofQuads(rdd);
                 CmdSansaMapImpl.writeOutRdfSources(rdfSource, rddRdfWriterFactory);
                 break;

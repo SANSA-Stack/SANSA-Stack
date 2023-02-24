@@ -7,6 +7,7 @@ import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
+import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
@@ -32,9 +33,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
 import scala.Tuple2;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 
 public class OpExecutorImpl
@@ -42,11 +41,20 @@ public class OpExecutorImpl
     public static final Symbol SYM_RDD_OF_DATASET = Symbol.create("urn:rddOfDataset");
 
     protected ExecutionContext execCxt;
+
+    /** Algebra expressions may use OpVar instances which then get resolved against this map. */
+    protected Map<Var, Op> varToOp;
     protected ExecutionDispatch dispatcher = new ExecutionDispatch(this);
     protected int level = 0;
 
+    /** FIXME ExecCxt is not serializable; we an only use a serializable lambda that produces a context in the workers */
     public OpExecutorImpl(ExecutionContext execCxt) {
+        this(execCxt, new HashMap<>());
+    }
+
+    public OpExecutorImpl(ExecutionContext execCxt, Map<Var, Op> varToOp) {
         super();
+        this.varToOp = varToOp;
         this.execCxt = execCxt;
     }
 
@@ -59,6 +67,13 @@ public class OpExecutorImpl
 
     public RDD<Binding> execToRdd(Op op, JavaRDD<Binding> input) {
         return exec(op, input).rdd();
+    }
+
+    public JavaRDD<Binding> execute(OpVar op, JavaRDD<Binding> rdd) {
+        Var var = op.getVar();
+        Op resolvedOp = varToOp.get(var);
+        Preconditions.checkState(resolvedOp != null, "OpVar " + var + " has no defining Op");
+        return execToRdd(resolvedOp, rdd).toJavaRDD();
     }
 
     @Override
@@ -85,7 +100,10 @@ public class OpExecutorImpl
 
             // TODO Add some registry
             // TODO Consider deprecation and/or removalof rdd:perPartition because of the scalability issues when loading them into RAM
-            if ("rdd:perPartition".equals(serviceUri)) {
+            if (("rdd:cache").equals(serviceUri)) {
+                result = rdd.cache();
+                success = true;
+            } else if ("rdd:perPartition".equals(serviceUri)) {
                 // Get the RDD[Dataset] from the execution context
                 JavaRDD<Dataset> rddOfDataset = execCxt.getContext().get(SYM_RDD_OF_DATASET);
 
@@ -214,7 +232,7 @@ public class OpExecutorImpl
         boolean isPatternFree = OpUtils.isPatternFree(op.getRight());
         if (isPatternFree) {
             // Just use flat map without going throw the whole spark machinery
-            String rightSse = op.getRight().toString();
+            String rightSse = op.getRight().toString(); // Produces parsable SSE!
             result = base.mapPartitions(it -> {
                 Op rightOp = SSE.parseOp(rightSse);
                 ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg();

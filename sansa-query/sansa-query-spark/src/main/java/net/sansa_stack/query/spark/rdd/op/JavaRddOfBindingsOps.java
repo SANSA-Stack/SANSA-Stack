@@ -6,23 +6,26 @@ import net.sansa_stack.query.spark.engine.ExecutionDispatch;
 import net.sansa_stack.query.spark.engine.OpExecutor;
 import net.sansa_stack.query.spark.engine.OpExecutorImpl;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
-import org.aksw.jena_sparql_api.algebra.utils.AlgebraUtils;
-import org.apache.jena.atlas.iterator.Iter;
+import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
+import org.aksw.jena_sparql_api.algebra.utils.OpVar;
+import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
-import org.apache.jena.sparql.algebra.Transformer;
-import org.apache.jena.sparql.algebra.optimize.TransformFilterImplicitJoin;
+import org.apache.jena.sparql.algebra.op.OpDisjunction;
+import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.modify.TemplateLib;
-import org.apache.jena.sparql.modify.request.QuadAcc;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
@@ -30,7 +33,10 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JavaRddOfBindingsOps {
 
@@ -38,6 +44,62 @@ public class JavaRddOfBindingsOps {
     public static JavaRDD<Binding> unitRdd(JavaSparkContext sparkContext) {
         JavaRDD<Binding> result = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
         return result;
+    }
+
+    public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt) {
+        Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+
+        List<Query> lateralConstructQueries = queries.stream()
+                .map(query -> QueryGenerationUtils.constructToLateral(query, quadVars, false))
+                .collect(Collectors.toList());
+
+        GenericDag<Op, Var> dag = buildDag(lateralConstructQueries);
+        Op rootOp = dag.getRoots().iterator().next();
+
+
+        cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
+        cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
+        ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
+        OpExecutor opExec = new OpExecutorImpl(execCxt, dag.getVarToExpr());
+        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
+
+        // An RDD with a single binding that doesn't bind any variables
+        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(initialRdd);
+
+        JavaRDD<Binding> rdd = executionDispatch.exec(rootOp, initialRdd);
+
+        List<Quad> quads = Arrays.asList(quadVars);
+        JavaRDD<Quad> result = rdd.mapPartitions(it -> TemplateLib.calcQuads(quads, it));
+        return result;
+    }
+
+
+    public static GenericDag<Op, Var> buildDag(Collection<Query> queries) {
+        List<Op> ops = queries.stream().map(Algebra::compile).collect(Collectors.toList());
+        OpDisjunction union = OpDisjunction.create();
+        ops.forEach(union::add);
+        GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, e -> e instanceof OpService);
+        dag.addRoot(union);
+
+        // Insert cache nodes
+        // vx := someOp(vy) becomes
+        // vx := cache(vxCache)
+        // vxCache := someOp(vy)
+        for (Map.Entry<Var, Collection<Var>> entry : dag.getChildToParent().asMap().entrySet()) {
+            if (entry.getValue().size() > 1) {
+                // System.out.println("Multiple parents on: " + entry.getKey());
+                Var v = entry.getKey();
+                Op def = dag.getVarToExpr().get(v);
+                Var uncachedVar = Var.alloc(v.getName() + "_cached");
+                dag.getVarToExpr().remove(v);
+                dag.getVarToExpr().put(uncachedVar, def);
+                dag.getVarToExpr().put(v, new OpService(NodeFactory.createURI("rdd:cache"), new OpVar(uncachedVar), false));
+            }
+        }
+        dag.collapse();
+//        System.out.println("Roots: " + dag.getRoots());
+//        System.out.println(dag.getVarToExpr());
+        return dag;
     }
 
     public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, Query query, Context cxt) {
@@ -60,8 +122,7 @@ public class JavaRddOfBindingsOps {
         return rdd.mapPartitions(it -> TemplateLib.calcQuads(quads, it));
     }
 
-    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset,
-                                                      Query query, Context cxt) {
+    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Context cxt) {
         Op op = Algebra.compile(query);
 
         // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
