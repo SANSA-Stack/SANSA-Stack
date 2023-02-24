@@ -113,7 +113,8 @@ public class OpExecutorImpl
             // TODO Add some registry
             // TODO Consider deprecation and/or removalof rdd:perPartition because of the scalability issues when loading them into RAM
             if (("rdd:cache").equals(serviceUri)) {
-                result = rdd.persist(StorageLevel.MEMORY_AND_DISK());
+                JavaRDD<Binding> base = execToRdd(op.getSubOp(), rdd).toJavaRDD();
+                result = base.persist(StorageLevel.MEMORY_AND_DISK());
                 success = true;
             } else if ("rdd:perPartition".equals(serviceUri)) {
                 // Get the RDD[Dataset] from the execution context

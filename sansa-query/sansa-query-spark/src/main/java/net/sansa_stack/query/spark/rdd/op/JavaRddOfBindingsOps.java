@@ -9,7 +9,9 @@ import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
+import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
@@ -21,6 +23,7 @@ import org.apache.jena.sparql.algebra.op.OpDisjunction;
 import org.apache.jena.sparql.algebra.op.OpLateral;
 import org.apache.jena.sparql.algebra.op.OpService;
 import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarAlloc;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -35,10 +38,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JavaRddOfBindingsOps {
@@ -60,7 +60,6 @@ public class JavaRddOfBindingsOps {
         GenericDag<Op, Var> dag = buildDag(lateralConstructQueries);
         Op rootOp = dag.getRoots().iterator().next();
 
-
         cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
         cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
         ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
@@ -72,8 +71,13 @@ public class JavaRddOfBindingsOps {
 
         JavaRDD<Binding> rdd = executionDispatch.exec(rootOp, initialRdd);
 
-        List<Quad> quads = Arrays.asList(quadVars);
-        JavaRDD<Quad> result = rdd.mapPartitions(it -> TemplateLib.calcQuads(quads, it));
+        JavaRDD<Quad> result = rdd.mapPartitions(it -> {
+            // TODO Is this safe if some quadVars are unbound?!
+            return Iter.iter(it).map(b -> {
+                Quad r = Substitute.substitute(quadVars, b);
+                return r;
+                }).filter(Objects::nonNull);
+        });
         return result;
     }
 
@@ -86,19 +90,21 @@ public class JavaRddOfBindingsOps {
         GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, (p, i, c) -> p instanceof OpService || (p instanceof OpLateral && i != 0));
         dag.addRoot(union);
 
-        // Insert cache nodes
-        // vx := someOp(vy) becomes
-        // vx := cache(vxCache)
-        // vxCache := someOp(vy)
+        // Insert cache nodes:
+        // ?vx      := someOp(vy)
+        // becomes
+        // ?vx      := cache(vxCache)
+        // ?vxCache := someOp(vy)
         for (Map.Entry<Var, Collection<Var>> entry : dag.getChildToParent().asMap().entrySet()) {
-            if (entry.getValue().size() > 1) {
+            Var childVar = entry.getKey();
+            Collection<Var> parentVars = entry.getValue();
+            if (parentVars.size() > 1) {
                 // System.out.println("Multiple parents on: " + entry.getKey());
-                Var v = entry.getKey();
-                Op def = dag.getVarToExpr().get(v);
-                Var uncachedVar = Var.alloc(v.getName() + "_cached");
-                dag.getVarToExpr().remove(v);
-                dag.getVarToExpr().put(uncachedVar, def);
-                dag.getVarToExpr().put(v, new OpService(NodeFactory.createURI("rdd:cache"), new OpVar(uncachedVar), false));
+                Op childDef = dag.getExpr(childVar);
+                Var uncachedVar = Var.alloc(childVar.getName() + "_cached");
+                dag.getVarToExpr().remove(childVar);
+                dag.getVarToExpr().put(uncachedVar, childDef);
+                dag.getVarToExpr().put(childVar, new OpService(NodeFactory.createURI("rdd:cache"), new OpVar(uncachedVar), false));
             }
         }
 
