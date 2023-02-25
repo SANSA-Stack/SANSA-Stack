@@ -14,7 +14,9 @@ import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -86,11 +88,16 @@ public class JavaRddOfBindingsOps {
         JavaRDD<Binding> rdd = executionDispatch.exec(rootOp, initialRdd);
 
         JavaRDD<Quad> result = rdd.mapPartitions(it -> {
-            // TODO Is this safe if some quadVars are unbound?!
+            Var gVar = (Var)quadVars.getGraph();
+            Triple tripleVars = quadVars.asTriple();
             return Iter.iter(it).map(b -> {
-                Quad r = Substitute.substitute(quadVars, b);
+                Node g = b.get(gVar);
+                Quad q = g != null
+                        ? Substitute.substitute(quadVars, b)
+                        :  Quad.create(Quad.defaultGraphNodeGenerated, Substitute.substitute(tripleVars, b));
+                Quad r = q.isConcrete() ? q : null;
                 return r;
-                }).filter(Objects::nonNull);
+            }).filter(Objects::nonNull);
         });
         return result;
     }
