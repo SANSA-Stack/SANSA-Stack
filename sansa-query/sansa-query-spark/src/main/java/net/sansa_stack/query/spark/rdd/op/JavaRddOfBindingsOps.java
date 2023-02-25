@@ -123,6 +123,8 @@ public class JavaRddOfBindingsOps {
             }
         }
         Set<Op> cacheCandidateOps = cacheCandidates.stream().map(dag::getExpr).collect(Collectors.toSet());
+
+
         Map<Op, Float> costs = assessCacheImpact(dag, cacheCandidateOps);
         for (Op candOp : cacheCandidateOps) {
             float cost = costs.get(candOp);
@@ -203,7 +205,14 @@ public class JavaRddOfBindingsOps {
                 if (cacheCandidates.contains(subOp)) {
                     cost = 0;
                 } else {
-                    cost = costs.get(subOp);
+                    Float tmp = costs.get(subOp);
+                    if (tmp == null) {
+                        // If traversal into a sub op was blocked then count it as 0
+                        cost = 0;
+                        // throw new RuntimeException("Should not happen: No cost entry for " + subOp);
+                    } else {
+                        cost = tmp;
+                    }
                 }
                 if (cost > maxCost) {
                     maxCost = cost;
