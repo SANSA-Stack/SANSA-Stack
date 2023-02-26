@@ -257,7 +257,7 @@ public class OpExecutorImpl
                 { long             tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
             }
 
-            if (rhsSize < 100000) {
+            if (rhsSize < 1000000) {
                 // TODO extend AggBuilder with multimap support
                 List<Binding> rhsBindings = rhsRdd.collect();
                 // Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
