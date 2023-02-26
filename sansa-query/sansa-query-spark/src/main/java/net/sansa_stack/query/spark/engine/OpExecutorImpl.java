@@ -1,20 +1,26 @@
 package net.sansa_stack.query.spark.engine;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.commons.collector.core.AggBuilder;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
+import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.atlas.lib.tuple.Tuple;
+import org.apache.jena.atlas.lib.tuple.Tuple3;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -216,27 +222,58 @@ public class OpExecutorImpl
         return result;
     }
 
-
     @Override
     public JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> input) {
+        JavaRDD<Binding> result = null;
+
         Op lhsOp = op.getLeft();
         Op rhsOp = op.getRight();
 
         Set<Var> lhsVars = OpVars.visibleVars(lhsOp);
         Set<Var> rhsVars = OpVars.visibleVars(rhsOp);
 
-        Set<Var> joinVars = new LinkedHashSet<>(Sets.intersection(lhsVars, rhsVars));
+        List<Var> joinVars = new ArrayList<>(Sets.intersection(lhsVars, rhsVars));
+        Var[] joinVarsArr = joinVars.toArray(new Var[0]);
 
         JavaRDD<Binding> lhsRdd = execToRdd(lhsOp, input).toJavaRDD();
         JavaRDD<Binding> rhsRdd = execToRdd(rhsOp, root(input)).toJavaRDD();
 
-        JavaPairRDD<Long, Binding> lhsPairRdd = hashForJoin(lhsRdd, joinVars);
-        JavaPairRDD<Long, Binding> rhsPairRdd = hashForJoin(rhsRdd, joinVars);
+        // TODO Injecting broadcast joins at execution time is a hack
+        //  The broadcast join needs to be injected by the optimizer because here we introduce counting overhead
+        boolean detectBroadCastJoin = true;
+        if (detectBroadCastJoin) {
+            long lhsSize = lhsRdd.count();
+            long rhsSize = lhsRdd.count();
+            if (lhsSize < rhsSize) {
+                // Swap lhs / rhs
+                { Op tmp = lhsOp; lhsOp = rhsOp; rhsOp = tmp; }
+                { Set<Var> tmp = lhsVars; lhsVars = rhsVars; rhsVars = tmp; }
+                { JavaRDD<Binding> tmp = lhsRdd; lhsRdd = rhsRdd; rhsRdd = tmp; }
+                { long tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
+            }
 
-        JavaRDD<Binding> result = lhsPairRdd.join(rhsPairRdd)
-                .map(t -> t._2)
-                .filter(t -> Algebra.compatible(t._1, t._2))
-                .map(t -> Binding.builder(t._1).addAll(t._2).build());
+            if (rhsSize < 5000000) {
+                // TODO extend AggBuilder with multimap support
+                List<Binding> rhsBindings = rhsRdd.collect();
+                Multimap<Tuple<Node>, Binding> mm =  Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
+
+                result = lhsRdd.mapPartitions(it ->
+                    Iter.iter(it).flatMap(lhsB -> {
+                        Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
+                        return mm.get(joinKey).iterator();
+                    }));
+            }
+        }
+
+        if (result == null) {
+            JavaPairRDD<Long, Binding> lhsPairRdd = hashForJoin(lhsRdd, joinVars);
+            JavaPairRDD<Long, Binding> rhsPairRdd = hashForJoin(rhsRdd, joinVars);
+
+            result = lhsPairRdd.join(rhsPairRdd)
+                    .map(t -> t._2)
+                    .filter(t -> Algebra.compatible(t._1, t._2))
+                    .map(t -> Binding.builder(t._1).addAll(t._2).build());
+        }
 
         return result;
     }
@@ -260,7 +297,7 @@ public class OpExecutorImpl
         return result;
     }
 
-    public static JavaPairRDD<Long, Binding> hashForJoin(JavaRDD<Binding> rdd, Set<Var> joinVars) {
+    public static JavaPairRDD<Long, Binding> hashForJoin(JavaRDD<Binding> rdd, Collection<Var> joinVars) {
         return rdd.mapPartitionsToPair(itBindings ->
                 Iter.map(itBindings, binding -> {
                     Long hash = JoinLib.hash(joinVars, binding);
