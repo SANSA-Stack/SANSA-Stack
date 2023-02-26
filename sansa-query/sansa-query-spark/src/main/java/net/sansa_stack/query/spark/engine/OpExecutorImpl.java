@@ -9,6 +9,7 @@ import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.commons.collections.multimaps.MultimapUtils;
 import org.aksw.commons.collector.core.AggBuilder;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
@@ -18,6 +19,7 @@ import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
+import org.apache.commons.collections4.MultiMapUtils;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.lib.tuple.Tuple3;
@@ -255,17 +257,23 @@ public class OpExecutorImpl
                 { long tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
             }
 
-            if (rhsSize < 1000000) {
+            if (rhsSize < 100000) {
                 // TODO extend AggBuilder with multimap support
                 List<Binding> rhsBindings = rhsRdd.collect();
-                Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
-                Broadcast<Multimap<Tuple<Node>, Binding>> broadcast = sc.broadcast(joinIndexOutside);
+                // Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
+                // There seems to be an issue with multimap serialization - the deserialized one threw NPE...
+                Map<Tuple<Node>, List<Binding>> joinIndexOutside = new HashMap<>();
+                rhsBindings.forEach(b -> {
+                    Tuple<Node> key = BindingUtils.projectAsTuple(b, joinVarsArr);
+                    joinIndexOutside.computeIfAbsent(key, k -> new ArrayList<>()).add(b);
+                });
+                Broadcast<Map<Tuple<Node>, List<Binding>>> broadcast = sc.broadcast(joinIndexOutside);
 
                 result = lhsRdd.mapPartitions(it -> {
-                    Multimap<Tuple<Node>, Binding> jonIndexInside = broadcast.getValue();
+                    Map<Tuple<Node>, List<Binding>> jonIndexInside = broadcast.getValue();
                     return Iter.iter(it).flatMap(lhsB -> {
                         Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
-                        return jonIndexInside.get(joinKey).iterator();
+                        return jonIndexInside.getOrDefault(joinKey, Collections.emptyList()).iterator();
                     });
                 });
             }
