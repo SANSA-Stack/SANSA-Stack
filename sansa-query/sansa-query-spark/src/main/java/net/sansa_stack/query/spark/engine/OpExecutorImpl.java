@@ -3,6 +3,7 @@ package net.sansa_stack.query.spark.engine;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
+import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
@@ -88,6 +89,10 @@ public class OpExecutorImpl
     @Override
     public JavaRDD<Binding> execute(OpDisjunction op, JavaRDD<Binding> rdd) {
         List<Op> ops = op.getElements();
+        return executeUnion(rdd, ops);
+    }
+
+    public JavaRDD<Binding> executeUnion(JavaRDD<Binding> rdd, List<Op> ops) {
         JavaRDD<Binding>[] rdds = ops.stream().map(o -> execToRdd(o, rdd).toJavaRDD()).collect(Collectors.toList()).toArray(new JavaRDD[0]);
         JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
         JavaRDD<Binding> result = sc.union(rdds);
@@ -174,9 +179,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpUnion op, JavaRDD<Binding> rdd) {
-        // TODO This method should get the (spark-based) executor
-        // and pass all union members to it
-        throw new UnsupportedOperationException();
+        return executeUnion(rdd, Arrays.asList(op.getLeft(), op.getRight()));
     }
 
     @Override
@@ -222,13 +225,13 @@ public class OpExecutorImpl
         Set<Var> lhsVars = OpVars.visibleVars(lhsOp);
         Set<Var> rhsVars = OpVars.visibleVars(rhsOp);
 
-         Set<Var> joinVars = new LinkedHashSet<>(Sets.intersection(lhsVars, rhsVars));
+        Set<Var> joinVars = new LinkedHashSet<>(Sets.intersection(lhsVars, rhsVars));
 
         JavaRDD<Binding> lhsRdd = execToRdd(lhsOp, input).toJavaRDD();
         JavaRDD<Binding> rhsRdd = execToRdd(rhsOp, root(input)).toJavaRDD();
 
-        JavaPairRDD<Object, Binding> lhsPairRdd = hashForJoin(lhsRdd, joinVars);
-        JavaPairRDD<Object, Binding> rhsPairRdd = hashForJoin(rhsRdd, joinVars);
+        JavaPairRDD<Long, Binding> lhsPairRdd = hashForJoin(lhsRdd, joinVars);
+        JavaPairRDD<Long, Binding> rhsPairRdd = hashForJoin(rhsRdd, joinVars);
 
         JavaRDD<Binding> result = lhsPairRdd.join(rhsPairRdd)
                 .map(t -> t._2)
@@ -257,7 +260,7 @@ public class OpExecutorImpl
         return result;
     }
 
-    public static JavaPairRDD<Object, Binding> hashForJoin(JavaRDD<Binding> rdd, Set<Var> joinVars) {
+    public static JavaPairRDD<Long, Binding> hashForJoin(JavaRDD<Binding> rdd, Set<Var> joinVars) {
         return rdd.mapPartitionsToPair(itBindings ->
                 Iter.map(itBindings, binding -> {
                     Long hash = JoinLib.hash(joinVars, binding);
@@ -270,7 +273,7 @@ public class OpExecutorImpl
     /** Create an RDD with a single empty binding */
     protected JavaRDD<Binding> root(JavaRDD<Binding> prototype) {
         JavaSparkContext sc = JavaSparkContextUtils.fromRdd(prototype);
-        return sc.parallelize(Arrays.asList(BindingFactory.root()));
+        return JavaRddOfBindingsOps.unitRdd(sc);
     }
 
 }
