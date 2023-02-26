@@ -3,7 +3,7 @@ package net.sansa_stack.spark.io.csv.input;
 import com.google.gson.JsonObject;
 import org.aksw.commons.lambda.serializable.SerializableBiFunction;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
-import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
+import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
@@ -38,7 +38,7 @@ public class CsvRowMapperFactories {
         SerializableFunction<String[][], Function<String[], Binding>> result = headers -> {
             SerializableFunction<String[], Binding> r = strs -> {
                 JsonObject obj = rowMapperFactoryJson.apply(headers, strs);
-                Node node = RDFDatatypeJson.get().jsonToNode(obj);
+                Node node = JenaJsonUtils.createLiteralByValue(obj);
                 BindingBuilder bb = BindingBuilder.create(parent);
                 bb.add(resultVar, node);
                 return bb.build();
