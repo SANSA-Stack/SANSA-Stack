@@ -248,13 +248,13 @@ public class OpExecutorImpl
         boolean detectBroadCastJoin = true;
         if (detectBroadCastJoin) {
             long lhsSize = lhsRdd.count();
-            long rhsSize = lhsRdd.count();
+            long rhsSize = rhsRdd.count();
             if (lhsSize < rhsSize) {
                 // Swap lhs / rhs
-                { Op tmp = lhsOp; lhsOp = rhsOp; rhsOp = tmp; }
-                { Set<Var> tmp = lhsVars; lhsVars = rhsVars; rhsVars = tmp; }
-                { JavaRDD<Binding> tmp = lhsRdd; lhsRdd = rhsRdd; rhsRdd = tmp; }
-                { long tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
+                { Op               tmp = lhsOp  ; lhsOp   = rhsOp  ; rhsOp   = tmp; }
+                { Set<Var>         tmp = lhsVars; lhsVars = rhsVars; rhsVars = tmp; }
+                { JavaRDD<Binding> tmp = lhsRdd ; lhsRdd  = rhsRdd ; rhsRdd  = tmp; }
+                { long             tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
             }
 
             if (rhsSize < 100000) {
