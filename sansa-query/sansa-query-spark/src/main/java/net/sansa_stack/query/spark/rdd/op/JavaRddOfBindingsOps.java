@@ -17,10 +17,7 @@ import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ARQ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryType;
+import org.apache.jena.query.*;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
@@ -87,18 +84,10 @@ public class JavaRddOfBindingsOps {
 
         JavaRDD<Binding> rdd = executionDispatch.exec(rootOp, initialRdd);
 
-        JavaRDD<Quad> result = rdd.mapPartitions(it -> {
-            Var gVar = (Var)quadVars.getGraph();
-            Triple tripleVars = quadVars.asTriple();
-            return Iter.iter(it).map(b -> {
-                Node g = b.get(gVar);
-                Quad q = g != null
-                        ? Substitute.substitute(quadVars, b)
-                        :  Quad.create(Quad.defaultGraphNodeGenerated, Substitute.substitute(tripleVars, b));
-                Quad r = q.isConcrete() ? q : null;
-                return r;
-            }).filter(Objects::nonNull);
-        });
+        JavaRDD<Quad> result = rdd.mapPartitions(it ->
+                Iter.iter(it)
+                        .map(b -> Substitute.substitute(quadVars, b))
+                        .filter(Quad::isConcrete));
         return result;
     }
 

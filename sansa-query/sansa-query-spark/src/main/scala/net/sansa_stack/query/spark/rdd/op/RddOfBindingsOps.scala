@@ -19,7 +19,7 @@ import org.apache.jena.sparql.algebra.op.OpService
 import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
-import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingFactory, BindingProject}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingComparator, BindingFactory, BindingProject}
 import org.apache.jena.sparql.expr.{E_Coalesce, Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
@@ -195,15 +195,9 @@ object RddOfBindingsOps {
       // nothing to be done - error?
       rdd
     } else {
-      val firstSortCondition = sortConditions.get(0)
-
-      // By default sort by ASC
-      val isAscending = firstSortCondition.getDirection != Query.ORDER_DESCENDING
-
-      // FIXME Sort key... Comparable... Serializable... Ugh!
-      val expr = firstSortCondition.getExpression
-      val broadcastExpr = rdd.context.broadcast(expr)
-      val bindingToKey = (b: Binding) => broadcastExpr.value.eval(b, env)
+      val isAscending = true
+      val broadcast = rdd.context.broadcast(sortConditions)
+      val bindingToKey = (b: Binding) => b;
 
 //      val bindingToKey: Binding => NodeValue =
 //        if (n == 1) {
@@ -215,12 +209,13 @@ object RddOfBindingsOps {
 
       // It seems we could here create our own comparator that implements
       // the different sort directions on the components
-      implicit val order = new Ordering[NodeValue] {
-        override def compare(x: NodeValue, y: NodeValue): Int = NodeValue.compareAlways(x, y)
+      implicit val order = new Ordering[Binding] {
+        def bindingComparator = new BindingComparator(broadcast.value)
+        override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
       }
 
       // sortBy immediately triggers parsing the input rdd; for this reason use cache/persist.
-      rdd.persist(StorageLevel.MEMORY_AND_DISK).sortBy(bindingToKey, isAscending)(order, classTag[NodeValue])
+      rdd.persist(StorageLevel.MEMORY_AND_DISK).sortBy(bindingToKey, isAscending)(order, classTag[Binding])
     }
   }
 
