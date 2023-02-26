@@ -37,6 +37,7 @@ import org.apache.jena.sparql.util.Symbol;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
@@ -226,6 +227,8 @@ public class OpExecutorImpl
     public JavaRDD<Binding> execute(OpJoin op, JavaRDD<Binding> input) {
         JavaRDD<Binding> result = null;
 
+        JavaSparkContext sc = JavaSparkContextUtils.fromRdd(input);
+
         Op lhsOp = op.getLeft();
         Op rhsOp = op.getRight();
 
@@ -255,13 +258,16 @@ public class OpExecutorImpl
             if (rhsSize < 1000000) {
                 // TODO extend AggBuilder with multimap support
                 List<Binding> rhsBindings = rhsRdd.collect();
-                Multimap<List<Node>, Binding> mm =  Multimaps.index(rhsBindings, b -> BindingUtils.projectAsList(b, joinVarsArr));
+                Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
+                Broadcast<Multimap<Tuple<Node>, Binding>> broadcast = sc.broadcast(joinIndexOutside);
 
-                result = lhsRdd.mapPartitions(it ->
-                    Iter.iter(it).flatMap(lhsB -> {
-                        List<Node> joinKey = BindingUtils.projectAsList(lhsB, joinVarsArr);
-                        return mm.get(joinKey).iterator();
-                    }));
+                result = lhsRdd.mapPartitions(it -> {
+                    Multimap<Tuple<Node>, Binding> jonIndexInside = broadcast.getValue();
+                    return Iter.iter(it).flatMap(lhsB -> {
+                        Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
+                        return jonIndexInside.get(joinKey).iterator();
+                    });
+                });
             }
         }
 
