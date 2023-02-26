@@ -252,14 +252,14 @@ public class OpExecutorImpl
                 { long tmp = lhsSize; lhsSize = rhsSize; rhsSize = tmp; }
             }
 
-            if (rhsSize < 5000000) {
+            if (rhsSize < 1000000) {
                 // TODO extend AggBuilder with multimap support
                 List<Binding> rhsBindings = rhsRdd.collect();
-                Multimap<Tuple<Node>, Binding> mm =  Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
+                Multimap<List<Node>, Binding> mm =  Multimaps.index(rhsBindings, b -> BindingUtils.projectAsList(b, joinVarsArr));
 
                 result = lhsRdd.mapPartitions(it ->
                     Iter.iter(it).flatMap(lhsB -> {
-                        Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
+                        List<Node> joinKey = BindingUtils.projectAsList(lhsB, joinVarsArr);
                         return mm.get(joinKey).iterator();
                     }));
             }
