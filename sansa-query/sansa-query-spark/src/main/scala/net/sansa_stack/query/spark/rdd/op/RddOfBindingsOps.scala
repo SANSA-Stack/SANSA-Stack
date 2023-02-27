@@ -197,6 +197,8 @@ object RddOfBindingsOps {
       // nothing to be done - error?
       rdd
     } else {
+      // TODO As a micro-optimization it might be better to project the binding used as the key to those variables that are actually used in sorting
+      //  Or even turn the binding into a tuple
       val isAscending = true
       val broadcast = rdd.context.broadcast(sortConditions)
       val bindingToKey = (b: Binding) => b;
@@ -216,8 +218,10 @@ object RddOfBindingsOps {
         override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
       }
 
-      // sortBy immediately triggers parsing the input rdd; for this reason use cache/persist.
-      rdd.persist(StorageLevel.MEMORY_AND_DISK).sortBy(bindingToKey, isAscending)(order, classTag[Binding])
+      // sortBy immediately triggers parsing the input rdd; for this reason we may want to use cache/persist.
+      // However, this is not a choice the executor should make but the planner
+      // rdd.persist(StorageLevel.MEMORY_AND_DISK)
+      rdd.sortBy(bindingToKey, isAscending)(order, classTag[Binding])
     }
   }
 
