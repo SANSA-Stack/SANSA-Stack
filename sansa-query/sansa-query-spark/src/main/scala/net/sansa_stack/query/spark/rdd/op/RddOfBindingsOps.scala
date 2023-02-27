@@ -81,10 +81,12 @@ object RddOfBindingsOps {
 
   def filter(rdd: RDD[Binding], exprs: ExprList): RDD[Binding] = {
     // 'Hack' to inject the ExprList into the filter operation
-    val serializableExpr = E_SerializableIdentity.wrap(new E_Coalesce(exprs))
-    rdd.filter(binding => {
-      val el = serializableExpr.getArg.asInstanceOf[E_Coalesce].getArgs
-      el.stream().allMatch(_.eval(binding, null).getBoolean)
+    // val serializableExpr = E_SerializableIdentity.wrap(new E_Coalesce(exprs))
+    val broadcast = rdd.context.broadcast(exprs)
+    rdd.mapPartitions(it => {
+      val el = broadcast.value
+      val execCxt = ExecutionContextUtils.createExecCxtEmptyDsg()
+      it.filter(el.isSatisfied(_, execCxt))
     })
   }
 
