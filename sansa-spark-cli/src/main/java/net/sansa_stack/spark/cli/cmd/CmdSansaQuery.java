@@ -28,6 +28,9 @@ public class CmdSansaQuery
     @Option(names = {"--iriasgiven"}, arity = "0", description = "Use an alternative IRI() implementation that is non-validating but fast")
     public boolean useIriAsGiven = false;
 
+    @Option(names = {"--hide-warnings"}, arity = "0", description = "Do not warn when creating invalid node values", defaultValue = "false")
+    public boolean hideWarnings = false;
+
     @Option(names = {"--no-dag"}, arity = "0", description = "Do not perform DAG scheduling of SPARQL queries to group common operations")
     public boolean noDagScheduling = false;
 

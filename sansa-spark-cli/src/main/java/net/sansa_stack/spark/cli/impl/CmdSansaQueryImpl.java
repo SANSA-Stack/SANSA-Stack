@@ -18,6 +18,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -92,6 +93,8 @@ public class CmdSansaQueryImpl {
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
         JavaRDD<Binding> initialRdd = JavaRddOfBindingsOps.unitRdd(javaSparkContext);
+
+        NodeValue.VerboseWarnings = !cmd.hideWarnings;
 
         switch (queryType) {
             case CONSTRUCT: {
