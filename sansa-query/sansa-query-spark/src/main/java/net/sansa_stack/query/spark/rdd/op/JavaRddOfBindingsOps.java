@@ -9,6 +9,7 @@ import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.util.algebra.ExprFilter;
 import org.aksw.commons.util.algebra.ExprOps;
 import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.jena_sparql_api.algebra.transform.TransformUnionToDisjunction;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
@@ -21,6 +22,7 @@ import org.apache.jena.query.*;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.op.OpDisjunction;
 import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.algebra.op.OpLateral;
@@ -61,18 +63,21 @@ public class JavaRddOfBindingsOps {
                 .map(query -> QueryGenerationUtils.constructToLateral(query, quadVars, QueryType.CONSTRUCT, false, true))
                 .collect(Collectors.toList());
 
+        OpDisjunction union = OpDisjunction.create();
+        lateralConstructQueries.stream().map(Algebra::compile).forEach(union::add);
+        Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), union);
+
         Op rootOp;
         Map<Var, Op> opDefs;
         if (useDag) {
-            GenericDag<Op, Var> dag = buildDag(lateralConstructQueries);
+            GenericDag<Op, Var> dag = buildDag(union);
             rootOp = dag.getRoots().iterator().next();
             opDefs = dag.getVarToExpr();
         } else {
-            OpDisjunction union = OpDisjunction.create();
-            lateralConstructQueries.stream().map(Algebra::compile).forEach(union::add);
-            rootOp = union;
+            rootOp = baseOp;
             opDefs = new HashMap<>();
         }
+
         cxt = cxt == null ? ARQ.getContext().copy() : cxt.copy();
         cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
         ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
@@ -96,13 +101,10 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    public static GenericDag<Op, Var> buildDag(Collection<Query> queries) {
-        List<Op> ops = queries.stream().map(Algebra::compile).collect(Collectors.toList());
-        OpDisjunction union = OpDisjunction.create();
-        ops.forEach(union::add);
+    public static GenericDag<Op, Var> buildDag(Op rootOp) {
         // Do not descend into the rhs of laterals
         GenericDag<Op, Var> dag = new GenericDag<>(OpUtils.getOpOps(),  new VarAlloc("op")::allocVar, JavaRddOfBindingsOps::defaultBlocker);
-        dag.addRoot(union);
+        dag.addRoot(rootOp);
 
         // Insert cache nodes:
         // ?vx      := someOp(vy)
