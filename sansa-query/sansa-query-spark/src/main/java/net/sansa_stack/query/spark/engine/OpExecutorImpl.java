@@ -32,6 +32,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.apache.jena.sparql.engine.binding.BindingLib;
 import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.sse.SSE;
 import org.apache.jena.sparql.sse.WriterSSE;
@@ -273,7 +274,8 @@ public class OpExecutorImpl
                     Map<Tuple<Node>, List<Binding>> jonIndexInside = broadcast.getValue();
                     return Iter.iter(it).flatMap(lhsB -> {
                         Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
-                        return jonIndexInside.getOrDefault(joinKey, Collections.emptyList()).iterator();
+                        return Iter.iter(jonIndexInside.getOrDefault(joinKey, Collections.emptyList()))
+                                .map(rhsB -> BindingLib.merge(lhsB, rhsB));
                     });
                 });
             }
