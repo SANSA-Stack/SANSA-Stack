@@ -30,6 +30,7 @@ import org.apache.jena.sparql.algebra.*;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.binding.BindingLib;
@@ -305,7 +306,10 @@ public class OpExecutorImpl
             result = base.mapPartitions(it -> {
                 Op rightOp = SSE.parseOp(rightSse);
                 ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg();
-                return Iter.iter(it).flatMap(b -> QC.execute(rightOp, b, execCxt));
+                return Iter.iter(it).flatMap(b -> {
+                    QueryIterator r = QC.execute(rightOp, b, execCxt);
+                    return r;
+                });
             });
         } else {
             throw new UnsupportedOperationException("Lateral joins for non-pattern-free ops not yet implemented");

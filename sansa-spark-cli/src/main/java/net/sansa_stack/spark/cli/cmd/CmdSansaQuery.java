@@ -25,14 +25,16 @@ public class CmdSansaQuery
     @Parameters(arity = "1..n", description = "query file(s)")
     public List<String> queryFiles;
 
-    @Option(names = {"--iriasgiven"}, arity = "0", description = "Use an alternative IRI() implementation that is non-validating but fast")
-    public boolean useIriAsGiven = false;
+    // @Option(names = {"--iriasgiven"}, arity = "0", description = "Use an alternative IRI() implementation that is non-validating but fast")
+    // public boolean useIriAsGiven = false;
+    @Option(names = {"--standard-iri"}, arity = "0", description = "Instead of treating 'IRIs as given' use Jena's standard IRI() implementation that is much slower due to validation and locking")
+    public boolean standardIri = false;
 
     @Option(names = {"--hide-warnings"}, arity = "0", description = "Do not warn when creating invalid node values", defaultValue = "false")
     public boolean hideWarnings = false;
 
-    @Option(names = {"--no-dag"}, arity = "0", description = "Do not perform DAG scheduling of SPARQL queries to group common operations")
-    public boolean noDagScheduling = false;
+    @Option(names = {"--dag"}, arity = "0", description = "Add rdd.cache() nodes for certain common sub expressions in the sparql algebra. Experimental; usually makes things slower.")
+    public boolean dagScheduling = false;
 
     @Override
     public Integer call() throws Exception {

@@ -66,7 +66,8 @@ public class CmdSansaQueryImpl {
                 .map(query -> QueryUtils.applyElementTransform(query, F_BNodeAsGiven.ExprTransformBNodeToBNodeAsGiven::transformElt))
                 .collect(Collectors.toList());
 
-        if (cmd.useIriAsGiven) {
+        // Use fast IRI by default
+        if (!cmd.standardIri) {
             queries = queries.stream()
                     .map(query -> QueryUtils.applyElementTransform(query, E_IriAsGiven.ExprTransformIriToIriAsGiven::transformElt))
                     .collect(Collectors.toList());
@@ -98,7 +99,7 @@ public class CmdSansaQueryImpl {
 
         switch (queryType) {
             case CONSTRUCT: {
-                boolean useDag = !cmd.noDagScheduling;
+                boolean useDag = cmd.dagScheduling;
                 JavaRDD<Quad> rdd = JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, queries, null, useDag);
                 // List<JavaRDD<Quad>> rdds = queries.stream().map(query -> JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, query, null)).collect(Collectors.toList());
                 // JavaRDD<Quad> rdd = javaSparkContext.union(rdds.toArray(new JavaRDD[0]));

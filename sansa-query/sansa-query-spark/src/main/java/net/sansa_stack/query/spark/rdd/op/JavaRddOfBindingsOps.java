@@ -66,12 +66,13 @@ public class JavaRddOfBindingsOps {
         Op op1 = lateralConstructQueries.stream().map(Algebra::compile).reduce(OpUnion::new).orElse(OpTable.empty());
 
         // TODO Is it possible that there is a bug that combine extend does not preserve order?
-        // Op op2 = Transformer.transform(new TransformExtendCombine(), op1);
-        Op op2 = op1;
+        Op op2 = Transformer.transform(new TransformExtendCombine(), op1);
+        // Op op2 = op1;
 
         // Disjunction as the non-canonical union might be less supported by optimizers
         Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), op2);
 
+        System.out.println(baseOp);
         Op rootOp;
         Map<Var, Op> opDefs;
         if (useDag) {
@@ -96,7 +97,10 @@ public class JavaRddOfBindingsOps {
 
         JavaRDD<Quad> result = rdd.mapPartitions(it ->
                 Iter.iter(it)
-                        .map(b -> Substitute.substitute(quadVars, b))
+                        .map(b -> {
+                            Quad q = Substitute.substitute(quadVars, b);
+                            return q;
+                        })
                         .filter(Quad::isConcrete));
         return result;
     }

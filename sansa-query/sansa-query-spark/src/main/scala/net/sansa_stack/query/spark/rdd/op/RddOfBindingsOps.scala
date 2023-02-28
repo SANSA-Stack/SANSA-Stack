@@ -70,8 +70,7 @@ object RddOfBindingsOps {
    */
   def project(rddOfBindings: RDD[_ <: Binding], projectVars: util.Collection[Var]): RDD[Binding] = {
     val varList = projectVars
-
-    rddOfBindings.mapPartitions(_.map(x => BindingFactory.copy(new BindingProject(varList, x))))
+    rddOfBindings.mapPartitions(_.map(new BindingProject(varList, _)))
   }
 
   // filterKeep
@@ -228,15 +227,13 @@ object RddOfBindingsOps {
   def extend(rdd: RDD[Binding], varExprList: VarExprList): RDD[Binding] = {
     // TODO We should pass an execCxt
     // val execCxt = null
-
-    var broadcastVel = rdd.context.broadcast(varExprList)
+    val velBc = rdd.context.broadcast(varExprList)
     rdd.mapPartitions(it => {
-      val execCxt = ExecutionContextUtils.createFunctionEnv();
+      val execCxt = ExecutionContextUtils.createExecCxtEmptyDsg()
+      val vel = velBc.value
       it.map(b => {
-        val r: BindingBuilder = BindingFactory.builder(b)
-        val contrib = VarExprListUtils.copyProject(broadcastVel.value, b, execCxt)
-        r.addAll(contrib)
-        r.build
+        val r = VarExprListUtils.eval(vel, b, execCxt)
+        r
       })
     })
   }
