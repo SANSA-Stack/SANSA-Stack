@@ -1,5 +1,6 @@
 package net.sansa_stack.query.spark.rdd.op;
 
+import com.google.common.base.Preconditions;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSparkImpl;
 import net.sansa_stack.query.spark.engine.ExecutionDispatch;
@@ -23,10 +24,8 @@ import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
-import org.apache.jena.sparql.algebra.op.OpDisjunction;
-import org.apache.jena.sparql.algebra.op.OpJoin;
-import org.apache.jena.sparql.algebra.op.OpLateral;
-import org.apache.jena.sparql.algebra.op.OpService;
+import org.apache.jena.sparql.algebra.op.*;
+import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.core.Var;
@@ -57,20 +56,23 @@ public class JavaRddOfBindingsOps {
     }
 
     public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt, boolean useDag) {
+
         Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
         List<Query> lateralConstructQueries = queries.stream()
                 .map(query -> QueryGenerationUtils.constructToLateral(query, quadVars, QueryType.CONSTRUCT, false, true))
                 .collect(Collectors.toList());
 
-        OpDisjunction union = OpDisjunction.create();
-        lateralConstructQueries.stream().map(Algebra::compile).forEach(union::add);
-        Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), union);
+        Op op1 = lateralConstructQueries.stream().map(Algebra::compile).reduce(OpUnion::new).orElse(OpTable.empty());
+        Op op2 = Transformer.transform(new TransformExtendCombine(), op1);
+
+        // Disjunction as the non-canonical union might be less supported by optimizers
+        Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), op2);
 
         Op rootOp;
         Map<Var, Op> opDefs;
         if (useDag) {
-            GenericDag<Op, Var> dag = buildDag(union);
+            GenericDag<Op, Var> dag = buildDag(baseOp);
             rootOp = dag.getRoots().iterator().next();
             opDefs = dag.getVarToExpr();
         } else {
