@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.function.Function;
 
+import org.aksw.jenax.arq.util.prefix.PrefixMapTrie;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -68,7 +69,7 @@ public abstract class OutputFormatStreamRdfBase<T>
 
         FragmentOutputSpec fragmentOutputSpec = FragmentOutputSpec.create(splitCount, splitId);
         // PrefixMap prefixes = new PrefixMapAdapter(prefixMap);
-        PrefixMap p = new PrefixMapStd(); // PrefixMapFactory.createForOutput(prefixMap);
+        PrefixMap p = new PrefixMapTrie(); //PrefixMapStd(); // PrefixMapFactory.createForOutput(prefixMap);
         p.putAll(prefixMap);
 
         Function<OutputStream, StreamRDF> mapper = StreamRDFUtils.createStreamRDFFactory(rdfFormat, mapQuadsToTriplesForTripleLangs, p, fragmentOutputSpec);
