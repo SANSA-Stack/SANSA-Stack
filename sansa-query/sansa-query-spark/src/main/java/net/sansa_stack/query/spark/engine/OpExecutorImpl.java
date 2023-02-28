@@ -105,7 +105,7 @@ public class OpExecutorImpl
     public JavaRDD<Binding> executeUnion(JavaRDD<Binding> rdd, List<Op> ops) {
         JavaRDD<Binding>[] rdds = ops.stream().map(o -> execToRdd(o, rdd).toJavaRDD()).collect(Collectors.toList()).toArray(new JavaRDD[0]);
         JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
-        JavaRDD<Binding> result = sc.union(rdds);
+        JavaRDD<Binding> result = rdds.length == 1 ? rdds[0] : sc.union(rdds);
         return result;
     }
 
