@@ -181,7 +181,16 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpOrder op, JavaRDD<Binding> rdd) {
-        return RddOfBindingsOps.order(execToRdd(op.getSubOp(), rdd), op.getConditions()).toJavaRDD();
+        Op subOp = op.getSubOp();
+        JavaRDD<Binding> result;
+        if (subOp instanceof OpDistinct) {
+            OpDistinct opDistinct = (OpDistinct)subOp;
+            List<SortCondition> sortConditions = op.getConditions();
+            result = RddOfBindingsOps.sortDistinct(execToRdd(opDistinct.getSubOp(), rdd), sortConditions).toJavaRDD();
+        } else {
+            result = RddOfBindingsOps.order(execToRdd(op.getSubOp(), rdd), op.getConditions()).toJavaRDD();
+        }
+        return result;
     }
 
     @Override
