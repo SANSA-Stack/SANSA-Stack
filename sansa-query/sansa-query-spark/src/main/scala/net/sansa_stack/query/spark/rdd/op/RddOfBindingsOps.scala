@@ -9,6 +9,7 @@ import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
+import org.aksw.jenax.arq.util.binding.BindingUtils
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
 import org.aksw.jenax.arq.util.expr.E_SerializableIdentity
 import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
@@ -23,6 +24,7 @@ import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingCo
 import org.apache.jena.sparql.expr.{E_Coalesce, Expr, ExprAggregator, ExprList, NodeValue}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -174,15 +176,8 @@ object RddOfBindingsOps {
     RddOfDatasetsOps.mapPartitionsWithSparql(rdd, query)
   }
 
-
-
-
   /**
-   * Limitation: Only the first sort condition's sort direction is considered.
-   * Spark's rdd.sortBy does not directly support multiple sort orders
-   * Maybe it is possible to work around that in the future by creating custom key objects
-   * with custom compareTo implementations
-   *
+   * Sort an RDD w.r.t. a given list of [[SortCondition]]s.
    * @param rdd
    * @param sortConditions
    * @return
@@ -196,32 +191,35 @@ object RddOfBindingsOps {
       // nothing to be done - error?
       rdd
     } else {
-      // TODO As a micro-optimization it might be better to project the binding used as the key to those variables that are actually used in sorting
-      //  Or even turn the binding into a tuple
-      val isAscending = true
       val broadcast = rdd.context.broadcast(sortConditions)
-      val bindingToKey = (b: Binding) => b;
+      val projectVars = new util.HashSet[Var]
+      sortConditions.forEach(x => projectVars.addAll(x.getExpression.getVarsMentioned))
+      val bindingToKey = (b: Binding) => new BindingProject(projectVars, b).asInstanceOf[Binding]
 
-//      val bindingToKey: Binding => NodeValue =
-//        if (n == 1) {
-//          val expr = firstSortCondition.getExpression
-//          (b: Binding) => expr.eval(b, env)
-//        } else {
-//          (b: Binding) => sortConditions.stream.map(_.getExpression).map(_.eval(b, env)).collect(Collectors.toList)
-//        }
-
-      // It seems we could here create our own comparator that implements
-      // the different sort directions on the components
-      implicit val order = new Ordering[Binding] {
+      // XXX What is better - Binding or Tuple? The latter makes for smaller sort keys but requires mapping to Binding again.
+      // var projVars = exprs.getVarsMentioned.toArray(new Array[Var](0))
+      // val bindingToKey = (b: Binding) => BindingUtils.projectAsTuple(b, projVars)
+      
+      val order = new Ordering[Binding] {
         def bindingComparator = new BindingComparator(broadcast.value)
         override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
       }
 
       // sortBy immediately triggers parsing the input rdd; for this reason we may want to use cache/persist.
-      // However, this is not a choice the executor should make but the planner
+      // However, it may be better not make this choice in the planner rather than the executor
       // rdd.persist(StorageLevel.MEMORY_AND_DISK)
-      rdd.sortBy(bindingToKey, isAscending)(order, classTag[Binding])
+      rdd.sortBy(bindingToKey, true)(order, classTag[Binding])
     }
+  }
+
+  def sortDistinct(rdd: RDD[Binding], sortConditions: util.List[SortCondition]): RDD[Binding] = {
+    val broadcast = rdd.context.broadcast(sortConditions)
+    val order = new Ordering[Binding] {
+      def bindingComparator = new BindingComparator(broadcast.value)
+      override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
+    }
+    // XXX What is a good value for numPartitions?
+    rdd.distinct(rdd.getNumPartitions)(order)
   }
 
   def extend(rdd: RDD[Binding], varExprList: VarExprList): RDD[Binding] = {

@@ -26,6 +26,7 @@ import org.apache.jena.atlas.lib.tuple.Tuple3;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
+import org.apache.jena.query.SortCondition;
 import org.apache.jena.sparql.algebra.*;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.Var;
@@ -195,7 +196,16 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpDistinct op, JavaRDD<Binding> rdd) {
-        return execToRdd(op.getSubOp(), rdd).distinct().toJavaRDD();
+        Op subOp = op.getSubOp();
+        JavaRDD<Binding> result;
+        if (subOp instanceof OpOrder) {
+            OpOrder opOrder = (OpOrder)subOp;
+            List<SortCondition> sortConditions = opOrder.getConditions();
+            result = RddOfBindingsOps.sortDistinct(execToRdd(opOrder.getSubOp(), rdd), sortConditions).toJavaRDD();
+        } else {
+            result = execToRdd(op.getSubOp(), rdd).distinct().toJavaRDD();
+        }
+        return result;
     }
 
     @Override
