@@ -1,16 +1,12 @@
 package net.sansa_stack.query.spark.engine;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
-import org.aksw.commons.collections.multimaps.MultimapUtils;
-import org.aksw.commons.collector.core.AggBuilder;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
@@ -19,10 +15,8 @@ import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.aksw.rml.model.LogicalSource;
-import org.apache.commons.collections4.MultiMapUtils;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.tuple.Tuple;
-import org.apache.jena.atlas.lib.tuple.Tuple3;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -33,11 +27,9 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.binding.BindingLib;
 import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.sse.SSE;
-import org.apache.jena.sparql.sse.WriterSSE;
 import org.apache.jena.sparql.util.Symbol;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -183,10 +175,11 @@ public class OpExecutorImpl
     public JavaRDD<Binding> execute(OpOrder op, JavaRDD<Binding> rdd) {
         Op subOp = op.getSubOp();
         JavaRDD<Binding> result;
-        if (subOp instanceof OpDistinct) {
+        // XXX If we found out how to mimic "sort -u" in spark then update the code
+        if (false && subOp instanceof OpDistinct) {
             OpDistinct opDistinct = (OpDistinct)subOp;
             List<SortCondition> sortConditions = op.getConditions();
-            result = RddOfBindingsOps.sortDistinct(execToRdd(opDistinct.getSubOp(), rdd), sortConditions).toJavaRDD();
+            result = RddOfBindingsOps.distinctByConditions(execToRdd(opDistinct.getSubOp(), rdd), sortConditions).toJavaRDD();
         } else {
             result = RddOfBindingsOps.order(execToRdd(op.getSubOp(), rdd), op.getConditions()).toJavaRDD();
         }
@@ -207,10 +200,11 @@ public class OpExecutorImpl
     public JavaRDD<Binding> execute(OpDistinct op, JavaRDD<Binding> rdd) {
         Op subOp = op.getSubOp();
         JavaRDD<Binding> result;
-        if (subOp instanceof OpOrder) {
+        // XXX If we found out how to mimic "sort -u" in spark then update the code
+        if (false && subOp instanceof OpOrder) {
             OpOrder opOrder = (OpOrder)subOp;
             List<SortCondition> sortConditions = opOrder.getConditions();
-            result = RddOfBindingsOps.sortDistinct(execToRdd(opOrder.getSubOp(), rdd), sortConditions).toJavaRDD();
+            result = RddOfBindingsOps.distinctByConditions(execToRdd(opOrder.getSubOp(), rdd), sortConditions).toJavaRDD();
         } else {
             result = execToRdd(op.getSubOp(), rdd).distinct().toJavaRDD();
         }

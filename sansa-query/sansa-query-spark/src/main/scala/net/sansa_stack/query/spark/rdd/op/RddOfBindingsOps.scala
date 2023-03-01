@@ -212,7 +212,8 @@ object RddOfBindingsOps {
     }
   }
 
-  def sortDistinct(rdd: RDD[Binding], sortConditions: util.List[SortCondition]): RDD[Binding] = {
+  /** This method does not result in a sorted RDD. Bindings are compared by means of evaluation of the given conditions. */
+  def distinctByConditions(rdd: RDD[Binding], sortConditions: util.List[SortCondition]): RDD[Binding] = {
     val broadcast = rdd.context.broadcast(sortConditions)
     val order = new Ordering[Binding] {
       def bindingComparator = new BindingComparator(broadcast.value)
