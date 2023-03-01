@@ -57,17 +57,31 @@ public class JavaRddOfBindingsOps {
 
     public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt, boolean useDag) {
 
-        Quad quadVars = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+        Quad constructQuad = null;
 
-        List<Query> lateralConstructQueries = queries.stream()
-                .map(query -> QueryGenerationUtils.constructToLateral(query, quadVars, QueryType.CONSTRUCT, false, true))
-                .collect(Collectors.toList());
+        // If there is just a single query that projects a single quad then don't apply construct-to-lateral transformation
+        //  because it may separate Order+Distinct operations and thus miss optimization opportunity
+        List<Query> effectiveQueries = null;
+        if (queries.size() == 1) {
+            Query query = queries.iterator().next();
+            List<Quad> constructQuads = query.getConstructTemplate().getQuads();
+            if (constructQuads.size() == 1) {
+                constructQuad = constructQuads.iterator().next();
+                effectiveQueries = Collections.singletonList(query);
+            }
+        }
 
-        Op op1 = lateralConstructQueries.stream().map(Algebra::compile).reduce(OpUnion::new).orElse(OpTable.empty());
+        if (effectiveQueries == null) {
+            Quad finalConstructQuad = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+            // TODO Variables of the query may clash with the constructQuad
+            effectiveQueries = queries.stream()
+                    .map(query -> QueryGenerationUtils.constructToLateral(query, finalConstructQuad, QueryType.CONSTRUCT, false, true))
+                    .collect(Collectors.toList());
+            constructQuad = finalConstructQuad;
+        }
 
-        // TODO Is it possible that there is a bug that combine extend does not preserve order?
+        Op op1 = effectiveQueries.stream().map(Algebra::compile).reduce(OpUnion::new).orElse(OpTable.empty());
         Op op2 = Transformer.transform(new TransformExtendCombine(), op1);
-        // Op op2 = op1;
 
         // Disjunction as the non-canonical union might be less supported by optimizers
         Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), op2);
