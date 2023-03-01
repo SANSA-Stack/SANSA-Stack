@@ -57,7 +57,7 @@ public class JavaRddOfBindingsOps {
 
     public static JavaRDD<Quad> execSparqlConstruct(JavaRDD<Binding> initialRdd, List<Query> queries, Context cxt, boolean useDag) {
 
-        Quad constructQuad = null;
+        Quad tmpConstructQuad = null;
 
         // If there is just a single query that projects a single quad then don't apply construct-to-lateral transformation
         //  because it may separate Order+Distinct operations and thus miss optimization opportunity
@@ -66,18 +66,20 @@ public class JavaRddOfBindingsOps {
             Query query = queries.iterator().next();
             List<Quad> constructQuads = query.getConstructTemplate().getQuads();
             if (constructQuads.size() == 1) {
-                constructQuad = constructQuads.iterator().next();
+                tmpConstructQuad = constructQuads.iterator().next();
                 effectiveQueries = Collections.singletonList(query);
             }
         }
 
+        Quad constructQuad = tmpConstructQuad != null
+            ? tmpConstructQuad
+            : Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+
         if (effectiveQueries == null) {
-            Quad finalConstructQuad = Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
-            // TODO Variables of the query may clash with the constructQuad
+            // TODO Variables of the query may clash with the tmpConstructQuad
             effectiveQueries = queries.stream()
-                    .map(query -> QueryGenerationUtils.constructToLateral(query, finalConstructQuad, QueryType.CONSTRUCT, false, true))
+                    .map(query -> QueryGenerationUtils.constructToLateral(query, constructQuad, QueryType.CONSTRUCT, false, true))
                     .collect(Collectors.toList());
-            constructQuad = finalConstructQuad;
         }
 
         Op op1 = effectiveQueries.stream().map(Algebra::compile).reduce(OpUnion::new).orElse(OpTable.empty());
@@ -112,7 +114,7 @@ public class JavaRddOfBindingsOps {
         JavaRDD<Quad> result = rdd.mapPartitions(it ->
                 Iter.iter(it)
                         .map(b -> {
-                            Quad q = Substitute.substitute(quadVars, b);
+                            Quad q = Substitute.substitute(constructQuad, b);
                             return q;
                         })
                         .filter(Quad::isConcrete));
