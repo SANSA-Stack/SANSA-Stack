@@ -199,7 +199,7 @@ object RddOfBindingsOps {
       // XXX What is better - Binding or Tuple? The latter makes for smaller sort keys but requires mapping to Binding again.
       // var projVars = exprs.getVarsMentioned.toArray(new Array[Var](0))
       // val bindingToKey = (b: Binding) => BindingUtils.projectAsTuple(b, projVars)
-      
+
       val order = new Ordering[Binding] {
         def bindingComparator = new BindingComparator(broadcast.value)
         override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
