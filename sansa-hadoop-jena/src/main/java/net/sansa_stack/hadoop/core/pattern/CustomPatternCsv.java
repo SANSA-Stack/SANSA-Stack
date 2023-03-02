@@ -167,6 +167,7 @@ public class CustomPatternCsv
         protected int currentFieldContentStart = 0;
         protected Boolean isInQuotedField = null;
 
+        // FIXME This variable is never incremented
         protected int currentLineCount;
         // protected List<MatchState> states;
 
@@ -207,7 +208,7 @@ public class CustomPatternCsv
             }
 
             if (isInQuotedField == null) {
-                autoDetectStartInQuotedField(this);
+                autoDetectStartInQuotedField(this, multilineFieldMaxLines);
             }
 
             int lastMatchEnd = lastRowEnd;
@@ -417,12 +418,12 @@ public class CustomPatternCsv
      *
      * @param matcher
      */
-    public static void autoDetectStartInQuotedField(CustomMatcherCsv2 matcher) {
-        int rowProbeCount = 10;
+    public static void autoDetectStartInQuotedField(CustomMatcherCsv2 matcher, int rowProbeCount) {
+        // int rowProbeCount = 10;
 
         int verdict = -1; // -1 = no match found, 0 = unquoted, 1 = quoted, 2 = failed to decide
         nextAssumption: for (int r = 0; r <= 1; ++r) {
-            boolean quoted = r % 2 == 1;
+            boolean quoted = r == 0 ? false : true; // r % 2 == 1; // r==0 -> quoted=false, 1 -> quoted=true
             matcher.setInQuotedField(quoted);
             matcher.reset();
             int lastFieldCount = -1;
@@ -452,8 +453,8 @@ public class CustomPatternCsv
                     break;
                 }
             }
-            // If we found at least 1 row we can set the assumption as the result
-            if (i > 0) {
+            // If we found at least 1 rows (and we were allowed to probe rows) then we can set the assumption as the result
+            if (i > 0 || rowProbeCount == 0) {
                 verdict = r;
                 break;
             }

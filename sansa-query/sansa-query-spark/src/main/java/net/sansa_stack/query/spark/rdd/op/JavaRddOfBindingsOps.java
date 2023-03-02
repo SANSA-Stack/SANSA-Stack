@@ -88,7 +88,8 @@ public class JavaRddOfBindingsOps {
         // Disjunction as the non-canonical union might be less supported by optimizers
         Op baseOp = Transformer.transform(new TransformUnionToDisjunction(), op2);
 
-        System.out.println(baseOp);
+        logger.info("Algebra: ", baseOp);
+        // System.out.println(baseOp);
         Op rootOp;
         Map<Var, Op> opDefs;
         if (useDag) {
