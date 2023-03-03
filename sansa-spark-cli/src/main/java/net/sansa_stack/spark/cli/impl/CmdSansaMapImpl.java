@@ -98,7 +98,6 @@ public class CmdSansaMapImpl {
         rddRdfWriter = rddRdfWriterFactory.forQuad(rdd);
     } else {
         JavaRDD<Triple> rdd = rdfSources.asTriples().toJavaRDD();
-
         rddRdfWriter = rddRdfWriterFactory.forTriple(rdd);
     }
     rddRdfWriter.runUnchecked();

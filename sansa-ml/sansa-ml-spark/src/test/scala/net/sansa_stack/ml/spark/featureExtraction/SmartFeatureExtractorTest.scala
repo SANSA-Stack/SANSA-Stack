@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
@@ -13,10 +14,9 @@ import org.scalatest.FunSuite
 
 class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession.builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(s"SparqlFrame Transformer Unit Test")
     .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
     .config("spark.kryo.registrator", String.join(

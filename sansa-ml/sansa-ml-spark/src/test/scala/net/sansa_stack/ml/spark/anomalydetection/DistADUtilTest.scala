@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.anomalydetection
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
@@ -10,32 +11,10 @@ import org.scalatest.funsuite.AnyFunSuite
   */
 class DistADUtilTest extends AnyFunSuite with SharedSparkContext {
 
-  System.setProperty(
-    "spark.serializer",
-    "org.apache.spark.serializer.KryoSerializer"
-  )
-  System.setProperty(
-    "spark.kryo.registrator", String.join(",",
-      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-      "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator")
-  )
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession
-    .builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(s"SparqlFrame Transformer Unit Test")
-    .config(
-      "spark.serializer",
-      "org.apache.spark.serializer.KryoSerializer"
-    ) // we need Kryo serialization enabled with some custom serializers
-    .config(
-      "spark.kryo.registrator",
-      String.join(", ",
-        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
-        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"
-      )
-    )
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 

@@ -68,7 +68,7 @@
         <spark.testing.version>3.0.1_1.0.0</spark.testing.version>
 
         <hadoop.version>3.3.4</hadoop.version>
-	<!-- <hadoop.version>2.8.5</hadoop.version> -->
+        <!-- <hadoop.version>2.8.5</hadoop.version> -->
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
@@ -79,13 +79,13 @@
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
-	<slf4j.version>1.7.36</slf4j.version>
-	<log4j.version>2.18.0</log4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <log4j.version>2.18.0</log4j.version>
 
 
-	<ver.netty>4.1.74.Final</ver.netty>
-	<ver.jackson>2.13.3</ver.jackson>
-	<!-- <log4j.version>1</log4j.version> -->
+        <ver.netty>4.1.74.Final</ver.netty>
+        <ver.jackson>2.13.3</ver.jackson>
+        <!-- <log4j.version>1</log4j.version> -->
 
 
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
@@ -100,7 +100,7 @@
         <owlapi.version>5.1.17</owlapi.version>
 
         <ontop.version>4.3.0-2</ontop.version>
-	<sparqlify.version>0.9.1</sparqlify.version>
+        <sparqlify.version>0.9.1</sparqlify.version>
 
         <guava.version>30.1-jre</guava.version>
         <!--        <guava.version>14.0.1</guava.version>-->
@@ -121,23 +121,23 @@
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
 
-<!-- Common argLines for java and scala test runners -->
-<sansa.argLine>
---add-opens=java.base/java.lang=ALL-UNNAMED
---add-opens=java.base/java.lang.invoke=ALL-UNNAMED
---add-opens=java.base/java.lang.reflect=ALL-UNNAMED
---add-opens=java.base/java.io=ALL-UNNAMED
---add-opens=java.base/java.net=ALL-UNNAMED
---add-opens=java.base/java.nio=ALL-UNNAMED
---add-opens=java.base/java.util=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
---add-opens=java.base/sun.nio.ch=ALL-UNNAMED
---add-opens=java.base/sun.nio.cs=ALL-UNNAMED
---add-opens=java.base/sun.security.action=ALL-UNNAMED
---add-opens=java.base/sun.util.calendar=ALL-UNNAMED
---add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
-</sansa.argLine>
+        <!-- Common argLines for java and scala test runners -->
+        <sansa.argLine>
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+            --add-opens=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+        </sansa.argLine>
     </properties>
 
     <modules>
@@ -420,12 +420,12 @@
             </dependency>
             -->
 
-	    <dependency>
+            <dependency>
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-bom</artifactId>
-		<version>${aksw-commons.version}</version>
-		<type>pom</type>
-		<scope>import</scope>
+                <version>${aksw-commons.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Added because otherwise the jar-with-dependencies won't work in databricks -->
@@ -443,7 +443,7 @@
 
 
             <!-- jenax -->
-             <dependency>
+            <dependency>
                 <groupId>org.aksw.jenax</groupId>
                 <artifactId>jenax-bom</artifactId>
                 <version>${jenax.version}</version>
@@ -496,13 +496,13 @@
 
             <!-- rxjava ideomatic SPARQL fluents
                  Similar to Java8 Streams but with resource management and back pressure handling  -->
-                 <!--
-            <dependency>
-                <groupId>org.aksw.jenax</groupId>
-                <artifactId>jenax-arq-rx</artifactId>
-                <version>${jsa.version}</version>
-            </dependency>
-            -->
+            <!--
+       <dependency>
+           <groupId>org.aksw.jenax</groupId>
+           <artifactId>jenax-arq-rx</artifactId>
+           <version>${jsa.version}</version>
+       </dependency>
+       -->
 
 
             <!--
@@ -615,13 +615,13 @@
             </dependency>
 
 
-	    <dependency>
-    <groupId>org.glassfish.jersey</groupId>
-    <artifactId>jersey-bom</artifactId>
-    <version>2.35</version>
-    <type>pom</type>
-    <scope>import</scope>
-</dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>2.35</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Servlet engines -->
             <!--
                         <dependency>
@@ -642,34 +642,34 @@
             <!-- <dependency> <groupId>org.eclipse.jetty</groupId> <artifactId>jetty-util</artifactId>
                 <version>${jetty.version}</version> </dependency> -->
 
-		<!-- io.netty:netty is ancient -->
-	<!--
-		<dependency>
-                        <groupId>io.netty</groupId>
-			<artifactId>netty</artifactId>
-			<version>${ver.netty}</version>
-			<scope>provided</scope>
-		</dependency>
-	-->
-                    <dependency>
-                        <groupId>io.netty</groupId>
-			<artifactId>netty-handler</artifactId>
-			<version>${ver.netty}</version>
-			<!-- <scope>provided</scope> -->
-                    </dependency>
-                    <dependency>
-                        <groupId>io.netty</groupId>
-			<artifactId>netty-transport-native-epoll</artifactId>
-			<version>${ver.netty}</version>
-			<!-- <scope>provided</scope> -->
-		</dependency>
-		<!--
-                    <dependency>
-                        <groupId>io.netty</groupId>
-			<artifactId>netty-tcnative-classes</artifactId>
-			<version>${ver.netty}</version>
-			</dependency>
-		-->
+            <!-- io.netty:netty is ancient -->
+            <!--
+                <dependency>
+                                <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                    <version>${ver.netty}</version>
+                    <scope>provided</scope>
+                </dependency>
+            -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>${ver.netty}</version>
+                <!-- <scope>provided</scope> -->
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <version>${ver.netty}</version>
+                <!-- <scope>provided</scope> -->
+            </dependency>
+            <!--
+                        <dependency>
+                            <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-classes</artifactId>
+                <version>${ver.netty}</version>
+                </dependency>
+            -->
 
 
             <!-- HADOOP dependencies (mainly used for InputFormat definitions) -->
@@ -708,18 +708,18 @@
                     <exclusion>
                         <groupId>com.sun.jersey.contribs</groupId>
                         <artifactId>jersey-guice</artifactId>
-		</exclusion>
-		      <exclusion>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-reload4j</artifactId>
-                </exclusion>
+                    </exclusion>
 
-		<!--
-		    <exclusion>
-                        <groupId>io.netty</groupId>
-                        <artifactId>netty</artifactId>
-			</exclusion>
-		-->
+                    <!--
+                        <exclusion>
+                                    <groupId>io.netty</groupId>
+                                    <artifactId>netty</artifactId>
+                        </exclusion>
+                    -->
                 </exclusions>
             </dependency>
             <dependency>
@@ -754,13 +754,13 @@
                     <exclusion>
                         <groupId>com.google.guava</groupId>
                         <artifactId>guava</artifactId>
-	    	    </exclusion>
-		<exclusion>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-reload4j</artifactId>
-		</exclusion>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-reload4j</artifactId>
+                    </exclusion>
 
-		    <exclusion>
+                    <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
@@ -839,8 +839,8 @@
                     <exclusion>
                         <groupId>javax.ws.rs</groupId>
                         <artifactId>javax.ws.rs-api</artifactId>
-		</exclusion>
-		                    <exclusion>
+                    </exclusion>
+                    <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
@@ -848,13 +848,13 @@
                 </exclusions>
             </dependency>
 
-	    <!--
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>2.9.0</version>
-	    </dependency>
-	    -->
+            <!--
+                <dependency>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                    <version>2.9.0</version>
+            </dependency>
+            -->
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
@@ -1090,7 +1090,7 @@
             <dependency>
                 <groupId>org.aksw.sparqlify</groupId>
                 <artifactId>sparqlify-core</artifactId>
-		<version>${sparqlify.version}</version>
+                <version>${sparqlify.version}</version>
                 <exclusions>
                     <!-- <exclusion> <groupId>cglib</groupId> <artifactId>cglib</artifactId>
                         </exclusion> -->
@@ -1392,14 +1392,14 @@
                 <version>8.1.0</version>
             </dependency>
 
-			<!-- FasterXML -->
-			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
-				<artifactId>jackson-bom</artifactId>
-				<version>${ver.jackson}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
+            <!-- FasterXML -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${ver.jackson}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <!-- slf4j Logger dependencies -->
             <dependency>
@@ -1412,13 +1412,13 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-ext</artifactId>
                 <version>${slf4j.version}</version>
-		<exclusions>
-			<exclusion>
-                <groupId>ch.qos.cal10n</groupId>
-                <artifactId>cal10n-api</artifactId>
- 
-			</exclusion>
-		</exclusions>
+                <exclusions>
+                    <exclusion>
+                        <groupId>ch.qos.cal10n</groupId>
+                        <artifactId>cal10n-api</artifactId>
+
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1428,14 +1428,13 @@
             </dependency>
 
 
-
-<!--
-            <dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-slf4j18-impl</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
--->
+            <!--
+                        <dependency>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j18-impl</artifactId>
+                            <version>${log4j.version}</version>
+                        </dependency>
+            -->
 
 
             <dependency>
@@ -1707,8 +1706,9 @@
 
                     <configuration>
                         <useFile>false</useFile>
-			<disableXmlReport>true</disableXmlReport>
-			<!-- <argLine>-disableassertions</argLine> --> <!-- Some channel classes may introduce too much overhead with assertions enabled -->
+                        <disableXmlReport>true</disableXmlReport>
+                        <threadCount>1</threadCount>
+                        <!-- <argLine>-disableassertions</argLine> --> <!-- Some channel classes may introduce too much overhead with assertions enabled -->
 
                         <!--						<threadCountSuites>4</threadCountSuites>-->
                         <!-- If you have classpath issue like NoDefClassError,... -->
@@ -1718,7 +1718,7 @@
                             <include>**/*Suite.*</include>
                         </includes>
                         <!-- <skipTests>false</skipTests> -->
-                    <argLine>${sansa.argLine}</argLine>
+                        <argLine>${sansa.argLine}</argLine>
                     </configuration>
                 </plugin>
 
@@ -1750,7 +1750,7 @@
                         <filereports>SANSA-${project.artifactId}-Tests.txt</filereports>
                         <htmlreporters>${project.build.directory}/html/scalatest</htmlreporters>
                         <testFailureIgnore>false</testFailureIgnore>
-                    <argLine>${sansa.argLine}</argLine>
+                        <argLine>${sansa.argLine}</argLine>
                     </configuration>
                     <executions>
                         <execution>
@@ -1762,15 +1762,15 @@
                     </executions>
                 </plugin>
 
-		<!-- This plugin was last released 2011 - does anything depend on it? -->
-		<plugin>
-			                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-		<version>2.15.2</version>
-		<configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                </configuration>
-            </plugin>
+                <!-- This plugin was last released 2011 - does anything depend on it? -->
+                <plugin>
+                    <groupId>org.scala-tools</groupId>
+                    <artifactId>maven-scala-plugin</artifactId>
+                    <version>2.15.2</version>
+                    <configuration>
+                        <scalaVersion>${scala.version}</scalaVersion>
+                    </configuration>
+                </plugin>
 
 
                 <!-- <plugin> -->
@@ -1805,20 +1805,20 @@
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                     <artifactId>maven-deploy-plugin</artifactId>
-			<version>3.0.0-M2</version>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.0.0-M2</version>
                 </plugin>
-		<plugin>
-			<groupId>org.sonatype.plugins</groupId>
-                                <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.12</version>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.12</version>
                 </plugin>
-                        <plugin>
-                                <groupId>de.dentrassi.maven</groupId>
-                                <artifactId>rpm</artifactId>
-                                <version>1.8.0</version>
-                                <extensions>true</extensions>
-                        </plugin>
+                <plugin>
+                    <groupId>de.dentrassi.maven</groupId>
+                    <artifactId>rpm</artifactId>
+                    <version>1.8.0</version>
+                    <extensions>true</extensions>
+                </plugin>
 
 
                 <!-- Gitflow -->
@@ -2232,19 +2232,19 @@
             </releases>
         </repository>
 
-        
+
         <repository>
-                <id>apache-snapshot</id>
-                <name>Apache repository (snapshots)</name>
-                <url>https://repository.apache.org/content/repositories/snapshots/</url>
-                <snapshots>
-                    <enabled>true</enabled>
-                </snapshots>
-                <releases>
-                    <enabled>false</enabled>
-                </releases>
+            <id>apache-snapshot</id>
+            <name>Apache repository (snapshots)</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </repository>
-        
+
         <repository>
             <id>maven.aksw.snapshots</id>
             <name>AKSW Snapshot Repository</name>
