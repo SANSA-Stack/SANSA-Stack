@@ -15,8 +15,10 @@ class DistADUtilTest extends AnyFunSuite with SharedSparkContext {
     "org.apache.spark.serializer.KryoSerializer"
   )
   System.setProperty(
-    "spark.kryo.registrator",
-    "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator"
+    "spark.kryo.registrator", String.join(",",
+      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+      "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator")
   )
 
   lazy val spark = SparkSession
@@ -28,10 +30,10 @@ class DistADUtilTest extends AnyFunSuite with SharedSparkContext {
     ) // we need Kryo serialization enabled with some custom serializers
     .config(
       "spark.kryo.registrator",
-      String.join(
-        ", ",
+      String.join(", ",
         "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"
       )
     )
     .config("spark.sql.crossJoin.enabled", true)

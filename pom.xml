@@ -120,6 +120,24 @@
         <hadoop.deps.scope>compile</hadoop.deps.scope>
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
+
+<!-- Common argLines for java and scala test runners -->
+<sansa.argLine>
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.net=ALL-UNNAMED
+--add-opens=java.base/java.nio=ALL-UNNAMED
+--add-opens=java.base/java.util=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+--add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+--add-opens=java.base/sun.security.action=ALL-UNNAMED
+--add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+</sansa.argLine>
     </properties>
 
     <modules>
@@ -1700,22 +1718,7 @@
                             <include>**/*Suite.*</include>
                         </includes>
                         <!-- <skipTests>false</skipTests> -->
-<argLine>
---add-opens=java.base/java.lang=ALL-UNNAMED
---add-opens=java.base/java.lang.invoke=ALL-UNNAMED
---add-opens=java.base/java.lang.reflect=ALL-UNNAMED
---add-opens=java.base/java.io=ALL-UNNAMED
---add-opens=java.base/java.net=ALL-UNNAMED
---add-opens=java.base/java.nio=ALL-UNNAMED
---add-opens=java.base/java.util=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
---add-opens=java.base/sun.nio.ch=ALL-UNNAMED
---add-opens=java.base/sun.nio.cs=ALL-UNNAMED
---add-opens=java.base/sun.security.action=ALL-UNNAMED
---add-opens=java.base/sun.util.calendar=ALL-UNNAMED
---add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
-</argLine>
+                    <argLine>${sansa.argLine}</argLine>
                     </configuration>
                 </plugin>
 
@@ -1747,22 +1750,7 @@
                         <filereports>SANSA-${project.artifactId}-Tests.txt</filereports>
                         <htmlreporters>${project.build.directory}/html/scalatest</htmlreporters>
                         <testFailureIgnore>false</testFailureIgnore>
-<argLine>
---add-opens=java.base/java.lang=ALL-UNNAMED
---add-opens=java.base/java.lang.invoke=ALL-UNNAMED
---add-opens=java.base/java.lang.reflect=ALL-UNNAMED
---add-opens=java.base/java.io=ALL-UNNAMED
---add-opens=java.base/java.net=ALL-UNNAMED
---add-opens=java.base/java.nio=ALL-UNNAMED
---add-opens=java.base/java.util=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
---add-opens=java.base/sun.nio.ch=ALL-UNNAMED
---add-opens=java.base/sun.nio.cs=ALL-UNNAMED
---add-opens=java.base/sun.security.action=ALL-UNNAMED
---add-opens=java.base/sun.util.calendar=ALL-UNNAMED
---add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
-</argLine>
+                    <argLine>${sansa.argLine}</argLine>
                     </configuration>
                     <executions>
                         <execution>

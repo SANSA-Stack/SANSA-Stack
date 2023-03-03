@@ -11,13 +11,16 @@ import org.scalatest.FunSuite
 class SPARQLQueryTest extends FunSuite with SharedSparkContext {
 
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator, net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify", "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator")
 
   lazy val spark = SparkSession.builder()
     .appName(sc.appName)
     .master(sc.master)
     .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+    .config("spark.kryo.registrator", String.join(",",
+        "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
+        "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify",
+        "net.sansa_stack.query.spark.ontop.OntopKryoRegistrator"))
     .config("spark.sql.crossJoin.enabled", "true")
     .getOrCreate()
 
