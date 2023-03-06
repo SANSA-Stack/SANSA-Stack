@@ -3,9 +3,13 @@ package net.sansa_stack.spark.cli.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
+import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.picocli.CmdMixinArq;
+import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.query.ARQ;
@@ -14,6 +18,8 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.ResultSetMgr;
 import org.apache.jena.riot.resultset.ResultSetLang;
+import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.util.Context;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -85,7 +91,14 @@ public class CmdSansaNgsQueryImpl {
             : rdd;
 
 
-    JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, ARQ.getContext());
+    // CmdMixinArq is serializable
+    CmdMixinArq arqConfig = cmd.arqConfig;
+    CmdMixinArq.configureGlobal(arqConfig);
+    // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
+    CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
+    Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);
+
+    JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, execCxtSupplier);
 
     ResultSetMgr.write(System.out, ResultSet.adapt(resultSetSpark.collectToTable().toRowSet()), outLang);
 

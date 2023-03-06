@@ -9,15 +9,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import org.aksw.jenax.arq.picocli.CmdMixinArq;
+import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.jena.query.ARQ;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -25,6 +30,8 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.StreamRDFWriter;
 import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.util.Context;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
@@ -210,4 +217,13 @@ public class CmdUtils {
         return result;
     }
 
+    public static Supplier<ExecutionContext> createExecCxtSupplier(CmdMixinArq arqConfig) {
+        SerializableSupplier<ExecutionContext> execCxtSupplier = () -> {
+            Context baseCxt = ARQ.getContext().copy();
+            CmdMixinArq.configureCxt(baseCxt, arqConfig);
+            ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg(baseCxt);
+            return execCxt;
+        };
+        return execCxtSupplier;
+    }
 }

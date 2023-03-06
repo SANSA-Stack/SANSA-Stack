@@ -9,6 +9,7 @@ import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.picocli.PicocliMixinCsvw;
 
 import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
+import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -48,6 +49,8 @@ public class CmdSansaTarql
     @Option(names = { "--iriasgiven" }, arity="0", description = "Use an alternative IRI() implementation that is non-validating but fast")
     public boolean useIriAsGiven = false;
 
+    @CommandLine.Mixin
+    public CmdMixinArq arqConfig = new CmdMixinArq();
 
     @Override
     public Integer call() throws Exception {

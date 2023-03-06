@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.cli.cmd;
 
 import net.sansa_stack.spark.cli.impl.CmdSansaNgsQueryImpl;
+import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -42,6 +43,8 @@ public class CmdSansaNgsQuery
             defaultValue = "false")
     public boolean makeDistinct;
 
+    @CommandLine.Mixin
+    public CmdMixinArq arqConfig = new CmdMixinArq();
 
     @Override
     public Integer call() throws Exception {

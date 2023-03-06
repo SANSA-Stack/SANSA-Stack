@@ -49,17 +49,16 @@ import org.apache.spark.api.java.JavaRDD;
 
 import com.google.common.base.Preconditions;
 
+
+/**
+ * @implNote The tarql methods may be subject to reimplementation against the Binding-Engine by means of making use
+ *  of the SERVICE &lt;rml.source&gt; operators. This should lead to a more unified infrastructure. Currently these
+ *  methods lack support for passing custom execution contexts.
+ */
 public class JavaRddOfBindingsOps {
 
     /** The special ?ROWNUM variable supported by tarql */
     public static final Var ROWNUM = Var.alloc("ROWNUM");
-
-    /** 'Static' means that the dataset is fixed */
-//    public static Function<Binding, Stream<Triple>> compileStaticMapperTriple(Query query) {
-//        DatasetGraph ds = DatasetGraphFactory.empty();
-//        Context cxt = ARQ.getContext().copy();
-//        ExecutionContext execCxt = new ExecutionContext(cxt, ds.getDefaultGraph(), ds, QC.getFactory(cxt));
-//    }
 
     /**
      * Compile a construct query into a function that can efficiently produce triples/quads
@@ -183,37 +182,6 @@ public class JavaRddOfBindingsOps {
             // System.err.println("Binding " + binding + " - actions: " + actions.size());
             return accumulationMode ? inputDs : r;
         };
-//        if (constructMode) {
-//            result = binding -> {
-//                DatasetGraph r = DatasetGraphFactory.createGeneral();
-//                DatasetGraph inputDs = DatasetGraphFactory.createGeneral();
-//                ExecutionContext execCxt = new ExecutionContext(context, inputDs.getDefaultGraph(), inputDs, opExecutorFactory) ;
-//                Txn.executeWrite(r, () -> {
-//                    Txn.executeWrite(inputDs, () -> {
-//                        for (TriConsumer<Binding, ExecutionContext, DatasetGraph> action : actions) {
-//                            action.accept(binding, execCxt, r);
-//                        }
-//                    });
-//                });
-//                System.err.println("Construct mode; created " + Iter.count(r.find()) + " quads");
-//                System.err.println("Binding " + binding + " - actions: " + actions.size());
-//                return r;
-//            };
-//        } else {
-//            result = binding -> {
-//                DatasetGraph r = DatasetGraphFactory.createGeneral();
-//                ExecutionContext execCxt = new ExecutionContext(context, r.getDefaultGraph(), r, opExecutorFactory) ;
-//                Txn.executeWrite(r, () -> {
-//                    for (TriConsumer<Binding, ExecutionContext, DatasetGraph> action : actions) {
-//                        action.accept(binding, execCxt, r);
-//                    }
-//                });
-//                System.err.println("Independent mode; created " + Iter.count(r.find()) + " quads");
-//                System.err.println("Binding " + binding + " - actions: " + actions.size());
-//                return r;
-//            };
-//        }
-
         return result;
     }
 
@@ -310,33 +278,7 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-
     // LEGACY CODE BELOW - needs cleanup!
-
-
-//    public static StreamFunction<Binding, Triple> tripleMapperStream(Query query) {
-//        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
-//
-//        Template template = query.getConstructTemplate();
-//        Op op = Algebra.compile(query);
-//        Op finalOp = tarqlOptimize(op);
-//
-//        return StreamFunction.<Binding>identity()
-//                .andThen(JavaRddOfBindingsOps.createMapperBindings(finalOp))
-//                .andThenFlatMap(JavaRddOfBindingsOps.createMapperTriples(template)::apply);
-//    }
-
-//    public static StreamFunction<Binding, Quad> quadMapper(Query query) {
-//        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
-//
-//        Template template = query.getConstructTemplate();
-//        Op op = Algebra.compile(query);
-//        Op finalOp = tarqlOptimize(op);
-//
-//        return StreamFunction.identity(Binding.class)
-//                .andThen(QueryStreamOps.createMapperBindings(finalOp))
-//                .andThenFlatMap(QueryStreamOps.createMapperQuads(template)::apply);
-//    }
 
     public static StreamFunction<Binding, Triple> tripleMapper(Collection<Query> queries) {
         List<Function<Binding, Stream<Triple>>> mappers = queries.stream()
@@ -358,92 +300,6 @@ public class JavaRddOfBindingsOps {
             mappers.stream().flatMap(mapper -> mapper.apply(binding)));
     }
 
-    /**
-     * Use an RDD of bindings as initial bindings for a construct query in order to yield triples.
-     * This is conceptually the same approach as done by the tool 'tarql', hence the name.
-     */
-//    public static JavaRDD<Triple> tarqlTriples(JavaRDD<Binding> rdd, Collection<Query> queries) {
-//        // On xps 17: processing times of stream vs rx on pdl data yields 3:15 vs 3:30min; so stream is faster ~ Claus
-//        return tarqlTriplesStream(rdd, queries);
-//    }
-
-//    public static JavaRDD<Triple> tarqlTriplesOld(JavaRDD<Binding> rdd, Query query) {
-//    	return tarqlTriples(rdd, Collections.singletonList(query));
-//    }
-//
-//    public static JavaRDD<Triple> tarqlTriplesOld(JavaRDD<Binding> rdd, Collection<Query> queries) {
-//    	// Called for validation
-//    	tripleMapper(queries);
-//
-//    	boolean usesRowNum = mentionesRowNumQuery(queries);
-//        rdd = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
-//
-//        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
-//        Broadcast<Collection<Query>> queryBc = cxt.broadcast(queries);
-//        return JavaRddOps.mapPartitions(rdd, bindingIt -> {
-//            Collection<Query> qs = queryBc.getValue();
-//            return tripleMapper(qs).apply(bindingIt);
-//        });
-//    }
-
-//    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query) {
-//    	return tarqlQuads(rdd, Collections.singletonList(query));
-//    }
-//
-//    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<Query> queries) {
-//    	// Called for validation
-//    	quadMapper(queries);
-//
-//    	boolean usesRowNum = mentionesRowNumQuery(queries);
-//        rdd = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
-//
-//        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
-//        Broadcast<Collection<Query>> queryBc = cxt.broadcast(queries);
-//        return JavaRddOps.mapPartitions(rdd, bindingIt -> {
-//            Collection<Query> qs = queryBc.getValue();
-//            return quadMapper(qs).apply(bindingIt);
-//        });
-//    }
-
-//    public static StreamFunction<Binding, Binding> createMapperBindings(Op op) {
-//        return upstream -> {
-//            DatasetGraph ds = DatasetGraphFactory.create();
-//            Context cxt = ARQ.getContext().copy();
-//            ExecutionContext execCxt = new ExecutionContext(cxt, ds.getDefaultGraph(), ds, QC.getFactory(cxt));
-//
-//            return upstream.flatMap(binding -> {
-//                QueryIterator r = QC.execute(op, binding, execCxt);
-//                Iter.onClose(r, r::close);
-//                return Streams.stream(r).onClose(r::close);
-//            });
-//        };
-//    }
-
-
-//    public static Function<Binding, Stream<Triple>> createMapperTriples(Template template) {
-//        return binding -> Streams.stream(TemplateLib.calcTriples(template.getTriples(), Collections.singleton(binding).iterator()));
-//    }
-
-//    public static JavaRDD<Triple> tarqlTriplesRx(JavaRDD<Binding> rdd, Query query) {
-//        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
-//
-//        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
-//        Broadcast<Query> queryBc = cxt.broadcast(query);
-//        RxFunction<Binding, Triple> mapper = upstream -> {
-//            Query q = queryBc.getValue();
-//            Template template = q.getConstructTemplate();
-//            Op op = Algebra.compile(q);
-//            op = tarqlOptimize(op);
-//
-//            return upstream
-//                    .compose(QueryFlowOps.createMapperBindings(op))
-//                    .flatMap(QueryFlowOps.createMapperTriples(template)::apply);
-//        };
-//
-//        rdd = enrichRddWithRowNumIfNeeded(rdd, query);
-//        return JavaRddRxOps.mapPartitions(rdd, mapper);
-//    }
-
     /** Apply default optimizations for algebra expressions meant for tarql
      * Combines EXTENDS */
     public static Op tarqlOptimize(Op op) {
@@ -451,98 +307,16 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    /**
-     * Use an RDD of bindings as initial bindings for a construct query in order to yield quads.
-     * This is conceptually the same approach as done by the tool 'tarql', hence the name.
-     */
-//    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query) {
-//        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
-//
-//        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
-//        Broadcast<Query> queryBc = cxt.broadcast(query);
-//        RxFunction<Binding, Quad> mapper = upstream -> {
-//            Query q = queryBc.getValue();
-//            Template template = q.getConstructTemplate();
-//            Op op = Algebra.compile(q);
-//            op = tarqlOptimize(op);
-//
-//            return upstream
-//                    .compose(QueryFlowOps.createMapperBindings(op))
-//                    .flatMap(QueryFlowOps.createMapperQuads(template)::apply);
-//        };
-//
-//        rdd = enrichRddWithRowNumIfNeeded(rdd, query);
-//        return JavaRddRxOps.mapPartitions(rdd, mapper);
-//    }
-
-    /* Tarql mode: after applying all statements to the given dataset, that dataset is emitted */
-//    public static StreamFunction<Binding, Dataset> mapperDatasets(List<SparqlStmt> stmts, boolean constructMode) {
-//    	Function<Binding, Dataset> mapper = mapperDatasetsCore(stmts, constructMode);
-//    	return upstream -> upstream.map(mapper);
-//    }
-
-    /** Each binding becomes its own dataset */
-//    public static JavaRDD<Dataset> tarqlDatasets(JavaRDD<Binding> rdd, Query query) {
-//        Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
-//
-//        JavaSparkContext cxt = JavaSparkContextUtils.fromRdd(rdd);
-//        Broadcast<Query> queryBc = cxt.broadcast(query);
-//        RxFunction<Binding, Dataset> mapper = upstream -> {
-//            Query q = queryBc.getValue();
-//            Template template = q.getConstructTemplate();
-//            Op op = Algebra.compile(q);
-//            op = tarqlOptimize(op);
-//
-//            return upstream
-//                    .compose(QueryFlowOps.createMapperBindings(op))
-//                    .flatMap(QueryFlowOps.createMapperQuads(template)::apply)
-//                    .reduceWith(DatasetGraphFactory::create, (dsg, quad) -> { dsg.add(quad); return dsg; })
-//                    .map(DatasetFactory::wrap)
-//                    .toFlowable();
-//        };
-//
-//        rdd = enrichRddWithRowNumIfNeeded(rdd, query);
-//        return JavaRddRxOps.mapPartitions(rdd, mapper);
-//    }
-
     public static boolean mentionesRowNum(SparqlStmt sparqlStmt) {
         Set<Node> nodes = SparqlStmtUtils.mentionedNodes(sparqlStmt);
         boolean result = nodes.contains(ROWNUM);
         return result;
     }
 
-    /*
-    public static boolean mentionesRowNumQuery(Collection<Query> queries) {
-        Set<Var> nodes = queries.stream()
-                .map(QueryUtils::mentionedVars)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-        boolean result = nodes.contains(ROWNUM);
-        return result;
-    }
-    */
-
     public static boolean mentionesRowNum(Collection<SparqlStmt> sparqlStmts) {
         boolean result = sparqlStmts.stream().anyMatch(JavaRddOfBindingsOps::mentionesRowNum);
         return result;
     }
-
-    /** If the given query mentions a variable ?ROWNUM (upper case) then the input rdd of bindings is
-     *  zipped with index */
-//    public static JavaRDD<Binding> enrichRddWithRowNumIfNeeded(JavaRDD<Binding> rdd, Query query) {
-//        Set<Var> mentionedVars = query.isConstructType()
-//                ? QuadPatternUtils.getVarsMentioned(query.getConstructTemplate().getQuads())
-//                : new HashSet<>();
-//
-//        Op op = Algebra.compile(query);
-//        Collection<Var> patternVars = OpVars.mentionedVars(op);
-//        mentionedVars.addAll(patternVars);
-//        boolean usesRowNum = mentionedVars.contains(ROWNUM);
-//
-//        JavaRDD<Binding> result = usesRowNum ? enrichRddWithRowNum(rdd) : rdd;
-//
-//        return result;
-//    }
 
     public static JavaRDD<Binding> enrichRddWithRowNum(JavaRDD<Binding> rdd) {
         return rdd.zipWithIndex().map(bi -> BindingFactory.binding(bi._1, ROWNUM, NodeValue.makeInteger(bi._2 + 1).asNode()));

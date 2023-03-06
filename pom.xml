@@ -71,6 +71,8 @@
         <!-- <hadoop.version>2.8.5</hadoop.version> -->
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
+	<jsr203hadoop.version>1.0.3</jsr203hadoop.version>
+
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
         <jena.version>4.8.0-SNAPSHOT</jena.version>
@@ -592,7 +594,13 @@
                 <version>4.6.3</version>
             </dependency>
 
-
+	<!-- Java NIO wrapper for Hadoop - https://github.com/damiencarol/jsr203-hadoop -->
+    <dependency>
+        <groupId>com.github.jsr203hadoop</groupId>
+        <artifactId>jsr203hadoop</artifactId>
+        <version>${jsr203hadoop.version}</version>
+    </dependency>
+    
             <!-- Http components -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>

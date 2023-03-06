@@ -1,12 +1,15 @@
 package net.sansa_stack.spark.cli.cmd;
 
 import net.sansa_stack.spark.cli.impl.CmdSansaQueryImpl;
+import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 @Command(name = "query",
@@ -35,6 +38,9 @@ public class CmdSansaQuery
 
     @Option(names = {"--dag"}, arity = "0", description = "Add rdd.cache() nodes for certain common sub expressions in the sparql algebra. Experimental; usually makes things slower.")
     public boolean dagScheduling = false;
+
+    @CommandLine.Mixin
+    public CmdMixinArq arqConfig = new CmdMixinArq();
 
     @Override
     public Integer call() throws Exception {

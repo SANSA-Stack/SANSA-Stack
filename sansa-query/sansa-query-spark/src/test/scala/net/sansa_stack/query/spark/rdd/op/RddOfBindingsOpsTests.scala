@@ -1,10 +1,10 @@
 package net.sansa_stack.query.spark.rdd.op
 
 import java.util
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.aksw.jenax.arq.util.`var`.Vars
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
+import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
 import org.apache.jena.query.{Query, QueryExecutionFactory, SortCondition}
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.core.VarExprList
@@ -55,7 +55,7 @@ class RddOfBindingsOpsTests extends FunSuite with DataFrameSuiteBase {
     vel.add(Vars.x, new E_StrConcat(
       new ExprList(util.Arrays.asList[Expr](NodeValue.makeString("string: "), new ExprVar(Vars.o)))))
 
-    for (elem <- RddOfBindingsOps.extend(rdd, vel).collect()) {
+    for (elem <- RddOfBindingsOps.extend(rdd, vel, () => ExecutionContextUtils.createExecCxtEmptyDsg()).collect()) {
       println(elem)
     }
   }

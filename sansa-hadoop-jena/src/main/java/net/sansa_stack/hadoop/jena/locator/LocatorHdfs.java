@@ -1,19 +1,18 @@
 package net.sansa_stack.hadoop.jena.locator;
 
+import java.io.InputStream;
+import java.util.Arrays;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.atlas.web.ContentType;
 import org.apache.jena.atlas.web.TypedInputStream;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.stream.LocatorURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.util.Arrays;
-
-/** Support for resources using the "http:" and "https" schemes */
+/** Support for resources using the "hdfs:" scheme. */
 public class LocatorHdfs extends LocatorURL {
     private static Logger log         = LoggerFactory.getLogger(LocatorHdfs.class) ;
     public static final String[] SCHEME_NAMES = {"hdfs"} ;

@@ -5,11 +5,13 @@ import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpVisitor;
 import org.apache.jena.sparql.algebra.op.*;
+import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Supplier;
 
 public class ExecutionDispatch
         implements OpVisitor {
@@ -21,6 +23,7 @@ public class ExecutionDispatch
 
     protected Deque<JavaRDD<Binding>> stack = new ArrayDeque<>();
 
+    /** TODO The input RDD might become removed */
     public JavaRDD<Binding> exec(Op op, JavaRDD<Binding> input) {
         stack.push(input);
         int x = stack.size();
@@ -191,7 +194,6 @@ public class ExecutionDispatch
     public void visit(OpSlice opSlice) {
         stack.push(opExecutor.execute(opSlice, stack.pop()));
     }
-
 
     @Override
     public void visit(OpGroup opGroup) {

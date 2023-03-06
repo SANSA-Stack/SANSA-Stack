@@ -8,6 +8,7 @@ import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
+import org.aksw.commons.lambda.serializable.SerializableSupplier
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
 import org.aksw.jenax.arq.util.binding.BindingUtils
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
@@ -40,17 +41,21 @@ object RddOfBindingsOps {
 
   // FIXME This would actually belong to RddOfDatasetOps (in sansa-jena-spark)
   // however our query api for spark (e.g. ResultSetSpark) is part of the query module
-  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query, cxt: Context): ResultSetSpark = {
+  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query, cxtSupplier: SerializableSupplier[Context]): ResultSetSpark = {
     val op = Algebra.compile(query)
 
     // Set up an execution context
     // TODO ... allow passing that as a parameter
     // val cxt = if (cxt == null) ARQ.getContext.copy() else cxt.copy
-    val cxt = ARQ.getContext.copy()
-    cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime)
-    val execCxt = new ExecutionContext(cxt, null, null, null)
-    execCxt.getContext.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset)
-    val opExec = new OpExecutorImpl(execCxt)
+    val execCxtSupplier = () => {
+      val cxt = ARQ.getContext.copy()
+      cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime)
+      val execCxt = new ExecutionContext(cxt, null, null, null)
+      execCxt.getContext.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset)
+      execCxt
+    }
+
+    val opExec = new OpExecutorImpl(() => execCxtSupplier.apply())
     val executionDispatch = new ExecutionDispatch(opExec)
 
     // An RDD with a single binding that doesn't bind any variables
@@ -223,12 +228,10 @@ object RddOfBindingsOps {
     rdd.distinct(rdd.getNumPartitions)(order)
   }
 
-  def extend(rdd: RDD[Binding], varExprList: VarExprList): RDD[Binding] = {
-    // TODO We should pass an execCxt
-    // val execCxt = null
+  def extend(rdd: RDD[Binding], varExprList: VarExprList, execCxtSupplier: () => ExecutionContext): RDD[Binding] = {
     val velBc = rdd.context.broadcast(varExprList)
     rdd.mapPartitions(it => {
-      val execCxt = ExecutionContextUtils.createExecCxtEmptyDsg()
+      val execCxt = execCxtSupplier.apply()
       val vel = velBc.value
       it.map(b => {
         val r = VarExprListUtils.eval(vel, b, execCxt)

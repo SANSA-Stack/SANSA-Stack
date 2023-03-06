@@ -10,7 +10,6 @@ import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
-import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
@@ -21,7 +20,10 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.SortCondition;
-import org.apache.jena.sparql.algebra.*;
+import org.apache.jena.sparql.algebra.Algebra;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpAsQuery;
+import org.apache.jena.sparql.algebra.OpVars;
 import org.apache.jena.sparql.algebra.op.*;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -40,14 +42,14 @@ import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 
 public class OpExecutorImpl
         implements OpExecutor {
     public static final Symbol SYM_RDD_OF_DATASET = Symbol.create("urn:rddOfDataset");
 
-    protected ExecutionContext execCxt;
+    protected Supplier<ExecutionContext> execCxtSupplier;
 
     /** Algebra expressions may use OpVar instances which then get resolved against this map. */
     protected Map<Var, Op> varToOp;
@@ -55,14 +57,14 @@ public class OpExecutorImpl
     protected int level = 0;
 
     /** FIXME ExecCxt is not serializable; we an only use a serializable lambda that produces a context in the workers */
-    public OpExecutorImpl(ExecutionContext execCxt) {
-        this(execCxt, new HashMap<>());
+    public OpExecutorImpl(Supplier<ExecutionContext> execCxtSupplier) {
+        this(execCxtSupplier, new HashMap<>());
     }
 
-    public OpExecutorImpl(ExecutionContext execCxt, Map<Var, Op> varToOp) {
+    public OpExecutorImpl(Supplier<ExecutionContext> execCxtSupplier, Map<Var, Op> varToOp) {
         super();
         this.varToOp = varToOp;
-        this.execCxt = execCxt;
+        this.execCxtSupplier = execCxtSupplier;
     }
 
     public JavaRDD<Binding> exec(Op op, JavaRDD<Binding> input) {
@@ -112,7 +114,7 @@ public class OpExecutorImpl
     @Override
     public JavaRDD<Binding> execute(OpService op, JavaRDD<Binding> rdd) {
         JavaRDD<Binding> result = null;
-
+        ExecutionContext execCxt = execCxtSupplier.get();
         Node serviceNode = op.getService();
         var success = false;
 
@@ -139,6 +141,10 @@ public class OpExecutorImpl
 
                 result = RddOfDatasetsOps.selectWithSparqlPerPartition(rddOfDataset.rdd(), query).toJavaRDD();
 
+                success = true;
+            } else if ("rdd:broadcastJoin".equals(serviceUri)) {
+                OpJoin join = (OpJoin)op.getSubOp();
+                result = broadcastJoin(join, rdd);
                 success = true;
             } else if ("rdd:perGraph".equals(serviceUri)) {
                 // Get the RDD[Dataset] from the execution context
@@ -188,7 +194,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpExtend op, JavaRDD<Binding> rdd) {
-        return RddOfBindingsOps.extend(execToRdd(op.getSubOp(), rdd), op.getVarExprList()).toJavaRDD();
+        return JavaRddOfBindingsOps.extend(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getVarExprList(), execCxtSupplier);
     }
 
     @Override
@@ -218,7 +224,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpFilter op, JavaRDD<Binding> rdd) {
-        return RddOfBindingsOps.filter(execToRdd(op.getSubOp(), rdd), op.getExprs()).toJavaRDD();
+        return JavaRddOfBindingsOps.filter(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getExprs(), execCxtSupplier);
         // RddOfBindingOps.filter(rdd, op.getExprs)
     }
 
@@ -260,7 +266,7 @@ public class OpExecutorImpl
 
         // TODO Injecting broadcast joins at execution time is a hack
         //  The broadcast join needs to be injected by the optimizer because here we introduce counting overhead
-        boolean detectBroadCastJoin = true;
+        boolean detectBroadCastJoin = false;
         if (detectBroadCastJoin) {
             long lhsSize = lhsRdd.count();
             long rhsSize = rhsRdd.count();
@@ -273,25 +279,7 @@ public class OpExecutorImpl
             }
 
             if (rhsSize < 1000000) {
-                // TODO extend AggBuilder with multimap support
-                List<Binding> rhsBindings = rhsRdd.collect();
-                // Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
-                // There seems to be an issue with multimap serialization - the deserialized one threw NPE...
-                Map<Tuple<Node>, List<Binding>> joinIndexOutside = new HashMap<>();
-                rhsBindings.forEach(b -> {
-                    Tuple<Node> key = BindingUtils.projectAsTuple(b, joinVarsArr);
-                    joinIndexOutside.computeIfAbsent(key, k -> new ArrayList<>()).add(b);
-                });
-                Broadcast<Map<Tuple<Node>, List<Binding>>> broadcast = sc.broadcast(joinIndexOutside);
-
-                result = lhsRdd.mapPartitions(it -> {
-                    Map<Tuple<Node>, List<Binding>> jonIndexInside = broadcast.getValue();
-                    return Iter.iter(it).flatMap(lhsB -> {
-                        Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
-                        return Iter.iter(jonIndexInside.getOrDefault(joinKey, Collections.emptyList()))
-                                .map(rhsB -> BindingLib.merge(lhsB, rhsB));
-                    });
-                });
+                result = broadcastJoin(joinVarsArr, lhsRdd, rhsRdd);
             }
         }
 
@@ -308,6 +296,48 @@ public class OpExecutorImpl
         return result;
     }
 
+
+    public JavaRDD<Binding> broadcastJoin(OpJoin op, JavaRDD<Binding> input) {
+        Op lhsOp = op.getLeft();
+        Op rhsOp = op.getRight();
+
+        Set<Var> lhsVars = OpVars.visibleVars(lhsOp);
+        Set<Var> rhsVars = OpVars.visibleVars(rhsOp);
+
+        List<Var> joinVars = new ArrayList<>(Sets.intersection(lhsVars, rhsVars));
+        Var[] joinVarsArr = joinVars.toArray(new Var[0]);
+
+        JavaRDD<Binding> lhsRdd = execToRdd(lhsOp, input).toJavaRDD();
+        JavaRDD<Binding> rhsRdd = execToRdd(rhsOp, root(input)).toJavaRDD();
+
+        JavaRDD<Binding> result = broadcastJoin(joinVarsArr, lhsRdd, rhsRdd);
+        return result;
+    }
+
+    public static JavaRDD<Binding> broadcastJoin(Var[] joinVarsArr, JavaRDD<Binding> lhsRdd, JavaRDD<Binding> rhsRdd) {
+        // TODO extend AggBuilder with multimap support
+        JavaSparkContext sc = JavaSparkContextUtils.fromRdd(lhsRdd);
+        List<Binding> rhsBindings = rhsRdd.collect();
+        // Multimap<Tuple<Node>, Binding> joinIndexOutside = Multimaps.index(rhsBindings, b -> BindingUtils.projectAsTuple(b, joinVarsArr));
+        // There seems to be an issue with multimap serialization - the deserialized one threw NPE...
+        Map<Tuple<Node>, List<Binding>> joinIndexOutside = new HashMap<>();
+        rhsBindings.forEach(b -> {
+            Tuple<Node> key = BindingUtils.projectAsTuple(b, joinVarsArr);
+            joinIndexOutside.computeIfAbsent(key, k -> new ArrayList<>()).add(b);
+        });
+        Broadcast<Map<Tuple<Node>, List<Binding>>> broadcast = sc.broadcast(joinIndexOutside);
+
+        JavaRDD<Binding> result = lhsRdd.mapPartitions(it -> {
+            Map<Tuple<Node>, List<Binding>> jonIndexInside = broadcast.getValue();
+            return Iter.iter(it).flatMap(lhsB -> {
+                Tuple<Node> joinKey = BindingUtils.projectAsTuple(lhsB, joinVarsArr);
+                return Iter.iter(jonIndexInside.getOrDefault(joinKey, Collections.emptyList()))
+                        .map(rhsB -> BindingLib.merge(lhsB, rhsB));
+            });
+        });
+        return result;
+    }
+
     @Override
     public JavaRDD<Binding> execute(OpLateral op, JavaRDD<Binding> rdd) {
         JavaRDD<Binding> base = execToRdd(op.getLeft(), rdd).toJavaRDD();
@@ -316,9 +346,10 @@ public class OpExecutorImpl
         if (isPatternFree) {
             // Just use flat map without going throw the whole spark machinery
             String rightSse = op.getRight().toString(); // Produces parsable SSE!
+            Supplier<ExecutionContext> execCxtSupp = execCxtSupplier; // Need to copy - otherwise spark will try to serialize OpExecutorImpl
             result = base.mapPartitions(it -> {
                 Op rightOp = SSE.parseOp(rightSse);
-                ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg();
+                ExecutionContext execCxt = execCxtSupp.get();
                 return Iter.iter(it).flatMap(b -> {
                     QueryIterator r = QC.execute(rightOp, b, execCxt);
                     return r;
@@ -345,5 +376,4 @@ public class OpExecutorImpl
         JavaSparkContext sc = JavaSparkContextUtils.fromRdd(prototype);
         return JavaRddOfBindingsOps.unitRdd(sc);
     }
-
 }
