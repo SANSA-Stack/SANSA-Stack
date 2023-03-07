@@ -77,7 +77,9 @@ object RddOfBindingsOps {
    */
   def project(rddOfBindings: RDD[_ <: Binding], projectVars: util.Collection[Var]): RDD[Binding] = {
     val varList = projectVars
-    rddOfBindings.mapPartitions(_.map(new BindingProject(varList, _)))
+    // BindingProject becomes extremely slow when only few variables are selected from many
+    // rddOfBindings.mapPartitions(_.map(new BindingProject(varList, _)))
+    rddOfBindings.mapPartitions(it => it.map(BindingUtils.project(_, varList)))
   }
 
   // filterKeep
@@ -199,7 +201,8 @@ object RddOfBindingsOps {
       val broadcast = rdd.context.broadcast(sortConditions)
       val projectVars = new util.HashSet[Var]
       sortConditions.forEach(x => projectVars.addAll(x.getExpression.getVarsMentioned))
-      val bindingToKey = (b: Binding) => new BindingProject(projectVars, b).asInstanceOf[Binding]
+      // val bindingToKey = (b: Binding) => new BindingProject(projectVars, b).asInstanceOf[Binding]
+      val bindingToKey = (b: Binding) => BindingUtils.project(b, projectVars).asInstanceOf[Binding]
 
       // XXX What is better - Binding or Tuple? The latter makes for smaller sort keys but requires mapping to Binding again.
       // var projVars = exprs.getVarsMentioned.toArray(new Array[Var](0))
