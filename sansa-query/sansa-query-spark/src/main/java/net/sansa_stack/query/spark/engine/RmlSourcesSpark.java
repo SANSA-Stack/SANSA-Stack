@@ -19,6 +19,7 @@ import algebra.lattice.Logic;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactories;
 import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactory;
+import net.sansa_stack.spark.io.json.input.JsonDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
 import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
 import org.aksw.commons.jena.graph.GraphVarImpl;
@@ -70,6 +71,7 @@ import com.google.gson.JsonObject;
 import com.univocity.parsers.common.record.RecordMetaData;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.execution.datasources.v2.json.JsonDataSourceV2;
 
 public class RmlSourcesSpark {
 
@@ -86,6 +88,7 @@ public class RmlSourcesSpark {
     public static JavaRDD<Binding> processSource(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         Map<String, RmlSourceProcessor> registry = new HashMap<>();
         registry.put(QlTerms.CSV, RmlSourcesSpark::processSourceAsCsv);
+        registry.put(QlTerms.JSONPath, RmlSourcesSpark::processSourceAsJson);
         // registry.put(QlTerms.JSONPath, RmlSourcesSpark::processSourceAsJson);
         // registry.put(QlTerms.XPath, RmlSourcesSpark::processSourceAsXml);
 
@@ -99,37 +102,28 @@ public class RmlSourcesSpark {
         return result;
     }
 
-    /*
-    public static JavaRDD<Binding> processSourceAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static JavaRDD<Binding> processSourceAsJson(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         String source = logicalSource.getSource();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
         String iterator = logicalSource.getIterator();
 
-        Gson gson = RDFDatatypeJson.get().getGson();
-        JsonElement jsonElement;
-        try (Reader reader = new InputStreamReader(JenaUrlUtils.openInputStream(NodeValue.makeString(source), execCxt), StandardCharsets.UTF_8)) {
-            jsonElement = gson.fromJson(reader, JsonElement.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (iterator != null) {
+            // Only support *
+            if (!iterator.equals("$.[*]")) {
+                throw new RuntimeException("Interpretation of JSON RML sources in a SPARK environment only supports the iterator '$.[*]'. This is also the default if the rml:iterator is omitted.");
+            }
         }
 
-        if (!jsonElement.isJsonArray()) {
-            Preconditions.checkArgument(iterator != null, "rr:iterator must be specified for non-array json sources");
-        }
-
-        Node jsonNode = NodeFactory.createLiteralByValue(jsonElement, RDFDatatypeJson.get());
-        NodeValue nv = NodeValue.makeNode(jsonNode);
-        NodeValue arr = iterator == null
-                ? nv
-                : JenaJsonUtils.evalJsonPath(gson, nv, NodeValue.makeString(iterator));
-
-        QueryIterator result = JenaJsonUtils.unnestJsonArray(gson, parentBinding, null, execCxt, arr.asNode(), outVar);
+        // TODO Make configurable
+        int probeCount = 10;
+        JavaRDD<Binding> result = JsonDataSources.createRddFromJson(sc, source, probeCount, outVar);
 
         return result;
     }
 
+    /*
     public static JavaRDD<Binding> processSourceAsXml(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         String source = logicalSource.getSource();
         SourceOutput output = logicalSource.as(SourceOutput.class);
@@ -151,6 +145,8 @@ public class RmlSourcesSpark {
         return result;
     }
     */
+
+
 
     public static JavaRDD<Binding> processSourceAsCsv(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
 
