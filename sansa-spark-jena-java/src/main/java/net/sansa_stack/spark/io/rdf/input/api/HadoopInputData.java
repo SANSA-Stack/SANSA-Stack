@@ -50,4 +50,8 @@ public class HadoopInputData<K, V, X> {
     public Function<JavaPairRDD<K, V>, X> getMapper() {
         return mapper;
     }
+
+    public <Y> HadoopInputData<K, V, Y> map(Function<? super X, Y> nextMapper) {
+        return new HadoopInputData<>(path, inputFormatClass, keyClass, valueClass, configuration, mapper.andThen(nextMapper));
+    }
 }
