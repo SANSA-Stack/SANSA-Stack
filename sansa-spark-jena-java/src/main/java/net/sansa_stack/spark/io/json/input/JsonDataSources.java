@@ -6,9 +6,12 @@ import net.sansa_stack.hadoop.format.gson.json.FileInputFormatJsonArray;
 import net.sansa_stack.hadoop.format.gson.json.FileInputFormatJsonSequence;
 import net.sansa_stack.hadoop.format.gson.json.JsonElementArrayIterator;
 import net.sansa_stack.hadoop.format.gson.json.JsonElementSequenceIterator;
+import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
+import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.JenaJsonUtils;
 import org.aksw.jena_sparql_api.sparql.ext.json.RDFDatatypeJson;
 import org.apache.commons.io.input.CloseShieldReader;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -27,63 +30,58 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class JsonDataSources {
 
     public static JavaRDD<Binding> createRddFromJson(JavaSparkContext javaSparkContext, String filename, int probeCount, Var outputVar) {
-        JavaRDD<JsonElement> rdd = null;
+        HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> hid1;
         try {
-            rdd = createRddFromJson(javaSparkContext, filename, probeCount);
+            hid1 = probeJsonInputFormat(filename, javaSparkContext.hadoopConfiguration(), probeCount);
         } catch (IOException e) {
             throw new RuntimeException("Failed to probe JSON content of '" + filename + "'", e);
         }
-        JavaRDD<Binding> result = toBindings(rdd, outputVar);
+        HadoopInputData<LongWritable, JsonElement, JavaRDD<Binding>> hid2 = hid1.map(bindingMapper(outputVar));
+        JavaRDD<Binding> result = InputFormatUtils.createRdd(javaSparkContext, hid2);
         return result;
     }
 
-    public static JavaRDD<JsonElement> createRddFromJson(JavaSparkContext javaSparkContext, String filename, int probeCount) throws IOException {
-        FileSystem hadoopFs = FileSystem.get(javaSparkContext.hadoopConfiguration());
-        Path path = new Path(filename);
-        JsonProbeResult probeResult;
-        try (Reader reader = new BufferedReader(new InputStreamReader(hadoopFs.open(path), StandardCharsets.UTF_8))) {
-            probeResult = probeJsonFormat(reader, RDFDatatypeJson.get().getGson(), probeCount);
-        }
-
-        JavaRDD<JsonElement> result;
+    public static HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> probeJsonInputFormat(String filename, Configuration conf, int probeCount) throws IOException {
+        JsonProbeResult probeResult = probeJsonFormat(filename, conf, probeCount);
+        HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> result;
         switch (probeResult.getDetectedType()) {
             case ARRAY:
-                result = createRddFromJsonArray(javaSparkContext, filename);
+                result = jsonArray(filename, conf);
                 break;
             case SEQUENCE:
-                result = createRddFromJsonSequence(javaSparkContext, filename);
+                result = jsonSequence(filename, conf);
                 break;
             case UNKNOWN:
             default:
                 throw new RuntimeException("Failed to determine JSON format (only array or sequences supported): " + probeResult);
         }
         return result;
+
     }
 
-    public static JavaRDD<JsonElement> createRddFromJsonArray(JavaSparkContext javaSparkContext, String filename) {
-        JavaRDD<JsonElement> rdd = javaSparkContext.newAPIHadoopFile(filename, FileInputFormatJsonArray.class, LongWritable.class,
-                JsonElement.class, javaSparkContext.hadoopConfiguration()).map(t -> t._2);
-        return rdd;
+    public static HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> jsonArray(String filename, Configuration conf) {
+        return new HadoopInputData<>(filename, FileInputFormatJsonArray.class, LongWritable.class,
+                JsonElement.class, conf, pairRdd -> pairRdd.map(x -> x._2));
     }
 
-    public static JavaRDD<Binding> createRddFromJsonArray(JavaSparkContext javaSparkContext, String filename, Var outputVar) {
-        JavaRDD<JsonElement> rdd = createRddFromJsonArray(javaSparkContext, filename);
-        return toBindings(rdd, outputVar);
+    public static HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> jsonSequence(String filename, Configuration conf) {
+        return new HadoopInputData<>(filename, FileInputFormatJsonSequence.class, LongWritable.class,
+                JsonElement.class, conf, pairRdd -> pairRdd.map(x -> x._2));
     }
 
-    public static JavaRDD<JsonElement> createRddFromJsonSequence(JavaSparkContext javaSparkContext, String filename) {
-        JavaRDD<JsonElement> rdd = javaSparkContext.newAPIHadoopFile(filename, FileInputFormatJsonSequence.class, LongWritable.class,
-                JsonElement.class, javaSparkContext.hadoopConfiguration()).map(t -> t._2);
-        return rdd;
-    }
-
-    public static JavaRDD<Binding> createRddFromJsonSequence(JavaSparkContext javaSparkContext, String filename, Var outputVar) {
-        JavaRDD<JsonElement> rdd = createRddFromJsonSequence(javaSparkContext, filename);
-        return toBindings(rdd, outputVar);
+    public static JsonProbeResult probeJsonFormat(String filename, Configuration conf, int probeCount) throws IOException {
+        FileSystem hadoopFs = FileSystem.get(conf);
+        Path path = new Path(filename);
+        JsonProbeResult result;
+        try (Reader reader = new BufferedReader(new InputStreamReader(hadoopFs.open(path), StandardCharsets.UTF_8))) {
+            result = probeJsonFormat(reader, RDFDatatypeJson.get().getGson(), probeCount);
+        }
+        return result;
     }
 
     /**
@@ -91,9 +89,9 @@ public class JsonDataSources {
      * converting JSON elements into Nodes (primitive JSON will become native RDF!)
      * and adding them to bindings with the given outputVar.
      */
-    public static JavaRDD<Binding> toBindings(JavaRDD<JsonElement> rdd, Var outputVar) {
+    public static Function<JavaRDD<JsonElement>, JavaRDD<Binding>> bindingMapper(Var outputVar) {
         String varName = outputVar.getName();
-        return rdd.mapPartitions(it -> {
+        return rdd -> rdd.mapPartitions(it -> {
             Var var = Var.alloc(varName);
             return Iter.iter(it).map(json -> {
                 Node node = JenaJsonUtils.convertJsonToNode(json, RDFDatatypeJson.get().getGson(), RDFDatatypeJson.get());
@@ -198,4 +196,28 @@ public class JsonDataSources {
         }
     }
     */
+
+
+//    public static JavaRDD<JsonElement> createRddFromJsonArray(JavaSparkContext javaSparkContext, String filename) {
+//        HadoopInputData<LongWritable, JsonElement, JavaRDD<JsonElement>> hid = jsonArray(filename, javaSparkContext.hadoopConfiguration());
+//        JavaRDD<JsonElement> result = InputFormatUtils.createRdd(javaSparkContext, hid);
+//        return result;
+//    }
+//
+//    public static JavaRDD<Binding> createRddFromJsonArray(JavaSparkContext javaSparkContext, String filename, Var outputVar) {
+//        JavaRDD<JsonElement> rdd = createRddFromJsonArray(javaSparkContext, filename);
+//        return toBindings(rdd, outputVar);
+//    }
+//
+//    public static JavaRDD<JsonElement> createRddFromJsonSequence(JavaSparkContext javaSparkContext, String filename) {
+//        JavaRDD<JsonElement> rdd = javaSparkContext.newAPIHadoopFile(filename, FileInputFormatJsonSequence.class, LongWritable.class,
+//                JsonElement.class, javaSparkContext.hadoopConfiguration()).map(t -> t._2);
+//        return rdd;
+//    }
+//
+//    public static JavaRDD<Binding> createRddFromJsonSequence(JavaSparkContext javaSparkContext, String filename, Var outputVar) {
+//        JavaRDD<JsonElement> rdd = createRddFromJsonSequence(javaSparkContext, filename);
+//        return toBindings(rdd, outputVar);
+//    }
+
 }
