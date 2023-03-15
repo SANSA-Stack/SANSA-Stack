@@ -33,8 +33,13 @@ conformance-sparqlify: ## run conforance test suite against sparqlify
 	mvn -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
 
 .ONESHELL:
-dist: ## create the standalone jar-with-dependencies of sansa stack
-	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am
+dist: ## create the standalone jar-with-dependencies of sansa stack with documentation (javadoc/scaladoc)
+	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am $(ARGS)
+	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
+	printf '\nCreated package:\n\n%s\n\n' "$$file"
+
+distjar: ## create only the standalone jar-with-dependencies of sansa stack
+	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am -DskipTests -Dmaven.javadoc.skip=true -Dskip $(ARGS)
 	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
 

@@ -57,6 +57,12 @@
             </exclusions>
         </dependency>
 
+	<!-- CLI -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
+        </dependency>
+
         <!-- Added cause if not there failing when play around with fat jar in databricks -->
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
