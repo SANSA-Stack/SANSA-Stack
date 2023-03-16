@@ -2,6 +2,7 @@ CWD = $(shell pwd)
 
 # Maven Clean Install Skip ; skip tests, javadoc, scaladoc, etc
 MS = mvn -DskipTests -Dmaven.javadoc.skip=true -Dskip
+MCCS = $(MS) clean compile
 MCIS = $(MS) clean install
 
 # Source: https://stackoverflow.com/questions/4219255/how-do-you-get-the-list-of-targets-in-a-makefile
@@ -39,9 +40,14 @@ dist: ## create the standalone jar-with-dependencies of sansa stack with documen
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 distjar: ## create only the standalone jar-with-dependencies of sansa stack
-	$(MS) package -Pdist -pl :sansa-stack-spark_2.12 -am -DskipTests -Dmaven.javadoc.skip=true -Dskip $(ARGS)
+	$(MCCS) package -Pdist -pl :sansa-stack-spark_2.12 -am $(ARGS)
 	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
+
+#distjar-hadoop: ## create only the standalone jar-with-dependencies of sansa stack including hadoop
+#	$(MCCS) package -Pspark-provided,shade -pl :sansa-stack-spark_2.12 -am $(ARGS)
+#	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
+#	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
 	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)

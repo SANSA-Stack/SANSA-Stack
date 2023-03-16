@@ -255,7 +255,49 @@
             <properties>
                 <spark.deps.scope>provided</spark.deps.scope>
             </properties>
-        </profile>
+    </profile>
+
+    <profile>
+	    <id>shade</id>
+	                <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</outputFile>
+<!--                                    <minimizeJar>true</minimizeJar>-->
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <!-- Avoid a Spark error: Invalid signature file digest for Manifest main attributes-->
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                                <exclude>META-INF/maven/**</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+<!--                                    <finalName>${project.artifactId}.jar</finalName>-->
+                                    <transformers>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    </transformers>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+	</plugins>
+</build>
+
+    </profile>
     </profiles>
 
 

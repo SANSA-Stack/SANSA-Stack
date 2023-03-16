@@ -94,7 +94,7 @@ public class JsonDataSources {
         return rdd -> rdd.mapPartitions(it -> {
             Var var = Var.alloc(varName);
             return Iter.iter(it).map(json -> {
-                Node node = JenaJsonUtils.convertJsonToNode(json, RDFDatatypeJson.get().getGson(), RDFDatatypeJson.get());
+                Node node = JenaJsonUtils.convertJsonToNodeValue(json).asNode();
                 Binding r = BindingFactory.binding(var, node);
                 return r;
             });
