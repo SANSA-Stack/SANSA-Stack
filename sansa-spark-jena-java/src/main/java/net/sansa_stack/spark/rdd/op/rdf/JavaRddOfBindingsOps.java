@@ -297,7 +297,10 @@ public class JavaRddOfBindingsOps {
 
         // For every input binding apply all mappers
         return upstream -> upstream.flatMap(binding ->
-            mappers.stream().flatMap(mapper -> mapper.apply(binding)));
+            mappers.stream().flatMap(mapper -> {
+                Stream<Quad> r = mapper.apply(binding);
+                return r;
+            }));
     }
 
     /** Apply default optimizations for algebra expressions meant for tarql

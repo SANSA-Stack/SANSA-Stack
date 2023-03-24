@@ -26,7 +26,7 @@ public class DeferredSeekablePushbackInputStream
     // read and the second one pushed back for the next read.
     // protected byte[] fallbackBuffer = new byte[2];
 
-    private static final int TRANSFER_SIZE = 8192 + 1; // Add 1 byte for look ahead
+    private static final int TRANSFER_SIZE = 8 * 1024 + 1; // Add 1 byte for look ahead
 
     /**
      * Unsafe reads modify the byte after the reported number of read bytes

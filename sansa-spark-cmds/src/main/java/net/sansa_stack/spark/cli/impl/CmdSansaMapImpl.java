@@ -1,6 +1,5 @@
 package net.sansa_stack.spark.cli.impl;
 
-import net.sansa_stack.spark.cli.cmd.CmdMixinSparkPostProcess;
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
@@ -9,13 +8,8 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfQuadsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfTriplesOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
-import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.util.node.NodeUtils;
-import org.aksw.jenax.arq.util.quad.QuadUtils;
-import org.aksw.jenax.arq.util.triple.TripleUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.graph.Node;
@@ -33,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 

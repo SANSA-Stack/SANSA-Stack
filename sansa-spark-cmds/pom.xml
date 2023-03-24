@@ -10,7 +10,7 @@
         <version>0.8.0-RC3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-spark-cli_2.12</artifactId>
+    <artifactId>sansa-spark-cmds_2.12</artifactId>
     <packaging>jar</packaging>
 
     <!--
@@ -33,19 +33,7 @@
         </build>
     -->
 
-	<dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-cmds_${scala.binary.version}</artifactId>
-        </dependency>
-
-	<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
-
-		<!--
+    <dependencies>
             <dependency>
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.binary.version}</artifactId>
@@ -66,11 +54,18 @@
             <artifactId>aksw-commons-models-csvw-picocli</artifactId>
         </dependency>
 
-        < !- - Adds various sparql extensions - - >
+        <!-- Adds various sparql extensions -->
         <dependency>
             <groupId>org.aksw.jenax</groupId>
             <artifactId>jenax-arq-plugins-bundle</artifactId>
         </dependency>
+
+	<!--
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+	</dependency>
+	-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -91,8 +86,7 @@
         <dependency>
             <groupId>org.aksw.commons</groupId>
             <artifactId>aksw-commons-io-utils</artifactId>
-			</dependency>
--->
+        </dependency>
     </dependencies>
 
 </project>

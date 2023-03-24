@@ -1,14 +1,8 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaAnalyzeCsvImpl;
 import net.sansa_stack.spark.cli.impl.CmdSansaAnalyzeJsonImpl;
-import org.aksw.commons.model.csvw.domain.api.DialectMutable;
-import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
-import org.aksw.commons.model.csvw.picocli.PicocliMixinCsvw;
 import picocli.CommandLine;
-import picocli.CommandLine.Option;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
