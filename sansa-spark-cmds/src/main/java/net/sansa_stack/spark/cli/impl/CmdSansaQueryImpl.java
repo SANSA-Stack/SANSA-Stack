@@ -113,6 +113,7 @@ public class CmdSansaQueryImpl {
 
         rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
+        // rddRdfWriterFactory.setUseCoalesceOne(true); // for testing
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         JavaRDD<Binding> initialRdd = JavaRddOfBindingsOps.unitRdd(javaSparkContext);
