@@ -34,10 +34,10 @@
     -->
 
     <dependencies>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.binary.version}</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>info.picocli</groupId>
@@ -60,22 +60,20 @@
             <artifactId>jenax-arq-plugins-bundle</artifactId>
         </dependency>
 
-	<!--
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-	</dependency>
-	-->
+        <!--
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+        </dependency>
+        -->
 
+        <!--        <dependency>-->
+        <!--            <groupId>${project.groupId}</groupId>-->
+        <!--            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
         </dependency>
 
         <dependency>
@@ -86,6 +84,12 @@
         <dependency>
             <groupId>org.aksw.commons</groupId>
             <artifactId>aksw-commons-io-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

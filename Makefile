@@ -50,7 +50,7 @@ distjar: ## create only the standalone jar-with-dependencies of sansa stack
 #	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
-	$(MCIS) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
+	$(MCIS) -f sansa-bom/pom.xml -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
 
 .ONESHELL:
 deb-reinstall: ## reinstall a previously built deb package

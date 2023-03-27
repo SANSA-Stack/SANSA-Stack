@@ -1,11 +1,11 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.CmdSansaEndpointImpl;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.CommandLine.ArgGroup;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -63,6 +63,16 @@ public class CmdSansaEndpoint
 
     @Override
     public Integer call() throws Exception {
-        return CmdSansaEndpointImpl.run(this);
+        // This command loads the implementation only lazily because Ontop / Sparqlify are quite
+        // heavy weight dependencies which may not be included in all environments
+
+        // A better solution might be be to prevent registration of this command at all if the implementation
+        // is not available
+
+        // return CmdSansaEndpointImpl.run(this);
+        Class<?> clz = Class.forName("net.sansa_stack.spark.cli.impl.CmdSansaEndpointImpl");
+        Method m = clz.getDeclaredMethod("run", this.getClass());
+        Object r = m.invoke(this);
+        return (Integer)r;
     }
 }

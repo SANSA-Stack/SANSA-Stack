@@ -10,7 +10,10 @@ import picocli.CommandLine.Option;
                 CmdSansaCount.class, CmdSansaPrefixesParent.class, CmdSansaMap.class,
                 CmdSansaTarql.class, CmdSansaNgs.class, CmdSansaAnalyzeParent.class,
                 CmdSansaQuery.class,
-                CmdSansaRmlParent.class
+
+                // Rml Features are provided by the RdfProcessingToolkit
+                // Including them here as well is probably more confusing than it is convenient
+                // CmdSansaRmlParent.class
 })
 public class CmdSansaParent extends CmdBase {
 
