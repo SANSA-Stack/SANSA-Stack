@@ -10,7 +10,7 @@
         <version>0.8.0-RC3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-spark-cmds_2.12</artifactId>
+    <artifactId>sansa-cmds-picocli_2.12</artifactId>
     <packaging>jar</packaging>
 
     <!--

@@ -36,7 +36,7 @@
 	<dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-cmds_${scala.binary.version}</artifactId>
+            <artifactId>sansa-cmds-picocli_${scala.binary.version}</artifactId>
         </dependency>
 
 	<dependency>
@@ -44,55 +44,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-
-		<!--
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.binary.version}</artifactId>
-            </dependency>
-
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-arq-picocli</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-models-csvw-picocli</artifactId>
-        </dependency>
-
-        < !- - Adds various sparql extensions - - >
-        <dependency>
-            <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-arq-plugins-bundle</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-utils</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-io-utils</artifactId>
-			</dependency>
--->
     </dependencies>
 
 </project>

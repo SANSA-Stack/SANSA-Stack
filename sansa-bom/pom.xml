@@ -710,7 +710,7 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-spark-cmds_${scala.binary.version}</artifactId>
+                <artifactId>sansa-cmds-picocli_${scala.binary.version}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
