@@ -1,17 +1,14 @@
 package net.sansa_stack.query.spark.engine;
 
-import org.aksw.commons.util.obj.ObjectUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.OpVisitor;
 import org.apache.jena.sparql.algebra.op.*;
-import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.function.Supplier;
 
 public class ExecutionDispatch
         implements OpVisitor {

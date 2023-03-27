@@ -1,9 +1,8 @@
 package net.sansa_stack.query.spark.api.impl
 
+import net.sansa_stack.query.spark.api.domain.{QueryExecutionFactorySpark, QueryExecutionSpark}
 import org.apache.jena.query.QueryFactory
 import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.query.spark.api.domain.{QueryExecutionFactorySpark, QueryExecutionSpark}
 
 /**
  * A

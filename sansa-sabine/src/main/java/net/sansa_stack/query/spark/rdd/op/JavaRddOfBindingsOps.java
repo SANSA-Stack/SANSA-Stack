@@ -6,29 +6,37 @@ import net.sansa_stack.query.spark.engine.ExecutionDispatch;
 import net.sansa_stack.query.spark.engine.OpExecutor;
 import net.sansa_stack.query.spark.engine.OpExecutorImpl;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.commons.collector.core.AggBuilder;
+import org.aksw.commons.collector.core.AggInputBroadcastMap;
+import org.aksw.commons.collector.domain.ParallelAggregator;
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jena_sparql_api.algebra.transform.TransformUnionToDisjunction;
-import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
-import org.aksw.jena_sparql_api.algebra.utils.OpVar;
+import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator;
+import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
 import org.aksw.jenax.sparql.algebra.transform2.Evaluator;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
-import org.aksw.rml.jena.impl.SparqlX_Rml_Terms;
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
-import org.apache.jena.sparql.algebra.op.*;
+import org.apache.jena.sparql.algebra.op.OpTable;
+import org.apache.jena.sparql.algebra.op.OpUnion;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
-import org.apache.jena.sparql.core.*;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.Substitute;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
+import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.Template;
@@ -37,15 +45,29 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class JavaRddOfBindingsOps {
     private static final Logger logger = LoggerFactory.getLogger(JavaRddOfBindingsOps.class);
+
+    /**
+     * Return a new RDD[Binding] by projecting only the given variables
+     *
+     * @param rddOfBindings The input RDD of bindings
+     * @param projectVars   The variables which to project
+     * @return The RDD of bindings with the variables projected
+     */
+    public static JavaRDD<Binding> project(JavaRDD<Binding> rddOfBindings, Collection<Var> projectVars) {
+        Collection<Var> varList = projectVars; // new ArrayList<>(projectVars);
+        // BindingProject becomes extremely slow when only few variables are selected from many
+        // rddOfBindings.mapPartitions(_.map(new BindingProject(varList, _)))
+        return rddOfBindings.mapPartitions(it -> Iter.iter(it).map(b -> BindingUtils.project(b, varList)));
+    }
 
     /** Returns an RDD of a single binding that doesn't bind any variables */
     public static JavaRDD<Binding> unitRdd(JavaSparkContext sparkContext) {
@@ -179,6 +201,59 @@ public class JavaRddOfBindingsOps {
         Template template = query.getConstructTemplate();
         List<Quad> quads = template.getQuads();
         return rdd.mapPartitions(it -> TemplateLib.calcQuads(quads, it));
+    }
+
+    public static JavaRDD<Binding> group(
+            JavaRDD<Binding> rdd,
+            VarExprList groupVars,
+            List<ExprAggregator> aggregators,
+            Supplier<ExecutionContext> execCxtSupp) {
+        // For each ExprVar convert the involvd arq aggregator
+        Map<Var, ParallelAggregator<Binding, Void, Node, ?>> subAggMap = new LinkedHashMap<>();
+
+        for (ExprAggregator exprAgg : aggregators) {
+            ParallelAggregator<Binding, Void, Node, ?> pagg = ConvertArqAggregator.convert(exprAgg.getAggregator());
+            subAggMap.put(exprAgg.getVar(), pagg);
+        }
+
+        JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
+        AggInputBroadcastMap<Binding, Void, Var, Node> agg = AggBuilder.inputBroadcastMap(subAggMap);
+        Broadcast<VarExprList> groupVarsBc = sc.broadcast(groupVars);
+        Broadcast<AggInputBroadcastMap<Binding, Void, Var, Node>> aggBc = sc.broadcast(agg);
+
+        JavaRDD<Binding> result = rdd
+                .mapPartitionsToPair(it -> {
+                    ExecutionContext execCxt = execCxtSupp.get();
+                    AggInputBroadcastMap<Binding, Void, Var, Node> aggx = aggBc.value();
+                    Map<Binding, AggInputBroadcastMap.AccInputBroadcastMap<Binding, Void, Var, Node>> groupKeyToAcc = new LinkedHashMap<>();
+                    while (it.hasNext()) {
+                        Binding binding = it.next();
+                        Binding groupKey = VarExprListUtils.copyProject(groupVarsBc.value(), binding, execCxt);
+                        AggInputBroadcastMap.AccInputBroadcastMap<Binding, Void, Var, Node> acc =
+                                groupKeyToAcc.computeIfAbsent(groupKey, k -> aggx.createAccumulator());
+                        acc.accumulate(binding);
+                    }
+                    Iterator<Tuple2<Binding, AggInputBroadcastMap.AccInputBroadcastMap<Binding, Void, Var, Node>>> r =
+                            Iter.iter(groupKeyToAcc.entrySet()).map(x -> new Tuple2(x.getKey(), x.getValue()));
+                    return r;
+                })
+                // Combine accumulators for each group key
+                .reduceByKey((a, b) -> {
+                    AggInputBroadcastMap<Binding, Void, Var, Node> aggx = aggBc.value();
+                    AggInputBroadcastMap.AccInputBroadcastMap<Binding, Void, Var, Node> rx = aggx.combine(a, b);
+                    return rx;
+                })
+                // Restore bindings from groupKey (already a binding)
+                // and the accumulated values (instances of Map[Var, Node])
+                .mapPartitions(it -> Iter.iter(it).map(keyAndMap -> {
+                            BindingBuilder bb = BindingFactory.builder();
+                            bb.addAll(keyAndMap._1);
+                            Map<Var, Node> map = keyAndMap._2.getValue();
+                            map.forEach((v, n) -> bb.add(v, n));
+                            return bb.build();
+                        }
+                ));
+        return result;
     }
 
     public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {

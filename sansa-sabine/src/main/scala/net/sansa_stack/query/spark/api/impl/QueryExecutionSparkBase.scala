@@ -1,9 +1,9 @@
 package net.sansa_stack.query.spark.api.impl
 
 
-import java.util
-
 import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
+
+import java.util
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
 import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
 import org.aksw.jenax.arq.util.binding.ResultSetUtils

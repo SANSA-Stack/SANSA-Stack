@@ -1,7 +1,5 @@
 package net.sansa_stack.query.spark.sparqlify.server
 
-import java.io.File
-
 import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
@@ -15,6 +13,7 @@ import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
+import java.io.File
 import scala.collection.JavaConverters._
 
 /** Deprecated; use: net.sansa_stack.examples.spark.query.SPARQLEngineExample */

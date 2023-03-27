@@ -88,7 +88,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpProject op, JavaRDD<Binding> rdd) {
-        return RddOfBindingsOps.project(execToRdd(op.getSubOp(), rdd), op.getVars()).toJavaRDD();
+        return JavaRddOfBindingsOps.project(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getVars());
     }
     // RddOfBindingOps.project(rdd, op.getVars)
 
@@ -107,7 +107,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpGroup op, JavaRDD<Binding> rdd) {
-        return RddOfBindingsOps.group(execToRdd(op.getSubOp(), rdd), op.getGroupVars(), op.getAggregators()).toJavaRDD();
+        return JavaRddOfBindingsOps.group(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getGroupVars(), op.getAggregators(), execCxtSupplier);
 //    RddOfBindingOps.group(rdd, op.getGroupVars, op.getAggregators)
     }
 

@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.rdd.op
 
-import java.util
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.ResultSetSparkImpl
 import net.sansa_stack.query.spark.engine.{ExecutionDispatch, OpExecutorImpl}
@@ -12,7 +11,6 @@ import org.aksw.commons.lambda.serializable.SerializableSupplier
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
 import org.aksw.jenax.arq.util.binding.BindingUtils
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
-import org.aksw.jenax.arq.util.expr.E_SerializableIdentity
 import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
@@ -21,16 +19,14 @@ import org.apache.jena.sparql.algebra.op.OpService
 import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
-import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingComparator, BindingFactory, BindingProject}
-import org.apache.jena.sparql.expr.{E_Coalesce, Expr, ExprAggregator, ExprList, NodeValue}
+import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingComparator, BindingFactory}
+import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList}
 import org.apache.jena.sparql.function.FunctionEnv
 import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
 
+import java.util
 import scala.reflect.classTag
-
 
 /** Operations on RDD[Binding] */
 object RddOfBindingsOps {
@@ -108,8 +104,8 @@ object RddOfBindingsOps {
     import collection.JavaConverters._
 
 
-//    val list = new util.ArrayList[Foo[_ >: AnyRef]]
-//    val map: util.Map[Any, Foo[_]] = list.stream.collect(Collectors.toMap(y => y.value, y => y))
+    //    val list = new util.ArrayList[Foo[_ >: AnyRef]]
+    //    val map: util.Map[Any, Foo[_]] = list.stream.collect(Collectors.toMap(y => y.value, y => y))
 
 
     // For each ExprVar convert the involvd arq aggregator
@@ -118,17 +114,17 @@ object RddOfBindingsOps {
     // I gave up on trying to get this working with fluent style + lambdas
     // due to compiler (tough NOT THE IDE) complaining about type errors; here's a working for loop instead:
     for (exprAgg <- aggregators.asScala) {
-      val pagg : ParallelAggregator[Binding, Void, Node, _] = ConvertArqAggregator.convert(exprAgg.getAggregator)
+      val pagg: ParallelAggregator[Binding, Void, Node, _] = ConvertArqAggregator.convert(exprAgg.getAggregator)
       subAggMap.put(exprAgg.getVar, pagg)
     }
 
-//      aggregators.stream.collect(Collectors.toMap(
-//        (x: ExprAggregator) => x.getVar,
-//        (x: ExprAggregator) => ConvertArqAggregator.convert(x.getAggregator)))
+    //      aggregators.stream.collect(Collectors.toMap(
+    //        (x: ExprAggregator) => x.getVar,
+    //        (x: ExprAggregator) => ConvertArqAggregator.convert(x.getAggregator)))
 
-//    val subAggMap: util.Map[Var, ParallelAggregator[Binding, Node, _]] =
-//      aggregators.asScala.map(x => (x.getVar, ConvertArqAggregator.convert(x.getAggregator)))
-//        .toMap.asJava
+    //    val subAggMap: util.Map[Var, ParallelAggregator[Binding, Node, _]] =
+    //      aggregators.asScala.map(x => (x.getVar, ConvertArqAggregator.convert(x.getAggregator)))
+    //        .toMap.asJava
 
     val agg: AggInputBroadcastMap[Binding, Void, Var, Node] = AggBuilder.inputBroadcastMap(subAggMap)
     val groupVarsBc = rdd.context.broadcast(groupVars)
@@ -185,6 +181,7 @@ object RddOfBindingsOps {
 
   /**
    * Sort an RDD w.r.t. a given list of [[SortCondition]]s.
+   *
    * @param rdd
    * @param sortConditions
    * @return
@@ -210,6 +207,7 @@ object RddOfBindingsOps {
 
       val order = new Ordering[Binding] {
         def bindingComparator = new BindingComparator(broadcast.value)
+
         override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
       }
 
@@ -225,6 +223,7 @@ object RddOfBindingsOps {
     val broadcast = rdd.context.broadcast(sortConditions)
     val order = new Ordering[Binding] {
       def bindingComparator = new BindingComparator(broadcast.value)
+
       override def compare(x: Binding, y: Binding): Int = bindingComparator.compare(x, y)
     }
     // XXX What is a good value for numPartitions?
@@ -253,17 +252,17 @@ object RddOfBindingsOps {
    *
    * @return
    */
-//  def usedDatatypeIris(): mutable.Map[Var, Multiset[String]] = {
-//    null
-//  }
+  //  def usedDatatypeIris(): mutable.Map[Var, Multiset[String]] = {
+  //    null
+  //  }
 
   /**
    *
    * @return
    */
-//  def usedIriPrefixes(rddOfBindings: RDD[_ <: Binding], bucketSize: Int = 1000): mutable.MultiMap[Var, RDFDatatype] = {
-//    null
-//  }
+  //  def usedIriPrefixes(rddOfBindings: RDD[_ <: Binding], bucketSize: Int = 1000): mutable.MultiMap[Var, RDFDatatype] = {
+  //    null
+  //  }
 
 
 }

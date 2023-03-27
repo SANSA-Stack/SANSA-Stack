@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark.ontop
 
-import it.unibz.inf.ontop.com.google.common.cache.{Cache => GuavaCache, CacheBuilder}
-import play.api.Configuration
-import Cache._
+import it.unibz.inf.ontop.com.google.common.cache.{CacheBuilder, Cache => GuavaCache}
+import net.sansa_stack.query.spark.ontop.Cache._
+
 import java.util.concurrent.Callable
 
 /**

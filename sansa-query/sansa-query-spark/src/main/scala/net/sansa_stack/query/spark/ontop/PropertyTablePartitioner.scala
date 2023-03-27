@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.net.URI
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.shared.impl.PrefixMappingImpl
@@ -13,6 +12,7 @@ import org.apache.spark.sql.{Row, SparkSession}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
 
+import java.net.URI
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 

@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark.utils
 
-import java.util.Collections
-
 import org.apache.spark.util.AccumulatorV2
+
+import java.util.Collections
 
 
 /**

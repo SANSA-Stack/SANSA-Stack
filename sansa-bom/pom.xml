@@ -415,7 +415,7 @@
                             </goals>
                             <configuration>
                                 <sources>
-                                    <source>src/main/scala_${scala.binary.version}</source>
+                                    <source>src/main/scala${scala.version.suffix}</source>
                                 </sources>
                             </configuration>
                         </execution>
@@ -710,19 +710,19 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-cmds-picocli_${scala.binary.version}</artifactId>
+                <artifactId>sansa-cmds-picocli${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+                <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
+                <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -747,8 +747,14 @@
             </dependency>
 
             <dependency>
+                <groupId>net.sansa-stack</groupId>
+                <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
+                <artifactId>sansa-spark-cli${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -756,71 +762,77 @@
             <!-- RDF Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-flink_${scala.binary.version}</artifactId>
+                <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>sansa-rdf-flink${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- OWL Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-owl-spark${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-owl-flink_${scala.binary.version}</artifactId>
+                <artifactId>sansa-owl-flink${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Query Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-flink_${scala.binary.version}</artifactId>
+                <artifactId>sansa-query-flink${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Datalake Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-datalake-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Inference Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-inference-spark${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-inference-flink_${scala.binary.version}</artifactId>
+                <artifactId>sansa-inference-flink${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- ML Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+                <artifactId>sansa-ml-spark${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-ml-flink_${scala.binary.version}</artifactId>
+                <artifactId>sansa-ml-flink${scala.version.suffix}</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -844,7 +856,7 @@
 
             <dependency>
                 <groupId>com.twitter</groupId>
-                <artifactId>chill_${scala.binary.version}</artifactId>
+                <artifactId>chill${scala.version.suffix}</artifactId>
                 <version>0.9.5</version>
             </dependency>
 
@@ -875,19 +887,19 @@
 
             <dependency>
                 <groupId>org.scala-lang.modules</groupId>
-                <artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
+                <artifactId>scala-java8-compat${scala.version.suffix}</artifactId>
                 <version>0.9.1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.scala-lang.modules</groupId>
-                <artifactId>scala-parser-combinators_${scala.binary.version}</artifactId>
+                <artifactId>scala-parser-combinators${scala.version.suffix}</artifactId>
                 <version>1.1.2</version>
             </dependency>
 
             <dependency>
                 <groupId>org.scala-lang.modules</groupId>
-                <artifactId>scala-xml_${scala.binary.version}</artifactId>
+                <artifactId>scala-xml${scala.version.suffix}</artifactId>
                 <version>1.0.5</version>
             </dependency>
 
@@ -913,19 +925,6 @@
                 <version>1.21</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.aksw.r2rml</groupId>
-                <artifactId>r2rml-jena-plugin</artifactId>
-                <version>${r2rml-jena-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.aksw.r2rml</groupId>
-                <artifactId>r2rml-jena-sql-transforms</artifactId>
-                <version>${r2rml-jena-api.version}</version>
-            </dependency>
-
-
             <!-- Datalake (used in sansa-query) -->
             <!--
             <dependency>
@@ -939,6 +938,14 @@
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-bom</artifactId>
                 <version>${aksw-commons.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aksw.r2rml</groupId>
+                <artifactId>rmltk-bom</artifactId>
+                <version>${r2rml-jena-api.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -1352,7 +1359,7 @@
             <!-- SPARK -->
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_${scala.binary.version}</artifactId>
+                <artifactId>spark-core${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
                 <!-- Experimental exclusions ~ Claus, 5.1 -->
@@ -1379,42 +1386,42 @@
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                <artifactId>spark-sql${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-graphx_${scala.binary.version}</artifactId>
+                <artifactId>spark-graphx${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+                <artifactId>spark-streaming${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+                <artifactId>spark-streaming-kafka-0-10${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+                <artifactId>spark-mllib${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-hive_${scala.binary.version}</artifactId>
+                <artifactId>spark-hive${scala.version.suffix}</artifactId>
                 <version>${spark.version}</version>
                 <scope>${spark.deps.scope}</scope>
                 <!--<scope>test</scope>-->
@@ -1444,7 +1451,7 @@
             <!-- Spark Testing -->
             <dependency>
                 <groupId>com.holdenkarau</groupId>
-                <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+                <artifactId>spark-testing-base${scala.version.suffix}</artifactId>
                 <version>${spark.testing.version}</version>
 
                 <!-- Experimental exclusions ~ Claus, 5.1 -->
@@ -1491,25 +1498,25 @@
             <!-- FLINK -->
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-scala_${scala.binary.version}</artifactId>
+                <artifactId>flink-scala${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
+                <artifactId>flink-streaming-scala${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-clients_${scala.binary.version}</artifactId>
+                <artifactId>flink-clients${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-gelly-scala_${scala.binary.version}</artifactId>
+                <artifactId>flink-gelly-scala${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
@@ -1521,32 +1528,32 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-table-planner_${scala.binary.version}</artifactId>
+                <artifactId>flink-table-planner${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-table-planner-blink_${scala.binary.version}</artifactId>
+                <artifactId>flink-table-planner-blink${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-table-api-scala_${scala.binary.version}</artifactId>
+                <artifactId>flink-table-api-scala${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-table-api-scala-bridge_${scala.binary.version}</artifactId>
+                <artifactId>flink-table-api-scala-bridge${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
             <!-- required since Flink 1.3 to custom Hadoop based input formats -->
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-hadoop-compatibility_${scala.binary.version}</artifactId>
+                <artifactId>flink-hadoop-compatibility${scala.version.suffix}</artifactId>
                 <version>${flink.version}</version>
                 <scope>${flink.deps.scope}</scope>
             </dependency>
@@ -1691,12 +1698,12 @@
             <!-- Graph API -->
             <dependency>
                 <groupId>org.scala-graph</groupId>
-                <artifactId>graph-core_${scala.binary.version}</artifactId>
+                <artifactId>graph-core${scala.version.suffix}</artifactId>
                 <version>1.12.5</version>
             </dependency>
             <dependency>
                 <groupId>org.scala-graph</groupId>
-                <artifactId>graph-dot_${scala.binary.version}</artifactId>
+                <artifactId>graph-dot${scala.version.suffix}</artifactId>
                 <version>1.11.5</version>
             </dependency>
             <dependency>
@@ -1730,7 +1737,7 @@
             <!-- Shapeless lib -->
             <dependency>
                 <groupId>com.chuusai</groupId>
-                <artifactId>shapeless_${scala.binary.version}</artifactId>
+                <artifactId>shapeless${scala.version.suffix}</artifactId>
                 <version>2.3.3</version>
             </dependency>
 
@@ -1818,12 +1825,12 @@
             </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.binary.version}</artifactId>
+                <artifactId>scalatest${scala.version.suffix}</artifactId>
                 <version>3.1.4</version>
             </dependency>
             <dependency>
                 <groupId>org.scalatestplus</groupId>
-                <artifactId>junit-4-12_${scala.binary.version}</artifactId>
+                <artifactId>junit-4-12${scala.version.suffix}</artifactId>
                 <version>3.1.4.0</version>
             </dependency>
             <dependency>
@@ -1834,19 +1841,19 @@
 
             <!--            <dependency>-->
             <!--                <groupId>org.scalatest</groupId>-->
-            <!--                <artifactId>scalatest-funsuite_${scala.binary.version}</artifactId>-->
+            <!--                <artifactId>scalatest-funsuite${scala.version.suffix}</artifactId>-->
             <!--                <version>3.2.5</version>-->
             <!--                <scope>test</scope>-->
             <!--            </dependency>-->
             <!--            <dependency>-->
             <!--                <groupId>org.scalatest</groupId>-->
-            <!--                <artifactId>scalatest-flatspec_${scala.binary.version}</artifactId>-->
+            <!--                <artifactId>scalatest-flatspec${scala.version.suffix}</artifactId>-->
             <!--                <version>3.2.5</version>-->
             <!--                <scope>test</scope>-->
             <!--            </dependency>-->
             <!--            <dependency>-->
             <!--                <groupId>org.scalatest</groupId>-->
-            <!--                <artifactId>scalatest-shouldmatchers_${scala.binary.version}</artifactId>-->
+            <!--                <artifactId>scalatest-shouldmatchers${scala.version.suffix}</artifactId>-->
             <!--                <version>3.2.5</version>-->
             <!--                <scope>test</scope>-->
             <!--            </dependency>-->
@@ -1854,13 +1861,13 @@
 
             <dependency>
                 <groupId>org.specs2</groupId>
-                <artifactId>specs2-core_${scala.binary.version}</artifactId>
+                <artifactId>specs2-core${scala.version.suffix}</artifactId>
                 <version>4.10.5</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.specs2</groupId>
-                <artifactId>specs2-junit_${scala.binary.version}</artifactId>
+                <artifactId>specs2-junit${scala.version.suffix}</artifactId>
                 <version>4.10.5</version>
                 <scope>test</scope>
             </dependency>
@@ -1868,7 +1875,7 @@
             <!-- Logging -->
             <dependency>
                 <groupId>com.typesafe.scala-logging</groupId>
-                <artifactId>scala-logging_${scala.binary.version}</artifactId>
+                <artifactId>scala-logging${scala.version.suffix}</artifactId>
                 <version>3.9.2</version>
             </dependency>
 
@@ -1882,7 +1889,7 @@
             <!-- Scopt -->
             <dependency>
                 <groupId>com.github.scopt</groupId>
-                <artifactId>scopt_${scala.binary.version}</artifactId>
+                <artifactId>scopt${scala.version.suffix}</artifactId>
                 <version>3.7.0</version>
             </dependency>
 
@@ -1896,7 +1903,7 @@
             <!-- Play -->
             <dependency>
                 <groupId>com.typesafe.play</groupId>
-                <artifactId>play_${scala.binary.version}</artifactId>
+                <artifactId>play${scala.version.suffix}</artifactId>
                 <version>2.8.2</version>
             </dependency>
 
@@ -2013,7 +2020,7 @@
             <!-- Scala HTTP wrapper -->
             <dependency>
                 <groupId>org.scalaj</groupId>
-                <artifactId>scalaj-http_${scala.binary.version}</artifactId>
+                <artifactId>scalaj-http${scala.version.suffix}</artifactId>
                 <version>2.4.2</version>
             </dependency>
 

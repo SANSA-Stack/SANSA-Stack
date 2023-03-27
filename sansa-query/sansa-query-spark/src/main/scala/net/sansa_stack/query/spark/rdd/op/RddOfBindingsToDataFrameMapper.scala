@@ -1,10 +1,7 @@
 package net.sansa_stack.query.spark.rdd.op
 
-import java.sql.Timestamp
-import java.util
-import java.util.Calendar
-
 import com.typesafe.scalalogging.LazyLogging
+import net.sansa_stack.query.spark.RddOpsImplicits
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
@@ -20,6 +17,10 @@ import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataType, DataTypes, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+
+import java.sql.Timestamp
+import java.util
+import java.util.Calendar
 
 /**
  * Mapper from SPARQL bindings to DataFrames
@@ -44,8 +45,6 @@ import org.apache.spark.sql.{DataFrame, Row}
  * FIXME Rename to ResultSetToFrameMapper?
  */
 object RddOfBindingsToDataFrameMapper extends LazyLogging {
-  import net.sansa_stack.query.spark._
-
   import collection.JavaConverters._
 
   /**

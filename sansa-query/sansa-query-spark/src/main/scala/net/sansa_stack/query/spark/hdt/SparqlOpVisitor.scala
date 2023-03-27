@@ -1,12 +1,12 @@
 package net.sansa_stack.query.spark.hdt
 
-import java.util
-
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.algebra.OpVisitor
 import org.apache.jena.sparql.algebra.op._
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.expr.ExprAggregator
+
+import java.util
 
 /**
   * @author David Ibhaluobe, Gezim Sejdiu

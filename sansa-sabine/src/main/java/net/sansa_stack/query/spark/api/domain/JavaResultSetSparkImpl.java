@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.api.domain;
 
-import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.spark.api.java.JavaRDD;

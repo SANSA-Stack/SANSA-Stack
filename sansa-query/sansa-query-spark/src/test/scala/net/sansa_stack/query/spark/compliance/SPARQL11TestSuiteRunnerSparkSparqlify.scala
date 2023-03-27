@@ -1,9 +1,8 @@
 package net.sansa_stack.query.spark.compliance
 
+import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import org.scalatest.DoNotDiscover
 import org.scalatest.tags.Slow
-
-import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 

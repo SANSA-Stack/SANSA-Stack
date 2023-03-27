@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.engine
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import org.apache.commons.lang3.time.StopWatch
 import org.apache.hadoop.fs.Path
@@ -12,11 +11,12 @@ import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.{FunSuite, Ignore}
+
 import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
-
 import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset
+import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg
 

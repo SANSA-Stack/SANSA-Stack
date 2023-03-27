@@ -1,13 +1,13 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.sql.{Connection, DriverManager, SQLException}
-import java.util.Properties
-
 import it.unibz.inf.ontop.answering.connection.OntopConnection
 import it.unibz.inf.ontop.injection.OntopReformulationSQLConfiguration
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
 import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
+
+import java.sql.{Connection, DriverManager, SQLException}
+import java.util.Properties
 
 /**
  * Used to keep expensive resource per executor alive.

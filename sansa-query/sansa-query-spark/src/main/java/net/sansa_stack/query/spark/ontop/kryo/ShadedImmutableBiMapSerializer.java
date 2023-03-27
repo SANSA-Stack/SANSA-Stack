@@ -1,15 +1,15 @@
 package net.sansa_stack.query.spark.ontop.kryo;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableBiMap;
 import it.unibz.inf.ontop.com.google.common.collect.Maps;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableBiMap}.

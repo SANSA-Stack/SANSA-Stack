@@ -88,7 +88,8 @@
         <module>sansa-resource-metadata</module>
         <module>sansa-resource-testdata</module>
         <module>sansa-rdf</module>
-        <module>sansa-datalake</module>
+	<module>sansa-datalake</module>
+	<module>sansa-sabine</module>
         <module>sansa-query</module>
         <module>sansa-owl</module>
         <module>sansa-inference</module>
@@ -101,7 +102,6 @@
         <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
     </modules>
-
 
     <dependencies>
         <dependency>
