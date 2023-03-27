@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.rdd.op
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.ResultSetSparkImpl
 import net.sansa_stack.query.spark.engine.{ExecutionDispatch, OpExecutorImpl}
-import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
@@ -11,12 +10,11 @@ import org.aksw.commons.lambda.serializable.SerializableSupplier
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
 import org.aksw.jenax.arq.util.binding.BindingUtils
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
-import org.aksw.jenax.arq.util.syntax.{QueryUtils, VarExprListUtils}
+import org.aksw.jenax.arq.util.syntax.VarExprListUtils
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
 import org.apache.jena.sparql.ARQConstants
-import org.apache.jena.sparql.algebra.op.OpService
-import org.apache.jena.sparql.algebra.{Algebra, OpAsQuery}
+import org.apache.jena.sparql.algebra.Algebra
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingComparator, BindingFactory}
@@ -166,6 +164,7 @@ object RddOfBindingsOps {
     result
   }
 
+  /*
   def serviceSpecial(rdd: RDD[Dataset], op: OpService): RDD[Binding] = {
     // Get the element / or op, create a SPARQL select query from it and
     // run it on the RDD of datasets
@@ -178,6 +177,7 @@ object RddOfBindingsOps {
     // RddOfDatasetOps.selectWithSparql(rdd, query)
     RddOfDatasetsOps.mapPartitionsWithSparql(rdd, query)
   }
+  */
 
   /**
    * Sort an RDD w.r.t. a given list of [[SortCondition]]s.

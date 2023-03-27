@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.ontop
 
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
-import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
+import net.sansa_stack.query.spark.impl.QueryEngineFactoryBase
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerComplex
 import org.aksw.commons.sql.codec.api.SqlCodec
 import org.aksw.commons.sql.codec.util.SqlCodecUtils

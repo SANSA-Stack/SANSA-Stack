@@ -1,9 +1,8 @@
-package net.sansa_stack.rdf.spark.rdd.op
+package net.sansa_stack.query.spark.rdd.op
 
-import java.util.stream.Collector
-import net.sansa_stack.rdf.spark.utils.SparkSessionUtils
 import org.apache.spark.rdd.RDD
 
+import java.util.stream.Collector
 import scala.reflect.ClassTag
 
 /**
@@ -25,8 +24,6 @@ object RddOps {
    * @return
    */
   def aggregateUsingJavaCollector[T: ClassTag, A: ClassTag, R: ClassTag](rdd: RDD[_ <: T], collector: Collector[_ >: T, A, R]): R = {
-    val sparkSession = SparkSessionUtils.getSessionFromRdd(rdd)
-
     val unfinishedResult = rdd
       .mapPartitions(it => {
         val result = collector.supplier.get

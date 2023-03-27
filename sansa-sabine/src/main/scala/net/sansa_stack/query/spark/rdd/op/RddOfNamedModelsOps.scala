@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op
+package net.sansa_stack.query.spark.rdd.op
 
 import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryExecutionFactory}
 import org.apache.jena.rdf.model.Model
@@ -29,9 +29,9 @@ object RddOfNamedModelsOps {
    * Group and/or sort named models by their graph iri
    *
    * @param rdd
-   * @param distinct If false then models with the same key remain separated otherwise they become merged
+   * @param distinct        If false then models with the same key remain separated otherwise they become merged
    * @param sortGraphsByIri Whether to apply sorting in addition to grouping
-   * @param numPartitions Number of partitions to use for sorting; only applicable if sortGraphsByIri is true.
+   * @param numPartitions   Number of partitions to use for sorting; only applicable if sortGraphsByIri is true.
    * @return
    */
   def groupNamedModelsByGraphIri(

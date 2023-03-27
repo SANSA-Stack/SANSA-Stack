@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.api.impl
+package net.sansa_stack.query.spark.impl
 
 import net.sansa_stack.query.spark.api.domain.{QueryExecutionFactorySpark, QueryExecutionSpark}
 import org.apache.jena.query.QueryFactory

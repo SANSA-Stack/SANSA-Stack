@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op
+package net.sansa_stack.query.spark.rdd.op
 
 import org.apache.jena.rdf.model.impl.{LiteralImpl, ModelCom, ResourceImpl}
 import org.apache.jena.rdf.model.{Model, RDFNode}

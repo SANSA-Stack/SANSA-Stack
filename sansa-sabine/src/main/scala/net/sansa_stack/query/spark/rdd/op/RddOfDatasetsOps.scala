@@ -1,17 +1,16 @@
-package net.sansa_stack.rdf.spark.rdd.op
-
-import java.util.Objects
+package net.sansa_stack.query.spark.rdd.op
 
 import org.aksw.jenax.arq.util.quad.DatasetGraphUtils
 import org.apache.jena.graph.Triple
-import org.apache.jena.query._
+import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryExecutionFactory}
 import org.apache.jena.rdf.model.{Model, Resource}
 import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.exec.RowSet
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
+import java.util.Objects
+import scala.jdk.CollectionConverters.asScalaIteratorConverter
 
 /**
  * Operations for RDD[Dataset]
@@ -156,7 +155,7 @@ object RddOfDatasetsOps {
     rddOfDatasets.flatMap(in => {
       // TODO I don't get why the Query object is not serializablbe even though
       // the registrator for it is loaded ... investigae...
-      val query = queryBc.value// QueryFactory.create(queryStr, Syntax.syntaxARQ);
+      val query = queryBc.value // QueryFactory.create(queryStr, Syntax.syntaxARQ);
 
       val qe = QueryExecutionFactory.create(query, in)
       var r: Seq[Dataset] = null

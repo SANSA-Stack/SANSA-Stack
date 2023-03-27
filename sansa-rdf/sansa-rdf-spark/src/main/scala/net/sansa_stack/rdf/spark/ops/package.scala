@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark
 
-import net.sansa_stack.rdf.spark.rdd.op.{RddOfDatasetsOps, RddOfModelsOps, RddOfResourcesOps, RddOfTriplesOps}
+import net.sansa_stack.query.spark.rdd.op.{RddOfDatasetsOps, RddOfModelsOps, RddOfResourcesOps}
+import net.sansa_stack.rdf.spark.rdd.op.RddOfTriplesOps
 import org.apache.jena.graph.Triple
 import org.apache.jena.query._
 import org.apache.jena.rdf.model.{Model, RDFNode, Resource}

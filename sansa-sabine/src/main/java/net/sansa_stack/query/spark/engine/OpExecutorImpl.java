@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
-import net.sansa_stack.rdf.spark.rdd.op.RddOfDatasetsOps;
+import net.sansa_stack.query.spark.rdd.op.RddOfDatasetsOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;

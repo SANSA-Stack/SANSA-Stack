@@ -1,4 +1,4 @@
-package net.sansa_stack.rdf.spark.rdd.op
+package net.sansa_stack.query.spark.rdd.op
 
 import org.apache.jena.query.Dataset
 import org.apache.jena.rdf.model.Resource
@@ -15,8 +15,8 @@ object JenaDatasetOps {
    * is the 'natural resource' in that named graph.
    * <pre>
    * dbr:Leipzig {
-   *   dbr:Leipzig a dbo:City .
-   *   eg:foo a eg:Bar .
+   * dbr:Leipzig a dbo:City .
+   * eg:foo a eg:Bar .
    * }
    * </pre>
    *
