@@ -70,7 +70,12 @@ public class CmdSansaEndpoint
         // is not available
 
         // return CmdSansaEndpointImpl.run(this);
-        Class<?> clz = Class.forName("net.sansa_stack.spark.cli.impl.CmdSansaEndpointImpl");
+        Class<?> clz;
+        try {
+            clz = Class.forName("net.sansa_stack.spark.cli.impl.CmdSansaEndpointImpl");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("The implementation of this command is not available.");
+        }
         Method m = clz.getDeclaredMethod("run", this.getClass());
         Object r = m.invoke(this);
         return (Integer)r;

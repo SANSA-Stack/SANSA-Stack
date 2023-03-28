@@ -217,36 +217,4 @@ public class RmlSourcesSpark {
             System.out.println(ResultSetFormatter.asText(ResultSet.adapt(qe.select())));
         }
     }
-
-
-    //
-//    public static Binding csvRecordToBinding(Binding parent, String[] row, Var[] vars) {
-//        BindingBuilder bb = Binding.builder(parent);
-//        for(int i = 0; i < row.length; ++i) {
-//            String value = row[i];
-//            if (value != null) {
-//                Node node = NodeFactory.createLiteral(value);
-//                Var var = vars != null && i < vars.length ? vars[i] : null;
-//                if (var == null) {
-//                    var = Var.alloc("col" + i);
-//                }
-//                bb.add(var, node);
-//            }
-//        }
-//        return bb.build();
-//    }
-//
-//    public static JsonObject csvRecordToJsonObject(String[] row, String[] labels) {
-//        JsonObject obj = new JsonObject();
-//        for(int i = 0; i < row.length; ++i) {
-//            String value = row[i];
-//
-//            String label = labels != null && i < labels.length ? labels[i] : null;
-//            label = label == null ? "" + "col" + i : label;
-//
-//            obj.addProperty(label, value);
-//        }
-//        return obj;
-//    }
-
 }

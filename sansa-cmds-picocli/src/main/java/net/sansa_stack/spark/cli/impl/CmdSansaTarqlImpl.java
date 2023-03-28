@@ -36,6 +36,7 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -322,7 +323,7 @@ public class CmdSansaTarqlImpl {
 
                 JavaRDD<Binding> baseRdd = CsvDataSources.createRddOfBindings(javaSparkContext, source,
                         univocityConf, cmd.columnNamingSchemes);
-                JavaRDD<Quad> r = JavaRddOfBindingsOps.tarqlQuads(baseRdd, task.getStmts(), accumulationMode);
+                JavaRDD<Quad> r = JavaRddOfBindingsOps.tarqlQuads(baseRdd, task.getStmts(), accumulationMode, execCxtSupplier);
                 return r;
             });
 

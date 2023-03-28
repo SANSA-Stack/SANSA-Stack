@@ -1,11 +1,9 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +25,10 @@ import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
+import org.apache.jena.sparql.algebra.optimize.Optimize;
+import org.apache.jena.sparql.algebra.optimize.Rewrite;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
+import org.apache.jena.sparql.algebra.optimize.TransformPropertyFunction;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
@@ -41,9 +42,11 @@ import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.exec.UpdateExec;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.TemplateLib;
+import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
+import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.spark.api.java.JavaRDD;
 
@@ -72,7 +75,10 @@ public class JavaRddOfBindingsOps {
 
         Template template = query.getConstructTemplate();
         Op op = Algebra.compile(query);
-        Op finalOp = tarqlOptimize(op);
+
+        // The optimizer needs to run in order to properly "tag" property functions
+        Op oop = Optimize.optimize(op, ARQ.getContext());
+        Op finalOp = tarqlOptimize(oop);
         Function<Binding, Stream<T>> templateMapper = templateMapperFactory.apply(template);
 
         return (binding, execCxt) -> {
@@ -88,11 +94,21 @@ public class JavaRddOfBindingsOps {
         };
     }
 
+    public static <I, O> Function<I, O> bindToExecCxt(ExecutionContext execCxt, BiFunction<I, ExecutionContext, O> fn) {
+        return bindSecondArgument(execCxt, fn);
+    }
+
+    /** Create a Function from a BiFunction by binding the second argument to a given value */
+    public static <A2, I, O> Function<I, O> bindSecondArgument(A2 arg2, BiFunction<I, A2, O> fn) {
+        return in -> fn.apply(in, arg2);
+    }
+
+    /*
     public static <I, O> Function<I, O> bindToEmptyDataset(BiFunction<I, ExecutionContext, O> fn) {
         return bindToDataset(fn, DatasetGraphFactory.empty());
     }
 
-    /** Bind a node tuple mapper to a fixed execution context. */
+    /* * Bind a node tuple mapper to a fixed execution context. * /
     public static <I, O> Function<I, O> bindToDataset(BiFunction<I, ExecutionContext, O> fn, DatasetGraph ds) {
         Context cxt = ARQ.getContext().copy();
         OpExecutorFactory opExecutorFactory = QC.getFactory(cxt);
@@ -100,6 +116,7 @@ public class JavaRddOfBindingsOps {
         ExecutionContext execCxt = new ExecutionContext(cxt, ds.getDefaultGraph(), ds, opExecutorFactory);
         return in -> fn.apply(in, execCxt);
     }
+    */
 
     public static Function<Binding, Stream<Triple>> templateMapperTriples(Template template) {
         List<Triple> triples = template.getTriples();
@@ -221,7 +238,7 @@ public class JavaRddOfBindingsOps {
         });
     }
 
-    public static JavaRDD<Triple> tarqlTriples(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode) {
+    public static JavaRDD<Triple> tarqlTriples(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode, Supplier<ExecutionContext> execCxtSupplier) {
         JavaRDD<Triple> result;
 
         // If we are in constructMode and there are no update statements then use the fast track
@@ -238,7 +255,7 @@ public class JavaRddOfBindingsOps {
             result = JavaRddOps.mapPartitions(rdd, bindings -> {
                 // The SparqlStmt-to-Query conversion has to be done here because the latter is not serializable
                 List<Query> queries = stmts.stream().map(SparqlStmt::getQuery).collect(Collectors.toList());
-                StreamFunction<Binding, Triple> mapper = tripleMapper(queries);
+                StreamFunction<Binding, Triple> mapper = tripleMapper(queries, execCxtSupplier);
                 return mapper.apply(bindings);
             });
         } else {
@@ -247,11 +264,11 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query) {
-        return tarqlQuads(rdd, Collections.singleton(new SparqlStmtQuery(query)), false);
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        return tarqlQuads(rdd, Collections.singleton(new SparqlStmtQuery(query)), false, execCxtSupplier);
     }
 
-    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode) {
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode, Supplier<ExecutionContext> execCxtSupplier) {
         JavaRDD<Quad> result;
 
         // If we are in constructMode and there are no update statements then use the fast track
@@ -268,7 +285,7 @@ public class JavaRddOfBindingsOps {
             result = JavaRddOps.mapPartitions(rdd, bindings -> {
                 // The SparqlStmt-to-Query conversion has to be done here because the latter is not serializable
                 List<Query> queries = stmts.stream().map(SparqlStmt::getQuery).collect(Collectors.toList());
-                StreamFunction<Binding, Quad> mapper = quadMapper(queries);
+                StreamFunction<Binding, Quad> mapper = quadMapper(queries, execCxtSupplier);
                 return mapper.apply(bindings);
             });
         } else {
@@ -280,9 +297,10 @@ public class JavaRddOfBindingsOps {
 
     // LEGACY CODE BELOW - needs cleanup!
 
-    public static StreamFunction<Binding, Triple> tripleMapper(Collection<Query> queries) {
+    public static StreamFunction<Binding, Triple> tripleMapper(Collection<Query> queries, Supplier<ExecutionContext> execCxtSupplier) {
+        ExecutionContext execCxt = execCxtSupplier.get();
         List<Function<Binding, Stream<Triple>>> mappers = queries.stream()
-                .map(q -> bindToEmptyDataset(compileNodeTupleMapper(q, JavaRddOfBindingsOps::templateMapperTriples)))
+                .map(q -> bindToExecCxt(execCxt, compileNodeTupleMapper(q, JavaRddOfBindingsOps::templateMapperTriples)))
                 .collect(Collectors.toList());
 
         // For every input binding apply all mappers
@@ -290,9 +308,10 @@ public class JavaRddOfBindingsOps {
             mappers.stream().flatMap(mapper -> mapper.apply(binding)));
     }
 
-    public static StreamFunction<Binding, Quad> quadMapper(Collection<Query> queries) {
+    public static StreamFunction<Binding, Quad> quadMapper(Collection<Query> queries, Supplier<ExecutionContext> execCxtSupplier) {
+        ExecutionContext execCxt = execCxtSupplier.get();
         List<Function<Binding, Stream<Quad>>> mappers = queries.stream()
-                .map(q -> bindToEmptyDataset(compileNodeTupleMapper(q, JavaRddOfBindingsOps::templateMapperQuads)))
+                .map(q -> bindToExecCxt(execCxt, compileNodeTupleMapper(q, JavaRddOfBindingsOps::templateMapperQuads)))
                 .collect(Collectors.toList());
 
         // For every input binding apply all mappers
