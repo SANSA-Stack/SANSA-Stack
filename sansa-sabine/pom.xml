@@ -23,16 +23,11 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-resource-testdata</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -49,8 +44,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-arq</artifactId>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-annotations-reprogen</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-server-standalone</artifactId>
         </dependency>
 
         <dependency>
@@ -67,15 +68,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        -->
 
         <dependency>
-            <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-annotations-reprogen</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.jenax</groupId>
-            <artifactId>jenax-server-standalone</artifactId>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
         </dependency>
 
         <dependency>
@@ -136,6 +133,12 @@
         <dependency>
             <groupId>com.holdenkarau</groupId>
             <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-resource-testdata</artifactId>
             <scope>test</scope>
         </dependency>
 
