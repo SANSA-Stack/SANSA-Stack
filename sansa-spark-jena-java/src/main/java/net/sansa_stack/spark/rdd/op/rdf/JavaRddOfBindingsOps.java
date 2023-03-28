@@ -1,12 +1,6 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.google.common.base.Preconditions;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.util.function.TriConsumer;
 import org.aksw.commons.util.stream.StreamFunction;
@@ -26,9 +20,7 @@ import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.optimize.Optimize;
-import org.apache.jena.sparql.algebra.optimize.Rewrite;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
-import org.apache.jena.sparql.algebra.optimize.TransformPropertyFunction;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
@@ -42,15 +34,21 @@ import org.apache.jena.sparql.engine.main.QC;
 import org.apache.jena.sparql.exec.UpdateExec;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.modify.TemplateLib;
-import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Context;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
-import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.system.Txn;
 import org.apache.spark.api.java.JavaRDD;
 
-import com.google.common.base.Preconditions;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
