@@ -21,6 +21,8 @@ import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.optimize.Optimize;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
+import org.apache.jena.sparql.algebra.optimize.TransformJoinStrategy;
+import org.apache.jena.sparql.algebra.optimize.TransformPropertyFunction;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
@@ -72,11 +74,13 @@ public class JavaRddOfBindingsOps {
         Preconditions.checkArgument(query.isConstructType(), "Construct query expected");
 
         Template template = query.getConstructTemplate();
-        Op op = Algebra.compile(query);
+        Op op0 = Algebra.compile(query);
 
-        // The optimizer needs to run in order to properly "tag" property functions
-        Op oop = Optimize.optimize(op, ARQ.getContext());
-        Op finalOp = tarqlOptimize(oop);
+        // The following two transformers needs to run in order to make property functions usable
+        Op op1 = TransformPropertyFunction.transform(op0, ARQ.getContext());
+        Op op2 = Transformer.transform(new TransformJoinStrategy(), op1);
+
+        Op finalOp = tarqlOptimize(op2);
         Function<Binding, Stream<T>> templateMapper = templateMapperFactory.apply(template);
 
         return (binding, execCxt) -> {
