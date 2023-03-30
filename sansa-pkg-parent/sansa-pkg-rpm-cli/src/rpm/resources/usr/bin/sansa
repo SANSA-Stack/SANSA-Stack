@@ -1,17 +1,30 @@
 #!/bin/sh
 
+#WORK_DIR=`dirname "$0"`
+
 LIB_DIR="/usr/share/sansa-cli/"
 MAIN_CLASS="net.sansa_stack.spark.cli.main.MainCliSansaSpark"
-# EXTRA_OPTS=""
 
-java $EXTRA_OPTS $JAVA_OPTS -cp "$LIB_DIR/lib/*" "$MAIN_CLASS" "$@"
+JAVA=${JAVA_HOME:+$JAVA_HOME/bin/}java
 
-# Examples
+# Extra options for Java 17; Source: https://stackoverflow.com/questions/73465937/apache-spark-3-3-0-breaks-on-java-17-with-cannot-access-class-sun-nio-ch-direct
+# On Java 11 sansa works without these options althought warnings are shown
+EXTRA_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+    --add-opens=java.base/java.io=ALL-UNNAMED \
+    --add-opens=java.base/java.net=ALL-UNNAMED \
+    --add-opens=java.base/java.nio=ALL-UNNAMED \
+    --add-opens=java.base/java.util=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.cs=ALL-UNNAMED \
+    --add-opens=java.base/sun.security.action=ALL-UNNAMED \
+    --add-opens=java.base/sun.util.calendar=ALL-UNNAMED \
+    --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED"
 
-# Extra opts:
-# EXTRA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED"
+SCRIPTING_OPTS="-Djena:scripting=true -Dnashorn.args=--language=es6"
 
-
-# Spring boot launcher:
-# java $JAVA_OPTS -cp "$LIB_DIR:$LIB_DIR/lib/*" "-Dloader.main=${MAIN_CLASS}" "org.springframework.boot.loader.PropertiesLauncher" "$@"
+$JAVA $EXTRA_OPTS $SCRIPTING_OPTS $JAVA_OPTS -cp "$LIB_DIR:$LIB_DIR/lib/*:$EXTRA_CP" "$MAIN_CLASS" "$@"
 
