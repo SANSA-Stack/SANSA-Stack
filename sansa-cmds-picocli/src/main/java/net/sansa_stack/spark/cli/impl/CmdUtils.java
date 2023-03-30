@@ -18,6 +18,7 @@ import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
+import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -221,6 +222,7 @@ public class CmdUtils {
         SerializableSupplier<ExecutionContext> execCxtSupplier = () -> {
             Context baseCxt = ARQ.getContext().copy();
             CmdMixinArq.configureCxt(baseCxt, arqConfig);
+            baseCxt.set(ArqSecurity.symAllowFileAccess, true);
             ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg(baseCxt);
             return execCxt;
         };
