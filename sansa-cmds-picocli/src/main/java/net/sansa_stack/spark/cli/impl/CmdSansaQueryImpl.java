@@ -70,6 +70,7 @@ public class CmdSansaQueryImpl {
         // CmdMixinArq is serializable
         CmdMixinArq arqConfig = cmd.arqConfig;
         CmdMixinArq.configureGlobal(arqConfig);
+
         // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
         CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
         Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);

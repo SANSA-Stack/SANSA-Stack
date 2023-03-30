@@ -90,16 +90,6 @@
             <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>${project.groupId}</groupId>-->
-        <!--            <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>${project.groupId}</groupId>-->
-        <!--            <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>-->
-        <!--        </dependency>-->
-
         <!-- Spark dependencies -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -109,7 +99,6 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.binary.version}</artifactId>
         </dependency>
-
 
         <!-- Override transitive tdb version via litmus -->
         <dependency>
