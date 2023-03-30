@@ -223,7 +223,9 @@ public class CmdUtils {
             Context baseCxt = ARQ.getContext().copy();
             CmdMixinArq.configureCxt(baseCxt, arqConfig);
             baseCxt.set(ArqSecurity.symAllowFileAccess, true);
-            baseCxt.set(ARQ.symJavaScriptFunctions, true);
+
+            // Scripting can only be set via system property
+            // baseCxt.setTrue(ARQ.systemPropertyScripting)
 
             ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg(baseCxt);
             return execCxt;
