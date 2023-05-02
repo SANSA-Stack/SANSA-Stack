@@ -337,11 +337,14 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>release</id>
+	    <profile>
+		<id>shade</id>
+		<!-- <id>dist</id> -->
+		<!--
             <properties>
                 <spark.deps.scope>provided</spark.deps.scope>
-            </properties>
+			</properties>
+		-->
             <build>
                 <plugins>
                     <plugin>
@@ -414,3 +417,4 @@
     </build>
 
 </project>
+
