@@ -145,10 +145,12 @@
 
     <profiles>
         <profile>
-            <id>release</id>
+		<id>shade</id> <!-- was "release", but that that would upload the shaded jar -->
+	<!--
             <properties>
                 <spark.deps.scope>provided</spark.deps.scope>
-            </properties>
+		</properties>
+	-->
             <build>
                 <plugins>
                     <plugin>
