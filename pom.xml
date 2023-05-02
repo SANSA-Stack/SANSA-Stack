@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-bom_2.12</artifactId>
-        <version>0.8.0-RC3</version>
+        <version>0.8.0-RC4</version>
         <relativePath>sansa-bom</relativePath>
     </parent>
     <artifactId>sansa-parent_2.12</artifactId>
@@ -32,6 +32,30 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+	<developers>
+		<developer>
+			<name>Claus Stadler</name>
+			<url>http://aksw.org/ClausStadler</url>
+			<organization>AKSW</organization>
+			<organizationUrl>http://aksw.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Lorenz Buehmann</name>
+			<url>http://aksw.org/LorenzBuehmann</url>
+			<organization>AKSW</organization>
+			<organizationUrl>http://aksw.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Carsten Drachner</name>
+		</developer>
+		<developer>
+			<name>Gezim Sejdiu</name>
+		</developer>
+		<developer>
+			<name>Jens Lehmann</name>
+		</developer>
+	</developers>
 
     <scm>
         <url>https://github.com/SANSA-Stack/SANSA-RDF</url>
