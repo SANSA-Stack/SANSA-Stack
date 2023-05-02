@@ -74,10 +74,10 @@
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.8.0-SNAPSHOT</jena.version>
-        <jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
-        <r2rml-jena-api.version>4.8.0-1-SNAPSHOT</r2rml-jena-api.version>
+        <aksw-commons.version>0.9.5</aksw-commons.version>
+        <jena.version>4.8.0</jena.version>
+        <jenax.version>4.8.0-1</jenax.version>
+        <rmltk.version>4.8.0-1-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -943,9 +943,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.aksw.r2rml</groupId>
+                <groupId>org.aksw.rmltk</groupId>
                 <artifactId>rmltk-bom</artifactId>
-                <version>${r2rml-jena-api.version}</version>
+                <version>${rmltk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

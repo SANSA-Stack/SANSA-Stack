@@ -132,12 +132,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-sql-transforms</artifactId>
 		</dependency>
 

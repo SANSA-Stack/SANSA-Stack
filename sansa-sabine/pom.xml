@@ -12,7 +12,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.aksw.r2rml</groupId>
+            <groupId>org.aksw.rmltk</groupId>
             <artifactId>rml-jena-arq</artifactId>
         </dependency>
 
