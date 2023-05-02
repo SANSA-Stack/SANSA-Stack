@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.8.0-RC5-SNAPSHOT</version>
+    <version>0.8.0-RC4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
@@ -517,7 +517,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.4</version>
+		    <version>3.2.4</version>
                     <executions>
                         <!-- Run shade goal on package phase -->
                         <execution>
@@ -525,9 +525,11 @@
                             <goals>
                                 <goal>shade</goal>
                             </goals>
-                            <configuration>
+			    <configuration>
+				<!--
                                 <shadedArtifactAttached>true</shadedArtifactAttached>
-                                <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+					<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+				-->
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
@@ -541,14 +543,10 @@
                                 <transformers>
                                     <transformer
                                             implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                    <!-- add Main-Class to manifest file -->
-                                    <!-- <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
-                                    <!-- <mainClass>com.mkyong.core.utils.App</mainClass> -->
-                                    <!-- </transformer> -->
                                 </transformers>
                             </configuration>
                         </execution>
-                    </executions>
+			</executions>
                 </plugin>
 
                 <plugin>
