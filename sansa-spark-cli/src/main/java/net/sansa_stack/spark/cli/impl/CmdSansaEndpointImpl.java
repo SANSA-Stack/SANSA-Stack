@@ -10,7 +10,6 @@ import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.PreloadedDatasetArgs;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer;
 import org.apache.commons.lang3.time.StopWatch;

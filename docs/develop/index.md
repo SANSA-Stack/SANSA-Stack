@@ -4,6 +4,8 @@ has_children: false
 nav_order: 1
 ---
 
+## Source Code
+
 The Sansa project comprises java/scala libraries, a command line tool and examples.
 
 A Makefile exists in the project root folder which helps achieving certain goals efficiently by hiding arcance maven invocations behind the following make goals:

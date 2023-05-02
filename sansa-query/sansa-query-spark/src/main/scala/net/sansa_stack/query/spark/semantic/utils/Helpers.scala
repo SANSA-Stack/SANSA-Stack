@@ -1,7 +1,6 @@
 package net.sansa_stack.query.spark.semantic.utils
 
 import java.util.concurrent.TimeUnit
-
 import scala.collection.mutable.ArrayBuffer
 
 /*

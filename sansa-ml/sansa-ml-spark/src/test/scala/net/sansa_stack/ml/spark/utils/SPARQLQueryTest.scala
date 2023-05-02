@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
@@ -10,14 +11,11 @@ import org.scalatest.FunSuite
 
 class SPARQLQueryTest extends FunSuite with SharedSparkContext {
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession.builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(sc.appName)
     .master(sc.master)
-    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
     .config("spark.sql.crossJoin.enabled", "true")
     .getOrCreate()
 

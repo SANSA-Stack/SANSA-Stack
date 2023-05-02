@@ -13,7 +13,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
 
-import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark

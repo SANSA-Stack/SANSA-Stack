@@ -3,7 +3,8 @@ package net.sansa_stack.hadoop.format.jena.ntriples;
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
-import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfTripleBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderRdfConf;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
@@ -13,7 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 public class RecordReaderRdfNTriples
-        extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
+        extends RecordReaderGenericRdfTripleBase
 {
 
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.ntriples.triple.record.minlength";
@@ -27,16 +28,15 @@ public class RecordReaderRdfNTriples
             "(?<=\\n).", Pattern.DOTALL);
 
     public RecordReaderRdfNTriples() {
-        super(
+        super(new RecordReaderRdfConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                null, // ntriples does not support prefixes
                 nTriplesRecordStartPattern,
-                Lang.NTRIPLES);
+                null, // ntriples does not support prefixes
+                Lang.NTRIPLES));
     }
 
-    @Override
     protected Flowable<Triple> parse(Callable<InputStream> inputStreamSupplier) {
         Flowable<Triple> result = RDFDataMgrRx.createFlowableTriples(inputStreamSupplier, lang, baseIri);
         return result;

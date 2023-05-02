@@ -1,17 +1,15 @@
 package net.sansa_stack.query.spark.ontop
 
-import scala.reflect.runtime.universe.typeOf
-
 import it.unibz.inf.ontop.dbschema.MetadataProvider
 import it.unibz.inf.ontop.dbschema.impl.OfflineMetadataProviderBuilder
 import it.unibz.inf.ontop.injection.{CoreSingletons, OntopModelConfiguration}
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
-
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.schema.{SchemaStringDate, SchemaStringDouble, SchemaStringStringType}
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+
+import scala.reflect.runtime.universe.typeOf
 
 /**
  * Generate the JDBC metadata.

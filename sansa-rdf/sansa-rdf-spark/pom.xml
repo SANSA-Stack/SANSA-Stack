@@ -12,16 +12,22 @@
 
     <dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>net.sansa-stack</groupId>
 			<artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
 			<!-- <classifier>${scala.classifier}</classifier> -->
 		</dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-rdf-common_${scala.binary.version}</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
+
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+			<!-- <classifier>${scala.classifier}</classifier> -->
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>

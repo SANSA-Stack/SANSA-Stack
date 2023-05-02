@@ -3,7 +3,7 @@ package net.sansa_stack.examples.spark.query
 import com.typesafe.scalalogging.Logger
 import net.sansa_stack.query.spark.SPARQLEngine
 import net.sansa_stack.query.spark.SPARQLEngine.{Ontop, SPARQLEngine, Sparqlify}
-import net.sansa_stack.query.spark.api.impl.QueryEngineFactoryBase
+import net.sansa_stack.query.spark.impl.QueryEngineFactoryBase
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.io._

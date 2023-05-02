@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.8.0-RC3</version>
+    </parent>
+
+    <artifactId>sansa-cmds-picocli_2.12</artifactId>
+    <packaging>jar</packaging>
+
+    <!--
+        <properties>
+            <timestamp>${maven.build.timestamp}</timestamp>
+            <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        </properties>
+    -->
+    <!--
+        <build>
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                </resource>
+                <resource>
+                    <directory>src/main/resources-filtered</directory>
+                    <filtering>true</filtering>
+                </resource>
+            </resources>
+        </build>
+    -->
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-picocli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-models-csvw-picocli</artifactId>
+        </dependency>
+
+        <!-- Adds various sparql extensions -->
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-plugins-bundle</artifactId>
+        </dependency>
+
+        <!--
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+        </dependency>
+        -->
+
+        <!--        <dependency>-->
+        <!--            <groupId>${project.groupId}</groupId>-->
+        <!--            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
+

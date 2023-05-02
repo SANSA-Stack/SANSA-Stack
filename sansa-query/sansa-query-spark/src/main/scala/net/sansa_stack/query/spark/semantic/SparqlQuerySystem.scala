@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.semantic
 
-import java.io.{File, _}
+import java.io._
 import java.util.{Scanner, StringTokenizer}
 
 // import scala.collection.JavaConversions._

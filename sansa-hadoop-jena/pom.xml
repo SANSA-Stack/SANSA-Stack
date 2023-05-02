@@ -13,12 +13,54 @@
     <artifactId>sansa-hadoop-jena</artifactId>
     <packaging>jar</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>none</phase>
+                        <!--                           <goals>
+                                                        <goal>doc-jar</goal>
+                        </goals>-->
+                    </execution>
+                </executions>
+
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--
+        <properties>
+            <timestamp>${maven.build.timestamp}</timestamp>
+            <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        </properties>
+    -->
+    <!--
+        <build>
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                </resource>
+                <resource>
+                    <directory>src/main/resources-filtered</directory>
+                    <filtering>true</filtering>
+                </resource>
+            </resources>
+        </build>
+    -->
+
     <dependencies>
-        <!-- TODO Get rid of this dep; our build setup with the globally configured scala/scaladocs plugin fails without scala being present-->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-	    <artifactId>scala-library</artifactId>
-        </dependency>
+        <!-- If scala:doc-jar fails then enable this dependency to see the errors -->
+        <!--
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+    </dependency>
+        -->
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -44,6 +86,11 @@
         <dependency>
             <groupId>org.aksw.commons</groupId>
             <artifactId>aksw-commons-collectors</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
         </dependency>
 
 
@@ -93,6 +140,17 @@
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources_2.12</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
             <scope>test</scope>
         </dependency>
 

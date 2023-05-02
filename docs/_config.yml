@@ -1,5 +1,5 @@
 title: "SANSA Stack"
-remote_theme: pmarsceill/just-the-docs
+#remote_theme: pmarsceill/just-the-docs
 search_enabled: true
 logo: "assets/images/sansa-logo-blue.png"
 markdown: kramdown
@@ -24,3 +24,13 @@ gh_edit_branch: "develop" # the branch that your docs is served from
 gh_edit_source: "docs" # the source that your files originate from
 gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into the editor immediately
 
+
+remote_theme: carlosperate/jekyll-theme-rtd
+repo_url: 'https://github.com/SANSA-Stack/SANSA-Stack'
+
+edit_on_github: true
+github_docs_folder: true
+sticky_navigation: true
+prev_next_buttons_location: both
+search_enabled: true
+hljs_style: github

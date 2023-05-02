@@ -36,4 +36,4 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Run Maven tests
-        run: MAVEN_OPTS="-Xmx2048M -Xss512M" mvn test --no-transfer-progress --fail-at-end
+        run: MAVEN_OPTS="-Xmx2048M -Xss512M" mvn -f sansa-bom/pom.xml test --no-transfer-progress --fail-at-end

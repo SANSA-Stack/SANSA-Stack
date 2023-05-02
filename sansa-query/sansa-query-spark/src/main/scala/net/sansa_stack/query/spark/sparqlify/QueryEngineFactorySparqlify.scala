@@ -1,7 +1,8 @@
 package net.sansa_stack.query.spark.sparqlify
 
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
-import net.sansa_stack.query.spark.api.impl.{QueryEngineFactoryBase, QueryExecutionFactorySparkJavaWrapper}
+import net.sansa_stack.query.spark.api.impl.QueryExecutionFactorySparkJavaWrapper
+import net.sansa_stack.query.spark.impl.QueryEngineFactoryBase
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.apache.jena.rdf.model.Model

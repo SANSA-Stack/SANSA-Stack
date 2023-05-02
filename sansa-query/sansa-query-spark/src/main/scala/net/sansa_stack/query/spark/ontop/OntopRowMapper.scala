@@ -1,7 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.util.Properties
-
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap
 import it.unibz.inf.ontop.exception.OntopInternalBugException
 import it.unibz.inf.ontop.model.term._
@@ -14,6 +12,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.types.StructField
 import org.semanticweb.owlapi.model.OWLOntology
 
+import java.util.Properties
 import scala.collection.JavaConverters._
 
 /**

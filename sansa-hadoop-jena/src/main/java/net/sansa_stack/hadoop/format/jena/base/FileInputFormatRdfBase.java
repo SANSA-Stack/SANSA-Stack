@@ -20,6 +20,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.system.AsyncParser;
+import org.apache.jena.riot.system.EltStreamRDF;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFBase;
 import org.slf4j.Logger;
@@ -29,8 +31,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 /**
  * Base class for unit testing of reading an RDF file with
@@ -157,8 +161,21 @@ public abstract class FileInputFormatRdfBase<T>
             }
         };
 
-        try {
-            RDFDataMgr.parse(prefixSink, in, lang);
+        try(Stream<EltStreamRDF> stream = AsyncParser.of(in, lang, null).setChunkSize(100).streamElements()){
+            Iterator<EltStreamRDF> it = stream.iterator();
+            long nonPrefixEventCount = 0;
+            long maxNonPrefixEventCount = 1000;
+            while (it.hasNext() && nonPrefixEventCount < maxNonPrefixEventCount) {
+                EltStreamRDF event = it.next();
+                if (event.isPrefix()) {
+                    prefixSink.prefix(event.prefix(), event.iri());
+                    nonPrefixEventCount = 0;
+                } else {
+                    ++nonPrefixEventCount;
+                }
+            }
+
+            // RDFDataMgr.parse(prefixSink, in, lang);
 
             // Only retain prefixes
             dst.removeAll();

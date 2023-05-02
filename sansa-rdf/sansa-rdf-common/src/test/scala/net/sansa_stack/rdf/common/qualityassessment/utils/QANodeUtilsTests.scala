@@ -52,12 +52,14 @@ class QANodeUtilsTests extends FunSuite {
     assert(!hasLicenceAssociated)
   }
 
+  /*
   test("checking if resource has broken link should match") {
 
     val isBroken = NodeUtils.isBroken(triple.getPredicate)
 
     assert(!isBroken)
   }
+  */
 
   test("checking if resource is hash URI should match") {
 

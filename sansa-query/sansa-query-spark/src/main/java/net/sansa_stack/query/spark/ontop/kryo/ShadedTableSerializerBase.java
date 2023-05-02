@@ -1,12 +1,12 @@
 package net.sansa_stack.query.spark.ontop.kryo;
 
-import java.util.Map;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import it.unibz.inf.ontop.com.google.common.collect.Table;
+
+import java.util.Map;
 
 public abstract class ShadedTableSerializerBase<R, C, V, T extends Table<R, C, V>> extends Serializer<T> {
 

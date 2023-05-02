@@ -13,7 +13,6 @@ import org.aksw.sparqlify.core.algorithms.{CandidateViewSelectorSparqlify, ViewD
 import org.aksw.sparqlify.core.interfaces.SparqlSqlStringRewriter
 import org.aksw.sparqlify.util.{SparqlifyCoreInit, SparqlifyUtils, SqlBackendConfig}
 import org.apache.jena.rdf.model.Model
-import org.apache.jena.riot.{RDFDataMgr, RDFFormat}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType

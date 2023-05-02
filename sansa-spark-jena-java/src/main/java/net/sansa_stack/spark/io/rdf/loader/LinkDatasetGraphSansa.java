@@ -42,12 +42,9 @@ public class LinkDatasetGraphSansa
 
     public static LinkDatasetGraphSansa create(Configuration conf, SerializableSupplier<LinkSparqlUpdate> link) {
         SerializableSupplier<StreamRDF> sinkFactory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
-           LinkSparqlUpdate update = link.get();
-           try {
+           try (LinkSparqlUpdate update = link.get()) {
                // System.out.println("Update: " + Thread.currentThread() + " " + updateRequest.toString().length());
                update.update(updateRequest);
-           } finally {
-               update.close();
            }
         });
 
@@ -66,7 +63,7 @@ public class LinkDatasetGraphSansa
         try {
             StreamRDF sink = sinkFactory.get();
             Path path = new Path(s);
-            AsyncRdfParserHadoop.parse(path, conf, sink);
+            AsyncRdfParserHadoop.parse(path, null, conf, sink);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

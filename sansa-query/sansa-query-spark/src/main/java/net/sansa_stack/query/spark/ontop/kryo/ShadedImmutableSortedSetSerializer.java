@@ -5,6 +5,7 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableSortedSet;
+
 import java.util.Comparator;
 
 /**

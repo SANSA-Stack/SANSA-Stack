@@ -1,19 +1,18 @@
 package net.sansa_stack.query.spark.ontop
 
 import com.github.owlcs.ontapi.OntManagers.OWLAPIImplProfile
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
-import org.apache.spark.sql.SparkSession
-import org.semanticweb.owlapi.apibinding.OWLManager
-import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
-import scala.collection.JavaConverters._
-
-import org.aksw.r2rml.jena.vocab.RR
-import org.apache.jena.rdf.model.Model
-import org.apache.jena.vocabulary.RDF
-
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.utils.ScalaUtils
+import org.aksw.r2rml.jena.vocab.RR
+import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
+import org.apache.jena.rdf.model.Model
+import org.apache.jena.vocabulary.RDF
+import org.apache.spark.sql.SparkSession
+import org.semanticweb.owlapi.apibinding.OWLManager
+import org.semanticweb.owlapi.model.{IRI, OWLAxiom, OWLOntology}
+
+import scala.collection.JavaConverters._
 
 /**
  * An extractor for an ontology.
@@ -69,6 +68,7 @@ object OntologyExtractor {
       val ontology = createOntology(axioms)
 
       import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat
+
       import java.io.{File, FileOutputStream}
       ontology.saveOntology(new RDFXMLDocumentFormat(), new FileOutputStream(new File("/tmp/ontop-ontology.rdf")))
 

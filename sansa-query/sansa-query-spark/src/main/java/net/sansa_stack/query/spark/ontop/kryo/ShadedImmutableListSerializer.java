@@ -4,11 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import it.unibz.inf.ontop.com.google.common.collect.HashBasedTable;
-import it.unibz.inf.ontop.com.google.common.collect.ImmutableList;
-import it.unibz.inf.ontop.com.google.common.collect.ImmutableTable;
-import it.unibz.inf.ontop.com.google.common.collect.Lists;
-import it.unibz.inf.ontop.com.google.common.collect.Table;
+import it.unibz.inf.ontop.com.google.common.collect.*;
 
 /**
  * A kryo {@link Serializer} for guava-libraries {@link ImmutableList}.

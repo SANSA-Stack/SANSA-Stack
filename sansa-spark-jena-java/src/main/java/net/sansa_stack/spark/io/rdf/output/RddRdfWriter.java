@@ -20,7 +20,9 @@ import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
@@ -49,6 +51,7 @@ import scala.Tuple2;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -118,7 +121,6 @@ public class RddRdfWriter<T>
         action.accept(this);
         return this;
     }
-
 
     /** Same as .run() just without the checked IOException */
     public void runUnchecked() {
@@ -210,6 +212,69 @@ public class RddRdfWriter<T>
     }
 
     /**
+     * This method first checks that all top-level files in the partition folder belong to hadoop.
+     * If this is the case then a single recursive delete is made.
+     *
+     * Note that concurrent modifications could still cause those files to be deleted.
+     * Raises [@link DirectoryNotEmptyException} if not all files can be removed.
+     * If the directory does not exist then it is ignored.
+     */
+    public static void safeDeletePartitionFolder(FileSystem fs, Path folderPath, Configuration conf) throws IOException {
+        // The constants in the line below are defined in FileOutputFormat - but proteceted!
+        String baseName = Optional.ofNullable(conf.get("mapreduce.output.basename")).orElse("part");
+        if (baseName == null) {
+            baseName = "part";
+        }
+
+         if (baseName.isBlank()) {
+             if (logger.isWarnEnabled()) {
+                 // An empty base name prefixes every file
+                 // Even if there are multiple white spaces is seems more like a misconfiguration
+                 logger.warn("Deletion is disabled for blank base names as a safety measure");
+             }
+             return;
+         }
+
+        try {
+            // Amazing how slow listFiles is for local directories...
+            RemoteIterator<LocatedFileStatus> it = fs.listFiles(folderPath, false);
+
+            boolean allDeletable = true;
+            Path path = null;
+            while (it.hasNext()) {
+                LocatedFileStatus status = it.next();
+                path = status.getPath();
+
+                String fileName = path.getName();
+
+                // Create the effective name for further processing:
+                // Strip the name of a leading dot - those files are considered to hold check sums
+                String effName = fileName.replaceAll("^\\.", "");
+
+                allDeletable = allDeletable &&
+                        (effName.startsWith(baseName) || effName.equals("_temporary") || effName.equals("_SUCCESS"));
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Can delete " + path + ": " + allDeletable);
+                }
+
+                if (!allDeletable) {
+                    break;
+                }
+            }
+
+            if (allDeletable) {
+                fs.delete(folderPath, true);
+            } else {
+                throw new DirectoryNotEmptyException("Safe delete refused to delete non-hadoop file: " + path);
+            }
+        } catch (FileNotFoundException e) {
+            // Nothing to delete
+        }
+
+    }
+
+    /**
      * Run the save action according to configuration
      *
      * @throws IOException
@@ -240,8 +305,19 @@ public class RddRdfWriter<T>
         FileSystem partitionFolderFs = effPartitionFolder.getFileSystem(hadoopConfiguration);
         if (partitionFolderFs.exists(effPartitionFolder)) {
             if (allowOverwriteFiles) {
-                logger.info(String.format("Removing existing file/folder: %s", effPartitionFolder));
-                partitionFolderFs.delete(effPartitionFolder, true);
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("Attempting to safely remove existing file/folder: %s", effPartitionFolder));
+                }
+                // partitionFolderFs.delete(effPartitionFolder, true);
+                safeDeletePartitionFolder(partitionFolderFs, effPartitionFolder, hadoopConfiguration);
+
+                if (partitionFolderFs.exists(effPartitionFolder)) {
+                    String msg = String.format("Could not safely remove partition folder '%s' because non-hadoop files exist. Please delete manually.", effPartitionFolder);
+//                    if (logger.isInfoEnabled()) {
+//                        logger.info(msg);
+//                    }
+                    throw new RuntimeException(msg);
+                }
             } else {
                 throw new IllegalArgumentException("Folder already exists: " + effPartitionFolder);
             }
@@ -253,7 +329,9 @@ public class RddRdfWriter<T>
             targetFileFs = targetFile.getFileSystem(hadoopConfiguration);
             if (targetFileFs.exists(targetFile)) {
                 if (allowOverwriteFiles) {
-                    logger.info(String.format("Removing existing file: %s", targetFile));
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("Removing existing file: %s", targetFile));
+                    }
                     targetFileFs.delete(targetFile, false);
                 } else {
                     throw new IllegalArgumentException("File already exists: " + targetFile);
@@ -269,7 +347,23 @@ public class RddRdfWriter<T>
             effectiveRdd = effectiveRdd.coalesce(1);
         }
 
+        boolean useOldElephas = false;
+
         if (useElephas) {
+            RddRdfWriter2 writer =  new RddRdfWriter2(outputFormat, mapQuadsToTriplesForTripleLangs, globalPrefixMapping);
+            Lang lang = outputFormat.getLang();
+
+            if (RDFLanguages.isTriples(lang)) {
+                JavaRDD<Triple> triples = dispatcher.convertToTriple.apply(effectiveRdd);
+                writer.writeTriples(triples.rdd(), effPartitionFolder);
+            } else if (RDFLanguages.isQuads(lang)) {
+                JavaRDD<Quad> quads = dispatcher.convertToQuad.apply(effectiveRdd);
+                writer.writeQuads(quads.rdd(), effPartitionFolder);
+            } else {
+                throw new IllegalStateException(String.format("Language %s is neiter triples nor quads", lang));
+            }
+
+        } else if (useOldElephas) {
             Lang lang = RDFLanguages.filenameToLang(effPartitionFolder.toString());
             Objects.requireNonNull(String.format("Could not determine language from path %s ", effPartitionFolder));
 
@@ -302,7 +396,9 @@ public class RddRdfWriter<T>
             }
 
             if (deletePartitionFolderAfterMerge) {
-                logger.info(String.format("Removing temporary output folder: %s", effPartitionFolder));
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("Removing temporary output folder: %s", effPartitionFolder));
+                }
                 partitionFolderFs.delete(effPartitionFolder, true);
             }
         }
@@ -314,6 +410,9 @@ public class RddRdfWriter<T>
 
         if (fs.exists(path)) {
             if (deleteIfExists) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("Removing temporary output folder: %s", path));
+                }
                 fs.delete(path, true);
             } else {
                 throw new IllegalArgumentException("File already exists: " + fs);
@@ -528,6 +627,7 @@ public class RddRdfWriter<T>
             PrefixMapping globalPrefixMapping,
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF) throws IOException {
 
+
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(javaRdd.context());
 
         Lang lang = rdfFormat.getLang();
@@ -598,6 +698,7 @@ public class RddRdfWriter<T>
 //                hadoopConfiguration);
 //    }
 
+
     public static <T> void saveUsingElephas(
             JavaRDD<T> rdd,
             Path path,
@@ -650,6 +751,7 @@ public class RddRdfWriter<T>
 
     public static void validate(RddRdfWriterSettings<?> settings) {
         RDFFormat outputFormat = settings.getOutputFormat();
+
         if (!StreamRDFWriter.registered(outputFormat)) {
             throw new IllegalArgumentException(outputFormat + " is not a streaming format");
         }

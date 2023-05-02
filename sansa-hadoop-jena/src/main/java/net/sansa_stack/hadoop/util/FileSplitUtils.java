@@ -4,6 +4,7 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import io.reactivex.rxjava3.core.Flowable;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -104,10 +105,43 @@ public class FileSplitUtils {
     }
 
     /** Create a flow of records for a given input split w.r.t. a  given input format */
-    public static <T> Flowable<T> createFlow(
+    public static <T> Stream<T> createFlow(
             Job job,
             InputFormat<?, T> inputFormat,
             InputSplit inputSplit) {
+
+        RecordReader<?, T> reader;
+        try {
+            reader = inputFormat.createRecordReader(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
+            // initialize
+            reader.initialize(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        Stream<T> result = Stream.generate(() -> {
+            try {
+                return reader.nextKeyValue() ? reader.getCurrentValue() : null;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).takeWhile(x -> x != null)
+                .onClose(() -> {
+            try {
+                reader.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return result;
+    }
+
+    public static <T> Flowable<T> createFlow2(
+            Job job,
+            InputFormat<?, T> inputFormat,
+            InputSplit inputSplit) {
+
         return Flowable.generate(() -> {
                     // setup
                     RecordReader<?, T> reader = inputFormat.createRecordReader(inputSplit, new TaskAttemptContextImpl(job.getConfiguration(), new TaskAttemptID()));
@@ -131,7 +165,7 @@ public class FileSplitUtils {
     }
 
 
-    /** Util method typically for use with split-related unit tests */
+        /** Util method typically for use with split-related unit tests */
     public static List<Object[]> createTestParameters(Map<String, Range<Integer>> fileToNumSplits) {
 
         // Post process the map into junit params by enumerating the ranges

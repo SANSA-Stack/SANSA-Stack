@@ -8,4 +8,7 @@ public interface CustomMatcher
     void region(int start, int end);
     boolean find();
 
+    // Named groups
+    int start(String name);
+    int end(String name);
 }

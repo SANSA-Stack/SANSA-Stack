@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.ontop
 
 import net.sansa_stack.query.spark.api.domain.QueryExecutionSpark
-import net.sansa_stack.query.spark.api.impl.QueryExecutionFactorySparkBase
+import net.sansa_stack.query.spark.impl.QueryExecutionFactorySparkBase
 import org.apache.jena.query.Query
 import org.apache.spark.sql.SparkSession
 

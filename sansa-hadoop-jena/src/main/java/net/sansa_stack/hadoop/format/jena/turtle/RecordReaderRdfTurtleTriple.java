@@ -4,16 +4,23 @@ import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
 import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfNonAccumulatingBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderGenericRdfTripleBase;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderRdfConf;
+import org.aksw.jenax.arq.util.irixresolver.IRIxResolverUtils;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrRx;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.lang.LabelToNode;
+import org.apache.jena.riot.system.AsyncParser;
+import org.apache.jena.sparql.core.Quad;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RecordReaderRdfTurtleTriple
-        extends RecordReaderGenericRdfNonAccumulatingBase<Triple>
+        extends RecordReaderGenericRdfTripleBase
 {
 
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.turtle.triple.record.minlength";
@@ -45,16 +52,15 @@ public class RecordReaderRdfTurtleTriple
             Pattern.CASE_INSENSITIVE); // | Pattern.MULTILINE);
 
     public RecordReaderRdfTurtleTriple() {
-        super(
+        super(new RecordReaderRdfConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                PREFIXES_MAXLENGTH_KEY,
                 turtleRecordStartPattern,
-                Lang.TURTLE);
+                PREFIXES_MAXLENGTH_KEY,
+                Lang.TURTLE));
     }
 
-    @Override
     protected Flowable<Triple> parse(Callable<InputStream> inputStreamSupplier) {
         Flowable<Triple> result = RDFDataMgrRx.createFlowableTriples(inputStreamSupplier, lang, baseIri);
         return result;

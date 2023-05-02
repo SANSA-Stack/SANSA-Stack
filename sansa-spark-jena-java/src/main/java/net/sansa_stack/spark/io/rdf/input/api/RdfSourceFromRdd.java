@@ -22,8 +22,8 @@ public class RdfSourceFromRdd<T>
     }
 
     @Override
-    public boolean usesQuads() {
-        return dispatcher.usesQuads();
+    public int getComponentCount() {
+        return dispatcher.getComponentCount();
     }
 
     @Override

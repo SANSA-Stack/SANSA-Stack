@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import net.sansa_stack.ml.spark.featureExtraction.FeatureExtractingSparqlGenerator.createSparql
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.model.TripleOperations
@@ -12,8 +13,8 @@ import org.scalatest.FunSuite
 
 class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+
+  CommonKryoSetup.initKryoViaSystemProperties();
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -36,10 +37,9 @@ class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteB
     val seedNumberAsRatio: Double = 1.0
 
     // setup spark session
-    val spark = SparkSession.builder
+    lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
       .appName(s"tryout sparql query transformer")
       .master("local[*]")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.sql.crossJoin.enabled", true)
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")

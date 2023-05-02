@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.sparqlify
 
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
-import org.aksw.jenax.arq.util.execution.QueryExecutionAdapter
+import org.aksw.jenax.arq.util.exec.QueryExecutionAdapter
 import org.aksw.sparqlify.core.domain.input.SparqlSqlStringRewrite
 import org.apache.jena.query.{Query, ResultSetCloseable}
 import org.apache.jena.sparql.engine.binding.Binding

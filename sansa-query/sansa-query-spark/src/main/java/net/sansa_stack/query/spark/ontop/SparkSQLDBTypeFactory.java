@@ -1,9 +1,5 @@
 package net.sansa_stack.query.spark.ontop;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Optional;
-
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import it.unibz.inf.ontop.com.google.common.collect.ImmutableMap;
@@ -15,7 +11,13 @@ import it.unibz.inf.ontop.model.vocabulary.XSD;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import static it.unibz.inf.ontop.model.type.DBTermType.Category.*;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
+
+import static it.unibz.inf.ontop.model.type.DBTermType.Category.FLOAT_DOUBLE;
+import static it.unibz.inf.ontop.model.type.DBTermType.Category.INTEGER;
 
 class SparkDBTypeFactory extends DefaultSQLDBTypeFactory {
 

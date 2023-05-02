@@ -1,5 +1,7 @@
 package net.sansa_stack.hadoop.util;
 
+import org.aksw.commons.util.stack_trace.StackTraceUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.fs.Seekable;
 
 import java.io.IOException;
@@ -24,7 +26,7 @@ public class DeferredSeekablePushbackInputStream
     // read and the second one pushed back for the next read.
     // protected byte[] fallbackBuffer = new byte[2];
 
-    private static final int TRANSFER_SIZE = 8192 + 1; // Add 1 byte for look ahead
+    private static final int TRANSFER_SIZE = 8 * 1024 + 1; // Add 1 byte for look ahead
 
     /**
      * Unsafe reads modify the byte after the reported number of read bytes
@@ -36,7 +38,14 @@ public class DeferredSeekablePushbackInputStream
      * As this may cause data corruption, safe read mode uses an intermediate buffer
      * with additional copying to prevent changing data outside of the reported range.
      */
-    protected boolean safeRead = true;
+    protected ReadMode readMode = ReadMode.BUFFERED;
+
+    private enum ReadMode {
+        UNSAFE, // First reads into the given buffer directly but then unreads the last byte and then reports one fewer byte read.
+                // This is unsafe because the buffer is changed outside of the reported range (but within the allowed range)
+        BUFFERED, // Read the requested amount + 1 into a temp buffer. Limited by TRANSFER_SIZE.
+    }
+
     protected byte fallbackBuffer[] = new byte[TRANSFER_SIZE];
 
     public DeferredSeekablePushbackInputStream(InputStream in) {
@@ -89,17 +98,22 @@ public class DeferredSeekablePushbackInputStream
             l = 2;
             isBufferedRead = true;
         } else { // n > 1
-            if (safeRead) {
+            switch (readMode) {
+            case BUFFERED:
                 int bytesToRead = Math.min(len + 1, TRANSFER_SIZE);
                 out = fallbackBuffer;
                 o = 0;
                 l = bytesToRead;
                 isBufferedRead = true;
-            } else {
+                break;
+            case UNSAFE:
                 out = b;
                 o = off;
                 l = len;
                 isBufferedRead = false;
+                break;
+            default:
+                throw new IllegalStateException("Unknown read mode: " + readMode);
             }
         }
 
@@ -122,8 +136,19 @@ public class DeferredSeekablePushbackInputStream
         return n;
     }
 
+    @Override
+    public synchronized void close() throws IOException {
+        // System.out.println("Closed: " + ObjectUtils.identityToString(this ) + " - " + StackTraceUtils.toString(Thread.currentThread().getStackTrace()));
+        super.close();
+    }
+
     /** This method is assumed to be invoked with len >= 2 */
     protected int readInternal(byte[] b, int off, int len) throws IOException {
+        // ensureOpen() is private
+        if (in == null) {
+            throw new IOException("Stream closed");
+        }
+
         int result;
 
         // Available amount of data in the pushback buffer

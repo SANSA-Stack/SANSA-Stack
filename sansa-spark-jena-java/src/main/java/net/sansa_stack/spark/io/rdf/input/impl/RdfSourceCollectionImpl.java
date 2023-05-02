@@ -1,25 +1,25 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.LangBuilder;
-import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import net.sansa_stack.spark.io.rdf.input.api.NodeTupleSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 
 public class RdfSourceCollectionImpl
     implements RdfSourceCollection
@@ -64,13 +64,19 @@ public class RdfSourceCollectionImpl
     }
 
     @Override
-    public boolean usesQuads() {
-        boolean result = members.stream().anyMatch(rdfSource -> {
-            boolean r = rdfSource.usesQuads();
-            return r;
-        });
+    public int getComponentCount() {
+        int result = members.stream().mapToInt(NodeTupleSource::getComponentCount).max().orElse(3);
         return result;
     }
+
+//    @Override
+//    public boolean usesQuads() {
+//        boolean result = members.stream().anyMatch(rdfSource -> {
+//            boolean r = rdfSource.usesQuads();
+//            return r;
+//        });
+//        return result;
+//    }
 
     /*
     @Override

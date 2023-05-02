@@ -9,22 +9,7 @@ import java.util.regex.Pattern;
 public abstract class RecordReaderGenericRdfNonAccumulatingBase<T>
     extends RecordReaderGenericRdfBase<T, T, T, T>
 {
-
-    public RecordReaderGenericRdfNonAccumulatingBase(
-            String minRecordLengthKey,
-            String maxRecordLengthKey,
-            String probeRecordCountKey,
-            String prefixesMaxLengthKey,
-            CustomPattern recordSearchPattern,
-            Lang lang) {
-        super(minRecordLengthKey,
-                maxRecordLengthKey,
-                probeRecordCountKey,
-                prefixesMaxLengthKey,
-                recordSearchPattern,
-                lang,
-                // FileInputFormatRdfBase.BASE_IRI_KEY,
-                // FileInputFormatRdfBase.PREFIXES_KEY,
-                Accumulating.identity());
+    public RecordReaderGenericRdfNonAccumulatingBase(RecordReaderRdfConf conf) {
+        super(conf, Accumulating.identity());
     }
 }

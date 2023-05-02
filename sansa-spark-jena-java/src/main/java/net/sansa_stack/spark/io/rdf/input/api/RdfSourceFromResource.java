@@ -41,11 +41,18 @@ public interface RdfSourceFromResource
     Lang getLang();
 
     @Override
-    default boolean usesQuads() {
+    default int getComponentCount() {
         Lang lang = getLang();
-        boolean result = RDFLanguages.isQuads(lang);
-        return result;
+        boolean usesQuads = RDFLanguages.isQuads(lang);
+        return usesQuads ? 4 : 3;
     }
+
+//    @Override
+//    default boolean usesQuads() {
+//        Lang lang = getLang();
+//        boolean result = RDFLanguages.isQuads(lang);
+//        return result;
+//    }
 
     /*
     default boolean containsQuadLangs() {

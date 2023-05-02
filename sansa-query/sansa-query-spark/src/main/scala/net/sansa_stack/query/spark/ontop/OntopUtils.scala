@@ -1,9 +1,7 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.text.DecimalFormat
-import java.util.Properties
 import it.unibz.inf.ontop.exception.{MinorOntopInternalBugException, OBDASpecificationException, OntopInternalBugException}
-import it.unibz.inf.ontop.injection.{OntopMappingSQLAllConfiguration, OntopMappingSQLAllOWLAPIConfiguration, OntopMappingSQLConfiguration, OntopReformulationSQLConfiguration, OntopSQLOWLAPIConfiguration}
+import it.unibz.inf.ontop.injection._
 import it.unibz.inf.ontop.iq.exception.EmptyQueryException
 import it.unibz.inf.ontop.iq.node.{ConstructionNode, NativeNode}
 import it.unibz.inf.ontop.iq.{IQ, IQTree, UnaryIQTree}
@@ -17,6 +15,7 @@ import org.apache.jena.rdf.model.Model
 import org.semanticweb.owlapi.model.OWLOntology
 
 import java.io.StringReader
+import java.util.Properties
 
 /**
  * @author Lorenz Buehmann

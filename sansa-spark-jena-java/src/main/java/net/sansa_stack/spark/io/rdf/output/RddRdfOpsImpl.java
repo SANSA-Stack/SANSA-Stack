@@ -1,6 +1,8 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-import net.sansa_stack.spark.rdd.function.JavaRddFunction;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
@@ -24,13 +26,12 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.spark.api.java.JavaRDD;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 
 public class RddRdfOpsImpl<T>
     implements RddRdfOps<T>
 {
-    protected boolean usesQuads;
+    protected int componentCount;
     protected BiConsumer<T, StreamRDF> sendRecordToStreamRDF;
     protected JavaRddFunction<T, Triple> convertToTriple;
     protected JavaRddFunction<T, Quad> convertToQuad;
@@ -38,7 +39,7 @@ public class RddRdfOpsImpl<T>
     protected Function<? super T, Comparable<?>> keyFunction;
 
     public RddRdfOpsImpl(
-            boolean usesQuads,
+            int componentCount,
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF,
             JavaRddFunction<T, Triple> convertToTriple,
             JavaRddFunction<T, Quad> convertToQuad,
@@ -46,7 +47,7 @@ public class RddRdfOpsImpl<T>
             Function<? super T, Comparable<?>> keyFunction
             ) {
         super();
-        this.usesQuads = usesQuads;
+        this.componentCount = componentCount;
         this.sendRecordToStreamRDF = sendRecordToStreamRDF;
         this.convertToTriple = convertToTriple;
         this.convertToQuad = convertToQuad;
@@ -55,8 +56,8 @@ public class RddRdfOpsImpl<T>
     }
 
     @Override
-    public boolean usesQuads() {
-        return usesQuads;
+    public int getComponentCount() {
+        return componentCount;
     }
 
     @Override
@@ -69,10 +70,12 @@ public class RddRdfOpsImpl<T>
         return this.convertToTriple.apply(rdd);
     }
 
+    @Override
     public JavaRDD<Quad> convertToQuad(JavaRDD<T> rdd) {
         return this.convertToQuad.apply(rdd);
     }
 
+    @Override
     public JavaRDD<Node> convertToNode(JavaRDD<T> rdd) {
         return this.convertToNode.apply(rdd);
     }
@@ -96,8 +99,8 @@ public class RddRdfOpsImpl<T>
      * @param <T>
      * @return
      */
-    public static <T> RddRdfOpsImpl create(
-            boolean usesQuads,
+    public static <T> RddRdfOpsImpl<T> create(
+            int componentCount,
             SerializableBiConsumer<T, StreamRDF> sendRecordToStreamRDF,
             JavaRddFunction<T, Triple> convertToTriple,
             JavaRddFunction<T, Quad> convertToQuad,
@@ -105,13 +108,13 @@ public class RddRdfOpsImpl<T>
             SerializableFunction<? super T, Comparable<?>> keyFunction
     ) {
 
-        return new RddRdfOpsImpl<>(usesQuads,
+        return new RddRdfOpsImpl<>(componentCount,
                 sendRecordToStreamRDF, convertToTriple, convertToQuad, convertToNode, keyFunction);
     }
 
     public static RddRdfOpsImpl<Triple> createForTriple() {
         return RddRdfOpsImpl.<Triple>create(
-                false,
+                3,
                 (triple, streamRDF) -> streamRDF.triple(triple),
                 x -> x,
                 x -> x.map(triple -> Quad.create(Quad.defaultGraphNodeGenerated, triple)),
@@ -121,7 +124,7 @@ public class RddRdfOpsImpl<T>
 
     public static RddRdfOpsImpl<Quad> createForQuad() {
         return RddRdfOpsImpl.<Quad>create(
-                true,
+                4,
                 (quad, streamRDF) -> streamRDF.quad(quad),
                 x -> x.map(Quad::asTriple),
                 x -> x,
@@ -131,7 +134,7 @@ public class RddRdfOpsImpl<T>
 
     public static RddRdfOpsImpl<Graph> createForGraph() {
         return RddRdfOpsImpl.<Graph>create(
-                false,
+                3,
                 (graph, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(graph), streamRDF),
                 x -> x.flatMap(Graph::find),
                 x -> x.flatMap(graph -> graph.find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t))),
@@ -142,7 +145,7 @@ public class RddRdfOpsImpl<T>
 
     public static RddRdfOpsImpl<DatasetGraphOneNg> createForDatasetGraph() {
         return RddRdfOpsImpl.<DatasetGraphOneNg>create(
-                true,
+                4,
                 (dg, streamRDF) -> StreamRDFOps.sendDatasetToStream(dg, streamRDF),
                 x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(DatasetGraph::find),
@@ -153,7 +156,7 @@ public class RddRdfOpsImpl<T>
 
     public static RddRdfOpsImpl<Model> createForModel() {
         return RddRdfOpsImpl.<Model>create(
-                false,
+                3,
                 (model, streamRDF) -> StreamRDFOps.sendDatasetToStream(DatasetGraphFactory.wrap(model.getGraph()), streamRDF),
                 x -> x.flatMap(model -> model.getGraph().find()),
                 x -> x.flatMap(model -> model.getGraph().find().mapWith(t -> new Quad(Quad.defaultGraphNodeGenerated, t))),
@@ -164,7 +167,7 @@ public class RddRdfOpsImpl<T>
 
     public static RddRdfOpsImpl<DatasetOneNg> createForDataset() {
         return RddRdfOpsImpl.<DatasetOneNg>create(
-                true,
+                4,
                 (ds, streamRDF) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), streamRDF),
                 x -> x.flatMap(ds -> WrappedIterator.create(ds.asDatasetGraph().find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(ds -> ds.asDatasetGraph().find()),
