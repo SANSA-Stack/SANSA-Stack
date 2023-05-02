@@ -33,30 +33,6 @@
         </license>
     </licenses>
 
-	<developers>
-		<developer>
-			<name>Claus Stadler</name>
-			<url>http://aksw.org/ClausStadler</url>
-			<organization>AKSW</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-		</developer>
-		<developer>
-			<name>Lorenz Buehmann</name>
-			<url>http://aksw.org/LorenzBuehmann</url>
-			<organization>AKSW</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-		</developer>
-		<developer>
-			<name>Carsten Drachner</name>
-		</developer>
-		<developer>
-			<name>Gezim Sejdiu</name>
-		</developer>
-		<developer>
-			<name>Jens Lehmann</name>
-		</developer>
-	</developers>
-
     <scm>
         <url>https://github.com/SANSA-Stack/SANSA-RDF</url>
         <connection>scm:git:git://github.com/SANSA-Stack/SANSA-Stack.git</connection>
