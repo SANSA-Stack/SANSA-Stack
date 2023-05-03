@@ -21,7 +21,7 @@
 	
 	<!-- Dummy module that should come after all skipped modules -->
 	<!-- If the last module of a maven reactor is skipped then certain release actions may not run -->
-	<!-- <module>sansa-pkg-dummy</module> -->
+	<module>sansa-pkg-dummy</module>
     </modules>
 
 </project>
