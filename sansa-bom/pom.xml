@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.8.0-RC5-SNAPSHOT</version>
+    <version>0.8.0-RC4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
@@ -36,29 +36,29 @@
         <tag>HEAD</tag>
     </scm>
 
-	<developers>
-		<developer>
-			<name>Claus Stadler</name>
-			<url>http://aksw.org/ClausStadler</url>
-			<organization>AKSW</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-		</developer>
-		<developer>
-			<name>Lorenz Buehmann</name>
-			<url>http://aksw.org/LorenzBuehmann</url>
-			<organization>AKSW</organization>
-			<organizationUrl>http://aksw.org</organizationUrl>
-		</developer>
-		<developer>
-			<name>Carsten Drachner</name>
-		</developer>
-		<developer>
-			<name>Gezim Sejdiu</name>
-		</developer>
-		<developer>
-			<name>Jens Lehmann</name>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Claus Stadler</name>
+            <url>http://aksw.org/ClausStadler</url>
+            <organization>AKSW</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Lorenz Buehmann</name>
+            <url>http://aksw.org/LorenzBuehmann</url>
+            <organization>AKSW</organization>
+            <organizationUrl>http://aksw.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Carsten Drachner</name>
+        </developer>
+        <developer>
+            <name>Gezim Sejdiu</name>
+        </developer>
+        <developer>
+            <name>Jens Lehmann</name>
+        </developer>
+    </developers>
 
     <issueManagement>
         <url>https://github.com/SANSA-Stack/SANSA-Stack/issues</url>
@@ -146,6 +146,26 @@
         <hadoop.deps.scope>compile</hadoop.deps.scope>
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
+
+	<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+
+        <!-- Common argLines for java and scala test runners -->
+        <sansa.argLine>
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+            --add-opens=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+        </sansa.argLine>
     </properties>
 
     <modules>
@@ -349,7 +369,7 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.12</version>
+		    <version>${nexus-staging-maven-plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>de.dentrassi.maven</groupId>
@@ -513,23 +533,21 @@
                     </executions>
                 </plugin>
 
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-		    <version>3.2.4</version>
+                    <version>3.2.4</version>
                     <executions>
                         <!-- Run shade goal on package phase -->
                         <execution>
+                            <!-- <id>dist</id> -->
                             <phase>package</phase>
                             <goals>
                                 <goal>shade</goal>
                             </goals>
-			    <configuration>
-				<!--
+                            <configuration>
                                 <shadedArtifactAttached>true</shadedArtifactAttached>
-					<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-				-->
+                                <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                                 <filters>
                                     <filter>
                                         <artifact>*:*</artifact>
@@ -546,7 +564,7 @@
                                 </transformers>
                             </configuration>
                         </execution>
-			</executions>
+                    </executions>
                 </plugin>
 
                 <plugin>
@@ -2174,6 +2192,43 @@
     </repositories>
 
     <profiles>
+
+        <profile>
+            <id>relocate</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-shade-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <phase>package</phase>
+                                    <goals>
+                                        <goal>shade</goal>
+                                    </goals>
+                                    <configuration>
+                                        <artifactSet>
+                                            <excludes>
+                                                <exclude>org.apache.hadoop:*</exclude>
+                                                <exclude>org.apache.spark:*</exclude>
+                                            </excludes>
+                                        </artifactSet>
+                                        <relocations>
+                                            <relocation>
+                                                <pattern>com.google</pattern>
+                                                <shadedPattern>net.sansa_stack.ext.com.google</shadedPattern>
+                                            </relocation>
+                                        </relocations>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
         <!-- switch Scala version to 2.12 -->
         <profile>
             <id>scala-2.12</id>
@@ -2274,7 +2329,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+			<version>${nexus-staging-maven-plugin.version}</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>

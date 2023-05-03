@@ -90,7 +90,7 @@ public class SansaIT {
 
         // DockerImageName.parse("bde2020/spark-master:3.0.1-hadoop3.2")
 
-        System.out.println("Cmd: " + Arrays.toString(cmd));
+        logger.info("Cmd: " + Arrays.toString(cmd));
         GenericContainer result = new GenericContainer(sparkSubmitImage)
                 .withCopyFileToContainer(MountableFile.forHostPath(jarBundlePath), "/spark/bin/" + jarBundlePath.getFileName())
                 .withNetwork(newNetwork(networkId))
@@ -118,9 +118,11 @@ public class SansaIT {
     public void before() {
 
         env = System.getenv();
-        stackJarBundleFolder = Paths.get(env.getOrDefault(STACK_JAR_BUNDLE_FOLDER_KEY, "../sansa-stack/sansa-stack-spark/target/"));
-        exampleJarBundleFolder = Paths.get(env.getOrDefault(EXAMPLE_JAR_BUNDLE_FOLDER_KEY, "../sansa-examples/sansa-examples-spark/target/"));
+        Path stackJarBundleFolderRaw = Paths.get(env.getOrDefault(STACK_JAR_BUNDLE_FOLDER_KEY, "../sansa-stack/sansa-stack-spark/target/"));
+        Path exampleJarBundleFolderRaw = Paths.get(env.getOrDefault(EXAMPLE_JAR_BUNDLE_FOLDER_KEY, "../sansa-examples/sansa-examples-spark/target/"));
 
+        stackJarBundleFolder = stackJarBundleFolderRaw.toAbsolutePath();
+        exampleJarBundleFolder = exampleJarBundleFolderRaw.toAbsolutePath();
 
         sparkMasterWebUiPort = Integer.parseInt(env.getOrDefault(SPARK_MASTER_WEBUI_PORT_KEY, "7541"));
         sparkMasterPort = Integer.parseInt(env.getOrDefault(SPARK_MASTER_PORT_KEY, "7542"));
@@ -151,8 +153,8 @@ public class SansaIT {
         networkId = state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().iterator().next().getValue().getNetworkID();
 //        System.out.println("NETWORK: " + network);
 
-        System.out.println("NETWORKS:");
-        state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().forEach(e -> System.out.println("NETWORK: " + e));
+        logger.info("The following networks were detected:");
+        state.getContainerInfo().getNetworkSettings().getNetworks().entrySet().forEach(e -> logger.info("Netword: " + e));
     }
 
 
@@ -172,7 +174,7 @@ public class SansaIT {
     // @Test
     public void test() throws Exception {
 
-        System.out.println("Started");
+        logger.info("Started test; retrieving data from service running in a docker container");
         ByteSource bs = new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
@@ -180,7 +182,7 @@ public class SansaIT {
             }
         };
 
-        System.out.println("READ: " + bs.asCharSource(StandardCharsets.UTF_8).read());
+        logger.info("Read: " + bs.asCharSource(StandardCharsets.UTF_8).read());
     }
 
     public void sparkSubmitAndValidateBindingCounts(

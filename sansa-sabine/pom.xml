@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC5-SNAPSHOT</version>
+        <version>0.8.0-RC4-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -145,12 +145,12 @@
 
     <profiles>
         <profile>
-		<id>shade</id> <!-- was "release", but that that would upload the shaded jar -->
-	<!--
-            <properties>
-                <spark.deps.scope>provided</spark.deps.scope>
-		</properties>
-	-->
+            <id>relocate</id> <!-- was "release", but that that would upload the shaded jar -->
+            <!--
+                    <properties>
+                        <spark.deps.scope>provided</spark.deps.scope>
+                </properties>
+            -->
             <build>
                 <plugins>
                     <plugin>
@@ -169,7 +169,6 @@
                                             <exclude>org.apache.spark:*</exclude>
                                         </excludes>
                                     </artifactSet>
-
                                     <relocations>
                                         <relocation>
                                             <pattern>com.google</pattern>
@@ -185,41 +184,5 @@
         </profile>
     </profiles>
 
-    <!-- <sourceDirectory>src/main/java</sourceDirectory> -->
-    <!-- <sourceDirectory>src/main/scala</sourceDirectory> -->
-    <!--
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                </plugin>
-
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.scalastyle</groupId>
-				<artifactId>scalastyle-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
--->
-
-    <build>
-        <!--
-        <plugins>
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <configuration>
-                    <argLine>-Dlog4j.configuration=log4j-sansa.properties</argLine>
-                </configuration>
-            </plugin>
-        </plugins>
-        -->
-    </build>
 
 </project>
