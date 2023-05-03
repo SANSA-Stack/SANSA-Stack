@@ -8,7 +8,7 @@
 	<parent>
 		<artifactId>sansa-ml-parent_2.12</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.8.0-RC4-SNAPSHOT</version>
+		<version>0.8.7-SNAPSHOT</version>
 	</parent>
 	
 	<name>ML API - Common</name>
