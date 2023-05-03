@@ -45,11 +45,6 @@
         </dependency>
 
         <dependency>
-            <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-cmds-picocli${scala.version.suffix}</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>

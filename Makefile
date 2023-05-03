@@ -18,7 +18,7 @@ mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  
 
 rebuild-examples: ## rebuild and shade examples - they must be present for integration tests
 	$(MCIS) $(POM) -am -pl :sansa-examples-spark_2.12 $(ARGS)
-	mvn $(POM) -Pdist package -pl :sansa-examples-spark_2.12
+	mvn $(POM) -Pdist,spark-provided,relocate package -pl :sansa-examples-spark_2.12
 
 deploy-snapshot: ## deploy a snapshot of the modules up to ml
 	mvn $(POM) -DskipTests deploy -pl :sansa-ml-spark_2.12 -am
@@ -26,7 +26,7 @@ deploy-snapshot: ## deploy a snapshot of the modules up to ml
 shade-examples: ## only shade the examples - use after manual rebuilt of specific modules
 	mvn $(POM) -Pdist package -pl :sansa-examples-spark_2.12
 
-integration-tests: ## run the integration tests
+integration-tests: ## run the integration tests (you must run rebuild-examples first!)
 	mvn $(POM) -pl :sansa-integration-tests_2.12 failsafe:integration-test
 
 conformance-ontop: ## run conforance test suite against ontop

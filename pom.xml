@@ -60,24 +60,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <CodeCacheSize>1g</CodeCacheSize>
-
-        <!-- Common argLines for java and scala test runners -->
-        <sansa.argLine>
-            --add-opens=java.base/java.lang=ALL-UNNAMED
-            --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-            --add-opens=java.base/java.io=ALL-UNNAMED
-            --add-opens=java.base/java.net=ALL-UNNAMED
-            --add-opens=java.base/java.nio=ALL-UNNAMED
-            --add-opens=java.base/java.util=ALL-UNNAMED
-            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
-            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-            --add-opens=java.base/sun.nio.cs=ALL-UNNAMED
-            --add-opens=java.base/sun.security.action=ALL-UNNAMED
-            --add-opens=java.base/sun.util.calendar=ALL-UNNAMED
-            --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
-        </sansa.argLine>
     </properties>
 
     <modules>
@@ -88,8 +70,8 @@
         <module>sansa-resource-metadata</module>
         <module>sansa-resource-testdata</module>
         <module>sansa-rdf</module>
-	<module>sansa-datalake</module>
-	<module>sansa-sabine</module>
+        <module>sansa-datalake</module>
+        <module>sansa-sabine</module>
         <module>sansa-query</module>
         <module>sansa-owl</module>
         <module>sansa-inference</module>
