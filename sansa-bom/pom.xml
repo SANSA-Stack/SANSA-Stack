@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.8.0-RC4</version>
+    <version>0.8.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
@@ -100,8 +100,8 @@
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.5</aksw-commons.version>
         <jena.version>4.8.0</jena.version>
-        <jenax.version>4.8.0-1</jenax.version>
-        <rmltk.version>4.8.0-1</rmltk.version>
+        <jenax.version>4.8.0-2</jenax.version>
+        <rmltk.version>4.8.0-2</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
