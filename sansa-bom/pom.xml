@@ -75,7 +75,7 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw-commons.version>0.9.5-SNAPSHOT</aksw-commons.version>
-        <jena.version>4.8.0-SNAPSHOT</jena.version>
+        <jena.version>4.8.0</jena.version>
         <jenax.version>4.8.0-1-SNAPSHOT</jenax.version>
         <r2rml-jena-api.version>4.8.0-1-SNAPSHOT</r2rml-jena-api.version>
 
