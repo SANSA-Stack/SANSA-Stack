@@ -79,7 +79,7 @@ public class CsvDataSources {
         // Don't skip any rows while we sample the first row
         effectiveDialect.setHeaderRowCount(0l);
 
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, baseCsvConf.getNullValues());
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(false)
                 .configure(csvConf);

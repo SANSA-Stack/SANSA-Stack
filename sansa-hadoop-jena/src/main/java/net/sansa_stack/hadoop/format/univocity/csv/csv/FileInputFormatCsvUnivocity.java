@@ -15,6 +15,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 import net.sansa_stack.hadoop.util.JsonHadoopBridge;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class FileInputFormatCsvUnivocity
         extends FileInputFormat<LongWritable, String[]> {
 

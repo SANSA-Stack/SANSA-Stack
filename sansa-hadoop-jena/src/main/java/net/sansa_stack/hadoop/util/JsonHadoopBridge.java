@@ -1,12 +1,15 @@
 package net.sansa_stack.hadoop.util;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Streams;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.commons.path.core.Path;
@@ -21,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.univocity.parsers.csv.CsvParserSettings;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * Jackson-based mapper that can read/write java beans from/to a hadoop configuration object
@@ -73,15 +77,12 @@ public class JsonHadoopBridge {
     }
 
     public JsonNode read(Configuration conf) {
-
         Function<Path<String>, String> getter = p -> {
             String key = String.join(".", p.getSegments());
             String r = conf.get(key);
             return r;
         };
-
         JsonNode dst = prototype.deepCopy();
-
         JsonNode result = readRecursively(prototype, dst, basePath, getter);
         return result;
     }
@@ -150,6 +151,15 @@ public class JsonHadoopBridge {
                         dstObj.set(protoName, childNode);
                     }
                 }
+                else if (protoValue.isArray()) {
+                    String val = getter.apply(childPath);
+                    if (val != null) {
+                        String[] strings = StringUtils.getStrings(val);
+                        ArrayNode arr = JsonNodeFactory.instance.arrayNode(strings.length);
+                        Arrays.stream(strings).forEach(arr::add);
+                        dstObj.set(protoName, arr);
+                    }
+                }
             }
         } else {
             result = null;
@@ -178,7 +188,14 @@ public class JsonHadoopBridge {
                         writeRecursively(protoValue, srcValue, childPath, setter);
                     } else {
                         if (!Objects.equals(protoValue, srcValue)) {
-                            setter.accept(childPath, srcValue.textValue());
+                            if (srcValue.isArray()) {
+                                setter.accept(childPath, StringUtils.arrayToString(
+                                        Streams.stream(((ArrayNode)srcValue).elements())
+                                                .map(JsonNode::textValue)
+                                                .toArray(String[]::new)));
+                            } else {
+                                setter.accept(childPath, srcValue.textValue());
+                            }
                         }
                     }
                 }

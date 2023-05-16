@@ -139,7 +139,9 @@ public class RmlSourcesSpark {
         } else {
             Table csvwtSource = source.as(Table.class);
             Dialect dialect = csvwtSource.getDialect();
-            dialect.copyInto(effectiveDialect, false);
+            if (dialect != null) {
+                dialect.copyInto(effectiveDialect, false);
+            }
             Set<String> nullSet = csvwtSource.getNull();
             if (nullSet != null && !nullSet.isEmpty()) {
                 nullValues = nullSet.toArray(new String[0]);
@@ -148,11 +150,7 @@ public class RmlSourcesSpark {
         }
         Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
-        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
-        csvConf.setNullValues(nullValues);
-        UnivocityParserFactory parserFactory = UnivocityParserFactory
-                .createDefault(true)
-                .configure(csvConf);
+        UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
 
         boolean jsonMode = finalHeaderVars == null;
         Function<String[][], Function<String[], Binding>> rowMapperFactory;
