@@ -1,12 +1,14 @@
 package net.sansa_stack.query.spark.rdd.op;
 
 import org.aksw.jena_sparql_api.algebra.utils.OpServiceUtils;
+import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
 import org.aksw.jenax.sparql.algebra.transform2.OpCostEvaluation;
 import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rml.model.LogicalSource;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.op.OpJoin;
 import org.apache.jena.sparql.algebra.op.OpService;
 
@@ -71,7 +73,7 @@ public class JoinOrderOptimizer
             // to get the number of records - but for the purpose of identifying some
             // broadcast joins it might be sufficient
             LogicalSource logicalSource = RmlLib.getLogicalSource(op);
-            String source = logicalSource.getSource();
+            String source = resolveSource(logicalSource.getSource());
 
             Path path = sourceResolver.apply(source);
             long sourceSize = 0;
@@ -87,5 +89,16 @@ public class JoinOrderOptimizer
             result = super.eval(op, subCost);
         }
         return result;
+    }
+
+    private static String resolveSource(RDFNode source) {
+        // TODO add dcat support
+        if (source.isLiteral()) {
+            return source.asLiteral().getLexicalForm();
+        } else {
+            Table table = source.as(Table.class);
+            String url = table.getUrl();
+            return url != null ? url : source.asNode().getURI();
+        }
     }
 }

@@ -13,12 +13,14 @@ import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
+import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -29,10 +31,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -66,7 +65,7 @@ public class RmlSourcesSpark {
     }
 
     public static JavaRDD<Binding> processSourceAsJson(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSource();
+        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -131,14 +130,26 @@ public class RmlSourcesSpark {
             throw new RuntimeException("No output specified");
         }
 
-        String source = logicalSource.getSource();
-        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(source), execCxt);
-        Dialect dialect = logicalSource.as(Dialect.class);
-
+        String sourceDoc;
+        String[] nullValues = null;
+        RDFNode source = logicalSource.getSource();
         DialectMutable effectiveDialect = new DialectMutableImpl();
-        dialect.copyInto(effectiveDialect, false);
+        if (source.isLiteral()) {
+            sourceDoc = logicalSource.getSourceAsString();
+        } else {
+            Table csvwtSource = source.as(Table.class);
+            Dialect dialect = csvwtSource.getDialect();
+            dialect.copyInto(effectiveDialect, false);
+            Set<String> nullSet = csvwtSource.getNull();
+            if (nullSet != null && !nullSet.isEmpty()) {
+                nullValues = nullSet.toArray(new String[0]);
+            }
+            sourceDoc = csvwtSource.getUrl();
+        }
+        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
         UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect);
+        csvConf.setNullValues(nullValues);
         UnivocityParserFactory parserFactory = UnivocityParserFactory
                 .createDefault(true)
                 .configure(csvConf);
@@ -152,7 +163,7 @@ public class RmlSourcesSpark {
         }
 
         HadoopInputData<LongWritable, String[], JavaRDD<Binding>> hadoopInputFormat = CsvDataSources.configureHadoop(
-                sc.hadoopConfiguration(), source, csvConf, Arrays.asList("row"), rowMapperFactory);
+                sc.hadoopConfiguration(), sourceDoc, csvConf, Arrays.asList("row"), rowMapperFactory);
         JavaRDD<Binding> result = InputFormatUtils.createRdd(sc, hadoopInputFormat);
         return result;
     }
