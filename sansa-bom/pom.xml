@@ -98,10 +98,10 @@
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw-commons.version>0.9.5</aksw-commons.version>
+        <aksw.commons.version>0.9.7-SNAPSHOT</aksw.commons.version>
         <jena.version>4.8.0</jena.version>
-        <jenax.version>4.8.0-2</jenax.version>
-        <rmltk.version>4.8.0-2</rmltk.version>
+        <jenax.version>4.8.0-3-SNAPSHOT</jenax.version>
+        <rmltk.version>4.8.0-3-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -977,7 +977,7 @@
             <dependency>
                 <groupId>org.aksw.commons</groupId>
                 <artifactId>aksw-commons-bom</artifactId>
-                <version>${aksw-commons.version}</version>
+                <version>${aksw.commons.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
