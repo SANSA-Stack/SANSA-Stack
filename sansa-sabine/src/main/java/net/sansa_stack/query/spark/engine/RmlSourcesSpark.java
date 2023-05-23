@@ -1,36 +1,61 @@
 package net.sansa_stack.query.spark.engine;
 
 import com.github.jsonldjava.shaded.com.google.common.base.Preconditions;
+import com.zaxxer.hikari.HikariDataSource;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactories;
 import net.sansa_stack.spark.io.json.input.JsonDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
 import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import net.sf.jsqlparser.JSQLParserException;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
-import org.aksw.commons.model.csvw.univocity.UnivocityParserFactory;
+import org.aksw.commons.sql.codec.api.SqlCodec;
+import org.aksw.commons.sql.codec.util.SqlCodecUtils;
+import org.aksw.commons.util.jdbc.ColumnsReference;
+import org.aksw.commons.util.jdbc.Index;
+import org.aksw.commons.util.jdbc.JdbcUtils;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapper;
+import org.aksw.jena_sparql_api.rdf.collections.NodeMapperFromTypeMapper;
 import org.aksw.jena_sparql_api.sparql.ext.url.JenaUrlUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
 import org.aksw.jenax.model.csvw.domain.api.Table;
+import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
+import org.aksw.r2rml.jena.domain.api.LogicalTable;
+import org.aksw.r2rml.sql.transform.JSqlUtils;
+import org.aksw.rml.jena.service.D2rqHikariUtils;
 import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.exec.QueryExec;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.DataFrameReader;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -109,7 +134,6 @@ public class RmlSourcesSpark {
     */
 
 
-
     public static JavaRDD<Binding> processSourceAsCsv(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
 
         SourceOutput output = logicalSource.as(SourceOutput.class);
@@ -163,6 +187,152 @@ public class RmlSourcesSpark {
         HadoopInputData<LongWritable, String[], JavaRDD<Binding>> hadoopInputFormat = CsvDataSources.configureHadoop(
                 sc.hadoopConfiguration(), sourceDoc, csvConf, Arrays.asList("row"), rowMapperFactory);
         JavaRDD<Binding> result = InputFormatUtils.createRdd(sc, hadoopInputFormat);
+        return result;
+    }
+
+    /** Configure a hikari config from a d2rq model */
+    public static DataFrameReader configure(DataFrameReader target, D2rqDatabase source) {
+        String value;
+        if ((value = source.getJdbcDriver()) != null) {
+            target.option("driver", value);
+        }
+        if ((value = source.getJdbcDSN()) != null) {
+            target = target.option("url", value);
+        }
+        if ((value = source.getUsername()) != null) {
+            target = target.option("user", value);
+        }
+        if ((value = source.getPassword()) != null) {
+            target = target.option("password", value);
+        }
+        return target;
+    }
+
+    public static class PartitionColumn {
+        protected String columnName;
+        protected Object minValue;
+        protected Object maxValue;
+
+        public PartitionColumn(String columnName, Object minValue, Object maxValue) {
+            this.columnName = columnName;
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public Object getMinValue() {
+            return minValue;
+        }
+
+        public Object getMaxValue() {
+            return maxValue;
+        }
+    }
+
+    public static PartitionColumn autoDetectPartitionColumn(DataSource dataSource, net.sf.jsqlparser.schema.Table table) {
+        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark();
+
+        String sqlQuery;
+        try {
+
+            Collection<Index> indexes;
+
+            try (Connection conn = dataSource.getConnection()) {
+                DatabaseMetaData dbmd = conn.getMetaData();
+                String catalog = conn.getCatalog();
+                String schemaName = table.getSchemaName();
+                String tableName = table.getName();
+                indexes = JdbcUtils.fetchIndexes(dbmd, catalog, schemaName, tableName, false).values();
+
+                for (Index index : indexes) {
+                    ColumnsReference columns = index.getColumns();
+                    List<String> columnNames = columns.getColumnNames();
+
+                    // TODO We should get column metadata about whether spark/java knows whether how to compare values
+
+                    if (columns.getColumnNames().size() == 1) {
+                        String columnName = columnNames.iterator().next();
+
+                        try (Statement stmt = conn.createStatement()) {
+                            try (java.sql.ResultSet rs = stmt.executeQuery("SELECT MIN(column_name), MAX(column_name) FROM " + tableName)) {
+                                // Get the result
+                                if (rs.next()) {
+                                    int minValue = rs.getInt(1);
+                                    int maxValue = rs.getInt(2);
+                                    System.out.println("Column: " + columnName + ", Min: " + minValue + ", Max: " + maxValue);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public static JavaRDD<Binding> processSourceAsRdb(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+        SourceOutput output = logicalSource.as(SourceOutput.class);
+        Var outVar = output.getOutputVar();
+
+        // TODO Register data source with execCxt and reuse if present
+        LogicalTable logicalTable = logicalSource.as(LogicalTable.class);
+        D2rqDatabase dataSourceSpec = logicalSource.getSource().as(D2rqDatabase.class);
+
+        SqlCodec sqlCodec = SqlCodecUtils.createSqlCodecForApacheSpark(); // SqlCodecUtils.createSqlCodecDefault();
+
+        String rawTableName = logicalTable.asBaseTableOrView().getTableName();
+
+        net.sf.jsqlparser.schema.Table table = null;
+        try {
+            table = JSqlUtils.parseTableName(rawTableName);
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
+        table = JSqlUtils.harmonizeTable(table, sqlCodec);
+        String tableName = table.toString();
+
+        SparkSession spark = JavaSparkContextUtils.getSession(sc);
+        DataFrameReader reader = spark.read()
+                .format("jdbc")
+                .option("dbtable", tableName);
+
+        if (logicalTable.qualifiesAsBaseTableOrView()) {
+            PartitionColumn partitionColumn = null;
+            try (HikariDataSource dataSource = D2rqHikariUtils.configureDataSource(dataSourceSpec)) {
+                // TODO Computing the partition column needs to be done as an algebra aptimization just before query execution
+                 partitionColumn = autoDetectPartitionColumn(dataSource, table);
+            }
+
+            reader = configure(reader, dataSourceSpec);
+            if (partitionColumn != null) {
+                reader = reader
+                    .option("partitionColumn", partitionColumn.getColumnName())
+                    .option("lowerBound", Objects.toString(partitionColumn.getMinValue(), null))
+                    .option("upperBound", Objects.toString(partitionColumn.getMaxValue(), null))
+                    .option("numPartitions", "10");
+            }
+        }
+
+        Dataset<Row> df = reader.load();
+        StructType schema = df.schema();
+        JavaRDD<Row> rdd = df.toJavaRDD();
+
+        JavaRDD<Binding> result = rdd.mapPartitions(it -> {
+            // FIXME We should exploit the schema information to use specific node mappers that have
+            //  no lookup overhead
+            NodeMapper<?> nodeMapper = new NodeMapperFromTypeMapper(Object.class, TypeMapper.getInstance());
+            return Iter.iter(it).map(row -> {
+                Binding r = new BindingOverSparkRow(BindingFactory.root(), row, nodeMapper);
+                // Set up a mapper from the row to RDF nodes
+                // Binding r = BindingFactory.binding(parentBinding, outVar, new NodeValueBinding(bb).asNode());
+                return r;
+            });
+        });
         return result;
     }
 

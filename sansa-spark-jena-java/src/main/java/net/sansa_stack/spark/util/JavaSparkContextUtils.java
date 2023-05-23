@@ -8,4 +8,9 @@ public class JavaSparkContextUtils {
     public static JavaSparkContext fromRdd(JavaRDD<?> rdd) {
         return JavaSparkContext.fromSparkContext(rdd.context());
     }
+
+    public static SparkSession getSession(JavaSparkContext jsc) {
+        SparkSession result = SparkSession.builder().config(jsc.getConf()).getOrCreate();
+        return result;
+    }
 }

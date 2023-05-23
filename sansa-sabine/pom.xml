@@ -17,6 +17,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aksw.rmltk</groupId>
+            <artifactId>r2rml-jena-sql-transforms</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.aksw.jenax</groupId>
             <artifactId>jenax-arq-plugins-bundle</artifactId>
         </dependency>
