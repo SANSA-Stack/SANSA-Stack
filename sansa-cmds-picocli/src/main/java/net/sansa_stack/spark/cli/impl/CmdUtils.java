@@ -51,18 +51,24 @@ import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 public class CmdUtils {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
+    public static final String KRYO_BUFFER_MAX_KEY = "spark.kryo.serializer.buffer.max";
+
     public static SparkSession.Builder newDefaultSparkSessionBuilder() {
 
         SparkSession.Builder result = SparkSession.builder()
                 .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("spark.kryo.serializer.buffer.max", "1000") // MB
                 .config("spark.kryo.registrator", String.join(", ",
                         "net.sansa_stack.spark.io.rdf.kryo.JenaKryoRegistrator"));
 
-        if (System.getProperty("spark.master") == null) {
+        String value; // for debugging / inspection
+        if ((value = System.getProperty("spark.master")) == null) {
             String defaultMaster = "local[*]";
             logger.info("'spark.master' not set - defaulting to: " + defaultMaster);
             result = result.master(defaultMaster);
+        }
+
+        if ((value = System.getProperty(KRYO_BUFFER_MAX_KEY)) == null) {
+            result = result.config(KRYO_BUFFER_MAX_KEY, "2048"); // MB
         }
         return result;
     }
