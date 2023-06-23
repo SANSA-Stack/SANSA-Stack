@@ -2,6 +2,7 @@ package net.sansa_stack.ml.spark.classification.decisionTrees
 
 import net.sansa_stack.ml.spark.classification.decisionTrees.ConceptsGenerator._
 import net.sansa_stack.ml.spark.classification.decisionTrees.DistTDTInducer.DistTDTInducer
+import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.StructuralReasoner.StructuralReasoner
 import net.sansa_stack.ml.spark.classification.decisionTrees.PerformanceMetrics.MetricsComputation
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -14,10 +15,9 @@ object ClassMembership {
    *  Implementing class-membership
    *
    *  @param k Knowledgebase
-   *  @param sc Spark Session
    */
 
-  class ClassMembership (k: KB, sc: SparkSession) {
+  class ClassMembership (k: KB) {
 
    /**
      *  Bootstrap function divides the individuals into training and testing ones
@@ -27,13 +27,15 @@ object ClassMembership {
      *  @param spark Spark Session
      */
 
+    var classifications: RDD[((OWLClassExpression, OWLIndividual), Int)] = _
+  
     def bootstrap(noFolds: Int, spark: SparkSession): Unit = {
   
       var seed = 2
       val kb: KB = k
-      val allExamples: RDD[OWLIndividual] = kb.getIndividuals
+      val allExamples = kb.getIndividuals
       val cg: ConceptsGenerator = new ConceptsGenerator(kb)
-      val testConcepts: Array[OWLClassExpression] = cg.generateQueryConcepts(1, sc)
+      val testConcepts: Array[OWLClassExpression] = cg.generateQueryConcepts(1)
       val negTestConcepts: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](testConcepts.length)
   
       for (c <- testConcepts.indices)
@@ -41,7 +43,7 @@ object ClassMembership {
   
       // Classification w.r.t. all query concepts
       val classification = kb.KB.getClassMembershipResult(testConcepts, negTestConcepts, allExamples)
-        
+      
       println("******************************************************* ")
       println("    BOOTSTRAP Experiment of " + noFolds + "-folds")
       println("******************************************************* ")
@@ -51,6 +53,11 @@ object ClassMembership {
         else 1
       
       val performanceMetrics = new MetricsComputation(noConcepts, noFolds)
+  
+      val cl : DistTDTInducer = new DistTDTInducer(kb, kb.concepts.count().toInt, spark)
+//      val classifier = new TDTClassifiers.TDTClassifiers(kb, spark)
+//      val classifier = new TDTClassifier2.TDTClassifier2(kb, spark)
+
       
       for (f <- 1 to noFolds) {
         
@@ -60,14 +67,12 @@ object ClassMembership {
         val trainData: RDD[OWLIndividual] = split(0)
         val testData: RDD[OWLIndividual] = split(1)
         
-        val cl : DistTDTInducer = new DistTDTInducer(kb, kb.concepts.count().toInt, spark)
-  
         // training phase: using all examples but those in the f-th partition
         println("Training is starting...")
         
-        val result = kb.getClassMembershipResults
+//        val result = kb.getClassMembershipResults
         
-        cl.training(result, trainData, testConcepts, negTestConcepts)
+        cl.training(classification, trainData, testConcepts, negTestConcepts)
         
         val testing = cl.test(f, testData, testConcepts)
         
@@ -77,7 +82,11 @@ object ClassMembership {
       } // fold Loop
       
       performanceMetrics.computeOverAllResults(noConcepts)
+//      println("Overall complexity = " + classifier.getNodes + " nodes generated")
     } // bootstrap
+  
+  
+
   } // class
 }
     

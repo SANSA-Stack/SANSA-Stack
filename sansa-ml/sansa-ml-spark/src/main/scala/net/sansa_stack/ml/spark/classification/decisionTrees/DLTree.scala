@@ -1,13 +1,6 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import java.util.ArrayList
-import java.util.List
-import collection.JavaConverters._
 import org.semanticweb.owlapi.model.OWLClassExpression
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext}
-import net.sansa_stack.ml.spark.classification._
 
 /*
  * Class for basic functions of DL trees
@@ -53,7 +46,7 @@ object DLTree {
       var pos: DLTree = _ // positive subtree
       var neg: DLTree = _ // negative subtree
       
-      override def toString(): String = this.concept.toString
+      override def toString: String = this.concept.toString
       
     }
     
@@ -79,7 +72,7 @@ object DLTree {
       this.root.neg = subTree
     }
     
-    override def toString(): String = {
+    override def toString: String = {
       if (root == null) return null
       if (root.pos == null && root.neg == null) {
         root.toString
@@ -89,7 +82,11 @@ object DLTree {
       }
     }
     
-    def getRoot: OWLClassExpression = root.concept
+    def getRoot: OWLClassExpression = {
+//        if (root.concept != null) {
+          root.concept
+//        } else null
+    }
     
     def getPosSubTree: DLTree = root.pos
     

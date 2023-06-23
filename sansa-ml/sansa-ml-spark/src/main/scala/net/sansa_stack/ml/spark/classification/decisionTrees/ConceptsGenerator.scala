@@ -1,30 +1,34 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
-import java.util
+import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.StructuralReasoner
 
+import java.util
+import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.StructuralReasoner.StructuralReasoner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.reasoner.OWLReasoner
 
 
+
 object ConceptsGenerator{
 
   class ConceptsGenerator(protected var kb: KB) {
 
-    protected var reasoner: OWLReasoner = kb.getReasoner
-    protected var dataFactory: OWLDataFactory = kb.getDataFactory
-    protected var allExamples: RDD[OWLIndividual] = kb.getIndividuals
+
     
     /**
      *  A function to generate the query concepts
      *
      *  @param numConceptsToGenerate The number of concepts to be generated
-     *  @param sc Spark Session
      *  @return Array of the generated query concepts
      */
    
-    def generateQueryConcepts(numConceptsToGenerate: Int, sc: SparkSession): Array[OWLClassExpression] = {
+    def generateQueryConcepts(numConceptsToGenerate: Int): Array[OWLClassExpression] = {
+  
+      val reasoner: StructuralReasoner = kb.getReasoner
+      val dataFactory: OWLDataFactory = kb.getDataFactory
+      val allExamples: RDD[OWLIndividual] = kb.getIndividuals
 
       println("Generate Query Concepts\n-----------")
       val queryConcept: Array[OWLClassExpression] = Array.ofDim[OWLClassExpression](numConceptsToGenerate)
@@ -62,7 +66,11 @@ object ConceptsGenerator{
             newConcepts.add(partialConcept)
 
             nextConcept = kb.getRandomConcept
-            newConcepts.add(nextConcept)
+            if (!newConcepts.contains(nextConcept)) newConcepts.add(nextConcept)
+            else {
+              nextConcept = kb.getRandomConcept
+              newConcepts.add(nextConcept)
+            }
 
             partialConcept =
               if (kb.generator.nextInt(4) == 0) {
@@ -73,10 +81,14 @@ object ConceptsGenerator{
           } // for j
 
           complementPartialConcept = dataFactory.getOWLObjectComplementOf(partialConcept)
+  
+          numPosInst = reasoner.getInstances(partialConcept, b = false).size()
+          numNegInst = reasoner.getInstances(complementPartialConcept, b = false).size()
 
-          numPosInst = reasoner.getInstances(partialConcept, false).getFlattened.size()
-          numNegInst = reasoner.getInstances(complementPartialConcept, false).getFlattened.size()
-
+//          numPosInst = reasoner.getInstances(partialConcept, false).getFlattened.size()
+//          numNegInst = reasoner.getInstances(complementPartialConcept, false).getFlattened.size()
+          
+          println()
           println(partialConcept)
           print("  pos: " + numPosInst)
           print("  neg: " + numNegInst)

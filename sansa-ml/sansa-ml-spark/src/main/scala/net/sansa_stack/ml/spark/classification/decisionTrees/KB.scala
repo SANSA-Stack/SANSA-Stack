@@ -1,76 +1,79 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
+
 import java.io.File
 import java.util.Random
-import java.util.stream.Collectors
 
+import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.{EntitySearcher, StructuralReasoner}
+import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.StructuralReasoner.StructuralReasoner
+import net.sansa_stack.owl.spark.owlAxioms
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
+import net.sansa_stack.owl.spark.stats.OWLStats
+import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.semanticweb.HermiT.{Configuration, Reasoner}
+import org.semanticweb.HermiT.ReasonerFactory
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
+import org.semanticweb.owlapi.reasoner.OWLReasoner
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory
 import org.semanticweb.owlapi.util.SimpleIRIMapper
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters.asScalaIteratorConverter
 
 /**
 * The class to define the Knowledgebase elements
 */
 
-class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
+class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD, spark: SparkSession) extends Serializable {
   
-  val d: Double = 0.3
-  var generator: Random = new Random(2)
-  val parallelism: Int = 30     // Degree of parallelism
   
-  var ontology: OWLOntology = initKB()
-  var manager: OWLOntologyManager = _
-  var concepts: RDD[OWLClass] = _
+  val generator: Random = new Random(2)
+  val ontology: OWLOntology = initKB()
   var dataFactory: OWLDataFactory = _
-  var Examples: RDD[OWLIndividual] = _
+  var concepts: RDD[OWLClass] = _
+  var individuals: RDD[OWLIndividual] = _
   var objectProperties: RDD[OWLObjectProperty] = _
-  
-  //  Date property: property, values and domains
-  var dataPropertiesValue: RDD[RDD[OWLLiteral]] = _
   var dataProperties: RDD[OWLDataProperty] = _
-  var domain: RDD[OWLIndividual] = _
+  var objectPropertyAssertions: RDD[OWLObjectPropertyAssertionAxiom] = _
+  var dataPropertyAssertions: RDD[OWLDataPropertyAssertionAxiom] = _
   var classifications: RDD[((OWLClassExpression, OWLIndividual), Int)] = _
-  var choiceDataP: Random = new Random(1)
-  var choiceObjectP: Random = new Random(1)
-  var cc: ((OWLClassExpression, OWLIndividual), Int) = _
-  
-  
-  
-  class KB(url: String) extends Serializable {
-    UrlOwlFile = url
-    ontology = initKB()
-  }
+  val searcher: EntitySearcher = new EntitySearcher(this)
+  val reasoner: StructuralReasoner = new StructuralReasoner.StructuralReasoner(this)
+
+//  class KB(url: String) extends Serializable {
+//    UrlOwlFile = url
+//    ontology = initKB()
+//  }
   
   def initKB(): OWLOntology = {
-    
-    val owlFile: File = new File(UrlOwlFile)
-    
-    manager = OWLManager.createOWLOntologyManager()
-    
-    val ontology: OWLOntology = manager.loadOntologyFromOntologyDocument(owlFile)
-    //    println("\nLoading ontology: \n----------------\n" + ontology)
-    
-    // obtain the location where the ontology was loaded from
-    val iri = manager.getOntologyDocumentIRI(ontology)
-    
-    // Add mapping for the local ontology
-    manager.getIRIMappers.add(new SimpleIRIMapper(iri, IRI.create(owlFile)))
-    
-    // The data factory provides a point for creating OWL API objects such as classes, properties and individuals.
+  
+    val parallelism: Int = 30     // Degree of parallelism
+    val stats = new OWLStats(spark)
+  
+//    val owlFile: File = new File(UrlOwlFile)
+  
+    val manager = OWLManager.createOWLOntologyManager()
+  
+//    val ontology = manager.loadOntologyFromOntologyDocument(owlFile)
+//
+//    // obtain the location where the ontology was loaded from
+//    val iri = manager.getOntologyDocumentIRI(ontology)
+//
+//    // Add mapping for the local ontology
+//    manager.getIRIMappers.add(new SimpleIRIMapper(iri, IRI.create(owlFile)))
+  
+    // The data factory provides a point for creating OWL objects such as classes, properties and individuals.
     dataFactory = manager.getOWLDataFactory
-    
-   
-    
+
     // --------- concepts Extraction -----------------
+    concepts = stats.getClasses(rdd)
     
-    concepts = rdd.flatMap {
-      case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct(parallelism)
+//      rdd.flatMap {
+//      case axiom: HasClassesInSignature => axiom.classesInSignature().iterator().asScala
+//      case _ => null
+//    }.filter(_ != null).distinct(parallelism)
     
 //   println("\n\nConcepts\n-------\n")
 //   concepts.foreach(println(_))
@@ -80,60 +83,149 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
     
     // --------- Object Properties Extraction -----------------
     
-    objectProperties = rdd.flatMap {
-      case axiom: HasObjectPropertiesInSignature => axiom.getObjectPropertiesInSignature.iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct(parallelism)
+    objectProperties = stats.getObjectProperties(rdd)
+    
+//      rdd.flatMap {
+//      case axiom: HasObjectPropertiesInSignature => axiom.getObjectPropertiesInSignature.iterator().asScala
+//      case _ => null
+//    }.filter(_ != null).distinct(parallelism)
     
    
     // -------- Data Properties Extraction --------
     
-    dataProperties = rdd.flatMap {
-      case axiom: HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
-      case _ => null
-    }.filter(_ != null).distinct(parallelism)
+    dataProperties = stats.getDataProperties(rdd)
+    
+    //    rdd.flatMap {
+//      case axiom: HasDataPropertiesInSignature => axiom.dataPropertiesInSignature().iterator().asScala
+//      case _ => null
+//    }.filter(_ != null).distinct(parallelism)
     
  
     // --------- Individual Extraction ------------
     
-    Examples = rdd.flatMap {
-      case axiom: HasIndividualsInSignature => axiom.individualsInSignature().collect(Collectors.toSet()).asScala
+    individuals = rdd.flatMap {
+      case axiom: HasIndividualsInSignature => axiom.individualsInSignature().iterator().asScala
       case _ => null
     }.filter(null != _).distinct(parallelism)
       .asInstanceOf[RDD[OWLIndividual]]
+  
+  
+    dataPropertyAssertions = owlAxioms.extractAxioms(rdd, AxiomType.DATA_PROPERTY_ASSERTION)
+      .asInstanceOf[RDD[OWLDataPropertyAssertionAxiom]]
+  
+    objectPropertyAssertions = owlAxioms.extractAxioms(rdd, AxiomType.OBJECT_PROPERTY_ASSERTION)
+      .asInstanceOf[RDD[OWLObjectPropertyAssertionAxiom]]
     
     println("\nKB loaded. \n")
     ontology
   }
   
+  def isSatisfiable(cls: OWLClassExpression): Boolean = {
+
+    !cls.isAnonymous &&
+      !searcher.getEquivalentClasses(cls.asOWLClass()).collect().toList.contains(dataFactory.getOWLNothing)
+
+  }
+// def isSatisfiable(cls: OWLClassExpression): Boolean = {
+//
+//  !cls.isAnonymous &&
+//    !searcher.getEquivalentClasses(cls).filter(c => c.isOWLNothing).isEmpty()
+//
+// }
+  
+  
   def getObjectProperties: RDD[OWLObjectProperty] = objectProperties
   
   def getClasses: RDD[OWLClass] = concepts
   
-  def getIndividuals: RDD[OWLIndividual] = Examples
+  def getIndividuals: RDD[OWLIndividual] = individuals
   
   def getDataProperties: RDD[OWLDataProperty] = dataProperties
   
   //    def getDomains: Array[Array[OWLIndividual]] = domain
   
+  def getSubClassesAxioms: RDD[OWLAxiom] = {
+    val subClasses = owlAxioms.extractAxioms(rdd, AxiomType.SUBCLASS_OF)
+    
+    subClasses
+  }
+  
+  def getSubObjectPropertyAxioms: RDD[OWLAxiom] = {
+    val subObject = owlAxioms.extractAxioms(rdd, AxiomType.SUB_OBJECT_PROPERTY)
+  
+    subObject
+  }
+  
+  def getDataPropertyAssertions: RDD[OWLDataPropertyAssertionAxiom] = dataPropertyAssertions
+  
+  def getNegativeDataPropertyAssertion: RDD[OWLNegativeDataPropertyAssertionAxiom] = {
+    val negDataPropertyAssertion = owlAxioms.extractAxioms(rdd, AxiomType.NEGATIVE_DATA_PROPERTY_ASSERTION)
+      .asInstanceOf[RDD[OWLNegativeDataPropertyAssertionAxiom]]
+    
+    negDataPropertyAssertion
+  }
+  
+  def getObjectPropertyAssertions: RDD[OWLObjectPropertyAssertionAxiom] = objectPropertyAssertions
+  
+  def getNegativeObjectPropertyAssertion: RDD[OWLNegativeObjectPropertyAssertionAxiom] = {
+    val negDataPropertyAssertion = owlAxioms.extractAxioms(rdd, AxiomType.NEGATIVE_OBJECT_PROPERTY_ASSERTION)
+      .asInstanceOf[RDD[OWLNegativeObjectPropertyAssertionAxiom]]
+    
+    negDataPropertyAssertion
+  }
+  
+  
+  def getClassAssertions: RDD[OWLClassAssertionAxiom] = {
+    val classAssertions = owlAxioms.extractAxioms(rdd, AxiomType.CLASS_ASSERTION)
+      .asInstanceOf[RDD[OWLClassAssertionAxiom]]
+  
+    classAssertions
+  }
+  
+  def getSameIndividuals: RDD[OWLSameIndividualAxiom] = {
+    val sameIndividuals = owlAxioms.extractAxioms(rdd, AxiomType.SAME_INDIVIDUAL)
+      .asInstanceOf[RDD[OWLSameIndividualAxiom]]
+  
+    sameIndividuals
+  }
+  
+  def getDifferentIndividuals: RDD[OWLDifferentIndividualsAxiom] = {
+    val differentIndividuals = owlAxioms.extractAxioms(rdd, AxiomType.DIFFERENT_INDIVIDUALS)
+      .asInstanceOf[RDD[OWLDifferentIndividualsAxiom]]
+  
+    differentIndividuals
+  }
+  
+  
+//  def classAssertionBC: Broadcast[Map[OWLIndividual, OWLClassExpression]] = {
+//    val classAssertionMap = getClassAssertions.map(a => (a.getIndividual, a.getClassExpression)).collect().toMap
+//    spark.sparkContext.broadcast(classAssertionMap)
+//  }
+
+  def getAxioms: OWLAxiomsRDD = rdd
+  
   def getDataFactory: OWLDataFactory = dataFactory
   
-  def getOntology: OWLOntology = ontology
+  def getSparkSession: SparkSession = spark
   
-  def getReasoner: Reasoner = {
-    // Reasoner configuration
-    val con: Configuration = new Configuration()
-    val hermit = new Reasoner(con, ontology) with Serializable
+  def getSparkContext: SparkContext = spark.sparkContext
   
-    hermit
-
-    //    @transient val reasonerFactory: OWLReasonerFactory = new StructuralReasonerFactory()
-    //  var reasoner: OWLReasoner = _
-    //  @transient var hermit: Reasoner = _
-    //    val reasoner = reasonerFactory.createReasoner(ontology)
-   }
+  def getReasoner: StructuralReasoner = reasoner
   
-  def getClassMembershipResults: RDD[((OWLClassExpression, OWLIndividual), Int)] = classifications
+  
+//  @deprecatedOverriding
+//  def getReasoner: OWLReasoner = {
+//    // Reasoner configuration
+// //    val con: Configuration = new Configuration()
+// //    val hermit = new Reasoner(con, ontology) with Serializable
+//
+//    val reasonerFactory: OWLReasonerFactory = new ReasonerFactory ()
+//    val hermit = reasonerFactory.createReasoner(ontology)
+//
+//    hermit
+//  }
+  
+//  def getClassMembershipResults: RDD[((OWLClassExpression, OWLIndividual), Int)] = classifications
   
   // def getURL(): String = urlOwlFile
   
@@ -142,43 +234,67 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
     def getClassMembershipResult(testConcepts: Array[OWLClassExpression],
                                  negTestConcepts: Array[OWLClassExpression],
                                  examples: RDD[OWLIndividual]): RDD[((OWLClassExpression, OWLIndividual), Int)] = {
-  
-      val flag: Boolean = false
-      
+    
+ 
+      //      val flag: Boolean = false
       println("Classifying all individuals \n ------------ ")
       println("Processed concepts (" + testConcepts.length + "): \n")
-      
-      for (c <- testConcepts.indices) {
-        
-        classifications = examples.map(e => ((testConcepts(c), e), 0))
-        
-        classifications = classifications.mapPartitions { partition =>
-  
-          partition.map { cl =>
     
-            if (getReasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(testConcepts(c), cl._1._2))) {
-              ((testConcepts(c), cl._1._2), 1)
+      for (c <- testConcepts.indices) {
+ 
+        classifications = examples
+          //          .mapPartitions { partition =>
+          //            partition
+          .map { e =>
+            if (getReasoner.isEntailed(getDataFactory.getOWLClassAssertionAxiom(testConcepts(c), e))) {
+              ((testConcepts(c), e), 1)
+            }
+            else if (getReasoner.isEntailed(getDataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), e))) {
+              ((testConcepts(c), e), -1)
             }
             else {
-              if (!flag) {
-                if (getReasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), cl._1._2))) {
-                  ((testConcepts(c), cl._1._2), -1)
-                } else {
-                  ((testConcepts(c), cl._1._2), 0)
-                }
-              } else {
-                ((testConcepts(c), cl._1._2), -1)
-              }
+              ((testConcepts(c), e), 0)
             }
           }
-        }
-  
-//        val elements = classifications.map(c => (c._2, 1)).reduceByKey(_ + _)
-//        elements.foreach(println(_))
       
-        }
+        //        classifications = examples.map(e => ((testConcepts(c), e), 0))
+        //
+        //        classifications = classifications
+        // //          .mapPartitions { partition =>
+        // //            partition
+        //              .map { cl =>
+        //
+        //            if (getReasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(testConcepts(c), cl._1._2))) {
+        //              ((testConcepts(c), cl._1._2), 1)
+        //            }
+        //            else if (getReasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), cl._1._2))) {
+        //                ((testConcepts(c), cl._1._2), -1)
+        //            }
+        //            else {
+        //                ((testConcepts(c), cl._1._2), 0)
+        //            }
+        // //            if (!flag) {
+        // //                if (getReasoner.isEntailed(dataFactory.getOWLClassAssertionAxiom(negTestConcepts(c), cl._1._2))) {
+        // //                  ((testConcepts(c), cl._1._2), -1)
+        // //                }
+        // //                else {
+        // //                  ((testConcepts(c), cl._1._2), 0)
+        // //                }
+        // //            } else {
+        // //                ((testConcepts(c), cl._1._2), -1)
+        // //            }
+        //            }
+      
+        //          }.coalesce(1)
+      
+        //        val elements = classifications.map(c => (c._2, 1)).reduceByKey(_ + _)
+        //        elements.foreach(println(_))
+      
+      }
+      //      classifications.foreach(println(_))
       classifications
     }
+
   }
   
   
@@ -245,11 +361,13 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
   //      RulesTest
   //    }
   
-  //    def updateExamples(individuals: RDD[OWLIndividual]): Unit = {
+  //    def updateindividuals(individuals: RDD[OWLIndividual]): Unit = {
   //      Examples = individuals
   //    }
   
   def getRandomConcept: OWLClassExpression = {
+  
+    val d: Double = 0.3
     // randomly choose one of the concepts present
     var newConcept: OWLClassExpression = null
     
@@ -278,6 +396,7 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
           }
         }
       } while (!getReasoner.isSatisfiable(newConcept))
+        //      } while (!getReasoner.isSatisfiable(newConcept))
       //     newConcept
       
     } else {
@@ -303,12 +422,15 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
         } else {
           newConcept = dataFactory.getOWLObjectComplementOf(newConcept)
         }
+//      } while (!getReasoner.isSatisfiable(newConcept))
       } while (!getReasoner.isSatisfiable(newConcept))
       
       //     newConcept
     }
     newConcept
   }
+  
+  
 }
 
     /* def loadFunctionalDataProperties(): Unit = {
@@ -359,7 +481,7 @@ class KB (var UrlOwlFile: String, rdd: OWLAxiomsRDD) extends Serializable {
 
       val statements: Map[OWLIndividual, Set[OWLLiteral]] = new HashMap[OWLIndividual, Set[OWLLiteral]]()
 
-      for (ex <- Examples) {
+      for (ex <- individuals) {
         val dataPropertyValues: Set[OWLLiteral] = reasoner.getDataPropertyValues(ex.asInstanceOf[OWLNamedIndividual], dataProperty)
         statements.put(ex, dataPropertyValues)
       }

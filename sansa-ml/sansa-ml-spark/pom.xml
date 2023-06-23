@@ -33,6 +33,12 @@
 			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
 		</dependency>
 
+		<!-- SANSA Inference -->
+		<dependency>
+			<groupId>net.sansa-stack</groupId>
+			<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+		</dependency>
+
 		<!-- SANSA Query -->
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
@@ -117,20 +123,20 @@
 			<groupId>net.sourceforge.owlapi</groupId>
 			<artifactId>org.semanticweb.hermit</artifactId>
 			<version>1.4.5.519</version>
-<!--			<scope>test</scope>-->
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<groupId>org.codehaus.woodstox</groupId>-->
-<!--					<artifactId>woodstox-core-asl</artifactId>-->
-<!--				</exclusion>-->
-<!--				<exclusion>-->
-<!--					<groupId>net.sourceforge.owlapi</groupId>-->
-<!--					<artifactId>owlapi-distribution</artifactId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<version>3.2.2</version>
+		</dependency>
 
+		<!-- DL-Learner -->
+<!--		<dependency>-->
+<!--			<groupId>org.dllearner</groupId>-->
+<!--			<artifactId>components-core</artifactId>-->
+<!--			<version>1.5.0</version>-->
+<!--		</dependency>-->
 		<!-- fastUtil -->
 <!--		<dependency>-->
 <!--			<groupId>it.unimi.dsi</groupId>-->
@@ -139,7 +145,7 @@
 <!--		</dependency>-->
 <!--		<dependency>-->
 <!--			<groupId>org.openjdk.jmh</groupId>-->
-<!--			<artifactId>jmh-core</artifactId>-->
+<!--			<artifactId>jmh-maven-assembly-plugincore</artifactId>-->
 <!--			<version>1.34</version>-->
 <!--			<scope>test</scope>-->
 <!--		</dependency>-->
@@ -149,6 +155,14 @@
 <!--			<version>1.34</version>-->
 <!--			<scope>test</scope>-->
 <!--		</dependency>-->
+
+		<!-- Isolation Forest -->
+		<dependency>
+			<groupId>com.linkedin.isolation-forest</groupId>
+			<artifactId>isolation-forest_3.0.0_2.12</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
@@ -160,49 +174,60 @@
 				</property>
 			</activation>
 			<build>
+				<finalName>TDT</finalName>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-shade-plugin</artifactId>
-						<executions>
-							<!-- Run shade goal on package phase -->
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>shade</goal>
-								</goals>
-								<configuration>
-									<shadedArtifactAttached>true</shadedArtifactAttached>
-									<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-									<filters>
-										<filter>
-											<artifact>*:*</artifact>
-											<excludes>
-												<exclude>META-INF/*.SF</exclude>
-												<exclude>META-INF/*.DSA</exclude>
-												<exclude>META-INF/*.RSA</exclude>
-											</excludes>
-										</filter>
-										<filter>
-											<artifact>org.aksw.jena-sparql-api:*</artifact>
-											<excludes>
-												<exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
-											</excludes>
-										</filter>
-									</filters>
-									<transformers>
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-											<!--Here we specify "hardcoded" main class. somehow package name plus class name without scala-->
-											<mainClass>net.sansa_stack.ml.spark.classification.decisionTrees.TermDecisionTrees</mainClass>
-<!--											<mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass>&ndash;&gt;-->
-											<!--									<mainClass>net.sansa_stack.ml.spark.similarity.run.SimilarityPipeline</mainClass>-->
-										</transformer>
-									</transformers>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
+				<!-- Set a compiler level -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.11</source>
+						<target>1.11</target>
+					</configuration>
+				</plugin>
+
+				<!-- Maven Shade Plugin -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.2.4</version>
+					<executions>
+						<!-- Run shade goal on package phase -->
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>shade</goal>
+							</goals>
+							<configuration>
+								<shadedArtifactAttached>true</shadedArtifactAttached>
+								<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+								<filters>
+									<filter>
+										<artifact>*:*</artifact>
+										<excludes>
+											<exclude>META-INF/*.SF</exclude>
+											<exclude>META-INF/*.DSA</exclude>
+											<exclude>META-INF/*.RSA</exclude>
+										</excludes>
+									</filter>
+									<filter>
+										<artifact>org.aksw.jena-sparql-api:*</artifact>
+										<excludes>
+											<exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
+										</excludes>
+									</filter>
+								</filters>
+								<transformers>
+									<!-- add Main-Class to manifest file -->
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+									<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+										<mainClass>net.sansa_stack.ml.spark.classification.decisionTrees.TermDecisionTrees</mainClass>
+									</transformer>
+								</transformers>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 				</plugins>
 			</build>
 		</profile>

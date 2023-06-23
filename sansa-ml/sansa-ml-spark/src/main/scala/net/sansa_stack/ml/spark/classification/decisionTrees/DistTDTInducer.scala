@@ -1,7 +1,7 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
 import net.sansa_stack.ml.spark.classification.decisionTrees.DLTree.DLTree
-import net.sansa_stack.ml.spark.classification.decisionTrees.TDTClassifiers.TDTClassifiers
+import net.sansa_stack.ml.spark.classification.decisionTrees.TDTClassifier2.TDTClassifier2
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
@@ -10,17 +10,20 @@ import org.semanticweb.owlapi.model._
 
 /**
  * Class for the induction of Distributed Terminological Decision Tree
+ * @author Heba Mohamed
  */
 
 object DistTDTInducer {
+  
+  /**
+   * @param kb The knowledgebase
+   * @param nConcepts Number of the query concepts
+   * @param sc The Apache Spark context
+   */
  
   class DistTDTInducer(var kb: KB, var nConcepts: Int, var sc: SparkSession) extends Serializable{
 
-    // for each query concept induce an ensemble
-    var labels: RDD[((OWLClassExpression, OWLIndividual), Int)] = _
-    var p: RDD[Unit] = _
     var trees: Array[DLTree] = new Array[DLTree](nConcepts)
-    val cl: TDTClassifiers = new TDTClassifiers(kb, sc) with Serializable
 
     /**
      *  Function for training the algorithm
@@ -34,16 +37,10 @@ object DistTDTInducer {
                  trainingExs: RDD[OWLIndividual],
                  testConcepts: Array[OWLClassExpression],
                  negTestConcepts: Array[OWLClassExpression]): Unit = {
+  
+      val cl: TDTClassifier2 = new TDTClassifier2(kb) with Serializable
 
-//      val op: RefinementOperator = new RefinementOperator(kb)
-//      val reasoner: Reasoner = kb.getReasoner
-//      val allExamples: RDD[OWLIndividual] = kb.getIndividuals
-
-      // val trainingExsSet: HashSet[Integer] = new HashSet[Integer](Arrays.asList(trainingExs: _*))
-      
-//      trainingExs.persist(StorageLevel.MEMORY_AND_DISK)
-
-      val length: Int = if (testConcepts != null) testConcepts.size else 1
+      val length: Int = if (testConcepts != null) testConcepts.length else 1
 
       for (c <- 0 until length) {
 
@@ -68,8 +65,8 @@ object DistTDTInducer {
         }
 
         println("\nNew learning problem prepared " + (c + 1))
-        trees(c) = cl.induceDLTree(kb.getDataFactory.getOWLThing, split._1, split._2, split._3, 50, prPos, prNeg)
-        println("--- Tree " + (c + 1) + " was induced. \n")
+        trees(c) = cl.induceDLTree(kb.getDataFactory.getOWLThing, split._1, split._2, split._3, 10, prPos, prNeg)
+        println("\n--- Tree " + (c + 1) + " was induced. \n")
         
 //        trainingExs.unpersist()
 
@@ -138,15 +135,20 @@ object DistTDTInducer {
     def test (f: Int,
               testExs: RDD[OWLIndividual],
               testConcepts: Array[OWLClassExpression]): RDD[((OWLClassExpression, OWLIndividual), Int)] = {
-    
-//      testExs.persist(StorageLevel.MEMORY_AND_DISK)
+  
+      val cl: TDTClassifier2 = new TDTClassifier2(kb) with Serializable
+      //      testExs.persist(StorageLevel.MEMORY_AND_DISK)
       val count = testExs.count().toInt
+  
+      // for each query concept induce an example
+      var labels = testExs.map(t => ((testConcepts(0), t), 0))
       
       // classifier answers for each example and for each concept
       for (c <- testConcepts.indices) {
         println(" Testing Examples " + count)
         labels = testExs.map { indv =>
           val l = cl.classify(indv, trees(c))
+//          println("result = " + l)
           ((testConcepts(c), indv), l)
         }
       }
