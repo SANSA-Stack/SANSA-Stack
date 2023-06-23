@@ -1,4 +1,4 @@
-Prefix(:=<http://www.owl-ontologies.com/finance.owl#>)
+Prefix(:=<http://www.owl-ontologies.com/unnamed.owl#>)
 Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
 Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
 Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
@@ -6,7 +6,7 @@ Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
 Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 
 
-Ontology(<http://www.owl-ontologies.com/finance.owl>
+Ontology(<http://www.owl-ontologies.com/unnamed.owl>
 
 Declaration(Class(:Above65))
 Declaration(Class(:Account))
@@ -1384,7 +1384,7 @@ DisjointClasses(:Leasing :LoanPayment)
 
 # Class: :Loan (:Loan)
 
-#DisjointClasses(:Loan :LoanStatusValue)
+DisjointClasses(:Loan :LoanStatusValue)
 DisjointClasses(:Loan :Payment)
 DisjointClasses(:Loan :PermanentOrder)
 DisjointClasses(:Loan :Region)
