@@ -1,6 +1,6 @@
 package net.sansa_stack.query.spark.engine;
 
-import com.github.jsonldjava.shaded.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
 import net.sansa_stack.spark.io.csv.input.CsvDataSources;
 import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactories;
@@ -59,7 +59,6 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-
 public class RmlSourcesSpark {
 
 //    public static QueryIterator parseCsvAsJson(LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
