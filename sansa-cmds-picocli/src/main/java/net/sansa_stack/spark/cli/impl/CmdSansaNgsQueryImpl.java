@@ -1,13 +1,15 @@
 package net.sansa_stack.spark.cli.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
+import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
+import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
+import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
+import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.query.ARQ;
@@ -23,13 +25,10 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
-import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
-import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Called from the Java class [[CmdSansaNgsQuery]]
