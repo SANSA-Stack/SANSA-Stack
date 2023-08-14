@@ -38,6 +38,12 @@
             <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
         </dependency>
 
+        <!-- SANSA Inference -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+        </dependency>
+
 
         <!-- Scala -->
         <dependency>
@@ -117,9 +123,21 @@
             <artifactId>isolation-forest_3.0.0_2.12</artifactId>
             <version>2.0.4</version>
         </dependency>
+
+        <!--HermiT-->
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>org.semanticweb.hermit</artifactId>
+            <version>1.4.5.519</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.2</version>
+        </dependency>
     </dependencies>
 
-    <!--
     <profiles>
         <profile>
             <id>dist</id>
@@ -129,12 +147,25 @@
                 </property>
             </activation>
             <build>
+                <finalName>DistTDT</finalName>
                 <plugins>
+                    <!-- Set a compiler level -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <source>1.11</source>
+                            <target>1.11</target>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Maven Shade Plugin -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.2.4</version>
                         <executions>
-                            < ! - - Run shade goal on package phase - - >
+                            <!-- Run shade goal on package phase -->
                             <execution>
                                 <phase>package</phase>
                                 <goals>
@@ -160,11 +191,10 @@
                                         </filter>
                                     </filters>
                                     <transformers>
+                                        <!-- add Main-Class to manifest file -->
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <! - -Here we specify "hardcoded" main class. somehow package name plus class name without scala - - >
-                                            <mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass> - - >
-                                            <! - -									<mainClass>net.sansa_stack.ml.spark.similarity.run.SimilarityPipeline</mainClass> - - >
+                                            <mainClass>net.sansa_stack.ml.spark.classification.decisionTrees.TermDecisionTrees</mainClass>
                                         </transformer>
                                     </transformers>
                                 </configuration>
@@ -175,5 +205,4 @@
             </build>
         </profile>
     </profiles>
-    -->
 </project>

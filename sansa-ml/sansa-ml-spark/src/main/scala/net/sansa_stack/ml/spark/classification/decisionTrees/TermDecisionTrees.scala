@@ -1,7 +1,6 @@
 package net.sansa_stack.ml.spark.classification.decisionTrees
 
 import net.sansa_stack.ml.spark.classification.decisionTrees.ClassMembership.ClassMembership
-import net.sansa_stack.ml.spark.classification.decisionTrees.OWLReasoner.StructuralReasoner.StructuralReasoner
 import net.sansa_stack.owl.spark.rdd.{FunctionalSyntaxOWLAxiomsRDDBuilder, OWLAxiomsRDD}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
@@ -23,12 +22,12 @@ object TermDecisionTrees {
 
     Logger.getLogger("org").setLevel(Level.OFF)
     Logger.getLogger("akka").setLevel(Level.OFF)
-  
-  
+
+
 //     val input : String = getClass.getResource("/finance.owl").getPath
       val input : String = getClass.getResource("/trains.owl").getPath
 //    val input : String = getClass.getResource("/MDM0.732.owl").getPath
-  
+
 //    val input = args(0)
     println("=============================================")
     println("|  Distributed Terminological Decision Trees |")
@@ -42,6 +41,8 @@ object TermDecisionTrees {
       .config("spark.executor.cores", "5")
       .appName("Terminological Decision Trees")
       .getOrCreate()
+
+    sparkSession.sparkContext.setLogLevel("ERROR")
     
     // Call owl axiom builder to read the classes and object properties and print
     val rdd : OWLAxiomsRDD = FunctionalSyntaxOWLAxiomsRDDBuilder.build(sparkSession, input)
