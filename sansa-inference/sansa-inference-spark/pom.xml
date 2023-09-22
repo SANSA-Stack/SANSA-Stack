@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.12</artifactId>
-        <version>0.8.8-SNAPSHOT</version>
+        <version>0.9.0-SNAPSHOT</version>
     </parent>
     <artifactId>sansa-inference-spark_2.12</artifactId>
 

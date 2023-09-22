@@ -6,8 +6,8 @@ import java.util.Objects;
 
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.ext.com.google.common.collect.Lists;
-import org.apache.jena.ext.com.google.common.collect.Streams;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;

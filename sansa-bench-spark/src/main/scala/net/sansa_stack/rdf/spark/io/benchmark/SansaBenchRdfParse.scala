@@ -4,7 +4,7 @@ import java.io.{ByteArrayInputStream, File, InputStream}
 import java.util.concurrent.TimeUnit
 
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
-import org.apache.jena.ext.com.google.common.base.Stopwatch
+import com.google.common.base.Stopwatch
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
