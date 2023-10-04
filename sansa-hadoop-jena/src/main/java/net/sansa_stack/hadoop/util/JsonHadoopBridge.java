@@ -1,5 +1,22 @@
 package net.sansa_stack.hadoop.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Streams;
+import com.univocity.parsers.csv.CsvParserSettings;
+import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
+import org.aksw.commons.path.core.Path;
+import org.aksw.commons.path.core.PathStr;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.util.StringUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -7,24 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Streams;
-import org.aksw.commons.model.csvw.domain.api.Dialect;
-import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
-import org.aksw.commons.path.core.Path;
-import org.aksw.commons.path.core.PathOpsStr;
-import org.apache.hadoop.conf.Configuration;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * Jackson-based mapper that can read/write java beans from/to a hadoop configuration object
@@ -208,7 +207,7 @@ public class JsonHadoopBridge {
      * are used as attributes
      */
     public static JsonHadoopBridge createFromPrototype(Object o, String prefix) {
-        Path<String> path = PathOpsStr.newRelativePath(prefix.split("\\."));
+        Path<String> path = PathStr.newRelativePath(prefix.split("\\."));
 
         JsonNode prototype = new ObjectMapper()
                 .valueToTree(o);
