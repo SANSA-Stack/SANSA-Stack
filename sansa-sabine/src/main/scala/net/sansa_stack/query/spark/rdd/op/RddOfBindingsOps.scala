@@ -9,7 +9,7 @@ import org.aksw.commons.collector.domain.ParallelAggregator
 import org.aksw.commons.lambda.serializable.SerializableSupplier
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
 import org.aksw.jenax.arq.util.binding.BindingUtils
-import org.aksw.jenax.arq.util.exec.ExecutionContextUtils
+import org.aksw.jenax.arq.util.exec.query.ExecutionContextUtils
 import org.aksw.jenax.arq.util.syntax.VarExprListUtils
 import org.apache.jena.graph.Node
 import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}

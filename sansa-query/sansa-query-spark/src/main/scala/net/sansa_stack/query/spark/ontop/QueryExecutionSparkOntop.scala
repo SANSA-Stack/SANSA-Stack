@@ -2,8 +2,8 @@ package net.sansa_stack.query.spark.ontop
 
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.query.spark.api.impl.{QueryExecutionSparkBase, ResultSetSparkImpl}
-import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
+import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactory
 import org.apache.jena.query.{Query, ResultSetCloseable}
 import org.apache.spark.sql.SparkSession
 

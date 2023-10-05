@@ -2,8 +2,8 @@ package net.sansa_stack.spark.io.rdf.loader;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
-import org.aksw.jenax.arq.connection.TransactionalDelegate;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFToUpdateRequest;
+import org.aksw.jenax.dataaccess.sparql.common.TransactionalDelegate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Graph;

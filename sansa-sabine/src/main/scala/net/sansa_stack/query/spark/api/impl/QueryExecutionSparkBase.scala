@@ -2,11 +2,9 @@ package net.sansa_stack.query.spark.api.impl
 
 
 import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
-
-import java.util
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
-import org.aksw.jenax.arq.connection.core.QueryExecutionFactory
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
+import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactory
 import org.apache.jena.graph
 import org.apache.jena.query.{Query, QueryExecution, ResultSetCloseable}
 import org.apache.jena.sparql.core.Quad
@@ -15,6 +13,7 @@ import org.apache.jena.sparql.modify.TemplateLib
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import java.util
 import scala.collection.JavaConverters._
 
 abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionFactory, spark: SparkSession)

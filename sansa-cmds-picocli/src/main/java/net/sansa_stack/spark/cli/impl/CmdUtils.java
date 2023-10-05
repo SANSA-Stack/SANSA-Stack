@@ -10,7 +10,7 @@ import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
-import org.aksw.jenax.arq.util.exec.ExecutionContextUtils;
+import org.aksw.jenax.arq.util.exec.query.ExecutionContextUtils;
 import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
