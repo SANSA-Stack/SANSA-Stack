@@ -2,13 +2,11 @@ package net.sansa_stack.spark.cli.main;
 
 import com.google.common.base.Stopwatch;
 import net.sansa_stack.hadoop.format.jena.trig.RecordReaderRdfTrigDataset;
-import org.aksw.commons.util.stream.SequentialGroupBySpec;
-import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
+import org.aksw.commons.util.stream.CollapseRunsSpec;
+import org.aksw.commons.util.stream.StreamOperatorCollapseRuns;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.aksw.jenax.sparql.query.rx.StreamUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.AsyncParserBuilder;
 import org.apache.jena.sparql.core.Quad;
 
 import java.util.Collections;
@@ -23,12 +21,12 @@ public class MainCliSansaPlayground {
         try (Stream<Quad> rawStream = AsyncParser.of("/home/raven/Datasets/lsq2/homologene.merged.lsq.v2.trig.bz2").streamQuads()) {
 
             RecordReaderRdfTrigDataset.AccumulatingDataset accumulating = new RecordReaderRdfTrigDataset.AccumulatingDataset();
-            SequentialGroupBySpec<Quad, Node, DatasetOneNg> spec = SequentialGroupBySpec.create(
+            CollapseRunsSpec<Quad, Node, DatasetOneNg> spec = CollapseRunsSpec.create(
                     accumulating::classify,
                     (accNum, groupKey) -> accumulating.createAccumulator(groupKey),
                     accumulating::accumulate);
 
-            Stream<DatasetOneNg> aggStream = StreamOperatorSequentialGroupBy.create(spec)
+            Stream<DatasetOneNg> aggStream = StreamOperatorCollapseRuns.create(spec)
                     .transform(rawStream)
                     .map(e -> accumulating.accumulatedValue(e.getValue()));
 

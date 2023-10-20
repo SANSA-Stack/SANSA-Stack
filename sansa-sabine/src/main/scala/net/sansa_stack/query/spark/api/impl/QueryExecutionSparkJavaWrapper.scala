@@ -1,7 +1,7 @@
 package net.sansa_stack.query.spark.api.impl
 
 import net.sansa_stack.query.spark.api.domain.{JavaQueryExecutionSpark, QueryExecutionSpark, ResultSetSpark}
-import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionDecoratorBase
+import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperBase
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
@@ -12,7 +12,7 @@ import org.apache.spark.rdd.RDD
  * @param decoratee The JavaQueryExecutionSpark instance to wrap
  */
 class QueryExecutionSparkJavaWrapper(decoratee: JavaQueryExecutionSpark)
-  extends QueryExecutionDecoratorBase[JavaQueryExecutionSpark](decoratee)
+  extends QueryExecutionWrapperBase[JavaQueryExecutionSpark](decoratee)
     with QueryExecutionSpark
 {
   override def execSelectSpark(): ResultSetSpark = {

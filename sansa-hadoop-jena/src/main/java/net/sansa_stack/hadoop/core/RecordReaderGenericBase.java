@@ -1,76 +1,6 @@
 package net.sansa_stack.hadoop.core;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.SequenceInputStream;
-import java.nio.channels.Channels;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.LongPredicate;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.aksw.commons.io.buffer.array.ArrayOps;
-import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
-import org.aksw.commons.io.hadoop.SeekableInputStream;
-import org.aksw.commons.io.input.CharSequenceDecorator;
-import org.aksw.commons.io.input.ReadableChannel;
-import org.aksw.commons.io.input.ReadableChannelOverIterator;
-import org.aksw.commons.io.input.ReadableChannelSwitchable;
-import org.aksw.commons.io.input.ReadableChannelWithValue;
-import org.aksw.commons.io.input.ReadableChannels;
-import org.aksw.commons.io.input.SeekableReadableChannel;
-import org.aksw.commons.io.seekable.api.Seekable;
-import org.aksw.commons.util.stack_trace.StackTraceUtils;
-import org.aksw.commons.util.stream.SequentialGroupBySpec;
-import org.aksw.commons.util.stream.StreamOperatorSequentialGroupBy;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.compress.CodecPool;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.apache.hadoop.io.compress.Decompressor;
-import org.apache.hadoop.io.compress.SplitCompressionInputStream;
-import org.apache.hadoop.io.compress.SplittableCompressionCodec;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import com.google.common.primitives.Ints;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.sys.JenaSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.reactivex.rxjava3.core.Flowable;
 import net.sansa_stack.hadoop.core.pattern.CustomMatcher;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
@@ -80,6 +10,48 @@ import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
 import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
 import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
 import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
+import org.aksw.commons.io.buffer.array.ArrayOps;
+import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
+import org.aksw.commons.io.hadoop.SeekableInputStream;
+import org.aksw.commons.io.input.*;
+import org.aksw.commons.io.seekable.api.Seekable;
+import org.aksw.commons.util.stream.CollapseRunsSpec;
+import org.aksw.commons.util.stream.StreamOperatorCollapseRuns;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.compress.*;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.sys.JenaSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.LongPredicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A generic record reader that uses a callback mechanism to detect a consecutive sequence of records
@@ -415,14 +387,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // We need to be careful to not return null as a flow item:
         // FlowableOperatorSequentialGroupBy returns a stream of (key, accumulator) pairs
         // Returning a null accumulator is ok as long it resides within the pair
-        SequentialGroupBySpec<U, G, A> spec = SequentialGroupBySpec.create(
+        CollapseRunsSpec<U, G, A> spec = CollapseRunsSpec.create(
                 accumulating::classify,
                 (accNum, groupKey) -> !isFirstSplit && accNum == 0
                         ? null
                         : accumulating.createAccumulator(groupKey),
                 accumulating::accumulate);
 
-        Stream<T> result = StreamOperatorSequentialGroupBy.create(spec)
+        Stream<T> result = StreamOperatorCollapseRuns.create(spec)
                 .transform(Stream.concat(splitFlow, tailElts))
                 .map(e -> e.getValue() == null ? null : accumulating.accumulatedValue(e.getValue()));
         if (!isFirstSplit) {
@@ -618,10 +590,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 // tailNav.position(tailBytes);
                 // lines(tailNav).limit(100).forEach(System.out::println);
 
-                SequentialGroupBySpec<U, G, List<U>> spec = SequentialGroupBySpec.create(accumulating::classify, () -> (List<U>) new ArrayList<>(1 * 1024), Collection::add);
+                CollapseRunsSpec<U, G, List<U>> spec = CollapseRunsSpec.create(accumulating::classify, () -> (List<U>) new ArrayList<>(1 * 1024), Collection::add);
 
                 try (Stream<U> tailEltStream = debufferedEltStream(tailEltBuffer)) {
-                    tailElts = StreamOperatorSequentialGroupBy.create(spec).transform(tailEltStream).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyList());
+                    tailElts = StreamOperatorCollapseRuns.create(spec).transform(tailEltStream).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyList());
                 }
 
                 long adjustedSplitEnd = -1;
