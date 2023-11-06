@@ -98,10 +98,10 @@
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw.commons.version>0.9.7-SNAPSHOT</aksw.commons.version>
+        <aksw.commons.version>0.9.7</aksw.commons.version>
         <jena.version>4.9.0</jena.version>
-        <jenax.version>4.9.0-1-SNAPSHOT</jenax.version>
-        <rmltk.version>4.9.0-1-SNAPSHOT</rmltk.version>
+        <jenax.version>4.9.0-1</jenax.version>
+        <rmltk.version>4.9.0-1</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -112,7 +112,7 @@
         <ver.netty>4.1.74.Final</ver.netty>
         <ver.jackson>2.13.3</ver.jackson>
         <!-- <log4j.version>1</log4j.version> -->
-	<bsbm.version>3.1.8-SNAPSHOT</bsbm.version>
+	<bsbm.version>3.1.8</bsbm.version>
 
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
@@ -126,7 +126,7 @@
         <owlapi.version>5.1.17</owlapi.version>
 
         <ontop.version>4.3.0-2</ontop.version>
-        <sparqlify.version>0.9.6-SNAPSHOT</sparqlify.version>
+        <sparqlify.version>0.9.6</sparqlify.version>
 
         <guava.version>30.1-jre</guava.version>
         <!--        <guava.version>14.0.1</guava.version>-->
