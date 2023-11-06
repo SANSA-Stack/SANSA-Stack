@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-owl-parent_2.12</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
     </parent>
 
     <name>SANSA OWL layer - Common</name>

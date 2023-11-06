@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
