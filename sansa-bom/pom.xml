@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
@@ -2106,13 +2106,15 @@
                 <groupId>net.sansa-stack</groupId>
                 <artifactId>sansa-pkg-deb-cli_2.12</artifactId>
                 <version>${project.version}</version>
-            </dependency>
+		</dependency>
+	<!--
             <dependency>
                 <groupId>net.sansa-stack</groupId>
                 <artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
                 <version>${project.version}</version>
                 <type>rpm</type>
-            </dependency>
+		</dependency>
+	-->
 
         </dependencies>
     </dependencyManagement>
