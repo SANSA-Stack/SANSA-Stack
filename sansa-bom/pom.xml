@@ -98,10 +98,10 @@
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw.commons.version>0.9.7</aksw.commons.version>
-        <jena.version>4.9.0</jena.version>
-        <jenax.version>4.9.0-1</jenax.version>
-        <rmltk.version>4.9.0-1</rmltk.version>
+        <aksw.commons.version>0.9.8-SNAPSHOT</aksw.commons.version>
+        <jena.version>4.10.0</jena.version>
+        <jenax.version>4.10.0-1-SNAPSHOT</jenax.version>
+        <rmltk.version>4.10.0-1-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
