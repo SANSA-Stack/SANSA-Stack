@@ -2,6 +2,7 @@ package net.sansa_stack.spark.cli.impl;
 
 import java.util.Map;
 
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdRdfTemplate;
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.triple.TripleUtils;

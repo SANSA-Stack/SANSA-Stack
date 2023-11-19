@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
@@ -40,22 +41,22 @@ public class CmdSansaMapImpl {
 
     List<String> inputStrs = cmd.inputFiles;
 
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa Map (" + cmd.inputFiles + ")")
             .getOrCreate();
 
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-    RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+    RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
     rddRdfWriterFactory.validate();
     rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
 
-    CmdUtils.validatePaths(inputStrs, hadoopConf);
+    SansaCmdUtils.validatePaths(inputStrs, hadoopConf);
 
     RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
-    RdfSourceCollection rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
+    RdfSourceCollection rdfSources = SansaCmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 
     RdfSource rdfSource = rdfSources;
     CmdSansaMap.MapOperation mapOp = cmd.mapOperation;

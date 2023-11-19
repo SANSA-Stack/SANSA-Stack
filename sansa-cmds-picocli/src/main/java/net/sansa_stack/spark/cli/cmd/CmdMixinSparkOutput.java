@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.RdfOutputConfig;
+import net.sansa_stack.spark.cli.util.RdfOutputConfig;
 import picocli.CommandLine;
 
 import java.util.List;

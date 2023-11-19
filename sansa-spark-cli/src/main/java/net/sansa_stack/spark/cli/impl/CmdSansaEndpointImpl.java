@@ -7,6 +7,7 @@ import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.FreshDatasetArgs;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.PreloadedDatasetArgs;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
@@ -36,7 +37,7 @@ public class CmdSansaEndpointImpl {
 
   public static int run(CmdSansaEndpoint cmd) throws InterruptedException {
     
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa SPARQL Endpoint")
             .config("spark.kryo.registrator", String.join(", ", 
                     "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",

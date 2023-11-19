@@ -9,12 +9,14 @@ import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.collector.core.AggBuilder;
 import org.aksw.commons.collector.core.AggInputBroadcastMap;
 import org.aksw.commons.collector.domain.ParallelAggregator;
+import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jena_sparql_api.algebra.transform.TransformUnionToDisjunction;
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
 import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
+import org.aksw.jenax.arq.util.template.TemplateLib2;
 import org.aksw.jenax.sparql.algebra.transform2.Evaluator;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
 import org.apache.jena.atlas.iterator.Iter;
@@ -29,7 +31,6 @@ import org.apache.jena.sparql.algebra.op.OpTable;
 import org.apache.jena.sparql.algebra.op.OpUnion;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
 import org.apache.jena.sparql.engine.ExecutionContext;
@@ -40,6 +41,7 @@ import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.modify.TemplateLib;
 import org.apache.jena.sparql.syntax.Template;
+import org.apache.jena.sparql.util.Context;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -140,17 +142,9 @@ public class JavaRddOfBindingsOps {
         JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(initialRdd);
 
         JavaRDD<Binding> rdd = executionDispatch.exec(rootOp, initialRdd);
-
-        JavaRDD<Quad> result = rdd.mapPartitions(it ->
-                Iter.iter(it)
-                        .map(b -> {
-                            Quad q = Substitute.substitute(constructQuad, b);
-                            return q;
-                        })
-                        .filter(Quad::isConcrete));
+        JavaRDD<Quad> result = rdd.mapPartitions(it -> TemplateLib2.calcQuads(constructQuad, it));
         return result;
     }
-
 
     public static JavaRDD<Binding> filter(JavaRDD<Binding> rdd, ExprList exprs, Supplier<ExecutionContext> execCxtSupplier) {
         Broadcast<ExprList> broadcast = JavaSparkContextUtils.fromRdd(rdd).broadcast(exprs);
@@ -263,8 +257,18 @@ public class JavaRddOfBindingsOps {
         // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
         // System.err.println("Algebra: " + op);
 
+        // Wrap the execCxtSupplier such that the rdd of dataset is added (if not already present)
+        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
+            ExecutionContext r = execCxtSupplier.get();
+            Context cxt = r.getContext();
+            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
+                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            }
+            return r;
+        };
+
         // Set up an execution context
-        OpExecutor opExec = new OpExecutorImpl(execCxtSupplier);
+        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
 
         ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
@@ -33,16 +34,16 @@ public class CmdSansaNgsSortImpl {
 
         List<String> inputStrs = cmd.inputFiles;
 
-        SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+        SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
                 .appName("Sansa NGS Sort (" + cmd.inputFiles + ")")
                 .getOrCreate();
 
         Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
         rddRdfWriterFactory.validate();
 
-        CmdUtils.validatePaths(inputStrs, hadoopConf);
+        SansaCmdUtils.validatePaths(inputStrs, hadoopConf);
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 

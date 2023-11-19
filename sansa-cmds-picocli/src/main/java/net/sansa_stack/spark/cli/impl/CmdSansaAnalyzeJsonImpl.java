@@ -1,6 +1,8 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.spark.cli.cmd.CmdSansaAnalyzeJson;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdTemplate;
 import net.sansa_stack.spark.io.json.input.JsonDataSources;
 import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
 import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
@@ -21,7 +23,7 @@ public class CmdSansaAnalyzeJsonImpl {
 
     public static int run(CmdSansaAnalyzeJson cmd) throws Exception {
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
         rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 

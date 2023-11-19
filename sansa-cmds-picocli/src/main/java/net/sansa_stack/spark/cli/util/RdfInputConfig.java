@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.cli.impl;
+package net.sansa_stack.spark.cli.util;
 
 import java.util.List;
 

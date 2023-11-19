@@ -1,5 +1,6 @@
 package net.sansa_stack.spark.cli.impl;
 
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdRdfTemplate;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;

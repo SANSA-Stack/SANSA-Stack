@@ -3,15 +3,19 @@ package net.sansa_stack.spark.cli.impl;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriter;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.hadoop.fs.Path;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.ResultSet;
@@ -25,6 +29,7 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +51,9 @@ public class CmdSansaNgsQueryImpl {
     Query query = SparqlStmtMgr.loadQuery(cmd.queryFile);
     logger.info("Loaded query " + query);
 
+    RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
+
+
     if (cmd.outputConfig.outFormat != null) {
         outLang = RDFLanguagesEx.findLang(cmd.outputConfig.outFormat, resultSetFormats);
     } else {
@@ -62,7 +70,7 @@ public class CmdSansaNgsQueryImpl {
     // cmd.outputConfig.outFormat
     // RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
 
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa Ngs Query (" + cmd.inputFiles + ")")
             .config("spark.sql.crossJoin.enabled", true)
             .getOrCreate();
@@ -92,9 +100,12 @@ public class CmdSansaNgsQueryImpl {
     CmdMixinArq.configureGlobal(arqConfig);
     // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
     CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-    Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);
+    Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
 
     JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, execCxtSupplier);
+
+    // Path outPath = new Path("/tmp/test.csv");
+    // RddRowSetWriter.write(resultSetSpark, outPath, ResultSetLang.RS_TSV);
 
     ResultSetMgr.write(System.out, ResultSet.adapt(resultSetSpark.collectToTable().toRowSet()), outLang);
 

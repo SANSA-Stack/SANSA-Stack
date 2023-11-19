@@ -54,14 +54,19 @@ public class RddRdfWriter2
                 conf);
     }
 
-    protected Configuration buildConfiguration(RDD<?> rdd) {
+    public static Configuration buildBaseConfiguration(RDD<?> rdd) {
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
         Configuration baseConf = sparkContext.hadoopConfiguration();
         Configuration result = new Configuration(baseConf);
 
-        OutputUtils.setSplitCount(result, rdd.getNumPartitions());
-        configure(result);
+        int numPartitions =  rdd.getNumPartitions();
+        OutputUtils.setSplitCount(result, numPartitions);
+        return result;
+    }
 
+    protected Configuration buildConfiguration(RDD<?> rdd) {
+        Configuration result = buildBaseConfiguration(rdd);
+        configure(result);
         return result;
     }
 

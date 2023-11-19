@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.spark.cli.cmd.CmdSansaCount;
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdRdfTemplate;
 
 public class CmdSansaCountImpl {
 

@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.cli.impl;
+package net.sansa_stack.spark.cli.util;
 
 import java.util.List;
 
@@ -25,6 +25,6 @@ public abstract class SimpleSparkCmdRdfTemplate<T>
     protected void processInputs() {
         RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
 
-        rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, inputFiles, inputSpec);
+        rdfSources = SansaCmdUtils.createRdfSourceCollection(rdfSourceFactory, inputFiles, inputSpec);
     }
 }

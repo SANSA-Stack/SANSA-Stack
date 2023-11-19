@@ -1,8 +1,9 @@
-package net.sansa_stack.spark.cli.impl;
+package net.sansa_stack.spark.cli.util;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table.Cell;
 import com.google.common.collect.Tables;
+import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
@@ -41,7 +42,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class CmdUtils {
+/** Utility methods for implementing command line interface tooling based on Sansa */
+public class SansaCmdUtils {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
     public static final String KRYO_BUFFER_MAX_KEY = "spark.kryo.serializer.buffer.max";
@@ -110,7 +112,8 @@ public class CmdUtils {
         return result;
     }
 
-    public static Set<String> getValidatePaths(Collection<String> paths, Configuration hadoopConf) {
+    /** Given a set of paths, return those that point to existing locations w.r.t. to the configured file system */
+    public static Set<String> getValidPaths(Collection<String> paths, Configuration hadoopConf) {
 
         Set<String> result = paths.stream()
                 .map(pathStr -> {
@@ -144,7 +147,7 @@ public class CmdUtils {
     }
 
     public static void validatePaths(Collection<String> paths, Configuration hadoopConf) {
-        Set<String> validPathStrs = CmdUtils.getValidatePaths(paths, hadoopConf);
+        Set<String> validPathStrs = SansaCmdUtils.getValidPaths(paths, hadoopConf);
         Set<String> inputSet = new LinkedHashSet<>(paths);
 
         Set<String> invalidPaths = Sets.difference(inputSet, validPathStrs);

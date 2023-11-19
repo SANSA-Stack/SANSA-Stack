@@ -2,6 +2,7 @@ package net.sansa_stack.hadoop.core;
 
 import java.io.Serializable;
 
+// Non-RDF Stats implementation - no longer used!
 public class Stats
     implements Serializable
 {
