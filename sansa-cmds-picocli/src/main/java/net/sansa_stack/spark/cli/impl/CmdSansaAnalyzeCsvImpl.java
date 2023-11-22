@@ -27,8 +27,8 @@ public class CmdSansaAnalyzeCsvImpl {
 
     public static int run(CmdSansaAnalyzeCsv cmd) throws Exception {
 
-        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
-        rddRdfWriterFactory.setUseElephas(true);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         if (rddRdfWriterFactory.getOutputFormat() == null) {

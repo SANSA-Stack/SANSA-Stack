@@ -34,9 +34,15 @@ public class RddRdfWriter2
         this.prefixes = prefixes;
     }
 
+    protected Configuration buildConfiguration(RDD<?> rdd) {
+        Configuration result = RddWriterUtils.buildBaseConfiguration(rdd);
+        configure(result);
+        return result;
+    }
+
     public void writeTriples(RDD<Triple> rdd, Path path) {
         Configuration conf = buildConfiguration(rdd);
-        JavaPairRDD<Long, Triple> pairRdd = toPairRdd(rdd.toJavaRDD());
+        JavaPairRDD<Long, Triple> pairRdd = RddWriterUtils.toPairRdd(rdd.toJavaRDD());
         pairRdd.saveAsNewAPIHadoopFile(path.toString(),
                 Long.class,
                 Triple.class,
@@ -46,7 +52,7 @@ public class RddRdfWriter2
 
     public void writeQuads(RDD<Quad> rdd, Path path) {
         Configuration conf = buildConfiguration(rdd);
-        JavaPairRDD<Long, Quad> pairRdd = toPairRdd(rdd.toJavaRDD());
+        JavaPairRDD<Long, Quad> pairRdd = RddWriterUtils.toPairRdd(rdd.toJavaRDD());
         pairRdd.saveAsNewAPIHadoopFile(path.toString(),
                 Long.class,
                 Quad.class,
@@ -54,31 +60,9 @@ public class RddRdfWriter2
                 conf);
     }
 
-    public static Configuration buildBaseConfiguration(RDD<?> rdd) {
-        JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
-        Configuration baseConf = sparkContext.hadoopConfiguration();
-        Configuration result = new Configuration(baseConf);
-
-        int numPartitions =  rdd.getNumPartitions();
-        OutputUtils.setSplitCount(result, numPartitions);
-        return result;
-    }
-
-    protected Configuration buildConfiguration(RDD<?> rdd) {
-        Configuration result = buildBaseConfiguration(rdd);
-        configure(result);
-        return result;
-    }
-
     protected void configure(Configuration conf) {
         RdfOutputUtils.setRdfFormat(conf, rdfFormat);
         RdfOutputUtils.setPrefixes(conf, prefixes);
         RdfOutputUtils.setMapQuadsToTriplesForTripleLangs(conf, mapQuadsToTriplesForTripleLangs);
-    }
-
-    public static <T> JavaPairRDD<Long, T> toPairRdd(JavaRDD<T> rdd) {
-        JavaPairRDD<Long, T> result = rdd
-                .mapToPair(v -> new Tuple2<>(0l, v));
-        return result;
     }
 }

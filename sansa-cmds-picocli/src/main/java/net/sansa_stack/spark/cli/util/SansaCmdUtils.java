@@ -8,6 +8,10 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriter;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddWriterSettings;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
@@ -68,7 +72,39 @@ public class SansaCmdUtils {
         return result;
     }
 
-    public static RddRdfWriterFactory configureWriter(RdfOutputConfig out) {
+    public static RddRowSetWriterFactory configureRowSetWriter(RdfOutputConfig out) {
+        RddRowSetWriterFactory result = RddRowSetWriterFactory.create();
+
+        // Try to derive the output format from the file name (if given)
+        if (out.getOutputFormat() != null) {
+            result = result.setOutputLang(out.getOutputFormat());
+        }
+
+        Lang fmt = result.getOutputLang();
+        if (fmt == null) {
+            String fileName = out.getTargetFile();
+            Lang lang = RDFDataMgr.determineLang(fileName, null, null);
+            if (lang != null) {
+                result = result.setOutputLang(lang);
+            }
+        }
+
+        result = configure(result, out);
+        return result;
+    }
+
+    public static <T extends RddWriterSettings> T configure(T dst, RdfOutputConfig out) {
+        dst
+                // .setAllowOverwriteFiles(true)
+                .setPartitionFolder(out.getPartitionFolder())
+                .setTargetFile(out.getTargetFile())
+                // .setUseElephas(true)
+                .setDeletePartitionFolderAfterMerge(true)
+                .setAllowOverwriteFiles(out.isOverwriteAllowed());
+        return dst;
+    }
+
+    public static RddRdfWriterFactory configureRdfWriter(RdfOutputConfig out) {
         PrefixMapping prefixes = new PrefixMappingTrie();
 
         if (out.getPrefixSources() != null) {
@@ -211,12 +247,7 @@ public class SansaCmdUtils {
             }
         }
 
-        JavaRDD<T> result;
-        if (initialRdds.size() == 1) {
-            result = initialRdds.get(0);
-        } else {
-            result = javaSparkContext.union(initialRdds.toArray(new JavaRDD[0]));
-        }
+        JavaRDD<T> result = JavaRddOps.unionIfNeeded(javaSparkContext, initialRdds);
         return result;
     }
 

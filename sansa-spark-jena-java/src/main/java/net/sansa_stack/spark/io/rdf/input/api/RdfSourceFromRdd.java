@@ -4,6 +4,7 @@ import net.sansa_stack.spark.io.rdf.output.RddRdfOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
@@ -13,9 +14,9 @@ public class RdfSourceFromRdd<T>
 {
     protected JavaRDD<T> rdd;
     protected RddRdfOps<T> dispatcher;
-    protected Model declaredPrefixes;
+    protected PrefixMap declaredPrefixes;
 
-    public RdfSourceFromRdd(JavaRDD<T> rdd, RddRdfOps<T> dispatcher, Model declaredPrefixes) {
+    public RdfSourceFromRdd(JavaRDD<T> rdd, RddRdfOps<T> dispatcher, PrefixMap declaredPrefixes) {
         this.rdd = rdd;
         this.dispatcher = dispatcher;
         this.declaredPrefixes = declaredPrefixes;
@@ -27,7 +28,7 @@ public class RdfSourceFromRdd<T>
     }
 
     @Override
-    public Model peekDeclaredPrefixes() {
+    public PrefixMap peekDeclaredPrefixes() {
         return declaredPrefixes;
     }
 

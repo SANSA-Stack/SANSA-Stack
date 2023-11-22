@@ -20,10 +20,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.system.AsyncParser;
-import org.apache.jena.riot.system.EltStreamRDF;
-import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.system.StreamRDFBase;
+import org.apache.jena.riot.system.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,35 +101,35 @@ public abstract class FileInputFormatRdfBase<T>
      * @return
      * @throws Exception
      */
-    public static Model readPrefixesIntoModel(Model prefixModel, Callable<InputStream> inSupp, Lang lang, Long limit) {
+    public static PrefixMap readPrefixesIntoModel(PrefixMap prefixModel, Callable<InputStream> inSupp, Lang lang, Long limit) {
         try (InputStream in = inSupp.call()) {
-            Model result = readPrefixesIntoModel(prefixModel, in, lang, limit);
+            PrefixMap result = readPrefixesIntoModel(prefixModel, in, lang, limit);
             return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Model readPrefixes(Callable<InputStream> inSupp, Configuration conf) {
+    public PrefixMap readPrefixes(Callable<InputStream> inSupp, Configuration conf) {
         long limit = getPrefixByteCount(conf);
-        Model result = readPrefixesIntoModel(null, inSupp, lang, limit);
+        PrefixMap result = readPrefixesIntoModel(null, inSupp, lang, limit);
         return result;
     }
 
     /** Public method to parse prefixes w.r.t. this input format configuration */
     @Override
-    public Model parsePrefixes(InputStream in, Configuration conf) {
+    public PrefixMap parsePrefixes(InputStream in, Configuration conf) {
         long limit = getPrefixByteCount(conf);
-        Model result = readPrefixesIntoModel(null, in, lang, limit);
+        PrefixMap result = readPrefixesIntoModel(null, in, lang, limit);
         return result;
     }
 
     /**
-     * At present this method actually reads the full model - so be sure
-     * to only supply a bounded input stream
-     * I need to add a PR to JENA to open up its AsyncParser API and this method should then use it
+     * Read prefixes from an input stream.
+     *
+     * @param limit If non-null, limits the number of bytes that can be read from the input stream to the given value.
      */
-    public static Model readPrefixesIntoModel(Model sink, InputStream in, Lang lang, Long limit) {
+    public static PrefixMap readPrefixesIntoModel(PrefixMap sink, InputStream in, Lang lang, Long limit) {
         if (limit != null && limit >= 0) {
             in = new BoundedInputStream(in, limit);
         }
@@ -147,17 +144,17 @@ public abstract class FileInputFormatRdfBase<T>
         return result;
     }
 
-    public static Model readPrefixesIntoModel(Model sink, InputStream in, Lang lang) {
+    public static PrefixMap readPrefixesIntoModel(PrefixMap sink, InputStream in, Lang lang) {
         // A Model *isa* PrefixMap; use Model because it can be easily serialized
-        Model dst = sink == null
-                ? ModelFactory.createDefaultModel()
+        PrefixMap dst = sink == null
+                ? PrefixMapFactory.create()
                 : sink;
 
         // Create a sink that just tracks nothing but prefixes
         StreamRDF prefixSink = new StreamRDFBase() {
             @Override
             public void prefix(String prefix, String iri) {
-                dst.setNsPrefix(prefix, iri);
+                dst.add(prefix, iri);
             }
         };
 
@@ -174,16 +171,10 @@ public abstract class FileInputFormatRdfBase<T>
                     ++nonPrefixEventCount;
                 }
             }
-
-            // RDFDataMgr.parse(prefixSink, in, lang);
-
-            // Only retain prefixes
-            dst.removeAll();
         } catch (Exception e) {
             // Ignore broken pipe exception because we deliberately cut off the stream
             // Exception => // logger.warn("TODO Improve this non-fatal exception", e)
         }
-
         return dst;
     }
 
@@ -203,18 +194,20 @@ public abstract class FileInputFormatRdfBase<T>
             long prefixByteCount = getPrefixByteCount(conf);
 
             // Use the decoded stream for reading in prefixes
-            Model prefixModel = readPrefixes(
+            PrefixMap prefixMap = readPrefixes(
                     () -> FileSplitUtils.getDecodedStreamFromSplit(firstSplit, conf),
                     job.getConfiguration());
 
             // TODO apparently, prefix declarations could span multiple lines, i.e. technically we
             //  also should consider the next line after a prefix declaration
 
-            int prefixCount = prefixModel.getNsPrefixMap().size();
+            int prefixCount = prefixMap.size();
 
             logger.info(String.format("Parsed %d prefixes from first %d bytes", prefixCount, prefixByteCount));
 
             // prefixes are located in default model
+            Model prefixModel = ModelFactory.createDefaultModel();
+            prefixModel.setNsPrefixes(prefixMap.getMapping());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // Clear any triples - we just want the prefixes
             RDFDataMgr.write(baos, prefixModel, RDFFormat.TURTLE_PRETTY);

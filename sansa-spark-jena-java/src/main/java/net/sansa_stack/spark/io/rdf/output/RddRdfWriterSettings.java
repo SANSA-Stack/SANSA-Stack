@@ -1,8 +1,6 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-import org.aksw.commons.io.util.StdIo;
 import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
-import org.apache.hadoop.fs.Path;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
@@ -10,29 +8,19 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
-    protected Path partitionFolder;
-    protected Path targetFile;
-
-    protected boolean useCoalesceOne;
-
-    /* Only applicable if a on outputFile is specified */
-    protected boolean deletePartitionFolderAfterMerge;
+public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings>
+    extends RddWriterSettings<SELF>
+{
     protected PrefixMapping globalPrefixMapping;
     protected RDFFormat outputFormat;
 
-    // protected Object saveMode; // SaveMode saveMode;//mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-    protected boolean allowOverwriteFiles;
-    protected boolean useElephas;
-
-    protected boolean partitionsAsIndependentFiles;
+    // protected boolean useElephas;
 
     /** Whether to convert quads to triples if a triple-based output format is requested */
     protected boolean mapQuadsToTriplesForTripleLangs;
-
-    protected RdfPostProcessingSettingsMutable postProcessingSettings = new RdfPostProcessingSettingsBase();
 
     /**
      * Only for console output: Instead of writing tuples out immediatly,
@@ -40,8 +28,6 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
      * Upon reaching this threshold, print out all seen prefixes and emit the held-back data
      * as well as any further data immediately */
     protected long deferOutputForUsedPrefixes = 0;
-
-    protected Supplier<OutputStream> consoleOutSupplier = StdIo::openStdOutWithCloseShield;
 
     public boolean isMapQuadsToTriplesForTripleLangs() {
         return mapQuadsToTriplesForTripleLangs;
@@ -51,22 +37,34 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return (SELF)this;
     }
 
+    /**
+     * Pass this object to a consumer. Useful to conditionally configure this object
+     * without breaking the fluent chain:
+     *
+     * <pre>
+     *    rdd.configureSave().mutate(self -> { if (condition) { self.setX(); }}).run();
+     * </pre>
+     *
+     * @param action
+     * @return
+     */
+    public SELF mutate(Consumer<? super SELF> action) {
+        SELF self = self();
+        action.accept(self);
+        return self;
+    }
+
     // TODO Probably we should copy / clone prefixes
     public SELF configureFrom(RddRdfWriterSettings<?> other) {
-        this.partitionFolder = other.partitionFolder;
-        this.targetFile = other.targetFile;
-        this.useCoalesceOne = other.useCoalesceOne;
-        this.deletePartitionFolderAfterMerge = other.deletePartitionFolderAfterMerge;
+        super.configureFrom(other);
+
         this.globalPrefixMapping = other.globalPrefixMapping;
         this.outputFormat = other.outputFormat;
-        this.allowOverwriteFiles = other.allowOverwriteFiles;
-        this.useElephas = other.useElephas;
-        this.partitionsAsIndependentFiles = other.partitionsAsIndependentFiles;
+        // this.useElephas = other.useElephas;
+        this.deferOutputForUsedPrefixes = other.deferOutputForUsedPrefixes;
         this.mapQuadsToTriplesForTripleLangs = other.mapQuadsToTriplesForTripleLangs;
         this.deferOutputForUsedPrefixes = other.deferOutputForUsedPrefixes;
-        this.consoleOutSupplier = other.consoleOutSupplier;
 
-        this.postProcessingSettings.copyFrom(other.postProcessingSettings);
         return self();
     }
 
@@ -80,51 +78,8 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return self();
     }
 
-    public boolean isUseCoalesceOne() {
-        return useCoalesceOne;
-    }
-
-    public void setUseCoalesceOne(boolean useCoalesceOne) {
-        this.useCoalesceOne = useCoalesceOne;
-    }
-
-    public boolean isDeletePartitionFolderAfterMerge() {
-        return deletePartitionFolderAfterMerge;
-    }
-
-    public SELF setDeletePartitionFolderAfterMerge(boolean deletePartitionFolderAfterMerge) {
-        this.deletePartitionFolderAfterMerge = deletePartitionFolderAfterMerge;
-        return self();
-    }
-
     public PrefixMapping getGlobalPrefixMapping() {
         return globalPrefixMapping;
-    }
-
-    public Path getPartitionFolder() {
-        return partitionFolder;
-    }
-
-    public SELF setPartitionFolder(Path partitionFolder) {
-        this.partitionFolder = partitionFolder;
-        return self();
-    }
-
-    public SELF setPartitionFolder(String partitionFolder) {
-        return setPartitionFolder(partitionFolder == null ? null : new Path(partitionFolder));
-    }
-
-    public Path getTargetFile() {
-        return targetFile;
-    }
-
-    public SELF setTargetFile(Path targetFile) {
-        this.targetFile = targetFile;
-        return self();
-    }
-
-    public SELF setTargetFile(String targetFile) {
-        return setTargetFile(targetFile == null ? null : new Path(targetFile));
     }
 
     /**
@@ -167,15 +122,7 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         return outputFormat;
     }
 
-    public boolean isAllowOverwriteFiles() {
-        return allowOverwriteFiles;
-    }
-
-    public SELF setAllowOverwriteFiles(boolean allowOverwriteFiles) {
-        this.allowOverwriteFiles = allowOverwriteFiles;
-        return self();
-    }
-
+    /*
     public boolean isUseElephas() {
         return useElephas;
     }
@@ -184,6 +131,7 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         this.useElephas = useElephas;
         return self();
     }
+    */
 
     public boolean isPartitionsAsIndependentFiles() {
         return partitionsAsIndependentFiles;
@@ -198,35 +146,4 @@ public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings> {
         this.deferOutputForUsedPrefixes = deferOutputForUsedPrefixes;
         return self();
     }
-
-    /** If neither partition folder nor targe file is set the output goes to the console */
-    public boolean isConsoleOutput() {
-        return partitionFolder == null && targetFile == null;
-    }
-
-    public SELF setConsoleOutput() {
-        this.partitionFolder = null;
-        this.targetFile = null;
-        return self();
-    }
-
-    public SELF setConsoleOutSupplier(Supplier<OutputStream> consoleOutSupplier) {
-        this.consoleOutSupplier = consoleOutSupplier;
-        return self();
-    }
-
-    public Supplier<OutputStream> getConsoleOutSupplier() {
-        return consoleOutSupplier;
-    }
-
-
-    public RdfPostProcessingSettingsMutable getPostProcessingSettings() {
-        return postProcessingSettings;
-    }
-
-    public SELF setPostProcessingSettings(RdfPostProcessingSettingsMutable postProcessingSettings) {
-        this.postProcessingSettings = postProcessingSettings;
-        return self();
-    }
-
 }

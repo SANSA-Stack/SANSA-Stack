@@ -55,7 +55,7 @@ public class CmdSansaQueryImpl {
         FileSystem hadoopFs = FileSystem.get(javaSparkContext.hadoopConfiguration());
         StreamManager.get().addLocator(new LocatorHdfs(hadoopFs));
 
-        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
         PrefixMapping prefixes = rddRdfWriterFactory.getGlobalPrefixMapping();
 
         // TODO Add support to read query files from HDFS
@@ -108,7 +108,7 @@ public class CmdSansaQueryImpl {
 
         Lang outLang = fmt.getLang();
 
-        rddRdfWriterFactory.setUseElephas(true);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
         // rddRdfWriterFactory.setUseCoalesceOne(true); // for testing
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);

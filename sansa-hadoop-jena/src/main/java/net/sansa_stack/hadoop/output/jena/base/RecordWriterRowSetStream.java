@@ -7,6 +7,14 @@ import org.apache.jena.sparql.engine.binding.Binding;
 
 import java.io.IOException;
 
+/**
+ * RecordWriter implementation over {@link RowSetStreamWriter}.
+ *
+ * @implNote
+ *   RowSetStreamWriters with separators between bindings (such as JSON) only work if there are no
+ *   empty partitions involved! This is because the 'hasPreviousBinding' flag only check if there is a prior
+ *   partition.
+ */
 public class RecordWriterRowSetStream
         extends RecordWriter<Long, Binding> {
     protected RowSetStreamWriter writer;
@@ -40,9 +48,8 @@ public class RecordWriterRowSetStream
                 writer.endBindings();
                 writer.writeFooter();
             }
+            writer.flush();
             writer.close();
-            // streamRdf.finish();
-            // closeAction.close();
         } catch (IOException e) {
             throw new IOException(e);
         } catch (Exception e) {

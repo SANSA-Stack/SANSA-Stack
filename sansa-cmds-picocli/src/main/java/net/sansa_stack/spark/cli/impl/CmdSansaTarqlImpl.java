@@ -196,7 +196,7 @@ public class CmdSansaTarqlImpl {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = new ArrayList<>(cmd.inputFiles.subList(1, cmd.inputFiles.size()));
 
-        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
 
         // Parse the query against the configured prefixes - then reconfigure the prefixes
         // to those used in the query
@@ -301,7 +301,7 @@ public class CmdSansaTarqlImpl {
 
         Lang outLang = fmt.getLang();
 
-        rddRdfWriterFactory.setUseElephas(true);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 

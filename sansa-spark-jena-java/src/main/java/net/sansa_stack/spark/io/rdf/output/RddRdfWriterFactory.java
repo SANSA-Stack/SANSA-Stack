@@ -11,7 +11,8 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 
 /**
- * A factory for {@link RddRdfWriter} instances which enables validation of settings at an early stage.
+ * A factory for {@link RddRdfWriter} instances which enables validation of settings at an early stage
+ * using {@link #validate()}.
  * Using {@link RddRdfWriter} directly may cause misconfigurations to only be detected at the near end of a long
  * running spark job, such as when attempting to write out the result of a long running sort operation.
  *

@@ -40,7 +40,7 @@ public class CmdSansaNgsSortImpl {
 
         Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
         rddRdfWriterFactory.validate();
 
         SansaCmdUtils.validatePaths(inputStrs, hadoopConf);

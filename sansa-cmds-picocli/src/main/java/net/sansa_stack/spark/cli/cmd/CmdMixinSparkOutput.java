@@ -9,8 +9,10 @@ public class CmdMixinSparkOutput
     implements RdfOutputConfig
 {
     @CommandLine.Option(names = { "-o", "--out-format" },
-            description = "Output format. Default: ${DEFAULT-VALUE}")
+            description = "Output format. Default depends on workload. Typically: trig/blocks (quads), turtle/blocks (triples), and tsv (result sets)")
     public String outFormat = null;
+
+    // XXX Add options to control output format per result data model (triples, quads, result sets)?
 
     @CommandLine.Option(names = { "--out-folder" },
             description = "Output folder")

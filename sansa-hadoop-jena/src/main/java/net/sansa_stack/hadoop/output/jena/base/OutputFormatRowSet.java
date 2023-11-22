@@ -20,7 +20,7 @@ public class OutputFormatRowSet
 {
     protected Lang getDefaultResultSetLang() {
         // TSV is lossless
-        // XXX Could we ever support RS_JSON?
+        // XXX Could we ever support RS_JSON directly - or would that require post-processing of e.g. TSV?
         return ResultSetLang.RS_TSV;
     }
 

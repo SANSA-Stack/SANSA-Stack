@@ -15,7 +15,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
@@ -47,7 +47,7 @@ public class CmdSansaMapImpl {
 
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-    RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureWriter(cmd.outputConfig);
+    RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
     rddRdfWriterFactory.validate();
     rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
@@ -82,8 +82,8 @@ public class CmdSansaMapImpl {
 
     int initialPrefixCount = rddRdfWriterFactory.getGlobalPrefixMapping().numPrefixes();
 
-    Model declaredPrefixes = rdfSources.peekDeclaredPrefixes();
-    int declaredPrefixCount = declaredPrefixes.numPrefixes();
+    PrefixMap declaredPrefixes = rdfSources.peekDeclaredPrefixes();
+    int declaredPrefixCount = declaredPrefixes.size();
 
     RddRdfWriter<?> rddRdfWriter;
 
