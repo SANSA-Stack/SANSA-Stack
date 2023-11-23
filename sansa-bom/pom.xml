@@ -1013,6 +1013,20 @@
                 <scope>import</scope>
             </dependency>
 
+		<!-- Conflicts with hadoop on jakarta.xml.bind (jena uses version 4.x.x, hadoop 2.x.x) -->
+		<!--
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-geosparql</artifactId>
+                <scope>provided</scope>
+            </dependency>
+            -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>4.0.1</version>
+            </dependency>
+
             <!-- web server component for use with sparqlify in sansa-query -->
             <dependency>
                 <groupId>org.aksw.jenax</groupId>
