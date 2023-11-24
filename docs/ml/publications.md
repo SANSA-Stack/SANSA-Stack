@@ -8,7 +8,7 @@ The orginal papers can be found here:
 - [DistSim: Scalable Distributed in-Memory Semantic Similarity Estimation for RDF Knowledge Graphs](https://ieeexplore.ieee.org/abstract/document/9364473)
 - [Literal2Feature: An Automatic Scalable RDF Graph Feature Extractor](https://ebooks.iospress.nl/pdf/doi/10.3233/SSW210036)
 - [DistRDF2ML: Scalable Distributed In-Memory Machine Learning Pipelines for RDF Knowledge Graphs](https://dl.acm.org/doi/abs/10.1145/3459637.3481999)
-- [DistAD *in Progress*]()
+- [DistAD: A Distributed Generic Anomaly Detection Framework over Large KGs](https://ieeexplore.ieee.org/document/9736323)
 - [SimE4KG - *in Progress*]()
 
 # Publication Specific Documentation
