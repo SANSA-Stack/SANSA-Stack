@@ -109,7 +109,7 @@
         <log4j.version>2.18.0</log4j.version>
 
 
-        <ver.netty>4.1.74.Final</ver.netty>
+        <ver.netty>4.1.94.Final</ver.netty>
         <ver.jackson>2.13.3</ver.jackson>
         <!-- <log4j.version>1</log4j.version> -->
 	<bsbm.version>3.1.8</bsbm.version>
