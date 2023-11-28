@@ -47,11 +47,11 @@ class BackwardChainingReasonerDataframe(
 
   def isEntailed(tp: TriplePattern): Boolean = {
     val tree = buildTree(new AndNode(tp), Seq())
-    log.info(tree.toString)
+    log.info(tree.toString())
 
     val triples = processTree(tree)
     triples.explain(true)
-    log.info(triples.distinct().count().toString)
+    log.info(triples.distinct().count().toString())
 
     false
   }
@@ -239,7 +239,7 @@ class BackwardChainingReasonerDataframe(
       RDFS.subClassOf,
       RDFS.subPropertyOf,
       RDFS.domain,
-      RDFS.range).map(_.toString))
+      RDFS.range).map(_.toString()))
 
 
     val schemaTriples = graph.filter(t => bcProperties.value.contains(t.p)).cache()
@@ -274,10 +274,10 @@ class BackwardChainingReasonerDataframe(
   def query(tp: Triple): Dataset[RDFTriple] = {
     import org.apache.spark.sql.functions._
 
-    val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString)).alias("DOMAIN"))
-    val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString)).alias("RANGE"))
-    val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString))).alias("SCO"))
-    val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString))).alias("SPO"))
+    val domain = schema.getOrElse(RDFS.domain, broadcast(graph.filter(t => t.p == RDFS.domain.toString())).alias("DOMAIN"))
+    val range = schema.getOrElse(RDFS.range, broadcast(graph.filter(t => t.p == RDFS.range.toString())).alias("RANGE"))
+    val sco = schema.getOrElse(RDFS.subClassOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subClassOf.toString()))).alias("SCO"))
+    val spo = schema.getOrElse(RDFS.subPropertyOf, broadcast(computeTC(graph.filter(t => t.p == RDFS.subPropertyOf.toString()))).alias("SPO"))
 
     // asserted triples
     var ds = lookup(tp)
@@ -295,7 +295,7 @@ class BackwardChainingReasonerDataframe(
         }
 
         // get all non rdf:type triples
-        instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString)
+        instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString())
 
         // enrich the instance data with super properties, i.e. rdfs5
         if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
@@ -329,7 +329,7 @@ class BackwardChainingReasonerDataframe(
           instanceTriples
         }
 
-        val rdftype = RDF.`type`.toString
+        val rdftype = RDF.`type`.toString()
 
 //        val rdfs2 = dom
 //          .join(data.alias("DATA"), $"DOM.s" === $"DATA.p", "inner")
@@ -378,7 +378,7 @@ class BackwardChainingReasonerDataframe(
           }
         val rdfs9 = scoTmp.alias("SCO")
           .join(types, $"SCO.s" === $"TYPES.o", "inner")
-          .select(types("s").alias("s"), lit(RDF.`type`.toString).alias("p"), sco("o").alias("o"))
+          .select(types("s").alias("s"), lit(RDF.`type`.toString()).alias("p"), sco("o").alias("o"))
           .as[RDFTriple]
 
 //        log.info(s"|rdf:type|=${ds.count()}")

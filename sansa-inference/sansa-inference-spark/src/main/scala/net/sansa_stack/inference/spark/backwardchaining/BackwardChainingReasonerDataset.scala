@@ -40,7 +40,7 @@ class BackwardChainingReasonerDataset(
   private lazy val spo: Dataset[RDFTriple] = datasetForPredicate(RDFS.subPropertyOf, "SPO")
 
   private def datasetForPredicate(predicate: Node, alias: String): Dataset[RDFTriple] = {
-    schema.getOrElse(predicate, broadcast(graph.filter(t => t.p == predicate.toString)).alias("DOMAIN"))
+    schema.getOrElse(predicate, broadcast(graph.filter(t => t.p == predicate.toString())).alias("DOMAIN"))
   }
 
   def isEntailed(triple: Triple): Boolean = {
@@ -49,11 +49,11 @@ class BackwardChainingReasonerDataset(
 
   def isEntailed(tp: TriplePattern): Boolean = {
     val tree = buildTree(new AndNode(tp), Seq())
-    log.info(tree.toString)
+    log.info(tree.toString())
 
     val triples = processTree(tree)
     triples.explain(true)
-    log.info(triples.distinct().count().toString)
+    log.info(triples.distinct().count().toString())
 
     false
   }
@@ -241,7 +241,7 @@ class BackwardChainingReasonerDataset(
       RDFS.subClassOf,
       RDFS.subPropertyOf,
       RDFS.domain,
-      RDFS.range).map(_.toString))
+      RDFS.range).map(_.toString()))
 
 
     val schemaTriples = graph.filter(t => bcProperties.value.contains(t.p)).cache()
@@ -307,7 +307,7 @@ class BackwardChainingReasonerDataset(
     }
 
     // get all non rdf:type triples
-    instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString)
+    instanceTriples = instanceTriples.filter(_.p != RDF.`type`.toString())
 
     // enrich the instance data with super properties, i.e. rdfs5
     if(tp.getSubject.isConcrete) { // find triples where s occurs as subject or object
@@ -341,7 +341,7 @@ class BackwardChainingReasonerDataset(
       instanceTriples
     }
 
-    val rdftype = RDF.`type`.toString
+    val rdftype = RDF.`type`.toString()
 
     //        val rdfs2 = dom
     //          .join(data.alias("DATA"), $"DOM.s" === $"DATA.p", "inner")
@@ -390,7 +390,7 @@ class BackwardChainingReasonerDataset(
       }
     val rdfs9 = scoTmp.alias("SCO")
       .join(types, $"SCO.s" === $"TYPES.o", "inner")
-      .select(types("s").alias("s"), lit(RDF.`type`.toString).alias("p"), sco("o").alias("o"))
+      .select(types("s").alias("s"), lit(RDF.`type`.toString()).alias("p"), sco("o").alias("o"))
       .as[RDFTriple]
 
     //        log.info(s"|rdf:type|=${ds.count()}")
@@ -642,7 +642,7 @@ object BackwardChainingReasonerDataset extends Logging{
   def compare(tp: Triple, reasoner: BackwardChainingReasonerDataset, show: Boolean = false): Unit = {
     time {
       val triples = reasoner.query(tp)
-      log.info(triples.count().toString)
+      log.info(triples.count().toString())
       if (show) triples.show(false)
     }
 

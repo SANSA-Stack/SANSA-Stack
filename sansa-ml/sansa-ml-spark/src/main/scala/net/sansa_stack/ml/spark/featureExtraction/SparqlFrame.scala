@@ -1,20 +1,18 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
-import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsToDataFrameMapper
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import net.sansa_stack.rdf.spark.partition.RDFPartition
+import org.apache.jena.datatypes.xsd.XSDDatatype
+import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, NullType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
-import org.apache.jena.datatypes.xsd.XSDDatatype
-import org.apache.jena.graph.{Node, NodeFactory, Triple}
-import org.apache.spark.sql.functions.{col, collect_list, max, min, size}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 import scala.collection.mutable
 

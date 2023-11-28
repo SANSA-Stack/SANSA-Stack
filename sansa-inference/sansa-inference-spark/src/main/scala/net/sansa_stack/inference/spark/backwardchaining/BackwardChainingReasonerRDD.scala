@@ -37,7 +37,7 @@ class BackwardChainingReasonerRDD(val rules: Set[Rule], val graph: RDFGraph) ext
   def isEntailed(tp: TriplePattern): Boolean = {
 
     val tree = buildTree(new AndNode(tp), Seq())
-    println(tree.toString)
+    println(tree.toString())
 
     val rdd = processTree(tree)
 //    println(rdd.count())

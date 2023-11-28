@@ -9,7 +9,7 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{BeforeAndAfterAll, FunSuite, Ignore}
 import net.sansa_stack.query.spark._
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
@@ -84,6 +84,7 @@ class Issue101
     runQuery(qef)
   }
 
+  /* FIXME Reenable this test once ontop is upgraded to jena5
   test("query on blank nodes - Ontop") {
     // Spark query execution
     val qef = triplesRDD.verticalPartition(new RdfPartitionerComplex(),
@@ -93,6 +94,7 @@ class Issue101
 
     runQuery(qef)
   }
+   */
 
   def runQuery(qef: QueryExecutionFactorySpark): Unit = {
     val qe = qef.createQueryExecution(query)
