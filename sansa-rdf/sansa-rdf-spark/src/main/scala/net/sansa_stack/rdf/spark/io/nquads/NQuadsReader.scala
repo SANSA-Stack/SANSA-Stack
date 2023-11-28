@@ -1,8 +1,5 @@
 package net.sansa_stack.rdf.spark.io.nquads
 
-import java.net.URI
-import java.util.UUID
-
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
@@ -13,13 +10,15 @@ import org.apache.jena.atlas.io.PeekReader
 import org.apache.jena.atlas.iterator.Iter
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.riot.RIOT
-import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
+import org.apache.jena.riot.lang.{IteratorParsers, LabelToNode}
 import org.apache.jena.riot.system._
 import org.apache.jena.sparql.core.Quad
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.net.URI
+import java.util.UUID
 import scala.reflect.ClassTag
 
 /**
@@ -153,7 +152,7 @@ object NQuadReader {
       val it =
         if (stopOnBadTerm == ErrorParseMode.STOP) {
           // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
-          RiotParsers.createIteratorNQuads(input, null, profileWrapper.get)
+          IteratorParsers.createIteratorNQuads(input, profileWrapper.get)
         } else {
           // here we "simply" skip illegal triples
 

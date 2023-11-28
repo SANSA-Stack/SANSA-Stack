@@ -4,7 +4,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-inference-parent_2.12</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.5-SNAPSHOT</version>
     </parent>
     <artifactId>sansa-inference-spark_2.12</artifactId>
 
@@ -95,12 +95,14 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-        </dependency>
+    </dependency>
+    <!--
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-tdb</artifactId>
             <scope>provided</scope>
-        </dependency>
+    </dependency>
+    -->
 
         <!-- OWL API -->
         <dependency>

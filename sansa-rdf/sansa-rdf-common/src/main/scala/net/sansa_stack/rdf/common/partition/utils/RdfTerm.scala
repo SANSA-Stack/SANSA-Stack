@@ -45,7 +45,7 @@ object RdfTerm {
 
     if (node.isBlank) {
       t = 0
-      v = node.getBlankNodeId.getLabelString
+      v = node.getBlankNodeLabel
     } else if (node.isURI) {
       t = 1
       v = node.getURI

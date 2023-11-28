@@ -38,8 +38,10 @@ public class RdfSourceFactoryImpl
         this.sparkSession = sparkSession;
     }
 
+    /** Use {@link RdfSourceFactories#of(SparkSession)} instead. */
+    @Deprecated
     public static RdfSourceFactory from(SparkSession sparkSession) {
-        return new RdfSourceFactoryImpl(sparkSession);
+        return RdfSourceFactories.of(sparkSession);
     }
 
     @Override

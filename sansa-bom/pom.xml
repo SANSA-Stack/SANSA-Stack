@@ -5,7 +5,7 @@
 
     <groupId>net.sansa-stack</groupId>
     <artifactId>sansa-bom_2.12</artifactId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
@@ -81,13 +81,13 @@
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <scala.version>2.12.17</scala.version>
+        <scala.version>2.12.18</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
         <scala.classifier>${scala.binary.version}</scala.classifier>
         <scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
         <flink.version>1.11.2</flink.version>
-        <spark.version>3.3.2</spark.version>
+        <spark.version>3.5.0</spark.version>
         <!-- Spark Testing isn't always in sync, so we have to check for latest version and adapt here -->
         <spark.testing.version>3.0.1_1.0.0</spark.testing.version>
 
@@ -99,9 +99,9 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw.commons.version>0.9.8-SNAPSHOT</aksw.commons.version>
-        <jena.version>4.10.0</jena.version>
-        <jenax.version>4.10.0-1-SNAPSHOT</jenax.version>
-        <rmltk.version>4.10.0-1-SNAPSHOT</rmltk.version>
+        <jena.version>5.0.0-SNAPSHOT</jena.version>
+        <jenax.version>5.0.0-1-SNAPSHOT</jenax.version>
+        <rmltk.version>5.0.0-1-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
@@ -112,7 +112,7 @@
         <ver.netty>4.1.74.Final</ver.netty>
         <ver.jackson>2.13.3</ver.jackson>
         <!-- <log4j.version>1</log4j.version> -->
-	<bsbm.version>3.1.8</bsbm.version>
+	<bsbm.version>3.1.10-SNAPSHOT</bsbm.version>
 
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
@@ -126,7 +126,7 @@
         <owlapi.version>5.1.17</owlapi.version>
 
         <ontop.version>4.3.0-2</ontop.version>
-        <sparqlify.version>0.9.6</sparqlify.version>
+        <sparqlify.version>0.9.8-SNAPSHOT</sparqlify.version>
 
         <guava.version>30.1-jre</guava.version>
         <!--        <guava.version>14.0.1</guava.version>-->
@@ -245,7 +245,7 @@
 
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.11.0</version>
                     <configuration>
                         <release>${maven.compiler.release}</release>
                         <!--
@@ -1758,7 +1758,7 @@
 
             <dependency>
                 <groupId>org.apache.jena</groupId>
-                <artifactId>jena-tdb</artifactId>
+                <artifactId>jena-tdb2</artifactId>
                 <version>${jena.version}</version>
             </dependency>
             <dependency>

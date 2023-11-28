@@ -1,11 +1,12 @@
 package net.sansa_stack.spark.cli.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import net.sansa_stack.spark.cli.cmd.CmdSansaNgsSort;
 import net.sansa_stack.spark.cli.util.SansaCmdUtils;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
@@ -15,12 +16,10 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.spark.cli.cmd.CmdSansaNgsSort;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Sort / distinctify a collection of named graphs.
@@ -47,7 +46,7 @@ public class CmdSansaNgsSortImpl {
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkSession.sparkContext());
 
-        RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+        RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
         List<JavaRDD<DatasetOneNg>> sources = new ArrayList<>();
         for (String input : cmd.inputFiles) {
 

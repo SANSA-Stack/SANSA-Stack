@@ -170,13 +170,13 @@ object WholeFileRdfXmlDataSource extends RdfXmlDataSource[PortableDataStream] {
                          file: PartitionedFile,
                          parser: JenaParser): Iterator[InternalRow] = {
     def partitionedFileString(ignored: Any): UTF8String = {
-      ScalaUtils.tryWithResource(createInputStream(conf, file.filePath)) { inputStream =>
+      ScalaUtils.tryWithResource(createInputStream(conf, file.filePath.toString())) { inputStream =>
         UTF8String.fromBytes(ByteStreams.toByteArray(inputStream))
       }.get // TODO handle errors
     }
 
     parser.parse(
-      createInputStream(conf, file.filePath),
+      createInputStream(conf, file.filePath.toString()),
       CreateRdfXmlParser.inputStream,
       partitionedFileString).toIterator
   }

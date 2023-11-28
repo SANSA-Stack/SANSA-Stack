@@ -130,9 +130,9 @@ object SparkExecutionModel {
     var newResult: RDD[Result[Node]] = group.map(_._1)
     result.unpersist()
     aggregates.foreach { aggr =>
-      val variable = aggr.getVar.asNode()
+      val variable = aggr.getVar
       val aggrOp = aggr.getAggregator.getName
-      val key = aggr.getAggregator.getExprList.get(0).asVar.asNode
+      val key = aggr.getAggregator.getExprList.get(0).asVar
       newResult = this.leftJoin(
         newResult,
         group.map(pair => ResultFactory.merge(pair._1, ResultGroup.aggregateOp(pair._2, variable, aggrOp, key))))

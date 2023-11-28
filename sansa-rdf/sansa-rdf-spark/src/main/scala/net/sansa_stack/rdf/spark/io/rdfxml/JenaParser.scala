@@ -22,16 +22,16 @@ class JenaParser(val options: RdfXmlOptions) {
       triples.getTriples.asScala.map(convertTriple)
     } catch {
       case e@(_: RuntimeException | _: RiotException) =>
-        throw BadRecordException(() => recordLiteral(record), () => None, e)
+        throw BadRecordException(() => recordLiteral(record), () => Array(), e)
     }
 
   }
 
   def convertTriple(triple: org.apache.jena.graph.Triple): InternalRow = {
     val row = new GenericInternalRow(3)
-    row.update(0, UTF8String.fromBytes(triple.getSubject.toString.getBytes()))
-    row.update(1, UTF8String.fromBytes(triple.getPredicate.toString.getBytes()))
-    row.update(2, UTF8String.fromBytes(triple.getObject.toString.getBytes()))
+    row.update(0, UTF8String.fromBytes(triple.getSubject.toString().getBytes()))
+    row.update(1, UTF8String.fromBytes(triple.getPredicate.toString().getBytes()))
+    row.update(2, UTF8String.fromBytes(triple.getObject.toString().getBytes()))
     row
   }
 }

@@ -150,7 +150,7 @@ public class RddRdfOpsImpl<T>
                 x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(DatasetGraph::find),
                 x -> x.flatMap(DatasetGraphUtils::iterateNodes),
-                x -> x.getGraphNode().toString(false)
+                x -> x.getGraphNode().toString() // pmap: false
         );
     }
 

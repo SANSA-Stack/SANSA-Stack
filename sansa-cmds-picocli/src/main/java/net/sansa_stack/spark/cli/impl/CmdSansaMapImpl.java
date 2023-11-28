@@ -6,6 +6,7 @@ import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -54,7 +55,7 @@ public class CmdSansaMapImpl {
 
     SansaCmdUtils.validatePaths(inputStrs, hadoopConf);
 
-    RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+    RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
 
     RdfSourceCollection rdfSources = SansaCmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 

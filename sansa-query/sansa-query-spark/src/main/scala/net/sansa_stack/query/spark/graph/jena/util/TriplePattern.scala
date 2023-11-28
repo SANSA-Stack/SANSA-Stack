@@ -60,7 +60,7 @@ class TriplePattern(
     this.s.equals(obj.s) && this.p.equals(obj.p) && this.o.equals(obj.o)
   }
 
-  override def toString: String = { s.toString + " " + p.toString + " " + o.toString + " ." }
+  override def toString: String = { s.toString() + " " + p.toString() + " " + o.toString() + " ." }
 
   override def hashCode(): Int = {
     s.hashCode() * 5 + p.hashCode() * 3 + o.hashCode()

@@ -92,7 +92,7 @@ class NTriplesRelation(location: String, userSchema: StructType, val mode: Parse
         }
       })
       case SPLIT => rdd.map(line => Some(extractFromTriple(parseRegexSplit(line))))
-      case JENA => rdd.map(line => Some(extractFromJenaTriple(parseJena(line).get).map(_.toString)))
+      case JENA => rdd.map(line => Some(extractFromJenaTriple(parseJena(line).get).map(_.toString())))
     }
 
     val rows = tuples.flatMap(t => {

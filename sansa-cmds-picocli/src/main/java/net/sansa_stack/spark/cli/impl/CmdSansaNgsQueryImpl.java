@@ -8,28 +8,20 @@ import net.sansa_stack.spark.cli.util.RdfOutputConfig;
 import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfNamedModelsOps;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
-import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.stmt.core.SparqlStmt;
-import org.aksw.jenax.stmt.core.SparqlStmtMgr;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.ResultSetMgr;
-import org.apache.jena.riot.resultset.ResultSetLang;
-import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -130,7 +122,7 @@ public class CmdSansaNgsQueryImpl {
 
     StopWatch stopwatch = StopWatch.createStarted();
 
-    RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+    RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
     List<JavaRDD<DatasetOneNg>> sources = new ArrayList<>();
     for (String input : cmd.inputFiles) {
       RdfSource rdfSource = rdfSourceFactory.get(input);
