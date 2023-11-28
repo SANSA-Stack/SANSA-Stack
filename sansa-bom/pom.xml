@@ -97,6 +97,10 @@
 
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
+        <slf4j.version>2.0.9</slf4j.version>
+        <!-- reuse log4j from hadoop -->
+        <!-- <log4j.version>2.21.0</log4j.version> -->
+
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw.commons.version>0.9.8-SNAPSHOT</aksw.commons.version>
         <jena.version>5.0.0-SNAPSHOT</jena.version>
@@ -105,14 +109,9 @@
 
         <rdf4j.version>3.3.0</rdf4j.version>
 
-        <slf4j.version>1.7.36</slf4j.version>
-        <log4j.version>2.18.0</log4j.version>
-
-
         <ver.netty>4.1.74.Final</ver.netty>
         <ver.jackson>2.13.3</ver.jackson>
-        <!-- <log4j.version>1</log4j.version> -->
-	<bsbm.version>3.1.10-SNAPSHOT</bsbm.version>
+	    <bsbm.version>3.1.10-SNAPSHOT</bsbm.version>
 
         <!-- Jetty is pulled in from at least sparqlify - the current dep declarations
             do not cover all mentioned jetty deps -->
@@ -2004,9 +2003,21 @@
             <!-- slf4j Logger dependencies -->
             <dependency>
                 <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
+                <artifactId>slf4j-bom</artifactId>
                 <version>${slf4j.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
+
+            <!--
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            -->
 
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -2016,26 +2027,9 @@
                     <exclusion>
                         <groupId>ch.qos.cal10n</groupId>
                         <artifactId>cal10n-api</artifactId>
-
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-
-
-            <!--
-                        <dependency>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-slf4j18-impl</artifactId>
-                            <version>${log4j.version}</version>
-                        </dependency>
-            -->
-
 
             <dependency>
                 <groupId>org.eclipse.rdf4j</groupId>
