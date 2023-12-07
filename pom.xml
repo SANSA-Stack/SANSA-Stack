@@ -82,7 +82,9 @@
         <module>sansa-spark-cli</module>
         <module>sansa-bench-spark</module>
         <module>sansa-pkg-parent</module>
-        <module>sansa-stack</module>
+	<module>sansa-stack</module>
+
+	<module>sansa-spark-jakarta</module>
     </modules>
 
     <dependencies>
