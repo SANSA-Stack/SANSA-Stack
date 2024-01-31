@@ -1,0 +1,15 @@
+package net.sansa_stack.query.spark.rdd.api.impl
+
+import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark
+import net.sansa_stack.query.spark.rdd.api.domain.ResultSetSpark
+import org.apache.jena.sparql.core.Var
+import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.spark.rdd.RDD
+import collection.JavaConverters._
+
+class ResultSetSparkJavaWrapper(javaResultSetSpark: JavaResultSetSpark)
+  extends ResultSetSpark {
+  override def getResultVars: Seq[Var] = javaResultSetSpark.getResultVars.asScala.toList
+
+  override def getBindings: RDD[Binding] = javaResultSetSpark.getRdd.toJavaRDD()
+}

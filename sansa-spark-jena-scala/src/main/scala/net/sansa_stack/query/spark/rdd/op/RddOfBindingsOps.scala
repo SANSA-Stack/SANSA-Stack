@@ -1,26 +1,19 @@
-package net.sansa_stack.query.spark.rdd.op
+package spark.rdd.op
 
-import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.query.spark.api.impl.ResultSetSparkImpl
-import net.sansa_stack.query.spark.engine.{ExecutionDispatch, OpExecutorImpl}
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}
 import org.aksw.commons.collector.domain.ParallelAggregator
-import org.aksw.commons.lambda.serializable.SerializableSupplier
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator
 import org.aksw.jenax.arq.util.binding.BindingUtils
 import org.aksw.jenax.arq.util.exec.query.ExecutionContextUtils
 import org.aksw.jenax.arq.util.syntax.VarExprListUtils
 import org.apache.jena.graph.Node
-import org.apache.jena.query.{ARQ, Dataset, Query, SortCondition}
-import org.apache.jena.sparql.ARQConstants
-import org.apache.jena.sparql.algebra.Algebra
+import org.apache.jena.query.SortCondition
 import org.apache.jena.sparql.core.{Var, VarExprList}
 import org.apache.jena.sparql.engine.ExecutionContext
 import org.apache.jena.sparql.engine.binding.{Binding, BindingBuilder, BindingComparator, BindingFactory}
 import org.apache.jena.sparql.expr.{Expr, ExprAggregator, ExprList}
 import org.apache.jena.sparql.function.FunctionEnv
-import org.apache.jena.sparql.util.{Context, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
 
 import java.util
@@ -31,36 +24,6 @@ object RddOfBindingsOps {
   //  implicit val NodeValueOrdering = new Ordering[NodeValue] {
   //    override def compare(a: NodeValue, b: NodeValue) = NodeValue.compareAlways(a, b)
   //  }
-
-
-  // FIXME This would actually belong to RddOfDatasetOps (in sansa-jena-spark)
-  // however our query api for spark (e.g. ResultSetSpark) is part of the query module
-  def execSparqlSelect(rddOfDataset: RDD[_ <: Dataset], query: Query, cxtSupplier: SerializableSupplier[Context]): ResultSetSpark = {
-    val op = Algebra.compile(query)
-
-    // Set up an execution context
-    // TODO ... allow passing that as a parameter
-    // val cxt = if (cxt == null) ARQ.getContext.copy() else cxt.copy
-    val execCxtSupplier = () => {
-      val cxt = ARQ.getContext.copy()
-      cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime)
-      val execCxt = new ExecutionContext(cxt, null, null, null)
-      execCxt.getContext.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset)
-      execCxt
-    }
-
-    val opExec = new OpExecutorImpl(() => execCxtSupplier.apply())
-    val executionDispatch = new ExecutionDispatch(opExec)
-
-    // An RDD with a single binding that doesn't bind any variables
-    val initialRdd = rddOfDataset.context.parallelize(Seq[Binding](BindingFactory.binding))
-    val rdd = executionDispatch.exec(op, initialRdd)
-
-    import collection.JavaConverters._
-    val vars = query.getProjectVars.asScala.toList
-    new ResultSetSparkImpl(vars, rdd)
-  }
-
 
   /**
    * Return a new RDD[Binding] by projecting only the given variables

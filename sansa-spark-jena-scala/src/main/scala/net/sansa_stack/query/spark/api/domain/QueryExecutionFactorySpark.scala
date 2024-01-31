@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.api.domain
+package net.sansa_stack.query.spark.rdd.api.domain
 
 import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactory
 import org.apache.jena.query.Query

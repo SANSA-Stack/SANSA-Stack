@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.rdd.op
+package spark.rdd.op
 
 import org.apache.spark.rdd.RDD
 

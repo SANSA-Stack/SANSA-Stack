@@ -1,7 +1,6 @@
-package net.sansa_stack.query.spark.api.impl
+package net.sansa_stack.query.spark.rdd.api.impl
 
-
-import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
+import net.sansa_stack.query.spark.rdd.api.domain.{QueryExecutionSpark, ResultSetSpark}
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
 import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFactory

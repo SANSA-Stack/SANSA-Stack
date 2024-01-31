@@ -1,6 +1,7 @@
-package net.sansa_stack.query.spark.api.impl
+package net.sansa_stack.query.spark.rdd.api.impl
 
-import net.sansa_stack.query.spark.api.domain.{JavaQueryExecutionSpark, QueryExecutionSpark, ResultSetSpark}
+import net.sansa_stack.query.spark.api.domain.{JavaQueryExecutionSpark}
+import net.sansa_stack.query.spark.rdd.api.domain.{QueryExecutionSpark, ResultSetSpark}
 import org.aksw.jenax.dataaccess.sparql.execution.query.QueryExecutionWrapperBase
 import org.apache.jena.sparql.core.{Quad, Var}
 import org.apache.jena.sparql.engine.binding.Binding

@@ -1,4 +1,4 @@
-package net.sansa_stack.query.spark.rdd.op
+package spark.rdd.op
 
 import org.apache.jena.query.{Dataset, DatasetFactory, Query, QueryExecutionFactory}
 import org.apache.jena.rdf.model.Model
