@@ -1,4 +1,4 @@
-package spark.rdd.op
+package net.sansa_stack.query.spark.rdd.op
 
 import org.aksw.commons.collector.core.AggInputBroadcastMap.AccInputBroadcastMap
 import org.aksw.commons.collector.core.{AggBuilder, AggInputBroadcastMap}

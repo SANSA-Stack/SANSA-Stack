@@ -1,7 +1,5 @@
 package net.sansa_stack.spark.io.common;
 
-import net.sansa_stack.spark.io.common.HadoopFormat;
-import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
 
 public class HadoopOutputFormat

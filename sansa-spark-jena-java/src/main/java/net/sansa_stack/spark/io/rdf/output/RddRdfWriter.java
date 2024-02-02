@@ -3,8 +3,6 @@ package net.sansa_stack.spark.io.rdf.output;
 import net.sansa_stack.spark.io.common.HadoopOutputFormat;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import net.sansa_stack.spark.util.JavaSparkContextUtils;
-import org.aksw.commons.io.util.FileMerger;
-import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
@@ -19,8 +17,7 @@ import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFUtils;
 import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
@@ -48,11 +45,8 @@ import scala.Tuple2;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**

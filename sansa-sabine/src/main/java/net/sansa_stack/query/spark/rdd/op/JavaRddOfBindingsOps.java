@@ -66,6 +66,76 @@ import java.util.stream.Collectors;
 public class JavaRddOfBindingsOps {
     private static final Logger logger = LoggerFactory.getLogger(JavaRddOfBindingsOps.class);
 
+    // FIXME This would actually belong to RddOfDatasetOps (in sansa-jena-spark)
+    // however our query api for spark (e.g. ResultSetSpark) is part of the query module
+    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Op op = Algebra.compile(query);
+
+        // Set up an execution context
+        // TODO ... allow passing that as a parameter
+        // val cxt = if (cxt == null) ARQ.getContext.copy() else cxt.copy
+        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
+            ExecutionContext r = execCxtSupplier.get();
+            Context cxt = r.getContext();
+            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
+                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            }
+
+            // XXX We assume that current time is already set in the provided execCxtSupplier
+
+            // Context cxt = ARQ.getContext().copy();
+            // cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
+            // ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
+            // execCxt.getContext().put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            return r;
+        };
+
+        OpExecutor opExec = new OpExecutorImpl(execCxtSupplier);
+        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
+
+        // An RDD with a single binding that doesn't bind any variables
+        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
+        JavaRDD<Binding> initialRdd = sparkContext.parallelize(List.of(BindingFactory.binding()));
+        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
+
+        List<Var> projectVars = query.getProjectVars();
+        return new JavaResultSetSparkImpl(projectVars, rdd);
+    }
+
+    // XXX This method actually belongs to RddOfDatasetOps (which is not sparql aware) or a sparql-specific Ops class such as RddSparqlOps
+    /*
+    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Op op = Algebra.compile(query);
+
+        // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
+        // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
+        // System.err.println("Algebra: " + op);
+
+        // Wrap the execCxtSupplier such that the rdd of dataset is added (if not already present)
+        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
+            ExecutionContext r = execCxtSupplier.get();
+            Context cxt = r.getContext();
+            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
+                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            }
+            return r;
+        };
+
+        // Set up an execution context
+        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
+
+        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
+
+        // An RDD with a single binding that doesn't bind any variables
+        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
+        JavaRDD<Binding> initialRdd = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
+        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
+
+        List<Var> vars = query.getProjectVars();
+        return new JavaResultSetSparkImpl(vars, rdd);
+    }
+    */
+
     /**
      * Return a new RDD[Binding] by projecting only the given variables
      *
@@ -259,38 +329,6 @@ public class JavaRddOfBindingsOps {
                         }
                 ));
         return result;
-    }
-
-    // XXX This method actually belongs to RddOfDatasetOps (which is not sparql aware) or a sparql-specific Ops class such as RddSparqlOps
-    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
-        Op op = Algebra.compile(query);
-
-        // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
-        // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
-        // System.err.println("Algebra: " + op);
-
-        // Wrap the execCxtSupplier such that the rdd of dataset is added (if not already present)
-        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
-            ExecutionContext r = execCxtSupplier.get();
-            Context cxt = r.getContext();
-            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
-                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
-            }
-            return r;
-        };
-
-        // Set up an execution context
-        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
-
-        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
-
-        // An RDD with a single binding that doesn't bind any variables
-        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
-        JavaRDD<Binding> initialRdd = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
-        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
-
-        List<Var> vars = query.getProjectVars();
-        return new JavaResultSetSparkImpl(vars, rdd);
     }
 
     public static JavaRDD<Triple> execSparqlConstructTriples(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {

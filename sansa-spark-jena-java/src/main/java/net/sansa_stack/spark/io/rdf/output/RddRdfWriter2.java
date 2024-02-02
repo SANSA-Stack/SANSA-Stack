@@ -2,7 +2,6 @@ package net.sansa_stack.spark.io.rdf.output;
 
 import net.sansa_stack.hadoop.output.jena.base.OutputFormatStreamRdfQuad;
 import net.sansa_stack.hadoop.output.jena.base.OutputFormatStreamRdfTriple;
-import net.sansa_stack.hadoop.output.jena.base.OutputUtils;
 import net.sansa_stack.hadoop.output.jena.base.RdfOutputUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -11,10 +10,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
-import scala.Tuple2;
 
 /**
  * Core class for configuration and execution of writing RDDs of RDF out using Hadaop.

@@ -1,21 +1,20 @@
 package net.sansa_stack.query.spark.issues
 
-import java.io.StringReader
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
+import net.sansa_stack.query.spark._
+import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
+import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
+import net.sansa_stack.rdf.spark.io._
+import net.sansa_stack.rdf.spark.partition.RDFPartition
 import org.apache.jena.graph.Triple
-import org.apache.jena.query.{QueryExecutionFactory, ResultSet, ResultSetFactory, ResultSetFormatter, ResultSetRewindable}
+import org.apache.jena.query.{QueryExecutionFactory, ResultSetFactory, ResultSetRewindable}
 import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Ignore}
-import net.sansa_stack.query.spark._
-import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionerComplex, RdfPartitionerDefault}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.RDFPartition
-import org.aksw.commons.sql.codec.util.SqlCodecUtils
+import org.scalatest.{BeforeAndAfterAll, FunSuite}
+
+import java.io.StringReader
 
 /**
  * https://github.com/SANSA-Stack/SANSA-Stack/issues/102

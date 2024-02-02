@@ -1,14 +1,11 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import net.sansa_stack.spark.io.rdf.input.api.NodeTupleSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.LangBuilder;
 import org.apache.jena.riot.system.PrefixMap;
@@ -19,9 +16,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
 
-import net.sansa_stack.spark.io.rdf.input.api.NodeTupleSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RdfSourceCollectionImpl
     implements RdfSourceCollection

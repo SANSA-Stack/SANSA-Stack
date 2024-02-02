@@ -1,7 +1,6 @@
 package net.sansa_stack.spark.io.rdf.input.api;
 
 import org.apache.hadoop.io.LongWritable;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.spark.SparkContext;
 

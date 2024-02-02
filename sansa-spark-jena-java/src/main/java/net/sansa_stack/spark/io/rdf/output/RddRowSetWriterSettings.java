@@ -2,7 +2,6 @@ package net.sansa_stack.spark.io.rdf.output;
 
 import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFFormat;
 
 import java.util.Optional;
 

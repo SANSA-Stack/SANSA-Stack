@@ -4,9 +4,7 @@ import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
 

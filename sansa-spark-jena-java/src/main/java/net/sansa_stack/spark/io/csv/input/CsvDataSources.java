@@ -1,15 +1,12 @@
 package net.sansa_stack.spark.io.csv.input;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import org.aksw.commons.lambda.serializable.SerializableFunction;
+import com.google.common.base.StandardSystemProperty;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
+import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
+import net.sansa_stack.hadoop.util.FileSystemUtils;
+import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
+import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
@@ -26,14 +23,14 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.StandardSystemProperty;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
-
-import net.sansa_stack.hadoop.format.univocity.csv.csv.FileInputFormatCsvUnivocity;
-import net.sansa_stack.hadoop.util.FileSystemUtils;
-import net.sansa_stack.spark.io.rdf.input.api.HadoopInputData;
-import net.sansa_stack.spark.io.rdf.input.api.InputFormatUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class CsvDataSources {
     private static final Logger logger = LoggerFactory.getLogger(CsvDataSources.class);

@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-sabine_2.12</artifactId>
+    <artifactId>sansa-spark-jena-scala_2.12</artifactId>
 
     <parent>
         <groupId>net.sansa-stack</groupId>
@@ -98,11 +98,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-jena-scala${scala.version.suffix}</artifactId>
         </dependency>
 
         <!-- Spark dependencies -->

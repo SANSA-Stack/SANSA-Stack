@@ -34,7 +34,8 @@
 		</dependency>
 
 	</dependencies>
-	
+
+	<!--
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -46,7 +47,7 @@
 			</plugin>
 
 			<plugin>
-				<!-- see http://davidb.github.com/scala-maven-plugin -->
+				< ! - - see http://davidb.github.com/scala-maven-plugin - - >
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 				<executions>
@@ -66,5 +67,6 @@
 			</plugin>
 		</plugins>
 	</build>
+	-->
 
 </project>

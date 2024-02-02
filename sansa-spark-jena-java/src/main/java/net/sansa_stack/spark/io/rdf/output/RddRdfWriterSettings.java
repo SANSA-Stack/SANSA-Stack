@@ -5,11 +5,9 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 
-import java.io.OutputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class RddRdfWriterSettings<SELF extends RddRdfWriterSettings>
     extends RddWriterSettings<SELF>

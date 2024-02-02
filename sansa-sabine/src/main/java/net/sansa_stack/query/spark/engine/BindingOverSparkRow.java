@@ -10,7 +10,6 @@ import org.apache.spark.sql.types.StructType;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 public class BindingOverSparkRow
     extends BindingBase

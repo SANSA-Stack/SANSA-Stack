@@ -1,17 +1,12 @@
 package net.sansa_stack.spark.io.csv.input;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Preconditions;
 import org.aksw.commons.model.csvw.domain.impl.CsvwLib;
 import org.aksw.jenax.arq.util.var.VarUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Preconditions;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public interface ColumnNamingScheme {
 	public String[][] create(String[] row);

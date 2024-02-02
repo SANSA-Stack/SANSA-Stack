@@ -9,7 +9,6 @@ import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.PrefixMap;

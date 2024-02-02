@@ -1,10 +1,10 @@
-package net.sansa_stack.query.spark.rdd.api.impl
+package net.sansa_stack.query.spark.api.impl
 
-import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark
-import net.sansa_stack.query.spark.rdd.api.domain.ResultSetSpark
+import net.sansa_stack.query.spark.api.domain.{JavaResultSetSpark, ResultSetSpark}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
+
 import collection.JavaConverters._
 
 class ResultSetSparkJavaWrapper(javaResultSetSpark: JavaResultSetSpark)

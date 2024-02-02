@@ -1,7 +1,5 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-import java.io.IOException;
-
 /*
 public interface RddWriterBase {
     boolean isConsoleOutput();
