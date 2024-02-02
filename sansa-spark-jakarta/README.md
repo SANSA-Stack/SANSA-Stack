@@ -1,5 +1,11 @@
 ## sansa-spark-jakarta
 
+Use the profile `jakarta` to perform shading from `javax` to `jakarta`.
+
+`mvn -Pjakarta package`
+
+This module is a temporary fix and will become obsolete once spark moves to the jakarta packages.
+
 This module builds a shaded version of the artifact `org.apache.spark:spark-sql_2.12` based on jakarta servlet api 5.0.0.
 Exclude `org.apache.spark:spark-sql_2.12` when including this artifact.
 
