@@ -403,17 +403,22 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
 
   def Voidify(): RDD[String] = {
 
-    var triplesString = new Array[String](1)
+    val triplesString = new Array[String](1)
     triplesString(0) = "\nvoid:classPartition "
 
     val classes = spark.sparkContext.parallelize(PostProc())
-    val vc = classes.map(t => "[ \nvoid:class " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n], ")
+    val count = classes.count()
+    val vc = classes.map(t => "[ \nvoid:class " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n]")
+      .zipWithIndex()
+      .map {
+        case (item, index) => if (index < count - 1) s"$item," else s"$item;"
+      }
 
-    var cl_a = new Array[String](1)
+    val cl_a = new Array[String](1)
     cl_a(0) = "\nvoid:classes " + Action().map(f => f._1).distinct().count + ";"
     val c_p = spark.sparkContext.parallelize(triplesString)
     val c = spark.sparkContext.parallelize(cl_a)
-    if (classes.count() > 0) {
+    if (count > 0) {
       c.union(c_p).union(vc)
     } else c.union(vc)
   }
@@ -482,13 +487,19 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
 
   def Voidify(): RDD[String] = {
 
-    var triplesString = new Array[String](1)
+    val triplesString = new Array[String](1)
     triplesString(0) = "\nvoid:propertyPartition "
 
     val properties = spark.sparkContext.parallelize(PostProc())
-    val vp = properties.map(t => "[ \nvoid:property " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n], ")
 
-    var pl_a = new Array[String](1)
+    val count = properties.count()
+    val vp = properties.map(t => "[ \nvoid:property " + "<" + t._1 + ">; \nvoid:triples " + t._2 + ";\n]")
+      .zipWithIndex()
+      .map {
+        case (item, index) => if (index < count - 1) s"$item," else s"$item;"
+      }
+
+    val pl_a = new Array[String](1)
     pl_a(0) = "\nvoid:properties " + Action().map(f => f._1).distinct().count + ";"
     val c_p = spark.sparkContext.parallelize(triplesString)
     val p = spark.sparkContext.parallelize(pl_a)
