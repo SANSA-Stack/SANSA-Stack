@@ -90,7 +90,7 @@ public class JavaRddOfBindingsOps {
             return r;
         };
 
-        OpExecutor opExec = new OpExecutorImpl(execCxtSupplier);
+        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
         ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
 
         // An RDD with a single binding that doesn't bind any variables
