@@ -51,7 +51,7 @@
 
     <properties>
         <maven.version>3.1</maven.version>
-        <maven.compiler.release>11</maven.compiler.release>
+	<!-- <maven.compiler.release>11</maven.compiler.release> -->
 
         <!--
             <maven.compiler.source>1.8</maven.compiler.source>
