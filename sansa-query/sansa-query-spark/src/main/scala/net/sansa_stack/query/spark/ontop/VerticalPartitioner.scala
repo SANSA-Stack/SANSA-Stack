@@ -11,7 +11,7 @@ import org.apache.jena.vocabulary.{RDF, XSD}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.internal.SQLConf.LegacyBehaviorPolicy
+import org.apache.spark.sql.internal.LegacyBehaviorPolicy
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession, SaveMode => TableSaveMode}
 import org.semanticweb.owlapi.apibinding.OWLManager

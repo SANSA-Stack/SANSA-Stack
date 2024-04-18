@@ -25,7 +25,7 @@ class ResultProject(val op: OpProject) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    val varSet = vars.map(v => v.asNode()).toSet
+    val varSet = vars.map(v => v.asInstanceOf[Node]).toSet
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
     val newResult = SparkExecutionModel.project(oldResult, varSet)
     IntermediateResult.putResult(id, newResult)

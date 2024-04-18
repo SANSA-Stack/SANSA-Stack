@@ -1,7 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io._
-
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.JavaSerializer
 import com.esotericsoftware.kryo.{Kryo, KryoException}
@@ -13,6 +11,8 @@ import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
 import uk.ac.manchester.cs.owl.owlapi.OWLOntologyImpl
 import uk.ac.manchester.cs.owl.owlapi.concurrent.ConcurrentOWLOntologyImpl
+
+import java.io._
 
 /**
  * Some tests regarding Ontop related objects w/o Spark and w/o Kryo.

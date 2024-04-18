@@ -41,7 +41,7 @@ class ResultGroup(op: OpGroup) extends ResultOp {
   }
 
   override def execute(): Unit = {
-    val vars = op.getGroupVars.getVars.asScala.toList.map(v => v.asNode()) // List of variables, e.g. List(?user)
+    val vars = op.getGroupVars.getVars.asScala.toList.map(v => v) // List of variables, e.g. List(?user)
     val aggregates = op.getAggregators.asScala.toList
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
     val newResult = SparkExecutionModel.group(oldResult, vars, aggregates)
@@ -66,17 +66,17 @@ object ResultGroup {
       (acc, value) => (acc._1 + value, acc._2 + 1),
       (acc1, acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
     if (aggr.getAggregator.key().contains("sum")) { // e.g. (sum, ?age)
-      Map(aggr.getVar.asNode() -> NodeFactory.createLiteral(result._1.toString))
+      Map(aggr.getVar -> NodeFactory.createLiteral(result._1.toString))
     } else if (aggr.getAggregator.key().contains("avg")) { // e.g. (avg, ?age)
-      Map(aggr.getVar.asNode() -> NodeFactory.createLiteral((result._1 / result._2).toString))
+      Map(aggr.getVar -> NodeFactory.createLiteral((result._1 / result._2).toString))
     } else if (aggr.getAggregator.key().contains("count")) { // e.g. (count, ?age)
-      Map(aggr.getVar.asNode() -> NodeFactory.createLiteral(result._2.toString))
+      Map(aggr.getVar -> NodeFactory.createLiteral(result._2.toString))
     } else if (aggr.getAggregator.key().contains("max")) { // e.g. (max, ?age)
-      Map(aggr.getVar.asNode() -> NodeFactory.createLiteral(seq.max.toString))
+      Map(aggr.getVar -> NodeFactory.createLiteral(seq.max.toString))
     } else if (aggr.getAggregator.key().contains("min")) { // e.g. (min, ?age)
-      Map(aggr.getVar.asNode() -> NodeFactory.createLiteral(seq.min.toString))
+      Map(aggr.getVar -> NodeFactory.createLiteral(seq.min.toString))
     } else {
-      Map(aggr.getVar.asNode() -> NodeFactory.createBlankNode())
+      Map(aggr.getVar -> NodeFactory.createBlankNode())
     }
   }
 

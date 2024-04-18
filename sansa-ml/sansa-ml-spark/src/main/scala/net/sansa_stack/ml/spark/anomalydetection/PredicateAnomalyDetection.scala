@@ -73,7 +73,7 @@ class PredicateAnomalyDetection(
           graph.NodeFactory.createLiteral(
             row.get(2).toString + "^^<http://www.w3.org/2001/XMLSchema#integer>"
           )
-        new graph.Triple(s, p, o)
+        graph.Triple.create(s, p, o)
       })
       .rdd
 

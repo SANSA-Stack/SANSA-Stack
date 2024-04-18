@@ -11,7 +11,7 @@ object NodeUtils {
    */
   def getNodeValue(node: Node): String = node match {
     case uri if node.isURI => node.getURI
-    case blank if node.isBlank => node.getBlankNodeId.toString
+    case blank if node.isBlank => node.getBlankNodeLabel
     case literal if node.isLiteral => node.getLiteral.toString
     case _ => throw new IllegalArgumentException(s"${node.getLiteralLexicalForm} is not valid!")
   }

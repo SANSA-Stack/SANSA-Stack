@@ -2,7 +2,6 @@ package net.sansa_stack.query.spark.rdd.op
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.aksw.jenax.arq.analytics.BindingAnalytics
-import org.aksw.jenax.arq.util.binding.ResultSetUtils
 import org.apache.jena.query.QueryExecutionFactory
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.engine.binding.Binding

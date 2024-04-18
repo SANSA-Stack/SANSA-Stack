@@ -1,10 +1,12 @@
 package net.sansa_stack.spark.cli.impl;
 
 import net.sansa_stack.spark.cli.cmd.CmdSansaMap;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -14,7 +16,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
@@ -40,22 +42,22 @@ public class CmdSansaMapImpl {
 
     List<String> inputStrs = cmd.inputFiles;
 
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa Map (" + cmd.inputFiles + ")")
             .getOrCreate();
 
     Configuration hadoopConf = sparkSession.sparkContext().hadoopConfiguration();
 
-    RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+    RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
     rddRdfWriterFactory.validate();
     rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
 
-    CmdUtils.validatePaths(inputStrs, hadoopConf);
+    SansaCmdUtils.validatePaths(inputStrs, hadoopConf);
 
-    RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+    RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
 
-    RdfSourceCollection rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
+    RdfSourceCollection rdfSources = SansaCmdUtils.createRdfSourceCollection(rdfSourceFactory, cmd.inputFiles, cmd.inputConfig);
 
     RdfSource rdfSource = rdfSources;
     CmdSansaMap.MapOperation mapOp = cmd.mapOperation;
@@ -81,8 +83,8 @@ public class CmdSansaMapImpl {
 
     int initialPrefixCount = rddRdfWriterFactory.getGlobalPrefixMapping().numPrefixes();
 
-    Model declaredPrefixes = rdfSources.peekDeclaredPrefixes();
-    int declaredPrefixCount = declaredPrefixes.numPrefixes();
+    PrefixMap declaredPrefixes = rdfSources.peekDeclaredPrefixes();
+    int declaredPrefixCount = declaredPrefixes.size();
 
     RddRdfWriter<?> rddRdfWriter;
 

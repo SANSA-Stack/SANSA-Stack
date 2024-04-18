@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.cli.impl;
+package net.sansa_stack.spark.cli.util;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -33,7 +33,7 @@ public abstract class SimpleSparkCmdTemplate<T>
     }
 
     protected void initSparkSessionBuilder() {
-        this.sparkSessionBuilder = CmdUtils.newDefaultSparkSessionBuilder()
+        this.sparkSessionBuilder = SansaCmdUtils.newDefaultSparkSessionBuilder()
                 .appName(appName + "(" + inputFiles + ")");
     }
 
@@ -54,7 +54,7 @@ public abstract class SimpleSparkCmdTemplate<T>
         sparkContext = new JavaSparkContext(sparkSession.sparkContext());
         hadoopConfiguration = sparkContext.hadoopConfiguration();
 
-        CmdUtils.validatePaths(inputFiles, hadoopConfiguration);
+        SansaCmdUtils.validatePaths(inputFiles, hadoopConfiguration);
 
         processInputs();
 

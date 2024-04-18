@@ -1,22 +1,5 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import scala.io.Source
-
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.apache.jena.graph.Triple
-import org.apache.jena.query.{ARQ, ResultSetFormatter}
-import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sys.JenaSystem
-import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import org.scalatest.FunSuite
-
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitionerDefault}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
-
 // This class has been ported to a sparql test suite (ts) resource under
 // src/test/resources/custom-sparql-ts
 

@@ -201,7 +201,7 @@ object MatchSet {
       val mapping = matchSet
         .filter(_.pattern.equals(pattern))
         .map(_.mapping).collect()
-        .map(_.filterKeys(_.toString.startsWith("?")))
+        .map(_.filterKeys(_.toString().startsWith("?")))
         .distinct
       if (mapping.isEmpty) {
         throw new UnknownError("No results were returned by the query")

@@ -1,12 +1,17 @@
-package net.sansa_stack.spark.cli.impl;
+package net.sansa_stack.spark.cli.util;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table.Cell;
 import com.google.common.collect.Tables;
+import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriter;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddWriterSettings;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
@@ -41,7 +46,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class CmdUtils {
+/** Utility methods for implementing command line interface tooling based on Sansa */
+public class SansaCmdUtils {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
     public static final String KRYO_BUFFER_MAX_KEY = "spark.kryo.serializer.buffer.max";
@@ -66,7 +72,39 @@ public class CmdUtils {
         return result;
     }
 
-    public static RddRdfWriterFactory configureWriter(RdfOutputConfig out) {
+    public static RddRowSetWriterFactory configureRowSetWriter(RdfOutputConfig out) {
+        RddRowSetWriterFactory result = RddRowSetWriterFactory.create();
+
+        // Try to derive the output format from the file name (if given)
+        if (out.getOutputFormat() != null) {
+            result = result.setOutputLang(out.getOutputFormat());
+        }
+
+        Lang fmt = result.getOutputLang();
+        if (fmt == null) {
+            String fileName = out.getTargetFile();
+            Lang lang = RDFDataMgr.determineLang(fileName, null, null);
+            if (lang != null) {
+                result = result.setOutputLang(lang);
+            }
+        }
+
+        result = configure(result, out);
+        return result;
+    }
+
+    public static <T extends RddWriterSettings> T configure(T dst, RdfOutputConfig out) {
+        dst
+                // .setAllowOverwriteFiles(true)
+                .setPartitionFolder(out.getPartitionFolder())
+                .setTargetFile(out.getTargetFile())
+                // .setUseElephas(true)
+                .setDeletePartitionFolderAfterMerge(true)
+                .setAllowOverwriteFiles(out.isOverwriteAllowed());
+        return dst;
+    }
+
+    public static RddRdfWriterFactory configureRdfWriter(RdfOutputConfig out) {
         PrefixMapping prefixes = new PrefixMappingTrie();
 
         if (out.getPrefixSources() != null) {
@@ -110,7 +148,8 @@ public class CmdUtils {
         return result;
     }
 
-    public static Set<String> getValidatePaths(Collection<String> paths, Configuration hadoopConf) {
+    /** Given a set of paths, return those that point to existing locations w.r.t. to the configured file system */
+    public static Set<String> getValidPaths(Collection<String> paths, Configuration hadoopConf) {
 
         Set<String> result = paths.stream()
                 .map(pathStr -> {
@@ -144,7 +183,7 @@ public class CmdUtils {
     }
 
     public static void validatePaths(Collection<String> paths, Configuration hadoopConf) {
-        Set<String> validPathStrs = CmdUtils.getValidatePaths(paths, hadoopConf);
+        Set<String> validPathStrs = SansaCmdUtils.getValidPaths(paths, hadoopConf);
         Set<String> inputSet = new LinkedHashSet<>(paths);
 
         Set<String> invalidPaths = Sets.difference(inputSet, validPathStrs);
@@ -208,12 +247,7 @@ public class CmdUtils {
             }
         }
 
-        JavaRDD<T> result;
-        if (initialRdds.size() == 1) {
-            result = initialRdds.get(0);
-        } else {
-            result = javaSparkContext.union(initialRdds.toArray(new JavaRDD[0]));
-        }
+        JavaRDD<T> result = JavaRddOps.unionIfNeeded(javaSparkContext, initialRdds);
         return result;
     }
 

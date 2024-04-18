@@ -1,11 +1,11 @@
-package net.sansa_stack.spark.cli.impl;
-
-import java.util.List;
+package net.sansa_stack.spark.cli.util;
 
 import net.sansa_stack.spark.cli.cmd.CmdMixinSparkInput;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
+
+import java.util.List;
 
 public abstract class SimpleSparkCmdRdfTemplate<T>
     extends SimpleSparkCmdTemplate<T>
@@ -23,8 +23,8 @@ public abstract class SimpleSparkCmdRdfTemplate<T>
 
     @Override
     protected void processInputs() {
-        RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+        RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
 
-        rdfSources = CmdUtils.createRdfSourceCollection(rdfSourceFactory, inputFiles, inputSpec);
+        rdfSources = SansaCmdUtils.createRdfSourceCollection(rdfSourceFactory, inputFiles, inputSpec);
     }
 }

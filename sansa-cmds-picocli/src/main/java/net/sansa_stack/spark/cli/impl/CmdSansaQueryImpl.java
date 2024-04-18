@@ -3,6 +3,7 @@ package net.sansa_stack.spark.cli.impl;
 import net.sansa_stack.hadoop.jena.locator.LocatorHdfs;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaQuery;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSources;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
@@ -45,7 +46,7 @@ public class CmdSansaQueryImpl {
 
     public static int run(CmdSansaQuery cmd) throws Exception {
 
-        SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+        SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
                 .appName("Sansa Query (" + cmd.queryFiles.size() + " query sources)")
                 .getOrCreate();
 
@@ -54,7 +55,7 @@ public class CmdSansaQueryImpl {
         FileSystem hadoopFs = FileSystem.get(javaSparkContext.hadoopConfiguration());
         StreamManager.get().addLocator(new LocatorHdfs(hadoopFs));
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
         PrefixMapping prefixes = rddRdfWriterFactory.getGlobalPrefixMapping();
 
         // TODO Add support to read query files from HDFS
@@ -73,7 +74,7 @@ public class CmdSansaQueryImpl {
 
         // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
         CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-        Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);
+        Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
 
 //        PrefixMap usedPrefixes = PrefixMapFactory.create();
 //        for (SparqlStmt stmt : stmts) {
@@ -107,7 +108,7 @@ public class CmdSansaQueryImpl {
 
         Lang outLang = fmt.getLang();
 
-        rddRdfWriterFactory.setUseElephas(true);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
         // rddRdfWriterFactory.setUseCoalesceOne(true); // for testing
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);

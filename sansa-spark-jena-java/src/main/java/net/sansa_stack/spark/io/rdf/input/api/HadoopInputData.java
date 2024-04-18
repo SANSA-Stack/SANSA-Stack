@@ -1,11 +1,11 @@
 package net.sansa_stack.spark.io.rdf.input.api;
 
-import java.util.function.Function;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import java.util.function.Function;
 
 /**
  * A class to capture the arguments of {@link JavaSparkContext#newAPIHadoopFile(String, Class, Class, Class, Configuration)}.

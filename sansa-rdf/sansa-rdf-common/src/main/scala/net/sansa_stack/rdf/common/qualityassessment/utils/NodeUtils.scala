@@ -104,13 +104,13 @@ object NodeUtils extends Serializable {
     if (node.isLiteral) node.getLiteralLexicalForm else node.toString()
 
   def isLabeled(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.label)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(RDFS.label)
 
   def isRDFSClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.Class)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(RDFS.Class)
 
   def isOWLClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL.Class)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(OWL.Class)
 
   def resourceTooLong(node: Node): Boolean =
     node.getURI.length() >= shortURIThreshold

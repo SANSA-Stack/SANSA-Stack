@@ -1,0 +1,198 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>sansa-spark-jena-scala_2.12</artifactId>
+
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-parent_2.12</artifactId>
+        <version>0.9.5</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.aksw.rmltk</groupId>
+            <artifactId>rml-jena-arq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.rmltk</groupId>
+            <artifactId>r2rml-jena-sql-transforms</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-plugins-bundle</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-annotations-reprogen</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-server-standalone</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-tdb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-analytics-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-algebra</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-models-d2rq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
+        </dependency>
+
+        <!-- Spark dependencies -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <!-- Override transitive tdb version via litmus -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+        </dependency>
+
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.holdenkarau</groupId>
+            <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-resource-testdata</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-rdf-jena</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.jena</groupId>
+                    <artifactId>jena-osgi</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>relocate</id> <!-- was "release", but that that would upload the shaded jar -->
+            <!--
+                    <properties>
+                        <spark.deps.scope>provided</spark.deps.scope>
+                </properties>
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactSet>
+                                        <excludes>
+                                            <exclude>org.apache.hadoop:*</exclude>
+                                            <exclude>org.apache.spark:*</exclude>
+                                        </excludes>
+                                    </artifactSet>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>com.google</pattern>
+                                            <shadedPattern>net.sansa_stack.ext.com.google</shadedPattern>
+                                        </relocation>
+                                    </relocations>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
+</project>

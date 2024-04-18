@@ -1,15 +1,10 @@
 package net.sansa_stack.spark.io.rdf.loader;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.aksw.commons.rx.util.RxUtils;
+import net.sansa_stack.hadoop.format.jena.base.FileInputFormatRdfBase;
+import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
+import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
+import net.sansa_stack.hadoop.util.FileSplitUtils;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import org.aksw.commons.util.concurrent.CompletionTracker;
 import org.aksw.commons.util.concurrent.ExecutorServiceUtils;
 import org.aksw.commons.util.ref.Ref;
@@ -26,7 +21,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.riot.RDFFormatVariant;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.shared.PrefixMapping;
@@ -34,11 +28,12 @@ import org.apache.jena.sparql.core.Quad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.hadoop.format.jena.base.FileInputFormatRdfBase;
-import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigQuad;
-import net.sansa_stack.hadoop.format.jena.turtle.FileInputFormatRdfTurtleTriple;
-import net.sansa_stack.hadoop.util.FileSplitUtils;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 /** Async parsing RDF on a single node using hadoop */
 public class AsyncRdfParserHadoop {

@@ -1,7 +1,7 @@
 package net.sansa_stack.spark.io.rdf.output;
 
+import net.sansa_stack.spark.io.common.HadoopOutputFormat;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.jena.hadoop.rdf.io.output.jsonld.JsonLDQuadOutputFormat;
 import org.apache.jena.hadoop.rdf.io.output.nquads.NQuadsOutputFormat;
 import org.apache.jena.hadoop.rdf.io.output.ntriples.NTriplesOutputFormat;
@@ -38,40 +38,16 @@ public class RddRdfWriterFormatRegistry {
     }
 
 
-    protected Map<Lang, FormatEntry> registry = new LinkedHashMap<>();
+    protected Map<Lang, HadoopOutputFormat> registry = new LinkedHashMap<>();
 
-    public RddRdfWriterFormatRegistry register(Lang lang, FormatEntry entry) {
+    public RddRdfWriterFormatRegistry register(Lang lang, HadoopOutputFormat entry) {
         registry.put(lang, entry);
 
         return this;
     }
 
-    public FormatEntry get(Lang lang) {
+    public HadoopOutputFormat get(Lang lang) {
         return registry.get(lang);
-    }
-
-    public static class FormatEntry {
-        protected Class<?> keyClass;
-        protected Class<?> valueClass;
-        protected Class<? extends OutputFormat> outputFormatClass;
-
-        public FormatEntry(Class<?> keyClass, Class<?> valueClass, Class<? extends OutputFormat> outputFormatClass) {
-            this.keyClass = keyClass;
-            this.valueClass = valueClass;
-            this.outputFormatClass = outputFormatClass;
-        }
-
-        public Class<?> getKeyClass() {
-            return keyClass;
-        }
-
-        public Class<?> getValueClass() {
-            return valueClass;
-        }
-
-        public Class<? extends OutputFormat> getOutputFormatClass() {
-            return outputFormatClass;
-        }
     }
 
     /**
@@ -79,26 +55,26 @@ public class RddRdfWriterFormatRegistry {
      * It seems at present it is not possible to request a specific {@link RDFFormat} variant
      * via the hadoop configuration.
      */
-    public static Map<Lang, FormatEntry> getDefaults() {
-        Map<Lang, FormatEntry> result = new LinkedHashMap<>();
-        result.put(Lang.NTRIPLES, new FormatEntry(LongWritable.class, TripleWritable.class, NTriplesOutputFormat.class));
-        result.put(Lang.TURTLE, new FormatEntry(LongWritable.class, TripleWritable.class, TurtleOutputFormat.class));
-        result.put(Lang.RDFJSON, new FormatEntry(LongWritable.class, TripleWritable.class, RdfJsonOutputFormat.class));
-        result.put(Lang.RDFXML, new FormatEntry(LongWritable.class, TripleWritable.class, RdfXmlOutputFormat.class));
+    public static Map<Lang, HadoopOutputFormat> getDefaults() {
+        Map<Lang, HadoopOutputFormat> result = new LinkedHashMap<>();
+        result.put(Lang.NTRIPLES, HadoopOutputFormat.of(LongWritable.class, TripleWritable.class, NTriplesOutputFormat.class));
+        result.put(Lang.TURTLE, HadoopOutputFormat.of(LongWritable.class, TripleWritable.class, TurtleOutputFormat.class));
+        result.put(Lang.RDFJSON, HadoopOutputFormat.of(LongWritable.class, TripleWritable.class, RdfJsonOutputFormat.class));
+        result.put(Lang.RDFXML, HadoopOutputFormat.of(LongWritable.class, TripleWritable.class, RdfXmlOutputFormat.class));
 
-        result.put(Lang.NQUADS, new FormatEntry(LongWritable.class, QuadWritable.class, NQuadsOutputFormat.class));
-        result.put(Lang.TRIG, new FormatEntry(LongWritable.class, QuadWritable.class, TriGOutputFormat.class));
-        result.put(Lang.RDFTHRIFT, new FormatEntry(LongWritable.class, QuadWritable.class, ThriftQuadOutputFormat.class));
-        result.put(Lang.TRIX, new FormatEntry(LongWritable.class, QuadWritable.class, TriXOutputFormat.class));
-        result.put(Lang.JSONLD, new FormatEntry(LongWritable.class, QuadWritable.class, JsonLDQuadOutputFormat.class));
+        result.put(Lang.NQUADS, HadoopOutputFormat.of(LongWritable.class, QuadWritable.class, NQuadsOutputFormat.class));
+        result.put(Lang.TRIG, HadoopOutputFormat.of(LongWritable.class, QuadWritable.class, TriGOutputFormat.class));
+        result.put(Lang.RDFTHRIFT, HadoopOutputFormat.of(LongWritable.class, QuadWritable.class, ThriftQuadOutputFormat.class));
+        result.put(Lang.TRIX, HadoopOutputFormat.of(LongWritable.class, QuadWritable.class, TriXOutputFormat.class));
+        result.put(Lang.JSONLD, HadoopOutputFormat.of(LongWritable.class, QuadWritable.class, JsonLDQuadOutputFormat.class));
         return result;
     }
 
     public static RddRdfWriterFormatRegistry createDefault() {
         RddRdfWriterFormatRegistry result = new RddRdfWriterFormatRegistry();
-        Map<Lang, FormatEntry> map = getDefaults();
+        Map<Lang, HadoopOutputFormat> map = getDefaults();
 
-        for (Map.Entry<Lang, FormatEntry> e : map.entrySet()) {
+        for (Map.Entry<Lang, HadoopOutputFormat> e : map.entrySet()) {
             result.register(e.getKey(), e.getValue());
         }
 

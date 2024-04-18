@@ -1,23 +1,27 @@
 package net.sansa_stack.spark.cli.impl;
 
+import com.google.common.collect.Iterables;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
+import net.sansa_stack.spark.cli.util.RdfOutputConfig;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
-import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
-import org.aksw.jenax.stmt.core.SparqlStmtMgr;
+import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.query.Query;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.ResultSetMgr;
-import org.apache.jena.riot.resultset.ResultSetLang;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -25,10 +29,47 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
+interface QueryProcessor<T> {
+  void exec(JavaRDD<DatasetOneNg> inputRdd, Supplier<ExecutionContext> execCxtSupplier);
+}
+
+
+class QueryProcessorFactory {
+
+  public static QueryProcessor create(Query query, RdfOutputConfig conf) {
+    QueryProcessor result;
+    if (query.isSelectType()) {
+      RddRowSetWriterFactory writerFactory = SansaCmdUtils.configureRowSetWriter(conf);
+      result = (inputRdd, execCxtSupplier) -> {
+        JavaResultSetSpark rowSet = JavaRddOfBindingsOps.execSparqlSelect(inputRdd, query, execCxtSupplier);
+        writerFactory.forRowSet(rowSet).runUnchecked();
+      };
+    } else if (query.isConstructType()) {
+      RddRdfWriterFactory writerFactory = SansaCmdUtils.configureRdfWriter(conf);
+      if (query.isConstructQuad()) {
+        result = (inputRdd, execCxtSupplier) -> {
+          JavaRDD<DatasetOneNg> rdd = JavaRddOfBindingsOps.execSparqlConstructDatasets(inputRdd, query, execCxtSupplier);
+          writerFactory.forDataset(rdd).runUnchecked();
+        };
+      } else {
+        result = (inputRdd, execCxtSupplier) -> {
+          JavaRDD<Triple> rdd = JavaRddOfBindingsOps.execSparqlConstructTriples(inputRdd, query, execCxtSupplier);
+          writerFactory.forTriple(rdd).runUnchecked();
+        };
+      }
+    } else {
+      throw new UnsupportedOperationException("Unsupported query type");
+    }
+    return result;
+  }
+}
+
 
 /**
  * Called from the Java class [[CmdSansaNgsQuery]]
@@ -40,12 +81,21 @@ public class CmdSansaNgsQueryImpl {
 
   public static Integer run(CmdSansaNgsQuery cmd) {
 
-    List<Lang> resultSetFormats = RDFLanguagesEx.getResultSetFormats();
-    Lang outLang;
+    // List<Lang> resultSetFormats = RDFLanguagesEx.getResultSetFormats();
+    // Lang outLang;
 
-    Query query = SparqlStmtMgr.loadQuery(cmd.queryFile);
+    SparqlScriptProcessor processor = SparqlScriptProcessor.createPlain(null, null);
+    processor.process(cmd.queryFile);
+    SparqlStmt stmt = Iterables.getOnlyElement(processor.getPlainSparqlStmts());
+    Query query = stmt.getQuery();
     logger.info("Loaded query " + query);
 
+    QueryProcessor queryProcessor = QueryProcessorFactory.create(query, cmd.outputConfig);
+
+
+    // RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
+
+/*
     if (cmd.outputConfig.outFormat != null) {
         outLang = RDFLanguagesEx.findLang(cmd.outputConfig.outFormat, resultSetFormats);
     } else {
@@ -58,11 +108,11 @@ public class CmdSansaNgsQueryImpl {
     }
 
     logger.info("Detected registered result set format: " + outLang);
-
+*/
     // cmd.outputConfig.outFormat
     // RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
 
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa Ngs Query (" + cmd.inputFiles + ")")
             .config("spark.sql.crossJoin.enabled", true)
             .getOrCreate();
@@ -72,7 +122,7 @@ public class CmdSansaNgsQueryImpl {
 
     StopWatch stopwatch = StopWatch.createStarted();
 
-    RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+    RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
     List<JavaRDD<DatasetOneNg>> sources = new ArrayList<>();
     for (String input : cmd.inputFiles) {
       RdfSource rdfSource = rdfSourceFactory.get(input);
@@ -80,7 +130,7 @@ public class CmdSansaNgsQueryImpl {
       sources.add(rdfSource.asDatasets().toJavaRDD());
     }
 
-    JavaRDD<DatasetOneNg> rdd = javaSparkContext.union(sources.toArray(new JavaRDD[0]));
+    JavaRDD<DatasetOneNg> rdd = JavaRddOps.unionIfNeeded(javaSparkContext, sources);
 
     rdd = cmd.makeDistinct
             ? JavaRddOfDatasetsOps.groupNamedGraphsByGraphIri(rdd, cmd.makeDistinct, false, -1)
@@ -92,11 +142,15 @@ public class CmdSansaNgsQueryImpl {
     CmdMixinArq.configureGlobal(arqConfig);
     // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
     CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-    Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);
+    Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
 
-    JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, execCxtSupplier);
+    queryProcessor.exec(rdd, execCxtSupplier);
+   //  JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, execCxtSupplier);
 
-    ResultSetMgr.write(System.out, ResultSet.adapt(resultSetSpark.collectToTable().toRowSet()), outLang);
+    // Path outPath = new Path("/tmp/test.csv");
+    // RddRowSetWriter.write(resultSetSpark, outPath, ResultSetLang.RS_TSV);
+
+    // ResultSetMgr.write(System.out, ResultSet.adapt(resultSetSpark.collectToTable().toRowSet()), outLang);
 
     logger.info("Processing time: " + stopwatch.getTime(TimeUnit.SECONDS) + " seconds");
 

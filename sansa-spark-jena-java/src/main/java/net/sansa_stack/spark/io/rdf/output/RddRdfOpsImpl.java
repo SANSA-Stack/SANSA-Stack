@@ -1,8 +1,6 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
@@ -26,7 +24,8 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.util.iterator.WrappedIterator;
 import org.apache.spark.api.java.JavaRDD;
 
-import net.sansa_stack.spark.rdd.function.JavaRddFunction;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class RddRdfOpsImpl<T>
     implements RddRdfOps<T>
@@ -150,7 +149,7 @@ public class RddRdfOpsImpl<T>
                 x -> x.flatMap(dg -> WrappedIterator.create(dg.find()).mapWith(Quad::asTriple)),
                 x -> x.flatMap(DatasetGraph::find),
                 x -> x.flatMap(DatasetGraphUtils::iterateNodes),
-                x -> x.getGraphNode().toString(false)
+                x -> x.getGraphNode().toString() // pmap: false
         );
     }
 

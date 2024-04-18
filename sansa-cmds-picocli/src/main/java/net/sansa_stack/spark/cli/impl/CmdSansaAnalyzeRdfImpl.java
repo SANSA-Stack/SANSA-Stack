@@ -1,5 +1,7 @@
 package net.sansa_stack.spark.cli.impl;
 
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdRdfTemplate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -29,8 +31,8 @@ public class CmdSansaAnalyzeRdfImpl {
 
     public static int run(CmdSansaAnalyzeRdf cmd) throws Exception {
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
-        rddRdfWriterFactory.setUseElephas(true);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         if (rddRdfWriterFactory.getOutputFormat() == null) {

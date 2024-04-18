@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import net.sansa_stack.hadoop.jena.locator.LocatorHdfs;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.domain.impl.DialectMutableImpl;
@@ -19,7 +20,6 @@ import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven.ExprTransformIriToIriAsGiven;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
-import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.stmt.core.SparqlStmt;
 import org.aksw.jenax.stmt.core.SparqlStmtQuery;
 import org.aksw.jenax.stmt.core.SparqlStmtUpdate;
@@ -37,7 +37,6 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.pfunction.PropertyFunctionRegistry;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -185,7 +184,7 @@ public class CmdSansaTarqlImpl {
     }
 
     public static int run(CmdSansaTarql cmd) throws Exception {
-        SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+        SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
                 .appName("Sansa Tarql (" + cmd.inputFiles + ")")
                 .getOrCreate();
 
@@ -197,7 +196,7 @@ public class CmdSansaTarqlImpl {
         String queryFile = cmd.inputFiles.get(0);
         List<String> csvFiles = new ArrayList<>(cmd.inputFiles.subList(1, cmd.inputFiles.size()));
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
 
         // Parse the query against the configured prefixes - then reconfigure the prefixes
         // to those used in the query
@@ -277,7 +276,7 @@ public class CmdSansaTarqlImpl {
         CmdMixinArq.configureGlobal(arqConfig);
         // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
         CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-        Supplier<ExecutionContext> execCxtSupplier = CmdUtils.createExecCxtSupplier(arqConfig);
+        Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
 
         // CLI dialect options take precedence
 //        DialectMutable csvCliOptions = cmd.csvOptions;
@@ -302,7 +301,7 @@ public class CmdSansaTarqlImpl {
 
         Lang outLang = fmt.getLang();
 
-        rddRdfWriterFactory.setUseElephas(true);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.validate();
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
@@ -313,7 +312,7 @@ public class CmdSansaTarqlImpl {
         // FileInputFormatCsvUnivocity.setUnivocityConfig(hadoopConf, univocityConf);
 
         boolean accumulationMode = cmd.accumulationMode;
-        JavaRDD<Quad> initialRdd = CmdUtils.createUnionRdd(javaSparkContext, sourceToTask.values(),
+        JavaRDD<Quad> initialRdd = SansaCmdUtils.createUnionRdd(javaSparkContext, sourceToTask.values(),
             MapTask::getSource,
             task -> {
                 String source = task.getSource();

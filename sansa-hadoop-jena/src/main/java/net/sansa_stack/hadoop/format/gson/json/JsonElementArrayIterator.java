@@ -4,6 +4,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -60,11 +61,20 @@ public class JsonElementArrayIterator
 
                 if (hasMore) {
                     JsonElement nextItem = null;
-                    try {
-                        nextItem = gson.fromJson(reader, JsonElement.class);
-                    } catch (IllegalArgumentException y) {
-                        // System.out.println("COMPLETED!");
+
+                    JsonToken token = reader.peek();
+                    if (token.equals(JsonToken.END_DOCUMENT)) {
                         result = endOfData();
+                    } else {
+                        // XXX This was the old logic to check for END_DOCUMENT.
+                        // No longer works because gson.fromJson throws a different exception by now
+                        // So this snippet can probably be removed
+                        try {
+                            nextItem = gson.fromJson(reader, JsonElement.class);
+                        } catch (IllegalArgumentException y) {
+                            // System.out.println("COMPLETED!");
+                            result = endOfData();
+                        }
                     }
 
                     if (nextItem != null) {

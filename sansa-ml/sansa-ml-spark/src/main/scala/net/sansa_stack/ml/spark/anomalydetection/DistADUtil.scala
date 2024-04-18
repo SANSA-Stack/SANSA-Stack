@@ -1,13 +1,7 @@
 package net.sansa_stack.ml.spark.anomalydetection
 
-import net.sansa_stack.ml.spark.anomalydetection.DistADLogger.LOG
-
-import java.io.{BufferedWriter, File, FileWriter}
 import net.sansa_stack.ml.spark.utils.FeatureExtractorModel
-import net.sansa_stack.rdf.common.io.riot.error.{
-  ErrorParseMode,
-  WarningParseMode
-}
+import net.sansa_stack.rdf.common.io.riot.error.{ErrorParseMode, WarningParseMode}
 import net.sansa_stack.rdf.spark.io.{NTripleReader, RDFReader}
 import org.apache.commons.lang3.StringUtils
 import org.apache.hadoop.fs.Path
@@ -18,21 +12,16 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.HashPartitioner
 import org.apache.spark.ml.clustering.BisectingKMeans
 import org.apache.spark.ml.evaluation.ClusteringEvaluator
-import org.apache.spark.ml.feature.{
-  CountVectorizer,
-  CountVectorizerModel,
-  MinHashLSH,
-  MinHashLSHModel
-}
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, MinHashLSH, MinHashLSHModel}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.functions.{col, count, expr, lit, mean, stddev, udf}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Dataset, SaveMode, SparkSession}
 import org.apache.spark.storage.StorageLevel
 
+import java.io.{BufferedWriter, File, FileWriter}
 import scala.collection.mutable
-import scala.util.control.Breaks.break
 
 /** This class gathers all the utilities needed for distributed anomaly
   * detection
@@ -226,7 +215,7 @@ object DistADUtil {
   /** A UDF for converting numeric strings to double
     */
   val convertStringToDouble: UserDefinedFunction = udf({ (v: String) =>
-    getNumber(v).toString.toDouble
+    getNumber(v).doubleValue() // .toString().toDouble
   })
 
   def filterAllTriplesWhichAtLeastHaveOneNumericLiterals(
@@ -796,13 +785,18 @@ object DistADUtil {
       setDataStore.zipWithIndex()
     val a: RDD[Seq[(String, String, Double, Long)]] = b.map(f => {
       f._1.map(r => {
-        (r._1, r._2, r._3.toString.replace("\"", "") toDouble, f._2)
+        (r._1, r._2, toDouble(r._3.toString), f._2)
       })
     })
 
     val c: RDD[(String, String, Double, Long)] = a.flatMap(identity)
     c.toDF("s", "p", "o", "prediction")
 
+  }
+
+  private def toDouble(arg: String): Double = {
+    System.out.println("GOT: " + arg)
+    arg.replace("\"", "").toDouble
   }
 
   private def calculatePairwiseSimilarity(
@@ -858,10 +852,10 @@ object DistADUtil {
     val subMap = triplesWithNumericLiteral.map(
       f =>
         (
-          f.getSubject.toString,
+          f.getSubject.toString(),
           (
-            f.getSubject.toString,
-            f.getPredicate.toString,
+            f.getSubject.toString(),
+            f.getPredicate.toString(),
             DistADUtil.getNumber(f.getObject.toString())
           )
         )

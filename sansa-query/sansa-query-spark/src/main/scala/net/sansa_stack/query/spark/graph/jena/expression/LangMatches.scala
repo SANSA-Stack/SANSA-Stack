@@ -22,9 +22,9 @@ class LangMatches(left: Expression, right: Expression) extends FilterTwo(left, r
 
   override def evaluate(result: Result[Node]): Boolean = {
     val leftValue = leftFunc.getValue(result)
-    val leftLang = leftValue.toString.split("@")
+    val leftLang = leftValue.toString().split("@")
     val rightLang = rightVal.getLiteralLexicalForm
-    if (rightLang.toString.equals("*")) { // lang pattern is *, all literal has lang is true
+    if (rightLang.toString().equals("*")) { // lang pattern is *, all literal has lang is true
       if (leftLang.lengthCompare(2) == 0) {
         true
       } else {

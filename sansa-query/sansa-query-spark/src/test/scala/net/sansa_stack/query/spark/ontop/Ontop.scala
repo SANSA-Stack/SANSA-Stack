@@ -1,12 +1,11 @@
 package net.sansa_stack.query.spark.ontop
 
+import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.query.{QueryFactory, ResultSetFormatter}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sparql.resultset.ResultsFormat
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.SparkSession
-
-import net.sansa_stack.rdf.spark.io._
 /**
  * @author Lorenz Buehmann
  */

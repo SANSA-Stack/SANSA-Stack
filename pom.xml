@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-bom_2.12</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.5</version>
         <relativePath>sansa-bom</relativePath>
     </parent>
     <artifactId>sansa-parent_2.12</artifactId>
@@ -51,7 +51,7 @@
 
     <properties>
         <maven.version>3.1</maven.version>
-        <maven.compiler.release>11</maven.compiler.release>
+	<!-- <maven.compiler.release>11</maven.compiler.release> -->
 
         <!--
             <maven.compiler.source>1.8</maven.compiler.source>
@@ -64,7 +64,8 @@
 
     <modules>
         <module>sansa-hadoop-jena</module>
-        <module>sansa-spark-jena-java</module>
+	    <module>sansa-spark-jena-java</module>
+	    <module>sansa-spark-jena-scala</module>
 
         <module>sansa-test-resources</module>
         <module>sansa-resource-metadata</module>
@@ -83,6 +84,8 @@
         <module>sansa-bench-spark</module>
         <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
+
+	    <module>sansa-spark-jakarta</module>
     </modules>
 
     <dependencies>

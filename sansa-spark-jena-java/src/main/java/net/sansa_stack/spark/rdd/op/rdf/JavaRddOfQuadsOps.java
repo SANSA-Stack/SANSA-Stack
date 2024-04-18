@@ -1,22 +1,18 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
 import net.sansa_stack.spark.rdd.function.JavaRddFunction;
-import org.aksw.jenax.dboe.dataset.impl.DatasetGraphQuadsImpl;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.out.NodeFmtLib;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Quad;
-import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-
 import scala.Tuple2;
 
 public class JavaRddOfQuadsOps {

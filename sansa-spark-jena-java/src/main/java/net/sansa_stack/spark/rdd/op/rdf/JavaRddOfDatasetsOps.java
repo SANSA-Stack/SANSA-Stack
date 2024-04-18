@@ -1,13 +1,11 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-
-import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
-import org.apache.jena.atlas.iterator.Iter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import net.sansa_stack.spark.rdd.function.JavaRddFunction;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
@@ -18,10 +16,11 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.broadcast.Broadcast;
-
-import net.sansa_stack.spark.rdd.function.JavaRddFunction;
-import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import scala.Tuple2;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 public class JavaRddOfDatasetsOps {
 

@@ -1,6 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
-import net.sansa_stack.spark.cli.impl.RdfInputConfig;
+import net.sansa_stack.spark.cli.util.RdfInputConfig;
 import picocli.CommandLine;
 
 public class CmdMixinSparkInput

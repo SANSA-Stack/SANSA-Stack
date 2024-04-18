@@ -17,12 +17,12 @@ class ResultExtend(op: OpExtend) extends ResultOp {
 
   override def execute(input: Array[Map[Node, Node]]): Array[Map[Node, Node]] = {
     input.map(mapping =>
-      mapping.updated(sub.asNode(), mapping(exp.asVar().asNode())).-(exp.asVar().asNode()))
+      mapping.updated(sub, mapping(exp.asVar())).-(exp.asVar()))
   }
 
   override def execute(): Unit = {
-    val subVar = sub.asNode
-    val exprVar = exp.asVar.asNode
+    val subVar = sub
+    val exprVar = exp.asVar
     val oldResult = IntermediateResult.getResult(op.getSubOp.hashCode()).cache()
     val newResult = SparkExecutionModel.extend(oldResult, subVar, exprVar)
     IntermediateResult.putResult(id, newResult)

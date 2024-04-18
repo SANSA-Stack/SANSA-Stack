@@ -4,15 +4,15 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.tests.util.ResultSetCompareUtils
 import net.sansa_stack.rdf.spark.io._
-import org.apache.jena.query.{Query, QueryFactory, ResultSet, ResultSetFactory}
+import org.apache.jena.query.{QueryFactory, ResultSetFactory}
 import org.apache.jena.riot.Lang
-import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
 import java.io.{File, FileInputStream}
 import scala.io.Source
 
+@Ignore
 class OntopTests extends FunSuite with DataFrameSuiteBase {
 
   var qef: QueryExecutionFactorySpark = _

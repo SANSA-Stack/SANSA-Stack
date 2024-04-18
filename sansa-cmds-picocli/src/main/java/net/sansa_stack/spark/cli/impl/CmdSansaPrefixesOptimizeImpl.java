@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdRdfTemplate;
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.util.quad.QuadUtils;
 import org.aksw.jenax.arq.util.triple.TripleUtils;

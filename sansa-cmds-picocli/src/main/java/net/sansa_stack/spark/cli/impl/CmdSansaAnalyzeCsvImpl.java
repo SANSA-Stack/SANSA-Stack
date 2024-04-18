@@ -3,6 +3,8 @@ package net.sansa_stack.spark.cli.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
+import net.sansa_stack.spark.cli.util.SimpleSparkCmdTemplate;
 import net.sansa_stack.spark.io.csv.input.CsvRowMapperFactories;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
 import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
@@ -25,8 +27,8 @@ public class CmdSansaAnalyzeCsvImpl {
 
     public static int run(CmdSansaAnalyzeCsv cmd) throws Exception {
 
-        RddRdfWriterFactory rddRdfWriterFactory = CmdUtils.configureWriter(cmd.outputConfig);
-        rddRdfWriterFactory.setUseElephas(true);
+        RddRdfWriterFactory rddRdfWriterFactory = SansaCmdUtils.configureRdfWriter(cmd.outputConfig);
+        // rddRdfWriterFactory.setUseElephas(true);
         rddRdfWriterFactory.getPostProcessingSettings().copyFrom(cmd.postProcessConfig);
 
         if (rddRdfWriterFactory.getOutputFormat() == null) {
