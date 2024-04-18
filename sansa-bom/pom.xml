@@ -147,6 +147,22 @@
         <spark.deps.scope>compile</spark.deps.scope>
         <flink.deps.scope>compile</flink.deps.scope>
 
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+        <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+        <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
+        <maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
+        <maven-surefire-report-plugin.version>2.20</maven-surefire-report-plugin.version>
+        <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
+        <maven-site-plugin.version>3.6</maven-site-plugin.version>
+
+        <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
+	<gitflow-maven-plugin.version>1.9.0</gitflow-maven-plugin.version>
+	<maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
 	<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
 
         <!-- Common argLines for java and scala test runners -->
@@ -245,7 +261,7 @@
 
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
                         <release>${maven.compiler.release}</release>
                         <!--
@@ -260,7 +276,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>${maven-surefire-plugin.version}</version>
 
                     <configuration>
                         <useFile>false</useFile>
@@ -293,7 +309,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-report-plugin</artifactId>
-                    <version>2.20</version>
+                    <version>${maven-surefire-report-plugin.version}</version>
                 </plugin>
 
                 <!-- Scalatest -->
@@ -364,7 +380,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M2</version>
+                    <version>${maven-deploy-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
@@ -383,7 +399,7 @@
                 <plugin>
                     <groupId>com.amashchenko.maven.plugin</groupId>
                     <artifactId>gitflow-maven-plugin</artifactId>
-                    <version>1.19.0</version>
+                    <version>${gitflow-maven-plugin.version}</version>
                     <configuration>
                         <!--
                             <installProject>false</installProject>
@@ -413,7 +429,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>${maven-enforcer-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>enforce-versions</id>
@@ -449,7 +465,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${build-helper-maven-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>add-source</id>
@@ -475,7 +491,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>${maven-source-plugin.version}</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -519,7 +535,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>${maven-javadoc-plugin.version}</version>
                     <configuration>
                         <failOnError>false</failOnError>
                     </configuration>
@@ -536,7 +552,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.4</version>
+                    <version>${maven-shade-plugin.version}</version>
                     <executions>
                         <!-- Run shade goal on package phase -->
                         <execution>
@@ -569,12 +585,12 @@
 
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>${maven-resources-plugin.version}</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.1.0</version>
+                    <version>${maven-assembly-plugin.version}</version>
                 </plugin>
 
                 <!--
@@ -587,14 +603,14 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>${maven-jar-plugin.version}</version>
                 </plugin>
 
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.6</version>
+                    <version>${maven-site-plugin.version}</version>
                     <configuration>
                         <skipDeploy>true</skipDeploy>
                     </configuration>
