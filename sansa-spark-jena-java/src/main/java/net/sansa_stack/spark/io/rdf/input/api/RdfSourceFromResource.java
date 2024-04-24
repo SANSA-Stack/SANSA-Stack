@@ -1,16 +1,9 @@
 package net.sansa_stack.spark.io.rdf.input.api;
 
-import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import org.apache.hadoop.mapreduce.InputFormat;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
-import org.apache.jena.sparql.core.Quad;
-import org.apache.spark.rdd.RDD;
-
-import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 
 /**
  * Abstraction of a source of RDF. Provides methods to access the data

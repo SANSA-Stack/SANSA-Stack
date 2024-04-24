@@ -60,7 +60,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     Helper.nodeMethodsZip.foreach {
       case (method, index) =>
         val node = Helper.getNode(triple, method)
-        val nodeS = node.toString
+        val nodeS = node.toString()
         val entity = getSpoField(method)
         var rdd = spark.sparkContext.emptyRDD[(Long, String)]
 

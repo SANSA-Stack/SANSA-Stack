@@ -90,7 +90,7 @@ class CONOD(
     val finalResult = testfilterDistinct
       .map({
         case (val1: String, val2: String, val3: Double) =>
-          (val1, val2, val3.toString)
+          (val1, val2, val3.toString())
       })
       .toDF("s", "p", "o")
 
@@ -156,10 +156,10 @@ class CONOD(
     val subMap = triplesWithNumericLiteral.map(
       f =>
         (
-          f.getSubject.toString,
+          f.getSubject.toString(),
           (
-            f.getSubject.toString,
-            f.getPredicate.toString,
+            f.getSubject.toString(),
+            f.getPredicate.toString(),
             DistADUtil.getNumber(f.getObject.toString())
           )
         )

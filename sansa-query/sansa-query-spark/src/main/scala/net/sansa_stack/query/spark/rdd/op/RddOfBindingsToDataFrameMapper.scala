@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.rdd.op
 import com.typesafe.scalalogging.LazyLogging
 import net.sansa_stack.query.spark.RddOpsImplicits
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
-import net.sansa_stack.query.spark.rdd.op.TypeMapperRdfSpark.sqlDateToCalendar
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
 import org.aksw.jenax.arq.analytics.BindingAnalytics

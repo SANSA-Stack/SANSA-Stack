@@ -38,7 +38,7 @@ object TripleOps {
    * @return Returns DataFrame [Subject,Object,Predicate]
    */
   def makeHDT(triple: RDD[Triple]): DataFrame = {
-    spark.createDataFrame(triple.map(t => Row(t.getSubject.toString, t.getObject.toString(), t.getPredicate.toString())), hdtSchema)
+    spark.createDataFrame(triple.map(t => Row(t.getSubject.toString(), t.getObject.toString(), t.getPredicate.toString())), hdtSchema)
   }
 
   /**

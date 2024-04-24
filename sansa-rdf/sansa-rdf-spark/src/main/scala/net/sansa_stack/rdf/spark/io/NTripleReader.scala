@@ -3,7 +3,6 @@ package net.sansa_stack.rdf.spark.io
 import java.net.URI
 import java.nio.file.{Files, Paths}
 import java.util.UUID
-
 import com.google.common.base.Predicates
 import com.google.common.collect.Iterators
 import net.sansa_stack.rdf.benchmark.io.ReadableByteChannelFromIterator
@@ -17,7 +16,7 @@ import org.apache.jena.graph.Triple
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.rdf.model.impl.NTripleReader
 import org.apache.jena.riot.RIOT
-import org.apache.jena.riot.lang.{LabelToNode, RiotParsers}
+import org.apache.jena.riot.lang.{IteratorParsers, LabelToNode, RiotParsers}
 import org.apache.jena.riot.system._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
@@ -193,7 +192,7 @@ object NTripleReader {
       val it =
         if (stopOnBadTerm == ErrorParseMode.STOP || stopOnWarnings == WarningParseMode.STOP) {
           // this is the default behaviour of Jena, i.e. once a parse error occurs the whole process stops
-          RiotParsers.createIteratorNTriples(input, null, profileWrapper.get)
+          IteratorParsers.createIteratorNTriples(input, profileWrapper.get)
         } else {
           // here we "simply" skip illegal triples
 

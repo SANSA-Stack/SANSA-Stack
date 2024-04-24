@@ -1,6 +1,5 @@
 package net.sansa_stack.query.spark.api.impl
 
-
 import net.sansa_stack.query.spark.api.domain.{QueryExecutionSpark, ResultSetSpark}
 import org.aksw.jena_sparql_api.core.QueryExecutionBaseSelect
 import org.aksw.jenax.arq.util.binding.ResultSetUtils

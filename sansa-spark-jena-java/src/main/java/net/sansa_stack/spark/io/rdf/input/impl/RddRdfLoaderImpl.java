@@ -1,18 +1,17 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
+import net.sansa_stack.hadoop.format.jena.base.CanParseRdf;
+import net.sansa_stack.spark.io.rdf.input.api.RddLoaderBase;
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
-
-import net.sansa_stack.hadoop.format.jena.base.CanParseRdf;
-import net.sansa_stack.spark.io.rdf.input.api.RddLoaderBase;
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 
 public class RddRdfLoaderImpl<T>
     extends RddLoaderBase<LongWritable, T>
@@ -28,8 +27,8 @@ public class RddRdfLoaderImpl<T>
     }
 
     @Override
-    public Model peekPrefixes(SparkContext sparkContext, String path) {
-        Model result;
+    public PrefixMap peekPrefixes(SparkContext sparkContext, String path) {
+        PrefixMap result;
         try {
             FileInputFormat<LongWritable, T> fif = fileInputFormatClass.getDeclaredConstructor().newInstance();
             if (fif instanceof CanParseRdf) {
@@ -39,7 +38,7 @@ public class RddRdfLoaderImpl<T>
                 result = feature.parsePrefixes(fs, new Path(path), conf);
             } else {
                 // Return empty prefixes - e.g. for ntriples
-                result = ModelFactory.createDefaultModel();
+                result = PrefixMapFactory.create();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -4,7 +4,7 @@
   <parent>
     <artifactId>sansa-inference-parent_2.12</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.9.1-SNAPSHOT</version>
+    <version>0.9.6-SNAPSHOT</version>
   </parent>
   <artifactId>sansa-inference-tests_2.12</artifactId>
   <name>Inference API - Tests</name>

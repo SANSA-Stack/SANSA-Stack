@@ -9,9 +9,10 @@ import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.PrefixMapFactory;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.SparkSession;
@@ -132,8 +133,8 @@ public class RdfSourceFromResourceImpl
     }
 
     @Override
-    public Model peekDeclaredPrefixes() {
-        Model result;
+    public PrefixMap peekDeclaredPrefixes() {
+        PrefixMap result;
 
         String pathStr = path.toString();
         if (RDFLanguages.isTriples(lang)) {
@@ -146,7 +147,7 @@ public class RdfSourceFromResourceImpl
             // TODO We should extend to result sets - but probably that has to be
             // a different infrastructure than RdfSource (or not?)
             logger.warn("Lang is neither triples nor quads; returning empty set of prefixes");
-            result = ModelFactory.createDefaultModel();
+            result = PrefixMapFactory.create();
         }
 
         return result;

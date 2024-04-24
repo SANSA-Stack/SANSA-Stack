@@ -4,7 +4,6 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
 import net.sansa_stack.query.tests.W3CConformanceSPARQLQueryEvaluationTestSuiteRunner
 import net.sansa_stack.rdf.spark.utils.SparkSessionUtils
-import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model

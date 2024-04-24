@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -98,6 +98,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sansa-spark-jena-scala${scala.version.suffix}</artifactId>
         </dependency>
 
         <!-- Spark dependencies -->

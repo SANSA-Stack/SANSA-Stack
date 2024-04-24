@@ -11,7 +11,7 @@ import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Triple;
@@ -70,7 +70,7 @@ public class CmdSansaEndpointImpl {
       } else {
         FreshDatasetArgs dataset = cmd.dataset.freshDatasetArgs;
 
-        RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+        RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
 
         RdfSourceCollection sources = rdfSourceFactory.newRdfSourceCollection();
         for (String input : dataset.triplesFile) {

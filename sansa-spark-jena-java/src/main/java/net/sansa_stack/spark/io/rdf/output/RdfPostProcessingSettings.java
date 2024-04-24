@@ -8,6 +8,8 @@ public interface RdfPostProcessingSettings {
     Integer getSortPartitions();
     Boolean getOptimizePrefixes();
 
+    // Boolean useCoalesceOne();
+
     default void copyInto(RdfPostProcessingSettingsMutable dest) {
         dest.setDistinct(getDistinct());
         dest.setDistinctPartitions(getDistinctPartitions());

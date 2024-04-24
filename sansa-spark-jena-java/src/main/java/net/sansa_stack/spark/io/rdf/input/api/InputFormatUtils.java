@@ -1,5 +1,8 @@
 package net.sansa_stack.spark.io.rdf.input.api;
 
+import net.sansa_stack.hadoop.core.InputFormatStats;
+import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
+import net.sansa_stack.hadoop.core.SansaHadoopConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.rdf.model.Model;
@@ -7,10 +10,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import net.sansa_stack.hadoop.core.InputFormatStats;
-import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
-import net.sansa_stack.hadoop.core.SansaHadoopConstants;
 
 public class InputFormatUtils {
     /**

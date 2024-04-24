@@ -29,7 +29,7 @@ class RddOfModelsOpsTests extends FunSuite with DataFrameSuiteBase {
     // val quads = spark.nquads()(path)
     // val model = RDFDataMgr.loadDataset("loader/data.nq")
     val m = ModelFactory.createDefaultModel()
-    m.getGraph.add(new Triple(RDF.Nodes.`type`, RDF.Nodes.`type`, RDF.Nodes.`type`))
+    m.getGraph.add(Triple.create(RDF.Nodes.`type`, RDF.Nodes.`type`, RDF.Nodes.`type`))
 
     val in: RDD[Model] = sc.parallelize(Seq(m))
 

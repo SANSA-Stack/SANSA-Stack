@@ -3,7 +3,6 @@ package net.sansa_stack.query.spark.engine;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.join.JoinKey;
 
 /** Copy from Jena because this class is not public; also the hashing here operates on Iterable<Var> rather than JoinKey */
 

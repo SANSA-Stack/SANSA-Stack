@@ -11,16 +11,24 @@ import org.aksw.commons.collector.core.AggInputBroadcastMap;
 import org.aksw.commons.collector.domain.ParallelAggregator;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.util.algebra.GenericDag;
+import org.aksw.commons.util.stream.CollapseRunsSpec;
+import org.aksw.commons.util.stream.StreamOperatorCollapseRuns;
 import org.aksw.jena_sparql_api.algebra.transform.TransformUnionToDisjunction;
 import org.aksw.jenax.arq.analytics.arq.ConvertArqAggregator;
+import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
+import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.dataset.impl.DatasetGraphOneNgImpl;
+import org.aksw.jenax.arq.dataset.impl.DatasetOneNgImpl;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.syntax.QueryGenerationUtils;
+import org.aksw.jenax.arq.util.syntax.QueryUtils;
 import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
 import org.aksw.jenax.arq.util.template.TemplateLib2;
 import org.aksw.jenax.sparql.algebra.transform2.Evaluator;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryType;
@@ -30,6 +38,7 @@ import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.op.OpTable;
 import org.apache.jena.sparql.algebra.op.OpUnion;
 import org.apache.jena.sparql.algebra.optimize.TransformExtendCombine;
+import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.VarExprList;
@@ -39,7 +48,7 @@ import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.expr.ExprAggregator;
 import org.apache.jena.sparql.expr.ExprList;
-import org.apache.jena.sparql.modify.TemplateLib;
+import org.apache.jena.sparql.graph.GraphFactory;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.sparql.util.Context;
 import org.apache.spark.api.java.JavaRDD;
@@ -57,6 +66,76 @@ import java.util.stream.Collectors;
 public class JavaRddOfBindingsOps {
     private static final Logger logger = LoggerFactory.getLogger(JavaRddOfBindingsOps.class);
 
+    // FIXME This would actually belong to RddOfDatasetOps (in sansa-jena-spark)
+    // however our query api for spark (e.g. ResultSetSpark) is part of the query module
+    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Op op = Algebra.compile(query);
+
+        // Set up an execution context
+        // TODO ... allow passing that as a parameter
+        // val cxt = if (cxt == null) ARQ.getContext.copy() else cxt.copy
+        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
+            ExecutionContext r = execCxtSupplier.get();
+            Context cxt = r.getContext();
+            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
+                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            }
+
+            // XXX We assume that current time is already set in the provided execCxtSupplier
+
+            // Context cxt = ARQ.getContext().copy();
+            // cxt.set(ARQConstants.sysCurrentTime, NodeFactoryExtra.nowAsDateTime());
+            // ExecutionContext execCxt = new ExecutionContext(cxt, null, null, null);
+            // execCxt.getContext().put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            return r;
+        };
+
+        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
+        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
+
+        // An RDD with a single binding that doesn't bind any variables
+        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
+        JavaRDD<Binding> initialRdd = sparkContext.parallelize(List.of(BindingFactory.binding()));
+        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
+
+        List<Var> projectVars = query.getProjectVars();
+        return new JavaResultSetSparkImpl(projectVars, rdd);
+    }
+
+    // XXX This method actually belongs to RddOfDatasetOps (which is not sparql aware) or a sparql-specific Ops class such as RddSparqlOps
+    /*
+    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Op op = Algebra.compile(query);
+
+        // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
+        // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
+        // System.err.println("Algebra: " + op);
+
+        // Wrap the execCxtSupplier such that the rdd of dataset is added (if not already present)
+        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
+            ExecutionContext r = execCxtSupplier.get();
+            Context cxt = r.getContext();
+            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
+                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
+            }
+            return r;
+        };
+
+        // Set up an execution context
+        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
+
+        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
+
+        // An RDD with a single binding that doesn't bind any variables
+        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
+        JavaRDD<Binding> initialRdd = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
+        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
+
+        List<Var> vars = query.getProjectVars();
+        return new JavaResultSetSparkImpl(vars, rdd);
+    }
+    */
+
     /**
      * Return a new RDD[Binding] by projecting only the given variables
      *
@@ -71,7 +150,9 @@ public class JavaRddOfBindingsOps {
         return rddOfBindings.mapPartitions(it -> Iter.iter(it).map(b -> BindingUtils.project(b, varList)));
     }
 
-    /** Returns an RDD of a single binding that doesn't bind any variables */
+    /**
+     * Returns an RDD of a single binding that doesn't bind any variables
+     */
     public static JavaRDD<Binding> unitRdd(JavaSparkContext sparkContext) {
         JavaRDD<Binding> result = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
         return result;
@@ -94,8 +175,8 @@ public class JavaRddOfBindingsOps {
         }
 
         Quad constructQuad = tmpConstructQuad != null
-            ? tmpConstructQuad
-            : Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
+                ? tmpConstructQuad
+                : Quad.create(Var.alloc("__g__"), Var.alloc("__s__"), Var.alloc("__p__"), Var.alloc("__o__"));
 
         if (effectiveQueries == null) {
             // TODO Variables of the query may clash with the tmpConstructQuad
@@ -149,10 +230,10 @@ public class JavaRddOfBindingsOps {
     public static JavaRDD<Binding> filter(JavaRDD<Binding> rdd, ExprList exprs, Supplier<ExecutionContext> execCxtSupplier) {
         Broadcast<ExprList> broadcast = JavaSparkContextUtils.fromRdd(rdd).broadcast(exprs);
         return rdd.mapPartitions(it -> {
-                ExprList el = broadcast.value();
-                ExecutionContext execCxt = execCxtSupplier.get();
-                return Iter.iter(it)
-                        .filter(b -> el.isSatisfied(b, execCxt));
+            ExprList el = broadcast.value();
+            ExecutionContext execCxt = execCxtSupplier.get();
+            return Iter.iter(it)
+                    .filter(b -> el.isSatisfied(b, execCxt));
         });
     }
 
@@ -161,13 +242,13 @@ public class JavaRddOfBindingsOps {
         JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
         Broadcast<VarExprList> velBc = sc.broadcast(varExprList);
         return rdd.mapPartitions(it -> {
-                ExecutionContext execCxt = execCxtSupplier.get();
-                // v execCxt = ExecutionContextUtils.createExecCxtEmptyDsg()
-                VarExprList vel = velBc.value();
-                return Iter.iter(it).map(b -> {
-                        Binding r = VarExprListUtils.eval(vel, b, execCxt);
-                        return r;
-                });
+            ExecutionContext execCxt = execCxtSupplier.get();
+            // v execCxt = ExecutionContextUtils.createExecCxtEmptyDsg()
+            VarExprList vel = velBc.value();
+            return Iter.iter(it).map(b -> {
+                Binding r = VarExprListUtils.eval(vel, b, execCxt);
+                return r;
+            });
         });
     }
 
@@ -194,7 +275,7 @@ public class JavaRddOfBindingsOps {
 
         Template template = query.getConstructTemplate();
         List<Quad> quads = template.getQuads();
-        return rdd.mapPartitions(it -> TemplateLib.calcQuads(quads, it));
+        return rdd.mapPartitions(it -> TemplateLib2.calcQuads(quads, it));
     }
 
     public static JavaRDD<Binding> group(
@@ -202,7 +283,7 @@ public class JavaRddOfBindingsOps {
             VarExprList groupVars,
             List<ExprAggregator> aggregators,
             Supplier<ExecutionContext> execCxtSupp) {
-        // For each ExprVar convert the involvd arq aggregator
+        // For each ExprVar convert the involved arq aggregator
         Map<Var, ParallelAggregator<Binding, Void, Node, ?>> subAggMap = new LinkedHashMap<>();
 
         for (ExprAggregator exprAgg : aggregators) {
@@ -250,34 +331,34 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    public static JavaResultSetSpark execSparqlSelect(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
-        Op op = Algebra.compile(query);
+    public static JavaRDD<Triple> execSparqlConstructTriples(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Template template = query.getConstructTemplate();
+        List<Triple> quads = template.getTriples();
+        Query select = QueryUtils.constructToSelect(query);
+        JavaResultSetSpark rs = execSparqlSelect(rddOfDataset, select, execCxtSupplier);
+        JavaRDD<Triple> result = rs.getRdd().mapPartitions(it -> TemplateLib2.calcTriples(quads, it));
+        return result;
+    }
 
-        // op = Transformer.transform(new TransformFilterImplicitJoin(), op);
-        // op = AlgebraUtils.createDefaultRewriter().rewrite(op);
-        // System.err.println("Algebra: " + op);
+    public static JavaRDD<DatasetOneNg> execSparqlConstructDatasets(JavaRDD<? extends Dataset> rddOfDataset, Query query, Supplier<ExecutionContext> execCxtSupplier) {
+        Template template = query.getConstructTemplate();
+        List<Quad> quads = template.getQuads();
+        Query select = QueryUtils.constructToSelect(query);
+        JavaResultSetSpark rs = execSparqlSelect(rddOfDataset, select, execCxtSupplier);
+        JavaRDD<DatasetOneNg> result = rs.getRdd().mapPartitions(it -> groupConsecutiveQuads(TemplateLib2.calcQuads(quads, it)));
+        return result;
+    }
 
-        // Wrap the execCxtSupplier such that the rdd of dataset is added (if not already present)
-        SerializableSupplier<ExecutionContext> extraExecCxtSuppler = () -> {
-            ExecutionContext r = execCxtSupplier.get();
-            Context cxt = r.getContext();
-            if (!cxt.isDefined(OpExecutorImpl.SYM_RDD_OF_DATASET)) {
-                cxt.put(OpExecutorImpl.SYM_RDD_OF_DATASET, rddOfDataset);
-            }
-            return r;
-        };
+    // TODO Move to a common place
+    public static Iterator<DatasetOneNg> groupConsecutiveQuads(Iterator<Quad> it) {
+        CollapseRunsSpec<Quad, Node, DatasetGraphOneNg> spec = CollapseRunsSpec.create(
+                Quad::getGraph,
+                groupKey -> DatasetGraphOneNgImpl.create(groupKey, GraphFactory.createDefaultGraph()),
+                DatasetGraph::add);
 
-        // Set up an execution context
-        OpExecutor opExec = new OpExecutorImpl(extraExecCxtSuppler);
-
-        ExecutionDispatch executionDispatch = new ExecutionDispatch(opExec);
-
-        // An RDD with a single binding that doesn't bind any variables
-        JavaSparkContext sparkContext = JavaSparkContextUtils.fromRdd(rddOfDataset);
-        JavaRDD<Binding> initialRdd = sparkContext.parallelize(Arrays.asList(BindingFactory.binding()));
-        JavaRDD<Binding> rdd = executionDispatch.exec(op, initialRdd);
-
-        List<Var> vars = query.getProjectVars();
-        return new JavaResultSetSparkImpl(vars, rdd);
+        Iterator<DatasetOneNg> result = Iter.iter(StreamOperatorCollapseRuns.create(spec).transform(it))
+                .map(Map.Entry::getValue)
+                .map(DatasetOneNgImpl::wrap);
+        return result;
     }
 }

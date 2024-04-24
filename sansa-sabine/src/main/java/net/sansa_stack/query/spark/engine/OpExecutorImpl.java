@@ -225,7 +225,6 @@ public class OpExecutorImpl
     @Override
     public JavaRDD<Binding> execute(OpFilter op, JavaRDD<Binding> rdd) {
         return JavaRddOfBindingsOps.filter(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getExprs(), execCxtSupplier);
-        // RddOfBindingOps.filter(rdd, op.getExprs)
     }
 
     //  @Override public  JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd): JavaRDD<Binding> =

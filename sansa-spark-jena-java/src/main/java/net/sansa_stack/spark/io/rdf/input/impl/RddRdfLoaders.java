@@ -1,13 +1,12 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
+import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
-
-import net.sansa_stack.spark.io.rdf.input.api.RddRdfLoader;
 import scala.Tuple2;
 
 public class RddRdfLoaders {

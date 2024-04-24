@@ -1,9 +1,8 @@
 package net.sansa_stack.spark.io.rdf.input.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Objects;
-
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFromResource;
 import org.aksw.commons.util.entity.EntityInfo;
 import org.aksw.jenax.sparql.query.rx.RDFDataMgrEx;
 import org.apache.hadoop.conf.Configuration;
@@ -15,9 +14,9 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFromResource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Implementation of a source factory based on spark/hadoop.
@@ -38,8 +37,10 @@ public class RdfSourceFactoryImpl
         this.sparkSession = sparkSession;
     }
 
+    /** Use {@link RdfSourceFactories#of(SparkSession)} instead. */
+    @Deprecated
     public static RdfSourceFactory from(SparkSession sparkSession) {
-        return new RdfSourceFactoryImpl(sparkSession);
+        return RdfSourceFactories.of(sparkSession);
     }
 
     @Override

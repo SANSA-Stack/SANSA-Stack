@@ -1,12 +1,12 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-import java.util.function.Function;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.api.java.JavaRDD;
+
+import java.util.function.Function;
 
 /** Interface that captures common operations on RDD&lt;T@gt;
  *

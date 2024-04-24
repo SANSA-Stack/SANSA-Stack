@@ -498,7 +498,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     LongPredicate readPosValidator;
     Function<Long, Long> posToSplitId;
 
-    ProbeResult headBytes = null; //-1;
+    ProbeResult headProbe = null; //-1;
     // Set the stream to the start of the split and get the head buffer
     // Note that we will use the stream later in its state to read the body part
     long knownDecodedDataLength = isEncoded ? -1 : splitLength; // TODO Rename to decodedSplitLength
@@ -541,7 +541,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             .setSplitStart(splitStart)
             .setSplitSize(splitLength)
             .setFirstBlock(firstBlock)
-            .setRegionStartProbeResult(headBytes == null ? null : convert(m.createResource(), headBytes))
+            .setRegionStartProbeResult(headProbe == null ? null : convert(m.createResource(), headProbe))
             .setRegionEndProbeResult(tailRecordOffset == null ? null : convert(m.createResource(), tailRecordOffset))
             .setRegionStartSearchReadOverSplitEnd(regionStartSearchReadOverSplitEnd)
             .setRegionStartSearchReadOverRegionEnd(regionStartSearchReadOverRegionEnd)
@@ -678,19 +678,20 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         StopWatch headSw = StopWatch.createStarted();
 
-        headBytes = isFirstSplit
+        headProbe = isFirstSplit
                 ? new ProbeResult(0, 0, Duration.ZERO)
                 : skipToNthRegionInSplit(skipRegionCount, headByteChannel, 0, 0, maxRecordLength, maxExtraByteCount, readPosValidator, posValidator, posToSplitId, headEltBuffer, this::prober);
 
         long headRecordTime = headSw.getTime(TimeUnit.MILLISECONDS);
-        logger.info(String.format("Split %s: Found head region offset at pos %d in %.3f s",
+        logger.info(String.format("Split %s: Found head region after %d probes at offset at pos %d in %.3f s",
                 splitId,
-                headBytes.candidatePos(),
+                headProbe.probeCount(),
+                headProbe.candidatePos(),
                 // -1, // source.getKnownDataSize(),
                 headSw.getTime(TimeUnit.MILLISECONDS) * 0.001f));
 
         if (false) {
-            try (SeekableReadableChannel<byte[]> channel = source.newReadableChannel(headBytes.candidatePos())) {
+            try (SeekableReadableChannel<byte[]> channel = source.newReadableChannel(headProbe.candidatePos())) {
                 System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(channel), StandardCharsets.UTF_8));
             }
             return Stream.empty();
@@ -699,7 +700,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ReadableChannel<U[]> headEltChannel = null;
         Stream<U> headItems = null;
 
-        if (headBytes.candidatePos() < 0) {
+        if (headProbe.candidatePos() < 0) {
             SeekableSourceOverSplit.Channel finalHeadByteChannel2 = headByteChannel;
             return Stream.<T>empty().onClose(() -> {
                 try {
@@ -793,7 +794,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     headByteChannel = source.newReadableChannel();
                     // lock = headByteChannel.getReadWriteLock().writeLock();
                     // lock.lock();
-                    headByteChannel.position(headBytes.candidatePos());
+                    headByteChannel.position(headProbe.candidatePos());
                     if (tailBytes >= 0) {
                         headByteChannel.setLimit(absTailPos);
                     }
@@ -810,7 +811,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
 
         if (false) {
-            headByteChannel.position(headBytes.candidatePos());
+            headByteChannel.position(headProbe.candidatePos());
             //try (SeekableReadableChannel<byte[]> channel = ){
                 System.out.println("GOT: " + IOUtils.toString(ReadableChannels.newInputStream(headByteChannel), StandardCharsets.UTF_8));
             //}
