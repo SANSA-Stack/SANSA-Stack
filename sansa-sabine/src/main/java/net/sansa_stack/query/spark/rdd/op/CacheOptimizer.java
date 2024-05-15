@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.rdd.op;
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.OpDisjunction;

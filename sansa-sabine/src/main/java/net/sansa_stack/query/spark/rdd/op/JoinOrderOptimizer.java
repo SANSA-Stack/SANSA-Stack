@@ -4,9 +4,9 @@ import org.aksw.jena_sparql_api.algebra.utils.OpServiceUtils;
 import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
 import org.aksw.jenax.sparql.algebra.transform2.OpCostEvaluation;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
 import org.aksw.rml.jena.impl.RmlLib;
-import org.aksw.rml.model.LogicalSource;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.op.OpJoin;
@@ -72,7 +72,7 @@ public class JoinOrderOptimizer
             // XXX Probably we shouldn't use the byte size directly but use some rough estimate
             // to get the number of records - but for the purpose of identifying some
             // broadcast joins it might be sufficient
-            LogicalSource logicalSource = RmlLib.getLogicalSource(op);
+            ILogicalSource logicalSource = RmlLib.getLogicalSource(op);
             String source = resolveSource(logicalSource.getSource());
 
             Path path = sourceResolver.apply(source);

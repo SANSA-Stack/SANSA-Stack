@@ -104,9 +104,9 @@
 
         <!-- Our util projects (mainly maintained by Claus) -->
         <aksw.commons.version>0.9.8</aksw.commons.version>
-        <jena.version>5.0.0</jena.version>
-        <jenax.version>5.0.0-1</jenax.version>
-        <rmltk.version>5.0.0-1</rmltk.version>
+        <jena.version>5.1.0-SNAPSHOT</jena.version>
+        <jenax.version>5.1.0-1-SNAPSHOT</jenax.version>
+        <rmltk.version>5.1.0-1-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
 

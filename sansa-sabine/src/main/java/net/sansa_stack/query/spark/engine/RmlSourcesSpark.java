@@ -24,12 +24,12 @@ import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.jenax.model.csvw.domain.api.Dialect;
 import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
-import org.aksw.r2rml.jena.domain.api.LogicalTable;
 import org.aksw.r2rml.sql.transform.JSqlUtils;
 import org.aksw.rml.jena.service.D2rqHikariUtils;
-import org.aksw.rml.model.LogicalSource;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
+import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.datatypes.TypeMapper;
@@ -71,7 +71,7 @@ public class RmlSourcesSpark {
 //        return QueryExecUtils.fromStream(stream, outVar, parentBinding, execCxt, RDFDatatypeJson::jsonToNode);
 //    }
 
-    public static JavaRDD<Binding> processSource(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static JavaRDD<Binding> processSource(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         Map<String, RmlSourceProcessor> registry = new HashMap<>();
         registry.put(QlTerms.CSV, RmlSourcesSpark::processSourceAsCsv);
         registry.put(QlTerms.JSONPath, RmlSourcesSpark::processSourceAsJson);
@@ -88,7 +88,7 @@ public class RmlSourcesSpark {
         return result;
     }
 
-    public static JavaRDD<Binding> processSourceAsJson(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static JavaRDD<Binding> processSourceAsJson(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
@@ -133,7 +133,7 @@ public class RmlSourcesSpark {
     */
 
 
-    public static JavaRDD<Binding> processSourceAsCsv(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static JavaRDD<Binding> processSourceAsCsv(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
 
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
@@ -274,7 +274,7 @@ public class RmlSourcesSpark {
         return null;
     }
 
-    public static JavaRDD<Binding> processSourceAsRdb(JavaSparkContext sc, LogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
+    public static JavaRDD<Binding> processSourceAsRdb(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
         SourceOutput output = logicalSource.as(SourceOutput.class);
         Var outVar = output.getOutputVar();
 
