@@ -5,9 +5,9 @@ import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import org.aksw.commons.sql.codec.api.SqlCodec
 import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
-import org.aksw.r2rml.jena.domain.api._
 import org.aksw.r2rml.jena.vocab.RR
 import org.aksw.r2rmlx.domain.api.TermMapX
+import org.aksw.rmltk.model.r2rml.{ObjectMap, PredicateObjectMap, SubjectMap, TermMap, TriplesMap}
 import org.apache.jena.rdf.model.{Model, Property, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar

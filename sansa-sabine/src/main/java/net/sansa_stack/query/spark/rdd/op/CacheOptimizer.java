@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.rdd.op;
 import org.aksw.commons.util.algebra.GenericDag;
 import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
-import org.aksw.rml.jena.impl.NorseRmlTerms;
+import org.aksw.rmlx.model.RmlXTerms;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.op.OpDisjunction;
@@ -147,6 +147,6 @@ public class CacheOptimizer {
     }
 
     public static boolean isCacheOp(Op op) { return OpUtils.isServiceWithIri(op, "rdd:cache"); }
-    public static boolean isRmlSourceOp(Op op) { return OpUtils.isServiceWithIri(op, NorseRmlTerms.RML_SOURCE_SERVICE_IRI); }
+    public static boolean isRmlSourceOp(Op op) { return OpUtils.isServiceWithIri(op, RmlXTerms.RML_SOURCE_SERVICE_IRI); }
 
 }
