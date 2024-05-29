@@ -99,6 +99,8 @@
         <jsr203hadoop.version>1.0.3</jsr203hadoop.version>
 
         <slf4j.version>2.0.9</slf4j.version>
+	<!-- <slf4j.version>1.7.36</slf4j.version> -->
+
         <!-- reuse log4j from hadoop -->
         <!-- <log4j.version>2.21.0</log4j.version> -->
 

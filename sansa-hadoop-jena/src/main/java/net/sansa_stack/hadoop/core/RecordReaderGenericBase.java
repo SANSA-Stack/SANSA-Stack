@@ -446,7 +446,10 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         ArrayOps<U[]> arrayOps = (ArrayOps)ArrayOps.OBJECT;
         Stream<U> stream = null;
         ReadableChannel<U[]> channel = null;
-        ReadableChannel<byte[]> byteChannel = new ReadableChannelSwitchable<>(seekable.cloneObject());
+        SeekableReadableChannel<byte[]> clonedSeekable = seekable.cloneObject();
+        long startOffset = clonedSeekable.position();
+
+        ReadableChannel<byte[]> byteChannel = new ReadableChannelSwitchable<>(clonedSeekable);
         try {
 
             // System.out.println("here");
@@ -465,6 +468,12 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 stream.close();
             }
         } catch (Throwable e) {
+
+            // Get the position where the error occurred - if it is very distant from the probe offset
+            // we assume that we are in a large record which we need to skip over
+            long errorOffset = clonedSeekable.position();
+            logger.debug(String.format("Probe: Start = %d, End = %d, Error encountered after reading %d bytes", startOffset, errorOffset, errorOffset - startOffset));
+
             if (channel != null) {
                 // Closing the channel (if there is one) implies closing the stream
                 IOUtils.closeQuietly(channel);

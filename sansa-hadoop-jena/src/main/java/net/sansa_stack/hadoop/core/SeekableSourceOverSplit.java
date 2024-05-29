@@ -36,6 +36,11 @@ import com.google.common.primitives.Ints;
 
 import net.sansa_stack.hadoop.util.DeferredSeekablePushbackInputStream;
 
+/**
+ * A seekable source over a split (usually a hadoop input split). When there is an attempt to read over the
+ * split boundary, then a "transition" action is called.
+ * This action may scan ahead for an end end position after the split boundary.
+ */
 public class SeekableSourceOverSplit
     implements SeekableReadableChannelSource<byte[]>, Closeable
 {
