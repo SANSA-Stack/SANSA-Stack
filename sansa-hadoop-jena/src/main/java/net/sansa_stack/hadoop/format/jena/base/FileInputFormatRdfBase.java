@@ -54,6 +54,7 @@ public abstract class FileInputFormatRdfBase<T>
     public static final String BASE_IRI_KEY = "base";
 
     // A prefix.cc dump with 2500 prefxes required 153KB, so 1MB should be plenty
+    // TODO AsyncParser by now supports the feature needed to realize the todo below.
     // TODO We could add another property which governs abort of looking for prefixes
     //  if there is none within 'n' number of seen parsing events (triples, quads)
     public static final long PARSED_PREFIXES_LENGTH_DEFAULT = 1 * 1024 * 1024;

@@ -9,11 +9,8 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Predicate;
@@ -86,7 +83,7 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
             result = result
                     .setChunkSize(1000)
                     .mutateSources(parser -> parser.errorHandler(ErrorHandlerFactory.errorHandlerSimple()))
-                    .setPrematureDispatch(new CountingPredicate<>(probeEltCount));
+                    .setPrematureDispatch(new CountingPredicate<>(probeElementCount));
         }
 
 

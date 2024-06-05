@@ -30,12 +30,23 @@ public class RecordReaderRdfTrigDataset
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.trig.dataset.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.record.maxlength";
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.trig.dataset.record.probecount";
+
+    public static final String ELEMENT_PROBECOUNT_KEY = "mapreduce.input.trig.dataset.element.probecount";
+
     public static final String PREFIXES_MAXLENGTH_KEY = "mapreduce.input.trig.dataset.prefixes.maxlength";
 
 
-    protected static final CustomPattern trigFwdPattern = CustomPatternJava
+    /**
+     * This is the pattern for trig data where graphs are separated by '{'
+     */
+    protected static final CustomPattern trigFwdPatternWorking = CustomPatternJava
             .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+    protected static final CustomPattern trigFwdPattern = CustomPatternJava
+            .compile(".",
+                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
 
     public static class AccumulatingDataset
             implements Accumulating<Quad, Node, DatasetOneNg, DatasetOneNg> {

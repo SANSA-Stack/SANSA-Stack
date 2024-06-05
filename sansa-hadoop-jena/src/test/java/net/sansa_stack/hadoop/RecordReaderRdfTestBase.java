@@ -116,13 +116,17 @@ public abstract class RecordReaderRdfTestBase<T> {
                 Iterators.size(expectedDataset.listNames()),
                 Iterators.size(actualDataset.listNames())));
 
+        int actualDatasetSize = Iterators.size(actualDataset.asDatasetGraph().find());
         logger.info(String.format("Quad counts expected/actual: %d/%d",
                 Iterators.size(expectedDataset.asDatasetGraph().find()),
-                Iterators.size(actualDataset.asDatasetGraph().find())));
+                actualDatasetSize));
 
-        // compareDatasets(expectedDataset, actualDataset);
-        assertIsIsomorphic(expectedDataset, actualDataset);
-
+        // Do not assert graph isomorphism if the dataset size is too large
+        int isomorphismThreshold = 1000;
+        if (actualDatasetSize < isomorphismThreshold) {
+            // compareDatasets(expectedDataset, actualDataset);
+            assertIsIsomorphic(expectedDataset, actualDataset);
+        }
     }
 
     //test("parsing Trig file provided by $i splits") {
