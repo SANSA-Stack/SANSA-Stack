@@ -109,6 +109,7 @@ public class RecordReaderCsvUnivocity
 
     public RecordReaderCsvUnivocity() {
         this(new RecordReaderConf(
+                null,
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,

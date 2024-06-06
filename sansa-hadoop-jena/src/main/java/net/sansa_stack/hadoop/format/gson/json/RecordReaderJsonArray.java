@@ -39,6 +39,7 @@ public class RecordReaderJsonArray
 
     public RecordReaderJsonArray(Gson gson) {
         this(new RecordReaderConf(
+                null,
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,

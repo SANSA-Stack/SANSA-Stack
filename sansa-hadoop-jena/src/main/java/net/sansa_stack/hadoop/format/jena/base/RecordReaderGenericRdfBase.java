@@ -83,7 +83,7 @@ public abstract class RecordReaderGenericRdfBase<U, G, A, T>
             result = result
                     .setChunkSize(1000)
                     .mutateSources(parser -> parser.errorHandler(ErrorHandlerFactory.errorHandlerSimple()))
-                    .setPrematureDispatch(new CountingPredicate<>(probeElementCount));
+                    .setPrematureDispatch(new CountingPredicate<>(probeRecordCount));
         }
 
 

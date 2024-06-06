@@ -24,7 +24,7 @@ public class RecordReaderRdfConf
             CustomPattern recordSearchPattern,
             String prefixesMaxLengthKey,
             Lang lang) {
-        super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern);
+        super(null, minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern);
         this.prefixesMaxLengthKey = prefixesMaxLengthKey;
         this.lang = lang;
     }

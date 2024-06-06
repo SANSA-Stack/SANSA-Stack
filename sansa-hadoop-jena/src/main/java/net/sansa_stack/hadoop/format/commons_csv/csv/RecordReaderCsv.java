@@ -37,6 +37,7 @@ public class RecordReaderCsv
 {
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsv.class);
 
+    // public static final String ELEMENT_PROBECOUNT_KEY = "mapreduce.input.csv.element.probecount";
     public static final String RECORD_MINLENGTH_KEY = "mapreduce.input.csv.record.minlength";
     public static final String RECORD_MAXLENGTH_KEY = "mapreduce.input.csv.record.maxlength";
     public static final String RECORD_PROBECOUNT_KEY = "mapreduce.input.csv.record.probecount";
@@ -82,6 +83,7 @@ public class RecordReaderCsv
 
     public RecordReaderCsv() {
         this(new RecordReaderConf(
+                null,
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,

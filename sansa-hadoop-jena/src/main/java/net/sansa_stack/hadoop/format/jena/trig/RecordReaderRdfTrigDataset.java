@@ -43,9 +43,11 @@ public class RecordReaderRdfTrigDataset
             .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-    protected static final CustomPattern trigFwdPattern = CustomPatternJava
+    protected static final CustomPattern trigFwdPatternNew = CustomPatternJava
             .compile(".",
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+    protected static final CustomPattern trigFwdPattern = trigFwdPatternWorking;
 
 
     public static class AccumulatingDataset

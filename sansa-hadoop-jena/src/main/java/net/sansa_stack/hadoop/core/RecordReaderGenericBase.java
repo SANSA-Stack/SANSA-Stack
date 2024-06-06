@@ -10,6 +10,7 @@ import net.sansa_stack.hadoop.util.SeekableByteChannelFromSeekableInputStream;
 import net.sansa_stack.io.util.InputStreamWithCloseIgnore;
 import net.sansa_stack.io.util.InputStreamWithZeroOffsetRead;
 import net.sansa_stack.nio.util.InterruptingSeekableByteChannel;
+import org.aksw.commons.collections.utils.StreamUtils;
 import org.aksw.commons.io.buffer.array.ArrayOps;
 import org.aksw.commons.io.buffer.array.BufferOverReadableChannel;
 import org.aksw.commons.io.hadoop.SeekableInputStream;
@@ -48,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Function;
-import java.util.function.LongFunction;
 import java.util.function.LongPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,6 +115,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected final String minRecordLengthKey;
     protected final String maxRecordLengthKey;
     protected final String probeRecordCountKey;
+
+    protected final String probeElementCountKey;
     // protected final String headerBytesKey;
 
     /**
@@ -125,9 +127,9 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected CustomPattern recordStartPattern;
     protected long maxRecordLength;
     protected long minRecordLength;
-    protected int probeElementCount;
+    protected int probeRecordCount;
 
-    protected int probeRecordCount = 10;
+    protected int probeElementCount;
 
     protected boolean enableStats = true;
 
@@ -178,6 +180,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
     protected long totalRecordCount = 0;
 
     public RecordReaderGenericBase(RecordReaderConf conf, Accumulating<U, G, A, T> accumulating) {
+        this.probeElementCountKey = conf.getProbeElementCountKey();
         this.minRecordLengthKey = conf.getMinRecordLengthKey();
         this.maxRecordLengthKey = conf.getMaxRecordLengthKey();
         this.probeRecordCountKey = conf.getProbeRecordCountKey();
@@ -197,9 +200,14 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         // println("TRIG READER INITIALIZE CALLED")
         Configuration job = context.getConfiguration();
 
+        probeElementCount = probeElementCountKey == null
+                ? Integer.MAX_VALUE
+                : job.getInt(probeElementCountKey, Integer.MAX_VALUE);
+
         minRecordLength = job.getInt(minRecordLengthKey, 1);
         maxRecordLength = job.getInt(maxRecordLengthKey, 10 * 1024 * 1024);
-        probeElementCount = job.getInt(probeRecordCountKey, 100);
+        probeRecordCount = job.getInt(probeRecordCountKey, 100);
+
 
         split = (FileSplit) inputSplit;
 
@@ -488,7 +496,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 resultBuffer.setDataSupplier(channel);
                 // resultBuffer.loadFully(probeElementCount, true);
                 Stream<U> bufferedEltStream = ReadableChannels.newStream(resultBuffer.newReadableChannel());
-                Stream<T> recordStream = aggregate(bufferedEltStream, accumulating);
+                Stream<U> cappedEltStream = bufferedEltStream.limit(probeElementCount);
+                Stream<T> recordStream = aggregate(cappedEltStream, accumulating);
 
                 // long eltCount = resultBuffer.getKnownDataSize();
                 try (Stream<T> cappedRecordStream = recordStream.limit(probeRecordCount)) {
@@ -501,6 +510,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
                 // recordCount = recordStream.limit(probeRecordCount).count();
                 try (Stream<T> cappedRecordStream = recordStream.limit(probeRecordCount)) {
+                    // Stream<T> tmp = StreamUtils.viaList(cappedRecordStream, list -> System.out.println("Probe records: " + list));
+                    // recordCount = tmp.count(); // cappedRecordStream.count();
                     recordCount = cappedRecordStream.count();
                 }
 
@@ -537,7 +548,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
         // .collect(Collectors.toCollection(() -> new ArrayList<>(probeRecordCount)));
 
-        boolean foundValidRecordOffset = recordCount >= 0;
+        // FIXME "recordCount > 0" or "recordCount >= 0"?
+        boolean foundValidRecordOffset = recordCount > 0;
 
         // System.out.println(String.format("Probing at pos %s: %b", pos, foundValidRecordOffset));
         return new OffsetSeekResult(foundValidRecordOffset, startOffset, endOffset);
@@ -619,7 +631,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
      * @param tailByteBuffer
      */
     protected void detectTail(BufferOverReadableChannel<byte[]> tailByteBuffer) {
-        BufferOverReadableChannel<U[]> tailEltBuffer = BufferOverReadableChannel.createForObjects(probeElementCount);
+        BufferOverReadableChannel<U[]> tailEltBuffer = BufferOverReadableChannel.createForObjects(1024); //probeElementCount);
 
         // Java's regex engine requires the amount of data to be known in advance
         // maxExtraBytes is needed
@@ -734,7 +746,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                 return sid;
             };
 
-        BufferOverReadableChannel<U[]> headEltBuffer = BufferOverReadableChannel.createForObjects(probeElementCount);
+        BufferOverReadableChannel<U[]> headEltBuffer = BufferOverReadableChannel.createForObjects(probeRecordCount);
 
         StopWatch headSw = StopWatch.createStarted();
 
@@ -1313,6 +1325,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                     }
                     // System.err.println(String.format("Probe result for matching at pos %d with fwd=%b %b", absPos, isFwd, probeResult));
 
+                    boolean enableJump = true;
                     if (probeResult.isSuccess()) {
                         result = absPos;
                         break;
@@ -1322,7 +1335,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
                         int backtrackDistance = 10000;
 
                         long distance = probeResult.getLength();
-                        if (false && distance > recordDelimThreshold) {
+                        if (enableJump && distance > recordDelimThreshold) {
                             long relStart = probeResult.getStartPos();
                             long relEnd = probeResult.getEndPos();
                             long minRelStart = relStart + 1;
