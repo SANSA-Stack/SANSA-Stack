@@ -18,6 +18,16 @@
 
         <dependency>
             <groupId>org.aksw.rmltk</groupId>
+            <artifactId>rml-jena-arq</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.rmltk</groupId>
+            <artifactId>rmlx-jena-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.rmltk</groupId>
             <artifactId>r2rml-jena-sql-transforms</artifactId>
         </dependency>
 

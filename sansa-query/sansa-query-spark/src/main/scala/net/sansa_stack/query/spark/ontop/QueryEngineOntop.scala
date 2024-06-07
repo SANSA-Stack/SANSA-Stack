@@ -14,8 +14,8 @@ import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
 import net.sansa_stack.rdf.spark.utils.{ScalaUtils, SparkSessionUtils}
 import org.aksw.r2rml.jena.arq.lib.R2rmlLib
-import org.aksw.r2rml.jena.domain.api.TriplesMap
 import org.aksw.r2rml.jena.vocab.RR
+import org.aksw.rmltk.model.r2rml.TriplesMap
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperBacktick
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.sparql.engine.binding.Binding
