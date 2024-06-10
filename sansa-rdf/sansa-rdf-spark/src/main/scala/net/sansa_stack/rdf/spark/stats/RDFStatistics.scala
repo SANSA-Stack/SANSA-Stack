@@ -6,7 +6,7 @@ import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.sparql.expr.NodeValue
-import org.apache.jena.vocabulary.{OWL, RDF, RDFS, XSD}
+import org.apache.jena.vocabulary.{OWL2, RDF, RDFS, XSD}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
@@ -130,7 +130,7 @@ object RDFStatistics extends Serializable {
       .filter(triple => (triple.predicateMatches(RDFS.subClassOf.asNode()) &&
         triple.getSubject.isURI && triple.getObject.isURI))
 
-    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL2.Class.asNode()))
 
     val graph = triples.asGraph()
     val subClassOfGraph = subClassOf.asGraph()
@@ -158,7 +158,7 @@ object RDFStatistics extends Serializable {
       .filter(triple => (triple.predicateMatches(RDFS.subPropertyOf.asNode()) &&
         triple.getSubject.isURI && triple.getObject.isURI))
 
-    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL.Class.asNode()))
+    var root = triples.filter(t => t.getObject.isURI() && t.objectMatches(OWL2.Class.asNode()))
 
     val graph = triples.asGraph()
     val subPropertyOfGraph = subPropertyOf.asGraph()
@@ -305,7 +305,7 @@ object RDFStatistics extends Serializable {
    * @return list of triples with owl#sameAs as predicate
    */
   def SameAs(triples: RDD[Triple]): RDD[Triple] =
-    triples.filter(_.predicateMatches(OWL.sameAs.asNode()))
+    triples.filter(_.predicateMatches(OWL2.sameAs.asNode()))
 
   /**
    * 26. Links criterion.
@@ -434,7 +434,7 @@ class Classes_Defined(triples: RDD[Triple], spark: SparkSession) extends Seriali
   // ?p=rdf:type && isIRI(?s) &&(?o=rdfs:Class||?o=owl:Class)
   def Filter(): RDD[Triple] = triples.filter(f =>
     (f.predicateMatches(RDF.`type`.asNode()) && f.getSubject.isURI &&
-      (f.objectMatches(RDFS.Class.asNode()) || f.objectMatches(OWL.Class.asNode()))))
+      (f.objectMatches(RDFS.Class.asNode()) || f.objectMatches(OWL2.Class.asNode()))))
   // M[?o]++
   def Action(): RDD[Node] = Filter().map(_.getSubject).distinct()
 
@@ -455,7 +455,7 @@ class PropertiesDefined(triples: RDD[Triple], spark: SparkSession) extends Seria
 
   def Filter(): RDD[Triple] = triples.filter(f =>
     (f.predicateMatches(RDF.`type`.asNode()) && f.getSubject.isURI &&
-      (f.objectMatches(OWL.ObjectProperty.asNode()) || f.objectMatches(RDF.Property.asNode()))))
+      (f.objectMatches(OWL2.ObjectProperty.asNode()) || f.objectMatches(RDF.Property.asNode()))))
 
   def Action(): RDD[Node] = Filter().map(_.getPredicate).distinct()
 
