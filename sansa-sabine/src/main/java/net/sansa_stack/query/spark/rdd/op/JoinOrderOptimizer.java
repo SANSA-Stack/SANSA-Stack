@@ -6,7 +6,7 @@ import org.aksw.jenax.sparql.algebra.transform2.OpCost;
 import org.aksw.jenax.sparql.algebra.transform2.OpCostEvaluation;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
-import org.aksw.rmlx.model.RmlXTerms;
+import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.algebra.op.OpJoin;
@@ -67,7 +67,7 @@ public class JoinOrderOptimizer
     @Override
     public OpCost eval(OpService op, OpCost subCost) {
         OpCost result = null;
-        if (RmlXTerms.RML_SOURCE_SERVICE_IRI.equals(OpServiceUtils.getIriOrNull(op))) {
+        if (NorseRmlTerms.RML_SOURCE_SERVICE_IRI.equals(OpServiceUtils.getIriOrNull(op))) {
             // Get the logical source and use its size as the cost
             // XXX Probably we shouldn't use the byte size directly but use some rough estimate
             // to get the number of records - but for the purpose of identifying some
