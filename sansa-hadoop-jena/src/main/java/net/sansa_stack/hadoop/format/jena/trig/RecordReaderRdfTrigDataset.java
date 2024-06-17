@@ -15,10 +15,8 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.Quad;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -37,17 +35,19 @@ public class RecordReaderRdfTrigDataset
 
 
     /**
-     * This is the pattern for trig data where graphs are separated by '{'
+     * This is the pattern for directives or trig data where graphs are separated by '{'.
+     * This pattern was used
      */
-    protected static final CustomPattern trigFwdPatternWorking = CustomPatternJava
+    protected static final CustomPattern trigFwdPatternGraphFollowedByCurlyBrace = CustomPatternJava
             .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)\\s*\\{",
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
+    /** This is the pattern for directives or (compact) IRIs. Trig graphs must be IRIs. */
     protected static final CustomPattern trigFwdPatternNew = CustomPatternJava
-            .compile(".",
+            .compile("@?base|@?prefix|(graph\\s*)?(<[^>]*>|_?:[^-\\s]+)",
                     Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
-    protected static final CustomPattern trigFwdPattern = trigFwdPatternWorking;
+    protected static final CustomPattern trigFwdPattern = trigFwdPatternNew;
 
 
     public static class AccumulatingDataset
