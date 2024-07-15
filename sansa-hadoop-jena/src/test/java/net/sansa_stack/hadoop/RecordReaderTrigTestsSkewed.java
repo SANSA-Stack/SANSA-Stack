@@ -85,7 +85,7 @@ public class RecordReaderTrigTestsSkewed
     public static void generateData1(Path path, int[] graphSizes) throws Exception {
         FileUtils.safeCreate(path,
                 out -> OutputStreamRightPad.rightPad(out, 100),
-                FileUtils.OverwriteMode.SKIP, out -> {
+                FileUtils.OverwritePolicy.SKIP, out -> {
             StreamRDF sink = StreamRDFWriter.getWriterStream(out, RDFFormat.TRIG_BLOCKS);
             sink.start();
             // int[] graphSizes = {1000000};
@@ -109,7 +109,7 @@ public class RecordReaderTrigTestsSkewed
     public static void generateData2(Path path, int[] graphSizes) throws Exception {
         FileUtils.safeCreate(path,
                 out -> OutputStreamRightPad.rightPad(out, 100),
-                FileUtils.OverwriteMode.SKIP,
+                FileUtils.OverwritePolicy.SKIP,
                 out -> {
             StreamRDF sink = StreamRDFWriter.getWriterStream(out, RDFFormat.TRIG_BLOCKS);
             sink.start();

@@ -11,9 +11,9 @@ import org.aksw.jena_sparql_api.algebra.utils.OpUtils;
 import org.aksw.jena_sparql_api.algebra.utils.OpVar;
 import org.aksw.jenax.arq.util.binding.BindingUtils;
 import org.aksw.jenax.arq.util.syntax.QueryUtils;
+import org.aksw.jenax.norse.term.rml.NorseTermsRml;
 import org.aksw.rml.jena.impl.RmlLib;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
-import org.aksw.rmlx.model.NorseRmlTerms;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.graph.Node;
@@ -161,7 +161,7 @@ public class OpExecutorImpl
                 result = RddOfDatasetsOps.flatMapWithSparqlSelect(rddOfDataset.rdd(), query).toJavaRDD();
 
                 success = true;
-            } else if (NorseRmlTerms.RML_SOURCE_SERVICE_IRI.equals(serviceUri)) {
+            } else if (NorseTermsRml.RML_SOURCE_SERVICE_IRI.equals(serviceUri)) {
                 JavaSparkContext sc = JavaSparkContextUtils.fromRdd(rdd);
                 ILogicalSource logicalSource = RmlLib.getLogicalSource(op);
                 Preconditions.checkArgument(logicalSource != null, "No logical source detected in " + op);

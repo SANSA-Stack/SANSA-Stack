@@ -37,6 +37,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-norse-terms</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
             <scope>test</scope>
