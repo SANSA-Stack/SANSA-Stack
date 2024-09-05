@@ -241,7 +241,7 @@ public class SeekableSourceOverSplit
         // Wrap the stream that when reading past the split point any data is buffered with the tailBuffer
         ReadableChannel<byte[]> headStream = new ReadableChannelWithConditionalBound<>(baseStream,
             self -> {
-                long pos = baseStream.position();
+                long pos = SeekableReadableChannels.position(baseStream);
                 // long splitId = posToSplitId.apply(pos);
                 boolean isEof = pos >= splitPoint;
                 if (isEof) {
@@ -460,7 +460,7 @@ public class SeekableSourceOverSplit
         }
 
         protected long getInternalPosition() {
-            long relativePos = currentStream.position();
+            long relativePos = SeekableReadableChannels.position(currentStream);
             long result = currentStreamOffset + relativePos;
             return result;
         }

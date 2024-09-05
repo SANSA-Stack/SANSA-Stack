@@ -1,6 +1,6 @@
 package net.sansa_stack.hadoop.util;
 
-import net.sansa_stack.nio.util.ReadableByteChannelFromInputStream;
+import org.aksw.commons.io.util.channel.ReadableByteChannelFromInputStream;
 import org.apache.hadoop.fs.Seekable;
 
 import java.io.IOException;

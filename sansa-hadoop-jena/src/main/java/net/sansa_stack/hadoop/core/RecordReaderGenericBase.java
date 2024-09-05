@@ -479,7 +479,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         Stream<U> eltStream = null;
         ReadableChannel<U[]> channel = null;
         SeekableReadableChannel<byte[]> clonedSeekable = seekable.cloneObject();
-        long startOffset = clonedSeekable.position();
+        long startOffset = getPosition(clonedSeekable);
         long endOffset;
 
         ReadableChannel<byte[]> byteChannel = new ReadableChannelSwitchable<>(clonedSeekable);
@@ -525,7 +525,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
             // Get the position where the error occurred - if it is very distant from the probe offset
             // we assume that we are in a large record which we need to skip over
-            endOffset = clonedSeekable.position();
+            endOffset = getPosition(clonedSeekable);
             logger.debug(String.format("Element offset probing result: Start = %d, End = %d, Parse error encountered after reading %d bytes",
                     startOffset, endOffset, endOffset - startOffset));
 
@@ -1114,6 +1114,13 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
         }
     }
 
+    public static long getPosition(SeekableReadableChannel<byte[]>channel) {
+        try {
+            return channel.position();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     protected static MatcherFactory createMatcherFactory(
             CustomPattern recordSearchPattern,
@@ -1122,8 +1129,8 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
 
         // long initialPos = seekable.position();
         return seekable -> {
-            long matcherAbsStartPos = seekable.position();
-            CharSequence charSequence = ReadableChannels.asCharSequence(seekable);
+            long matcherAbsStartPos = getPosition(seekable);
+            CharSequence charSequence = SeekableReadableChannels.asCharSequence(seekable);
             charSequence = new CharSequenceDecorator(charSequence) {
                 @Override
                 public char charAt(int index) {
