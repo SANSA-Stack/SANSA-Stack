@@ -204,4 +204,7 @@ public class ExecutionDispatch
 
     @Override
     public void visit(OpLateral opLateral) { stack.push(opExecutor.execute(opLateral, stack.pop())); }
+
+    @Override
+    public void visit(OpUnfold opUnfold) { throw new UnsupportedOperationException(); }
 }
