@@ -355,7 +355,7 @@ public final class TokenizerTextForgiving implements Tokenizer
             token.setType(TokenType.DIRECTIVE);
             token.setImage(readWord(false));
             if ( Checking )
-                checkDirective(token.cntrlCode);
+                checkDirective(token.getImage());
             return token;
         }
 
@@ -1151,7 +1151,7 @@ public final class TokenizerTextForgiving implements Tokenizer
             checker.checkVariable(tokenImage);
     }
 
-    protected void checkDirective(int cntrlCode) {
+    protected void checkDirective(String cntrlCode) {
         if ( checker != null )
             checker.checkDirective(cntrlCode);
     }

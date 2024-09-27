@@ -121,7 +121,7 @@ public class CsvRowMapperFactories {
             String str = strs[i];
             if (str != null) {
                 int varlen = vars.length;
-                Node node = NodeFactory.createLiteral(str);
+                Node node = NodeFactory.createLiteralString(str);
                 for (int j = 0; j < varlen; ++j) {
                     Var var = vars[j];
                     builder.add(var, node);
@@ -139,28 +139,45 @@ public class CsvRowMapperFactories {
             Var var = headers[i];
             String str = strs[i];
             if (str != null) {
-                Node node = NodeFactory.createLiteral(str);
+                Node node = NodeFactory.createLiteralString(str);
                 builder.add(var, node);
             }
         }
         Binding result = builder.build();
         return result;
     }
-    public static JsonObject rowToJson(String[][] headers, String[] strs) {
+
+    /** Map one row to json; include all header keys even if their value is null. */
+    public static JsonObject rowToJsonWithNulls(String[][] headers, String[] strs) {
         JsonObject result = new JsonObject();
         int n = Math.min(headers.length, strs.length);
         for (int i = 0; i < n; ++i) {
-            String[] vars = headers[i];
-            String str = strs[i];
-            if (str != null) {
-                int varlen = vars.length;
-                for (int j = 0; j < varlen; ++j) {
-                    String var = vars[j];
-                    result.addProperty(var, str);
-                }
-            }
+            processOneHeading(result, headers, strs, i, true);
+        }
+        for (int i = n; i < headers.length; ++i) {
+            processOneHeading(result, headers, strs, i, true);
         }
         return result;
     }
 
+    /** Map one row to json; skip all headers with a null value. */
+    public static JsonObject rowToJsonWithoutNulls(String[][] headers, String[] strs) {
+        JsonObject result = new JsonObject();
+        int n = Math.min(headers.length, strs.length);
+        for (int i = 0; i < n; ++i) {
+            processOneHeading(result, headers, strs, i, false);
+        }
+        return result;
+    }
+
+    public static void processOneHeading(JsonObject result, String[][] headers, String[] strs, int i, boolean includeNullHeaders) {
+        String[] vars = headers[i];
+        String str = i < strs.length ? strs[i] : null;
+        if (str != null || includeNullHeaders) {
+            for (int j = 0; j < vars.length; ++j) {
+                String var = vars[j];
+                result.addProperty(var, str);
+            }
+        }
+    }
 }

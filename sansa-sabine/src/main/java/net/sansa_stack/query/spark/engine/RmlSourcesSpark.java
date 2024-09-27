@@ -178,7 +178,7 @@ public class RmlSourcesSpark {
         boolean jsonMode = finalHeaderVars == null;
         Function<String[][], Function<String[], Binding>> rowMapperFactory;
         if (jsonMode) {
-            rowMapperFactory = CsvRowMapperFactories.rowMapperFactoryJson(null, jsonVar, CsvRowMapperFactories::rowToJson);
+            rowMapperFactory = CsvRowMapperFactories.rowMapperFactoryJson(null, jsonVar, CsvRowMapperFactories::rowToJsonWithNulls);
         } else {
             rowMapperFactory = CsvRowMapperFactories.rowMapperFactoryBinding(finalHeaderVars);
         }

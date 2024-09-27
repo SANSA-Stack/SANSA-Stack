@@ -9,7 +9,7 @@ import picocli.CommandLine.Option;
         subcommands = {
                 CmdSansaCount.class, CmdSansaPrefixesParent.class, CmdSansaMap.class,
                 CmdSansaTarql.class, CmdSansaNgs.class, CmdSansaAnalyzeParent.class,
-                CmdSansaQuery.class,
+                CmdSansaQuery.class, CmdSansaSelfTest.class
 
                 // Rml Features are provided by the RdfProcessingToolkit
                 // Including them here as well is probably more confusing than it is convenient
