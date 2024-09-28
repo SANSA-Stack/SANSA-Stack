@@ -1,19 +1,18 @@
 package net.sansa_stack.query
 
-import java.util.stream.Collector
-
-import org.apache.jena.graph.Triple
-import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import net.sansa_stack.query.spark.api.domain.QueryExecutionFactorySpark
 import net.sansa_stack.query.spark.datalake.DataLakeEngine
 import net.sansa_stack.query.spark.ontop.QueryEngineFactoryOntop
 import net.sansa_stack.query.spark.semantic.QuerySystem
 import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify
 import net.sansa_stack.rdf.spark.mappings.R2rmlMappedSparkSession
-import net.sansa_stack.rdf.spark.rdd.op.RddOps
+import org.apache.jena.graph.Triple
+import org.apache.jena.sparql.engine.binding.Binding
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import spark.rdd.op.RddOps
 
+import java.util.stream.Collector
 import scala.reflect.ClassTag
 
 /**

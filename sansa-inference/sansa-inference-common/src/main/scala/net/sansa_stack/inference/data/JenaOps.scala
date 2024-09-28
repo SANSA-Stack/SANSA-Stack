@@ -1,19 +1,20 @@
 package net.sansa_stack.inference.data
 
-import scala.collection.JavaConverters._
-
 import org.apache.jena.datatypes.{BaseDatatype, RDFDatatype, TypeMapper}
 import org.apache.jena.graph.{Graph => JenaGraph, Node => JenaNode, Triple => JenaTriple, _}
 import org.apache.jena.rdf.model.{Seq => _}
+import org.apache.jena.sparql.graph.GraphFactory
+
+import scala.collection.JavaConverters._
 
 class JenaOps extends RDFOps[Jena]  {
 
   // graph
 
-  val emptyGraph: Jena#Graph = Factory.createDefaultGraph
+  val emptyGraph: Jena#Graph = GraphFactory.createDefaultGraph
 
   def makeGraph(triples: Iterable[Jena#Triple]): Jena#Graph = {
-    val graph: JenaGraph = Factory.createDefaultGraph
+    val graph: JenaGraph = GraphFactory.createDefaultGraph
     triples.foreach { triple =>
       graph.add(triple)
     }
@@ -37,7 +38,7 @@ class JenaOps extends RDFOps[Jena]  {
       case uri: Node_URI =>
         (s, uri, o)
       case _ =>
-        throw new RuntimeException("fromTriple: predicate " + p.toString + " must be a URI")
+        throw new RuntimeException("fromTriple: predicate " + p.toString() + " must be a URI")
     }
   }
 
@@ -65,13 +66,13 @@ class JenaOps extends RDFOps[Jena]  {
   def makeBNode(): Node_Blank = NodeFactory.createBlankNode().asInstanceOf[Node_Blank]
 
   def makeBNodeLabel(label: String): Jena#BNode = {
-    val id = BlankNodeId.create(label)
-    NodeFactory.createBlankNode(id).asInstanceOf[Node_Blank]
+    // val id = BlankNodeId.create(label)
+    NodeFactory.createBlankNode(label).asInstanceOf[Node_Blank] // .createBlankNode(id)
   }
 
   def fromBNode(bn: Jena#BNode): String =
     if (bn.isBlank) {
-      bn.getBlankNodeId.getLabelString
+      bn.getBlankNodeLabel
     } else {
       throw new RuntimeException("fromBNode: " + bn.toString + " must be a BNode")
     }

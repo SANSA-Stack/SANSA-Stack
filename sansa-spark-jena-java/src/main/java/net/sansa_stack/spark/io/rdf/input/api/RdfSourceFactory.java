@@ -25,6 +25,10 @@ public interface RdfSourceFactory {
         return get(path, null, lang);
     }
 
+    default RdfSourceFromResource get(Path path, Lang lang) {
+        return get(path, null, lang);
+    }
+
     default RdfSourceFromResource get(String sourceStr, FileSystem fileSystem) {
         Path path = new Path(sourceStr);
         return get(path, fileSystem, null);

@@ -2,8 +2,7 @@ package net.sansa_stack.query.spark.sparqlify
 
 import net.sansa_stack.query.spark.SPARQLTestSuiteRunnerSpark
 import net.sansa_stack.query.spark.api.domain.QueryEngineFactory
-import net.sansa_stack.query.spark.sparqlify.SPARQLTestSuiteRunnerSparkSparqlify.CUSTOM_TS_QUERY
-import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTest, SPARQLQueryEvaluationTestSuite}
+import net.sansa_stack.query.tests.SPARQLQueryEvaluationTestSuite
 import org.apache.jena.query.{Query, QueryFactory}
 
 object SPARQLTestSuiteRunnerSparkSparqlify {

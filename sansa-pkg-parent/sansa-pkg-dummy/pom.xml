@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-pkg-parent_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-pkg-dummy_2.12</artifactId>
@@ -22,13 +22,15 @@
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-pkg-deb-cli_2.12</artifactId>
             <scope>provided</scope>
-        </dependency>
+	    </dependency>
+    <!--
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
             <type>rpm</type>
             <scope>provided</scope>
-        </dependency>
+	    </dependency>
+    -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-pkg-docker-cli_2.12</artifactId>

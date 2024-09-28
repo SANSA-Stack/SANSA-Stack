@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Test cases for the {@link RecordReaderRdfTrigDataset}:
@@ -69,14 +70,13 @@ public abstract class RecordReaderRdfTestBase<T> {
         Assert.assertTrue("Datasets were not isomorphic - see output above", isIso);
     }
 
-
     @Test
     public void test() throws IOException, InterruptedException {
 
         Configuration conf = new Configuration(false);
         conf.set("fs.defaultFS", "file:///");
         conf.set(RecordReaderRdfTrigDataset.RECORD_MAXLENGTH_KEY, "10000");
-        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "1");
+        conf.set(RecordReaderRdfTrigDataset.RECORD_PROBECOUNT_KEY, "2");
 
         configureHadoop(conf);
 
@@ -108,8 +108,10 @@ public abstract class RecordReaderRdfTestBase<T> {
         // compare with target dataset
         Dataset actualDataset = createDataset();
 
-        testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
-                .forEach(record -> accumulate(actualDataset, record));
+        try (Stream<T> stream = testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)) {
+            stream.forEach(record -> accumulate(actualDataset, record));
+        }
+
         logger.info(String.format("Named graph counts expected/actual: %d/%d",
                 Iterators.size(expectedDataset.listNames()),
                 Iterators.size(actualDataset.listNames())));
@@ -128,7 +130,7 @@ public abstract class RecordReaderRdfTestBase<T> {
     /**
      * Create a sequential stream of all records covering all consecutive splits in order
      */
-    public static <T> Flowable<T> testSplit(
+    public static <T> Stream<T> testSplit(
             Job job,
             InputFormat<?, T> inputFormat,
             org.apache.hadoop.fs.Path testHadoopPath,
@@ -137,7 +139,7 @@ public abstract class RecordReaderRdfTestBase<T> {
     ) throws IOException, InterruptedException {
         List<InputSplit> splits = FileSplitUtils.listFileSplits(testHadoopPath, fileTotalLength, numSplits);
 
-        return Flowable.fromIterable(splits).flatMap(split -> FileSplitUtils.createFlow(job, inputFormat, split));
+        return splits.stream().flatMap(split -> FileSplitUtils.createFlow(job, inputFormat, split));
     }
 
 

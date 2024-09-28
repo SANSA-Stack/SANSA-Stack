@@ -52,7 +52,7 @@ object R2RMLMappings extends Serializable {
   def insertSQLTables(triples: RDD[Triple], spark: SparkSession): RDD[String] = {
     val insertSQL = triples.map {      // .getTriples.map {
       case t =>
-        var tablename = t.getPredicate.toString.replaceAll("[^A-Za-z0-9]", "_");
+        var tablename = t.getPredicate.toString().replaceAll("[^A-Za-z0-9]", "_");
         var subj = RdfPartitionerDefault.getUriOrBNodeString(t.getSubject);
         var complement = if (t.getObject.isLiteral) {
           if (t.getObject.getLiteralLanguage != "") {

@@ -1,25 +1,22 @@
 package net.sansa_stack.spark.io.rdf.output;
 
-
+import net.sansa_stack.spark.io.common.HadoopOutputFormat;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
-import org.aksw.commons.io.util.FileMerger;
-import org.aksw.commons.io.util.FileUtils;
+import net.sansa_stack.spark.util.JavaSparkContextUtils;
 import org.aksw.commons.lambda.serializable.SerializableBiConsumer;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
-import org.aksw.jena_sparql_api.rx.RDFLanguagesEx;
 import org.aksw.jenax.arq.analytics.NodeAnalytics;
 import org.aksw.jenax.arq.dataset.api.DatasetGraphOneNg;
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg;
+import org.aksw.jenax.arq.util.lang.RDFLanguagesEx;
 import org.aksw.jenax.arq.util.prefix.PrefixMapAdapter;
 import org.aksw.jenax.arq.util.prefix.PrefixMappingTrie;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFDeferred;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFUtils;
 import org.aksw.jenax.arq.util.streamrdf.WriterStreamRDFBaseUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.jena.graph.Graph;
@@ -47,18 +44,18 @@ import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
-
-
 /**
- * A fluent API for configuration of how to save an RDD of RDF data to disk.
+ * <b>Important</b>: Instances of this class should only be created using {@link RddRdfWriterFactory} because the
+ * factory is RDD-independent and can validate settings at an early stage.
+ *
+ * <p />
+ *
+ * This class implements a fluent API for configuration of how to save an RDD of RDF data to disk.
  * This class uniformly handles Triples, Quads, Model, Datasets, etc using a set of
  * lambdas for relevant conversion.
  *
@@ -71,6 +68,7 @@ public class RddRdfWriter<T>
 {
     private static final Logger logger = LoggerFactory.getLogger(RddRdfWriter.class);
 
+    /** References the lambdas in RddRdfOpsImpl directly (saves one entry in the call stack per record) */
     protected RddRdfOpsImpl<T> dispatcher;
 
     // Cached attributes from the given RDD
@@ -98,29 +96,12 @@ public class RddRdfWriter<T>
         return rdd;
     }
 
-    @Override
-    protected RddRdfWriter<T> self() {
-        return (RddRdfWriter<T>)this;
-    }
+    // @Override
+    // protected RddRdfWriter<T> self() {
+        // return (RddRdfWriter<T>)this;
+    // }
 
-    /**
-     * Pass this object to a consumer. Useful to conditionally configure this object
-     * without breaking the fluent chain:
-     *
-     * <pre>
-     *    rdd.configureSave().mutate(self -> { if (condition) { self.setX(); }}).run();
-     * </pre>
-     *
-     * @param action
-     * @return
-     */
-    public RddRdfWriter<T> mutate(Consumer<RddRdfWriter<T>> action) {
-        action.accept(this);
-        return this;
-    }
-
-
-    /** Same as .run() just without the checked IOException */
+    /** Same as {@link #run()} but without the checked IOException */
     public void runUnchecked() {
         try {
             run();
@@ -209,67 +190,34 @@ public class RddRdfWriter<T>
         }
     }
 
-    /**
-     * Run the save action according to configuration
-     *
-     * @throws IOException
-     */
-    public void runSpark() throws IOException {
-/*
-        val outFilePath = Paths.get(outFile).toAbsolutePath
-        val outFileFileName = outFilePath.getFileName.toString
-        val outFolderPath =
-        if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
-        else Paths.get(outFolder).toAbsolutePath
-
-        saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
-        mergeFolder(outFilePath, outFolderPath, "part*")
-*/
-        Path effPartitionFolder = partitionFolder;
-
-        if (targetFile != null && partitionFolder == null) {
-            targetFile.getFileSystem(hadoopConfiguration);
-            // java.nio.file.Path targetFilePath = Paths.get(targetFile.toUri());
-            String targetFileName = targetFile.getName();
-            // java.nio.file.Path effPartitionFolderPath = path.resolveSibling(targetFileName + "-parts");
-            effPartitionFolder = new Path(targetFile.toUri().resolve("part-" + targetFileName));
-            // effPartitionFolder = new Path(effPartitionFolderPath.toString());
-        }
-
-
-        FileSystem partitionFolderFs = effPartitionFolder.getFileSystem(hadoopConfiguration);
-        if (partitionFolderFs.exists(effPartitionFolder)) {
-            if (allowOverwriteFiles) {
-                logger.info(String.format("Removing existing file/folder: %s", effPartitionFolder));
-                partitionFolderFs.delete(effPartitionFolder, true);
-            } else {
-                throw new IllegalArgumentException("Folder already exists: " + effPartitionFolder);
-            }
-        }
-
-        URI targetFileUri = null;
-        FileSystem targetFileFs = null;
-        if (targetFile != null) {
-            targetFileFs = targetFile.getFileSystem(hadoopConfiguration);
-            if (targetFileFs.exists(targetFile)) {
-                if (allowOverwriteFiles) {
-                    logger.info(String.format("Removing existing file: %s", targetFile));
-                    targetFileFs.delete(targetFile, false);
-                } else {
-                    throw new IllegalArgumentException("File already exists: " + targetFile);
-                }
-            }
-        }
-
-
-        // JavaRDD<T> effectiveRdd = rdd.map(x -> (T)x);
+    public void runActual(RddWriterSettings<?> cxt) throws IOException {
         JavaRDD effectiveRdd = getEffectiveRdd(postProcessingSettings);
 
         if (useCoalesceOne) {
             effectiveRdd = effectiveRdd.coalesce(1);
         }
 
+        Path effPartitionFolder = cxt.getPartitionFolder();
+
+
+        boolean useElephas = true;
+        boolean useOldElephas = false;
+
         if (useElephas) {
+            RddRdfWriter2 writer =  new RddRdfWriter2(outputFormat, mapQuadsToTriplesForTripleLangs, globalPrefixMapping);
+            Lang lang = outputFormat.getLang();
+
+            if (RDFLanguages.isTriples(lang)) {
+                JavaRDD<Triple> triples = dispatcher.convertToTriple.apply(effectiveRdd);
+                writer.writeTriples(triples.rdd(), effPartitionFolder);
+            } else if (RDFLanguages.isQuads(lang)) {
+                JavaRDD<Quad> quads = dispatcher.convertToQuad.apply(effectiveRdd);
+                writer.writeQuads(quads.rdd(), effPartitionFolder);
+            } else {
+                throw new IllegalStateException(String.format("Language %s is neiter triples nor quads", lang));
+            }
+
+        } else if (useOldElephas) {
             Lang lang = RDFLanguages.filenameToLang(effPartitionFolder.toString());
             Objects.requireNonNull(String.format("Could not determine language from path %s ", effPartitionFolder));
 
@@ -291,34 +239,18 @@ public class RddRdfWriter<T>
 
             saveToFolder(effectiveRdd, effPartitionFolder.toString(), outputFormat, mapQuadsToTriplesForTripleLangs, pmap, this.dispatcher.sendRecordToStreamRDF);
         }
-
-        if (targetFile != null) {
-            if (!(partitionFolderFs instanceof LocalFileSystem) || !(targetFileFs instanceof LocalFileSystem)) {
-                throw new IllegalArgumentException("Merge currently only supports local file system");
-            } else {
-                java.nio.file.Path nioFolder = Paths.get(effPartitionFolder.toString());
-                java.nio.file.Path nioFile = Paths.get(targetFile.toString());
-                mergeFolder(nioFile, nioFolder, "part-*", null);
-            }
-
-            if (deletePartitionFolderAfterMerge) {
-                logger.info(String.format("Removing temporary output folder: %s", effPartitionFolder));
-                partitionFolderFs.delete(effPartitionFolder, true);
-            }
-        }
     }
 
-    public static void validateOutFolder(Path path, Configuration conf, boolean deleteIfExists) throws IOException {
-        // Path fsPath = new Path(path);
-        FileSystem fs = FileSystem.get(path.toUri(), conf);
-
-        if (fs.exists(path)) {
-            if (deleteIfExists) {
-                fs.delete(path, true);
-            } else {
-                throw new IllegalArgumentException("File already exists: " + fs);
-            }
-        }
+    /**
+     * Run the save action according to configuration
+     *
+     * @throws IOException
+     */
+    public void runSpark() throws IOException {
+        RddWriterSettings<?> effectiveSettings = RddWriterUtils.prepare(this, JavaSparkContextUtils.fromRdd(rdd).hadoopConfiguration());
+        // OutputContext cxt = prepareOutputContext(effectiveSettings);
+        runActual(effectiveSettings);
+        RddWriterUtils.postProcess(effectiveSettings);
     }
 
     /**
@@ -339,57 +271,6 @@ public class RddRdfWriter<T>
         return result;
     }
 
-
-    // TODO This method should go to a common util class
-    public static void mergeFolder(
-            java.nio.file.Path outFile,
-            java.nio.file.Path srcFolder,
-            String pattern,
-            Comparator<? super java.nio.file.Path> pathComparator) throws IOException {
-        if (pathComparator == null) {
-            pathComparator = (java.nio.file.Path a, java.nio.file.Path b) -> a.getFileName().toString().compareTo(b.getFileName().toString());
-        }
-        List<java.nio.file.Path> partPaths = FileUtils.listPaths(srcFolder, pattern);
-        Collections.sort(partPaths, pathComparator);
-        logger.info(String.format("Creating file %s by merging %d files from %s",
-                outFile, partPaths.size(), srcFolder));
-
-        // val sw = Stopwatch.createStarted
-        FileMerger merger = FileMerger.create(outFile, partPaths);
-        merger.addProgressListener(self -> logger.info(
-                String.format("Write progress for %s: %.2f%%",
-                        outFile.getFileName(),
-                        self.getProgress() * 100.0)));
-        merger.run();
-    }
-
-    /**
-     * Save the RDD to a single file.
-     * Underneath invokes [[JenaDatasetWriter#saveToFolder]] and merges
-     * the set of files created by it.
-     * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
-     *
-     * mode
-     * exitOnError /
-     *                    def saveToFile(outFile: String,
-     *                    prefixMapping: PrefixMapping,
-     *                    rdfFormat: RDFFormat,
-     *                    outFolder: String,
-     *                    mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
-     *                    exitOnError: Boolean = false): Unit = {
-     *                    <p>
-     *                    val outFilePath = Paths.get(outFile).toAbsolutePath
-     *                    val outFileFileName = outFilePath.getFileName.toString
-     *                    val outFolderPath =
-     *                    if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
-     *                    else Paths.get(outFolder).toAbsolutePath
-     *                    <p>
-     *                    saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
-     *                    mergeFolder(outFilePath, outFolderPath, "part*")
-     *                    }
-     */
-
-    // public static void partitionMapper
     public static Iterator<String> partitionMapperNTriples(Iterator<Triple> it) {
         return WrappedIterator.create(it).mapWith(FmtUtils::stringForTriple);
     }
@@ -397,16 +278,6 @@ public class RddRdfWriter<T>
     public static Iterator<String> partitionMapperNQuads(Iterator<Quad> it) {
         return WrappedIterator.create(it).mapWith(FmtUtils::stringForQuad);
     }
-
-    /*
-        public static Iterator<String> partitionMapperRDFStream(
-                Iterator<Dataset> it,
-                RDFFormat rdfFormat,
-                PrefixMapping prefixMapping) throws IOException {
-            return partitionMapperRDFStream(it, rdfFormat, prefixMapping,
-                    (ds, s) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), s));
-        }
-    */
 
     /**
      * Create a function that can create a StreamRDF instance that is backed by the given
@@ -520,6 +391,7 @@ public class RddRdfWriter<T>
      * @param path the folder into which the file(s) will be written to
      * mode the expected behavior of saving the data to a data source
      */
+    @Deprecated
     public static <T> void saveToFolder(
             JavaRDD<T> javaRdd,
             String path,
@@ -527,6 +399,7 @@ public class RddRdfWriter<T>
             boolean mapQuadsToTriplesForTripleLangs,
             PrefixMapping globalPrefixMapping,
             BiConsumer<T, StreamRDF> sendRecordToStreamRDF) throws IOException {
+
 
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(javaRdd.context());
 
@@ -575,29 +448,6 @@ public class RddRdfWriter<T>
         dataBlocks.saveAsTextFile(path);
     }
 
-//    public static void saveUsingElephasQuad(JavaRDD<Quad> rddOfQuad, Path path) {
-//        JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rddOfQuad.context());
-//        Configuration hadoopConfiguration = sparkContext.hadoopConfiguration();
-//
-//        Lang lang = RDFLanguages.filenameToLang(path.toString());
-//
-//        // unknown format
-//        if (!RDFLanguages.isQuads(lang)) {
-//            throw new IllegalArgumentException(
-//                    String.format("Couldn't determine syntax for RDF quads based on file extension in given path %s", path.toString()));
-//        }
-//
-//        OutputFormatRdfRegistry.Entry entry = OutputFormatRdfRegistry.find(lang);
-//        Objects.requireNonNull(entry, String.format("No OutputFormat registered for language %s", lang));
-//
-//        JavaPairRDD<?, QuadWritable> pairRdd = rddOfQuad.mapToPair(v -> new Tuple2<>(new LongWritable(0), new QuadWritable(v)));
-//        pairRdd.saveAsNewAPIHadoopFile(path,
-//                entry.getKeyClass(),
-//                entry.getValueClass(),
-//                entry.getOutputFormatClass(),
-//                hadoopConfiguration);
-//    }
-
     public static <T> void saveUsingElephas(
             JavaRDD<T> rdd,
             Path path,
@@ -607,7 +457,7 @@ public class RddRdfWriter<T>
         JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rdd.context());
         Configuration hadoopConfiguration = sparkContext.hadoopConfiguration();
 
-        RddRdfWriterFormatRegistry.FormatEntry entry = RddRdfWriterFormatRegistry.getInstance().get(lang);
+        HadoopOutputFormat entry = RddRdfWriterFormatRegistry.getInstance().get(lang);
         Objects.requireNonNull(entry, String.format("No format registered for %s", lang));
         // TODO Add some registry to connect rdd + rdfFormat with the
         // hadoop API
@@ -617,11 +467,7 @@ public class RddRdfWriter<T>
         JavaPairRDD<?, ?> pairRdd = rdd
                 .mapToPair(v -> new Tuple2<>(new LongWritable(0), recordToWritable.apply(v)));
 
-        pairRdd.saveAsNewAPIHadoopFile(path.toString(),
-                entry.getKeyClass(),
-                entry.getValueClass(),
-                entry.getOutputFormatClass(),
-                hadoopConfiguration);
+        RddWriterUtils.save(pairRdd, entry, path, hadoopConfiguration);
     }
 
     public static RddRdfWriter<Triple> createForTriple() {
@@ -650,6 +496,7 @@ public class RddRdfWriter<T>
 
     public static void validate(RddRdfWriterSettings<?> settings) {
         RDFFormat outputFormat = settings.getOutputFormat();
+
         if (!StreamRDFWriter.registered(outputFormat)) {
             throw new IllegalArgumentException(outputFormat + " is not a streaming format");
         }
@@ -679,6 +526,160 @@ public class RddRdfWriter<T>
             streamRdf.finish();
         });
     }
-
-
 }
+
+
+
+/*
+    public OutputContext prepareOutputContext() throws IOException {
+
+/ *
+        val outFilePath = Paths.get(outFile).toAbsolutePath
+        val outFileFileName = outFilePath.getFileName.toString
+        val outFolderPath =
+        if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
+        else Paths.get(outFolder).toAbsolutePath
+
+        saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+        mergeFolder(outFilePath, outFolderPath, "part*")
+* /
+
+        Path effPartitionFolder = partitionFolder;
+
+        if (targetFile != null && partitionFolder == null) {
+            targetFile.getFileSystem(hadoopConfiguration);
+            // java.nio.file.Path targetFilePath = Paths.get(targetFile.toUri());
+            String targetFileName = targetFile.getName();
+            // java.nio.file.Path effPartitionFolderPath = path.resolveSibling(targetFileName + "-parts");
+            effPartitionFolder = new Path(targetFile.toUri().resolve("part-" + targetFileName));
+            // effPartitionFolder = new Path(effPartitionFolderPath.toString());
+        }
+
+
+        FileSystem partitionFolderFs = effPartitionFolder.getFileSystem(hadoopConfiguration);
+        if (partitionFolderFs.exists(effPartitionFolder)) {
+            if (allowOverwriteFiles) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("Attempting to safely remove existing file/folder: %s", effPartitionFolder));
+                }
+                // partitionFolderFs.delete(effPartitionFolder, true);
+                safeDeletePartitionFolder(partitionFolderFs, effPartitionFolder, hadoopConfiguration);
+
+                if (partitionFolderFs.exists(effPartitionFolder)) {
+                    String msg = String.format("Could not safely remove partition folder '%s' because non-hadoop files exist. Please delete manually.", effPartitionFolder);
+//                    if (logger.isInfoEnabled()) {
+//                        logger.info(msg);
+//                    }
+                    throw new RuntimeException(msg);
+                }
+            } else {
+                throw new IllegalArgumentException("Folder already exists: " + effPartitionFolder);
+            }
+        }
+
+        // URI targetFileUri = null;
+        FileSystem targetFileFs = null;
+        if (targetFile != null) {
+            targetFileFs = targetFile.getFileSystem(hadoopConfiguration);
+            if (targetFileFs.exists(targetFile)) {
+                if (allowOverwriteFiles) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info(String.format("Removing existing file: %s", targetFile));
+                    }
+                    targetFileFs.delete(targetFile, false);
+                } else {
+                    throw new IllegalArgumentException("File already exists: " + targetFile);
+                }
+            }
+        }
+
+
+        // JavaRDD<T> effectiveRdd = rdd.map(x -> (T)x);
+        JavaRDD effectiveRdd = getEffectiveRdd(postProcessingSettings);
+
+        if (useCoalesceOne) {
+            effectiveRdd = effectiveRdd.coalesce(1);
+        }
+        return new OutputContext(effectiveRdd, targetFileFs, targetFile, partitionFolderFs, effPartitionFolder);
+    }
+
+    public void postProcess(OutputContext cxt) throws IOException {
+
+        Path targetFile = cxt.targetFile;
+        if (targetFile != null) {
+            if (!(cxt.partitionFolderFs instanceof LocalFileSystem) || !(cxt.targetFileFs instanceof LocalFileSystem)) {
+                throw new IllegalArgumentException("Merge currently only supports local file system");
+            } else {
+                java.nio.file.Path nioFolder = Paths.get(cxt.effPartitionFolder.toString());
+                java.nio.file.Path nioFile = Paths.get(targetFile.toString());
+                mergeFolder(nioFile, nioFolder, "part-*", null);
+            }
+
+            if (deletePartitionFolderAfterMerge) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("Removing temporary output folder: %s", cxt.effPartitionFolder));
+                }
+                cxt.partitionFolderFs.delete(cxt.effPartitionFolder, true);
+            }
+        }
+    }
+*/
+//    public static void saveUsingElephasQuad(JavaRDD<Quad> rddOfQuad, Path path) {
+//        JavaSparkContext sparkContext = JavaSparkContext.fromSparkContext(rddOfQuad.context());
+//        Configuration hadoopConfiguration = sparkContext.hadoopConfiguration();
+//
+//        Lang lang = RDFLanguages.filenameToLang(path.toString());
+//
+//        // unknown format
+//        if (!RDFLanguages.isQuads(lang)) {
+//            throw new IllegalArgumentException(
+//                    String.format("Couldn't determine syntax for RDF quads based on file extension in given path %s", path.toString()));
+//        }
+//
+//        OutputFormatRdfRegistry.Entry entry = OutputFormatRdfRegistry.find(lang);
+//        Objects.requireNonNull(entry, String.format("No OutputFormat registered for language %s", lang));
+//
+//        JavaPairRDD<?, QuadWritable> pairRdd = rddOfQuad.mapToPair(v -> new Tuple2<>(new LongWritable(0), new QuadWritable(v)));
+//        pairRdd.saveAsNewAPIHadoopFile(path,
+//                entry.getKeyClass(),
+//                entry.getValueClass(),
+//                entry.getOutputFormatClass(),
+//                hadoopConfiguration);
+//    }
+    /*
+        public static Iterator<String> partitionMapperRDFStream(
+                Iterator<Dataset> it,
+                RDFFormat rdfFormat,
+                PrefixMapping prefixMapping) throws IOException {
+            return partitionMapperRDFStream(it, rdfFormat, prefixMapping,
+                    (ds, s) -> StreamRDFOps.sendDatasetToStream(ds.asDatasetGraph(), s));
+        }
+    */
+
+/**
+ * Save the RDD to a single file.
+ * Underneath invokes [[JenaDatasetWriter#saveToFolder]] and merges
+ * the set of files created by it.
+ * See [[JenaDatasetWriter#saveToFolder]] for supported formats.
+ *
+ * mode
+ * exitOnError /
+ *                    def saveToFile(outFile: String,
+ *                    prefixMapping: PrefixMapping,
+ *                    rdfFormat: RDFFormat,
+ *                    outFolder: String,
+ *                    mode: io.SaveMode.Value = SaveMode.ErrorIfExists,
+ *                    exitOnError: Boolean = false): Unit = {
+ *                    <p>
+ *                    val outFilePath = Paths.get(outFile).toAbsolutePath
+ *                    val outFileFileName = outFilePath.getFileName.toString
+ *                    val outFolderPath =
+ *                    if (outFolder == null) outFilePath.resolveSibling(outFileFileName + "-parts")
+ *                    else Paths.get(outFolder).toAbsolutePath
+ *                    <p>
+ *                    saveToFolder(outFolderPath.toString, prefixMapping, rdfFormat, mode, exitOnError)
+ *                    mergeFolder(outFilePath, outFolderPath, "part*")
+ *                    }
+ */
+
+// public static void partitionMapper

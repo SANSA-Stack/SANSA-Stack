@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 //import com.google.common.collect.Streams;
-import org.apache.jena.ext.com.google.common.collect.Streams;
+import com.google.common.collect.Streams;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;

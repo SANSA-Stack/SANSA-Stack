@@ -41,7 +41,8 @@ public class SeekableByteChannelFromSeekableInputStream
 
     @Override
     public long size() throws IOException {
-        throw new UnsupportedOperationException();
+        return -1; // Some of the InputStream wrapper call available() which eventually calls size() - so we must not raise an exception here
+        // throw new UnsupportedOperationException();
     }
 
     @Override

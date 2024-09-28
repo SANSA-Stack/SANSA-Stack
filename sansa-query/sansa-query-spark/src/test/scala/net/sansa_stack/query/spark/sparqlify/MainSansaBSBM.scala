@@ -1,17 +1,17 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import java.io.File
-
 import benchmark.generator.Generator
 import benchmark.serializer.SerializerModel
 import benchmark.testdriver.{LocalSPARQLParameterPool, SPARQLConnection2, TestDriver}
 import net.sansa_stack.rdf.common.partition.core.RdfPartitionerDefault
 import org.aksw.jena_sparql_api.core.FluentQueryExecutionFactory
-import org.aksw.jenax.arq.connection.core.SparqlQueryConnectionJsa
+import org.aksw.jenax.dataaccess.sparql.connection.query.SparqlQueryConnectionJsa
 import org.aksw.sparqlify.core.sparql.RowMapperSparqlifyBinding
 import org.apache.jena.query.{Query, QueryFactory}
 import org.apache.jena.sparql.engine.binding.{Binding, BindingFactory}
 import org.apache.spark.sql.{Row, SparkSession}
+
+import java.io.File
 
 
 object MainSansaBSBM {

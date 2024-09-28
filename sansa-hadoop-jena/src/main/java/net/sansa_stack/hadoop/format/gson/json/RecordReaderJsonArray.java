@@ -1,5 +1,6 @@
 package net.sansa_stack.hadoop.format.gson.json;
 
+import com.google.common.collect.Streams;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -9,6 +10,7 @@ import net.sansa_stack.hadoop.core.Accumulating;
 import net.sansa_stack.hadoop.core.RecordReaderGenericBase;
 import net.sansa_stack.hadoop.core.pattern.CustomPattern;
 import net.sansa_stack.hadoop.core.pattern.CustomPatternJava;
+import net.sansa_stack.hadoop.format.jena.base.RecordReaderConf;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
@@ -16,6 +18,7 @@ import java.io.*;
 import java.util.AbstractMap;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RecordReaderJsonArray
     extends RecordReaderGenericBase<JsonElement, JsonElement, JsonElement, JsonElement>
@@ -35,21 +38,16 @@ public class RecordReaderJsonArray
     }
 
     public RecordReaderJsonArray(Gson gson) {
-        this(
+        this(new RecordReaderConf(
                 RECORD_MINLENGTH_KEY,
                 RECORD_MAXLENGTH_KEY,
                 RECORD_PROBECOUNT_KEY,
-                jsonFwdPattern,
+                jsonFwdPattern),
                 gson);
     }
 
-    public RecordReaderJsonArray(
-            String minRecordLengthKey,
-            String maxRecordLengthKey,
-            String probeRecordCountKey,
-            CustomPattern recordSearchPattern,
-            Gson gson) {
-        super(minRecordLengthKey, maxRecordLengthKey, probeRecordCountKey, recordSearchPattern, Accumulating.identity());
+    public RecordReaderJsonArray(RecordReaderConf conf, Gson gson) {
+        super(conf, Accumulating.identity());
         this.gson = gson;
     }
 
@@ -83,7 +81,12 @@ public class RecordReaderJsonArray
     }
 
 
-    @Override
+    protected Stream<JsonElement> parse(InputStream in, boolean isProbe) {
+        JsonElementArrayIterator it = new JsonElementArrayIterator(gson, gson.newJsonReader(new InputStreamReader(in)));
+        return Streams.stream(it).onClose(it::close);
+    }
+
+    // @Override
     protected Flowable<JsonElement> parse(Callable<InputStream> inputStreamSupplier) {
         return Flowable.generate( // <JsonElement, Map.Entry<JsonReader, Boolean>>
                 () -> {

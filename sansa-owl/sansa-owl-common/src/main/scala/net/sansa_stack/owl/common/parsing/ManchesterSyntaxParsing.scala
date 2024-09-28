@@ -188,7 +188,7 @@ class ManchesterSyntaxExpressionBuilder(val prefixes: Map[String, String]) exten
               trimmedFrame = trimmedFrame.replace(hit, hit + ">")
             }
           })
-          trimmedFrame = trimmedFrame.replace(p.toCharArray, v.toCharArray)
+          trimmedFrame = trimmedFrame.replace(p, v)
         }
       }
 

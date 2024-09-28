@@ -19,12 +19,14 @@ import org.apache.jena.sparql.core.Quad
 import org.apache.jena.sparql.util.{FmtUtils, NodeFactoryExtra}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, _}
+
 import java.io.ByteArrayOutputStream
 import java.util.Collections
-
 import net.sansa_stack.hadoop.format.jena.trig.FileInputFormatRdfTrigDataset
+import net.sansa_stack.spark.io.rdf.input.impl.{RdfSourceFactories, RdfSourceFactoryImpl}
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriter
 import org.aksw.jenax.arq.dataset.api.DatasetOneNg
+import org.aksw.jenax.dataaccess.sparql.factory.datasource.RdfDataSources
 
 /**
  * Wrap up implicit classes/methods to read/write RDF data from N-Triples or Turtle files into either [[DataFrame]] or
@@ -86,7 +88,7 @@ package object io {
     // we use the Jena rendering, for URIs we omit the wrapping angle brackets, i.e. we return
     // http://foo.bar instead of <http://foo.bar> but for datatype URIs in literals we keep it
     // TODO this is basically done because of querying, but for simplicity it would be easier to return <http://foo.bar>
-    Row.fromSeq(nodes.map(n => if (n.isURI) n.toString else FmtUtils.stringForNode(n, pm)))
+    Row.fromSeq(nodes.map(n => if (n.isURI) n.toString() else FmtUtils.stringForNode(n, pm)))
   }
 
   /**
@@ -186,6 +188,8 @@ package object io {
    */
   implicit class RDFWriter[T](triples: RDD[Triple]) {
 
+    /** @deprecated because misconfigurations are only detected at the end of a spark process.
+     *  Use RddRdfWriterFactory instead which does eager checking. */
     def configureSave(): RddRdfWriter[Triple] = RddRdfWriter.createForTriple.setRdd(triples)
 
 
@@ -460,6 +464,9 @@ package object io {
      * @return the [[RDD]] of triples
      */
     def turtle: String => RDD[Triple] = path => {
+      RdfSourceFactories.of(spark).get(path, Lang.TURTLE).asTriples()
+
+      /*
       val confHadoop = spark.sparkContext.hadoopConfiguration
 
       // 1. parse the Turtle file into an RDD[String] with each entry containing a full Turtle snippet
@@ -468,6 +475,7 @@ package object io {
         .map { case (_, v) => v.get() }
 
       rdd
+       */
     }
 
     /**

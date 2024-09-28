@@ -5,17 +5,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Streams;
 import com.univocity.parsers.csv.CsvParserSettings;
-import net.sansa_stack.hadoop.format.univocity.conf.UnivocityHadoopConf;
-import net.sansa_stack.hadoop.format.univocity.csv.csv.UnivocityUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
+import org.aksw.commons.model.csvw.univocity.UnivocityCsvwConf;
 import org.aksw.commons.path.core.Path;
-import org.aksw.commons.path.core.PathOpsStr;
+import org.aksw.commons.path.core.PathStr;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -73,15 +76,12 @@ public class JsonHadoopBridge {
     }
 
     public JsonNode read(Configuration conf) {
-
         Function<Path<String>, String> getter = p -> {
             String key = String.join(".", p.getSegments());
             String r = conf.get(key);
             return r;
         };
-
         JsonNode dst = prototype.deepCopy();
-
         JsonNode result = readRecursively(prototype, dst, basePath, getter);
         return result;
     }
@@ -150,6 +150,15 @@ public class JsonHadoopBridge {
                         dstObj.set(protoName, childNode);
                     }
                 }
+                else if (protoValue.isArray()) {
+                    String val = getter.apply(childPath);
+                    if (val != null) {
+                        String[] strings = StringUtils.getStrings(val);
+                        ArrayNode arr = JsonNodeFactory.instance.arrayNode(strings.length);
+                        Arrays.stream(strings).forEach(arr::add);
+                        dstObj.set(protoName, arr);
+                    }
+                }
             }
         } else {
             result = null;
@@ -178,7 +187,14 @@ public class JsonHadoopBridge {
                         writeRecursively(protoValue, srcValue, childPath, setter);
                     } else {
                         if (!Objects.equals(protoValue, srcValue)) {
-                            setter.accept(childPath, srcValue.textValue());
+                            if (srcValue.isArray()) {
+                                setter.accept(childPath, StringUtils.arrayToString(
+                                        Streams.stream(((ArrayNode)srcValue).elements())
+                                                .map(JsonNode::textValue)
+                                                .toArray(String[]::new)));
+                            } else {
+                                setter.accept(childPath, srcValue.textValue());
+                            }
                         }
                     }
                 }
@@ -191,7 +207,7 @@ public class JsonHadoopBridge {
      * are used as attributes
      */
     public static JsonHadoopBridge createFromPrototype(Object o, String prefix) {
-        Path<String> path = PathOpsStr.newRelativePath(prefix.split("\\."));
+        Path<String> path = PathStr.newRelativePath(prefix.split("\\."));
 
         JsonNode prototype = new ObjectMapper()
                 .valueToTree(o);
@@ -202,7 +218,7 @@ public class JsonHadoopBridge {
     public static void main(String[] args) throws JsonProcessingException {
         CsvParserSettings settings = new CsvParserSettings();
 
-        UnivocityHadoopConf conf = new UnivocityHadoopConf();
+        UnivocityCsvwConf conf = new UnivocityCsvwConf();
         Dialect dialect = conf.getDialect()
                 .setEncoding(StandardCharsets.ISO_8859_1.name())
                 .setCommentPrefix(".")

@@ -2,8 +2,8 @@ package net.sansa_stack.spark.io.rdf.loader;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
-import org.aksw.jenax.arq.connection.TransactionalDelegate;
 import org.aksw.jenax.arq.util.streamrdf.StreamRDFToUpdateRequest;
+import org.aksw.jenax.dataaccess.sparql.common.TransactionalWrapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.jena.graph.Graph;
@@ -25,7 +25,7 @@ import org.apache.jena.sparql.core.Transactional;
  *
  */
 public class LinkDatasetGraphSansa
-    implements LinkDatasetGraph, TransactionalDelegate
+    implements LinkDatasetGraph, TransactionalWrapper
 {
     // protected RdfSourceFactory sourceFactory;
     // protected FileSystem fileSystem;
@@ -42,12 +42,9 @@ public class LinkDatasetGraphSansa
 
     public static LinkDatasetGraphSansa create(Configuration conf, SerializableSupplier<LinkSparqlUpdate> link) {
         SerializableSupplier<StreamRDF> sinkFactory = () -> StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), updateRequest -> {
-           LinkSparqlUpdate update = link.get();
-           try {
+           try (LinkSparqlUpdate update = link.get()) {
                // System.out.println("Update: " + Thread.currentThread() + " " + updateRequest.toString().length());
                update.update(updateRequest);
-           } finally {
-               update.close();
            }
         });
 
@@ -66,7 +63,7 @@ public class LinkDatasetGraphSansa
         try {
             StreamRDF sink = sinkFactory.get();
             Path path = new Path(s);
-            AsyncRdfParserHadoop.parse(path, conf, sink);
+            AsyncRdfParserHadoop.parse(path, null, conf, sink);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

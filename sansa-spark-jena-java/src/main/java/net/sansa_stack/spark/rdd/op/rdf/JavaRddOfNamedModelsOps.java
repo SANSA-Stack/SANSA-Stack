@@ -8,7 +8,6 @@ import org.aksw.jenax.arq.dataset.orderaware.DatasetFactoryEx;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.spark.api.java.JavaPairRDD;

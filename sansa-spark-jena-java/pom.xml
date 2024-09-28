@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-spark-jena-java_2.12</artifactId>
@@ -25,25 +25,25 @@
             </plugin>
         </plugins>
     </build>
-<!--
-    <properties>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-    </properties>
--->
-<!--
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>src/main/resources-filtered</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
--->
+    <!--
+        <properties>
+            <timestamp>${maven.build.timestamp}</timestamp>
+            <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        </properties>
+    -->
+    <!--
+        <build>
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                </resource>
+                <resource>
+                    <directory>src/main/resources-filtered</directory>
+                    <filtering>true</filtering>
+                </resource>
+            </resources>
+        </build>
+    -->
 
     <dependencies>
 
@@ -62,6 +62,10 @@
             <artifactId>jenax-analytics-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-io-json</artifactId>
+        </dependency>
 
         <!--
                 <dependency>
@@ -95,6 +99,10 @@
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-arq-plugins-bundle</artifactId>
         </dependency>
 
         <!--

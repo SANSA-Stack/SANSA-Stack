@@ -1,179 +1,179 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-ml-parent_2.12</artifactId>
-		<version>0.8.0-RC3-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>net.sansa-stack</groupId>
+        <artifactId>sansa-ml-parent_2.12</artifactId>
+        <version>0.9.6-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>sansa-ml-spark_2.12</artifactId>
-	<name>ML API - Apache Spark</name>
-	<description>RDF/OWL Machine Learning Library for Apache Spark</description>
+    <artifactId>sansa-ml-spark_2.12</artifactId>
+    <name>ML API - Apache Spark</name>
+    <description>RDF/OWL Machine Learning Library for Apache Spark</description>
 
-	<dependencies>
+    <dependencies>
+        <!-- ML Common -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-ml-common_${scala.binary.version}</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<!-- ML Common -->
-		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-ml-common_${scala.binary.version}</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <!-- SANSA RDF -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- SANSA RDF -->
-		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- SANSA OWL -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- SANSA OWL -->
-		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
-		</dependency>
-
-		<!-- SANSA Query -->
-		<dependency>
-			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- SANSA Query -->
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+        </dependency>
 
 
-		<!-- Scala -->
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-		</dependency>
+        <!-- Scala -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
 
-		<!-- Apache Spark Core -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- Apache Spark Core -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- Apache Spark SQL -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-		</dependency>
-		<!-- Apache Spark MLlib -->
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- Apache Spark SQL -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
+        <!-- Apache Spark MLlib -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-mapreduce-client-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-streaming</artifactId>
-		</dependency>
+        <!-- Hadoop dependencies (mainly used for InputFormat definitions) -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-streaming</artifactId>
+        </dependency>
 
-		<!-- Apache JENA 3.x -->
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-core</artifactId>
-		</dependency>
+        <!-- Apache JENA 3.x -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+        </dependency>
 
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.holdenkarau</groupId>
-			<artifactId>spark-testing-base_${scala.binary.version}</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.holdenkarau</groupId>
+            <artifactId>spark-testing-base_${scala.binary.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- Logging -->
-		<dependency>
-			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- Scopt -->
-		<dependency>
-			<groupId>com.github.scopt</groupId>
-			<artifactId>scopt_${scala.binary.version}</artifactId>
-		</dependency>
+        <!-- Scopt -->
+        <dependency>
+            <groupId>com.github.scopt</groupId>
+            <artifactId>scopt_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<!-- Isolation Forest -->
-		<dependency>
-			<groupId>com.linkedin.isolation-forest</groupId>
-			<artifactId>isolation-forest_3.0.0_2.12</artifactId>
-			<version>2.0.4</version>
-		</dependency>
+        <!-- Isolation Forest -->
+        <dependency>
+            <groupId>com.linkedin.isolation-forest</groupId>
+            <artifactId>isolation-forest_3.0.0_2.12</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+    </dependencies>
 
-	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>dist</id>
-			<activation>
-				<property>
-					<name>dist</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-shade-plugin</artifactId>
-						<executions>
-							<!-- Run shade goal on package phase -->
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>shade</goal>
-								</goals>
-								<configuration>
-									<shadedArtifactAttached>true</shadedArtifactAttached>
-									<shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-									<filters>
-										<filter>
-											<artifact>*:*</artifact>
-											<excludes>
-												<exclude>META-INF/*.SF</exclude>
-												<exclude>META-INF/*.DSA</exclude>
-												<exclude>META-INF/*.RSA</exclude>
-											</excludes>
-										</filter>
-										<filter>
-											<artifact>org.aksw.jena-sparql-api:*</artifact>
-											<excludes>
-												<exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
-											</excludes>
-										</filter>
-									</filters>
-									<transformers>
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-											<!--Here we specify "hardcoded" main class. somehow package name plus class name without scala-->
-											<mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass>-->
-											<!--									<mainClass>net.sansa_stack.ml.spark.similarity.run.SimilarityPipeline</mainClass>-->
-										</transformer>
-									</transformers>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+    <!--
+    <profiles>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <property>
+                    <name>dist</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            < ! - - Run shade goal on package phase - - >
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                                    <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                            </excludes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.aksw.jena-sparql-api:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                    <transformers>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                            <! - -Here we specify "hardcoded" main class. somehow package name plus class name without scala - - >
+                                            <mainClass>net.sansa_stack.ml.spark.utils.FeatureExtractingSparqlGenerator</mainClass> - - >
+                                            <! - -									<mainClass>net.sansa_stack.ml.spark.similarity.run.SimilarityPipeline</mainClass> - - >
+                                        </transformer>
+                                    </transformers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    -->
 </project>

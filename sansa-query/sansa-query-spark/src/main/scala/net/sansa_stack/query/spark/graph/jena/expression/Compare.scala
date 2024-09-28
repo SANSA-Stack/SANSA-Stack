@@ -18,29 +18,29 @@ class Compare(e: ExprFunction2) extends Filter {
 
   override def evaluate(solution: Map[Node, Node]): Boolean = {
 
-    val leftValue = solution(left.asVar().asNode())
+    val leftValue = solution(left.asVar())
     val boolean: Boolean = {
       if (right.isConstant) {
         compare(leftValue, right)
       } else if (right.isFunction) {
         right match {
           case e: E_Add => if (e.getArg1.isVariable) {
-            compare(leftValue, NodeValue.makeDouble(solution(e.getArg1.asVar.asNode).getLiteralValue.toString.toDouble +
+            compare(leftValue, NodeValue.makeDouble(solution(e.getArg1.asVar).getLiteralValue.toString.toDouble +
               e.getArg2.getConstant.toString.toDouble))
           } else {
             compare(leftValue, NodeValue.makeDouble(e.getArg1.getConstant.toString.toDouble +
-              solution(e.getArg2.asVar.asNode).getLiteralValue.toString.toDouble))
+              solution(e.getArg2.asVar).getLiteralValue.toString.toDouble))
           }
           case e: E_Subtract => if (e.getArg1.isVariable) {
-            compare(leftValue, NodeValue.makeDouble(solution(e.getArg1.asVar.asNode).getLiteralValue.toString.toDouble -
+            compare(leftValue, NodeValue.makeDouble(solution(e.getArg1.asVar).getLiteralValue.toString.toDouble -
               e.getArg2.getConstant.toString.toDouble))
           } else {
             compare(leftValue, NodeValue.makeDouble(e.getArg1.getConstant.toString.toDouble -
-              solution(e.getArg2.asVar.asNode).getLiteralValue.toString.toDouble))
+              solution(e.getArg2.asVar).getLiteralValue.toString.toDouble))
           }
         }
       } else if (right.isVariable) {
-        solution(right.asVar().asNode())
+        solution(right.asVar())
         false
       } else { false }
     }

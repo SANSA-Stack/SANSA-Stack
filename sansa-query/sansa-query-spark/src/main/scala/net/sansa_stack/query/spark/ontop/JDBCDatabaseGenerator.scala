@@ -1,18 +1,15 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.sql.{Connection, SQLException}
-
-import scala.reflect.runtime.universe.typeOf
-
+import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
+import net.sansa_stack.rdf.common.partition.schema._
+import net.sansa_stack.rdf.common.partition.utils.SQLUtils
+import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
 import org.aksw.sparqlify.core.sql.common.serialization.SqlEscaperDoubleQuote
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 
-import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
-import net.sansa_stack.rdf.common.partition.schema._
-import net.sansa_stack.rdf.common.partition.utils.SQLUtils
-import net.sansa_stack.rdf.spark.partition.core.BlankNodeStrategy
+import java.sql.{Connection, SQLException}
+import scala.reflect.runtime.universe.typeOf
 
 /**
  * Setup the JDBC database needed for the Ontop metadata extraction.

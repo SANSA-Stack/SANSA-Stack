@@ -7,60 +7,59 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-rdf-parent_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
-			<!-- <classifier>${scala.classifier}</classifier> -->
-		</dependency>
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+            <!-- <classifier>${scala.classifier}</classifier> -->
+        </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-rdf-common_${scala.binary.version}</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+            <!-- <classifier>${scala.classifier}</classifier> -->
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-sql_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-graphx_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-streaming_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-graphx_${scala.binary.version}</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming-kafka-0-10_${scala.binary.version}</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
         </dependency>
 
-		<!--
-		<dependency>
-			<groupId>com.thoughtworks.paranamer</groupId>
-			<artifactId>paranamer</artifactId>
-		</dependency>
-		-->
-
-		<dependency>
+        <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
         </dependency>
@@ -90,14 +89,6 @@
             <scope>test</scope>
         </dependency>
 
-<!--
-		<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-hive_${scala.binary.version}</artifactId>
-			<scope>${spark.deps.scope}</scope>
-		</dependency>
--->
-
         <!-- JENA API -->
 
         <dependency>
@@ -124,27 +115,27 @@
             </exclusions>
         </dependency>
 
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>jena-elephas-io</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-elephas-io</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.aksw.commons</groupId>
-			<artifactId>aksw-commons-io-utils</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
+        </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>org.aksw.sparqlify</groupId>
             <artifactId>sparqlify-core</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>org.aksw.jenax</groupId>
-			<artifactId>jenax-analytics-core</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.aksw.jenax</groupId>
+            <artifactId>jenax-analytics-core</artifactId>
+        </dependency>
 
-		<!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId>
+        <!-- <dependency> <groupId>org.apache.commons</groupId> <artifactId>commons-compress</artifactId>
             </dependency> -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -170,11 +161,22 @@
             <artifactId>config</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>com.github.scopt</groupId>
-			<artifactId>scopt_${scala.binary.version}</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>com.github.scopt</groupId>
+            <artifactId>scopt_${scala.binary.version}</artifactId>
+        </dependency>
 
+        <!--
+                <dependency>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-hive_${scala.binary.version}</artifactId>
+                    <scope>${spark.deps.scope}</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.thoughtworks.paranamer</groupId>
+                    <artifactId>paranamer</artifactId>
+                </dependency>
+        -->
 
     </dependencies>
 
@@ -188,191 +190,194 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
-	<profiles>
-		<!-- This profile uses the Maven shade plugin to create a special "dist" package
+    <profiles>
+        <!-- This profile uses the Maven shade plugin to create a special "dist" package
                 that does not contain Spark etc. -->
-		<profile>
-			<id>dist</id>
-			<activation>
-				<property>
-					<name>dist</name>
-				</property>
-			</activation>
-			<properties>
-				<spark.deps.scope>provided</spark.deps.scope>
-			</properties>
-			<build>
-				<plugins>
-					<!--<plugin>-->
-					<!--<groupId>org.apache.maven.plugins</groupId>-->
-					<!--<artifactId>maven-assembly-plugin</artifactId>-->
-					<!--<version>3.0.0</version>-->
-					<!--<executions>-->
-					<!--<execution>-->
-					<!--<id>dist</id>-->
-					<!--<phase>package</phase>-->
-					<!--<goals>-->
-					<!--<goal>single</goal>-->
-					<!--</goals>-->
-					<!--<configuration>-->
-					<!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
-					<!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
-					<!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
-					<!--<descriptors>-->
-					<!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
-					<!--</descriptors>-->
-					<!--</configuration>-->
-					<!--</execution>-->
-					<!--</executions>-->
-					<!--</plugin>-->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-shade-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>shade</goal>
-								</goals>
-								<configuration>
-									<!-- minimizeJar>true</minimizeJar-->
-									<artifactSet>
-										<excludes>
-											<exclude>org.apache.spark:spark-core_${scala.binary.version}</exclude>
-											<exclude>org.apache.spark:spark-sql_${scala.binary.version}</exclude>
-											<exclude>org.apache.spark:spark-graphx_${scala.binary.version}</exclude>
-											<exclude>org.apache.spark:*</exclude>
-											<exclude>org.eclipse.jetty:jetty-server</exclude>
-											<exclude>org.eclipse.jetty:jetty-continuation</exclude>
-											<exclude>org.eclipse.jetty:jetty-http</exclude>
-											<exclude>org.eclipse.jetty:jetty-io</exclude>
-											<exclude>org.eclipse.jetty:jetty-util</exclude>
-											<exclude>org.eclipse.jetty:jetty-security</exclude>
-											<exclude>org.eclipse.jetty:jetty-servlet</exclude>
-											<exclude>org.eclipse.jetty:*</exclude>
-											<exclude>org.eclipse.*:*</exclude>
-											<exclude>org.glassfish.*:*</exclude>
-											<exclude>org.netbeans.api:*</exclude>
-											<exclude>org.netbeans:*</exclude>
-											<exclude>org.scala-lang:scala-library</exclude>
-											<exclude>org.scala-lang:scala-compiler</exclude>
-											<exclude>org.scala-lang:scala-reflect</exclude>
-											<exclude>commons-cli:commons-cli</exclude>
-<!--											<exclude>commons-codec:commons-codec</exclude> -->
-											<exclude>commons-collections:commons-collections</exclude>
-											<exclude>commons-configuration:commons-configuration</exclude>
-											<exclude>commons-digester:commons-digester</exclude>
-											<!-- <exclude>commons-httpclient:commons-httpclient</exclude> -->
-											<exclude>commons-io:commons-io</exclude>
-											<exclude>commons-lang:commons-lang</exclude>
-											<exclude>commons-logging:commons-logging</exclude>
-											<exclude>commons-net:commons-net</exclude>
-											<exclude>io.dropwizard.metrics:metrics*</exclude>
-											<exclude>io.netty:netty*</exclude>
-											<exclude>javax.activation:activation</exclude>
-											<exclude>javax.annotation:javax.annotation-api</exclude>
-											<exclude>javax.servlet:javax.servlet-api</exclude>
-											<exclude>javax.servlet.jsp:jsp-api</exclude>
-											<exclude>javax.servlet:servlet-api</exclude>
-											<exclude>javax.validation:validation-api</exclude>
-											<exclude>javax.ws.rs:javax.ws.rs-api</exclude>
-											<exclude>javax.xml.bind:jaxb-api</exclude>
-											<exclude>javax.xml.stream:stax-api</exclude>
-											<exclude>jdk.tools:jdk.tools</exclude>
-											<exclude>net.java.dev.jets3t:jets3t</exclude>
-											<exclude>net.jpountz.lz4:lz4</exclude>
-											<exclude>net.razorvine:pyrolite</exclude>
-											<exclude>net.sf.py4j:py4j</exclude>
-											<exclude>org.antlr:antlr4-runtime</exclude>
-											<exclude>org.apache.avro:avro*</exclude>
-											<exclude>org.apache.commons:commons-lang3</exclude>
-											<exclude>org.apache.commons:commons-math3</exclude>
-											<exclude>org.apache.commons:commons-compress</exclude>
-											<exclude>org.apache.curator:curator*</exclude>
-											<exclude>org.apache.directory.api:*</exclude>
-											<exclude>org.apache.directory.server:*</exclude>
-											<exclude>org.apache.hadoop:*</exclude>
-											<exclude>org.apache.htrace:htrace-core</exclude>
-											<exclude>org.apache.httpcomponents:*</exclude>
-											<exclude>org.apache.ivy:ivy</exclude>
-											<exclude>org.apache.mesos:mesos</exclude>
-											<exclude>org.apache.parquet:parquet*</exclude>
-											<exclude>org.apache.xbean:xbean-asm5-shaded</exclude>
-											<exclude>org.apache.zookeeper:zookeeper</exclude>
-											<exclude>org.codehaus.jackson:jackson-*</exclude>
-											<exclude>org.codehaus.janino:*</exclude>
-											<exclude>org.codehaus.jettison:jettison</exclude>
-											<exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
-											<exclude>org.glassfish.hk2*</exclude>
-											<exclude>org.glassfish.jersey*</exclude>
-											<exclude>org.javassist:javassist</exclude>
-											<exclude>org.json4s:json4s*</exclude>
-											<exclude>org.mortbay.jetty:jetty*</exclude>
-											<exclude>org.objenesis:objenesis</exclude>
-											<exclude>org.roaringbitmap:RoaringBitmap</exclude>
-											<exclude>org.scala-lang:*</exclude>
-											<exclude>org.slf4j:jul-to-slf4j</exclude>
-											<exclude>org.slf4j:jcl-over-slf4j</exclude>
-											<exclude>org.spark-project.spark:unused</exclude>
-											<exclude>org.xerial.snappy:snappy-java</exclude>
-											<exclude>oro:oro</exclude>
-											<exclude>xmlenc:xmlenc</exclude>
-											<exclude>org.gephi:*</exclude>
-											<exclude>org.jfree:*</exclude>
-											<exclude>com.itextpdf:*</exclude>
-											<exclude>org.apache.poi:*</exclude>
-											<exclude>org.apache.batik:*</exclude>
-										</excludes>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <property>
+                    <name>dist</name>
+                </property>
+            </activation>
+            <!--
+            <properties>
+                <spark.deps.scope>provided</spark.deps.scope>
+            </properties>
+            -->
+            <build>
+                <plugins>
+                    <!--<plugin>-->
+                    <!--<groupId>org.apache.maven.plugins</groupId>-->
+                    <!--<artifactId>maven-assembly-plugin</artifactId>-->
+                    <!--<version>3.0.0</version>-->
+                    <!--<executions>-->
+                    <!--<execution>-->
+                    <!--<id>dist</id>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>single</goal>-->
+                    <!--</goals>-->
+                    <!--<configuration>-->
+                    <!--&lt;!&ndash;<descriptorRefs>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<descriptorRef>jar-with-dependencies</descriptorRef>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</descriptorRefs>&ndash;&gt;-->
+                    <!--<descriptors>-->
+                    <!--<descriptor>src/main/assembly/assembly.xml</descriptor>-->
+                    <!--</descriptors>-->
+                    <!--</configuration>-->
+                    <!--</execution>-->
+                    <!--</executions>-->
+                    <!--</plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- minimizeJar>true</minimizeJar-->
+                                    <artifactSet>
+                                        <excludes>
+                                            <exclude>org.apache.spark:spark-core_${scala.binary.version}</exclude>
+                                            <exclude>org.apache.spark:spark-sql_${scala.binary.version}</exclude>
+                                            <exclude>org.apache.spark:spark-graphx_${scala.binary.version}</exclude>
+                                            <exclude>org.apache.spark:*</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-server</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-continuation</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-http</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-io</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-util</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-security</exclude>
+                                            <exclude>org.eclipse.jetty:jetty-servlet</exclude>
+                                            <exclude>org.eclipse.jetty:*</exclude>
+                                            <exclude>org.eclipse.*:*</exclude>
+                                            <exclude>org.glassfish.*:*</exclude>
+                                            <exclude>org.netbeans.api:*</exclude>
+                                            <exclude>org.netbeans:*</exclude>
+                                            <exclude>org.scala-lang:scala-library</exclude>
+                                            <exclude>org.scala-lang:scala-compiler</exclude>
+                                            <exclude>org.scala-lang:scala-reflect</exclude>
+                                            <exclude>commons-cli:commons-cli</exclude>
+                                            <!--											<exclude>commons-codec:commons-codec</exclude> -->
+                                            <exclude>commons-collections:commons-collections</exclude>
+                                            <exclude>commons-configuration:commons-configuration</exclude>
+                                            <exclude>commons-digester:commons-digester</exclude>
+                                            <!-- <exclude>commons-httpclient:commons-httpclient</exclude> -->
+                                            <exclude>commons-io:commons-io</exclude>
+                                            <exclude>commons-lang:commons-lang</exclude>
+                                            <exclude>commons-logging:commons-logging</exclude>
+                                            <exclude>commons-net:commons-net</exclude>
+                                            <exclude>io.dropwizard.metrics:metrics*</exclude>
+                                            <exclude>io.netty:netty*</exclude>
+                                            <exclude>javax.activation:activation</exclude>
+                                            <exclude>javax.annotation:javax.annotation-api</exclude>
+                                            <exclude>javax.servlet:javax.servlet-api</exclude>
+                                            <exclude>javax.servlet.jsp:jsp-api</exclude>
+                                            <exclude>javax.servlet:servlet-api</exclude>
+                                            <exclude>javax.validation:validation-api</exclude>
+                                            <exclude>javax.ws.rs:javax.ws.rs-api</exclude>
+                                            <exclude>javax.xml.bind:jaxb-api</exclude>
+                                            <exclude>javax.xml.stream:stax-api</exclude>
+                                            <exclude>jdk.tools:jdk.tools</exclude>
+                                            <exclude>net.java.dev.jets3t:jets3t</exclude>
+                                            <exclude>net.jpountz.lz4:lz4</exclude>
+                                            <exclude>net.razorvine:pyrolite</exclude>
+                                            <exclude>net.sf.py4j:py4j</exclude>
+                                            <exclude>org.antlr:antlr4-runtime</exclude>
+                                            <exclude>org.apache.avro:avro*</exclude>
+                                            <exclude>org.apache.commons:commons-lang3</exclude>
+                                            <exclude>org.apache.commons:commons-math3</exclude>
+                                            <exclude>org.apache.commons:commons-compress</exclude>
+                                            <exclude>org.apache.curator:curator*</exclude>
+                                            <exclude>org.apache.directory.api:*</exclude>
+                                            <exclude>org.apache.directory.server:*</exclude>
+                                            <exclude>org.apache.hadoop:*</exclude>
+                                            <exclude>org.apache.htrace:htrace-core</exclude>
+                                            <exclude>org.apache.httpcomponents:*</exclude>
+                                            <exclude>org.apache.ivy:ivy</exclude>
+                                            <exclude>org.apache.mesos:mesos</exclude>
+                                            <exclude>org.apache.parquet:parquet*</exclude>
+                                            <exclude>org.apache.xbean:xbean-asm5-shaded</exclude>
+                                            <exclude>org.apache.zookeeper:zookeeper</exclude>
+                                            <exclude>org.codehaus.jackson:jackson-*</exclude>
+                                            <exclude>org.codehaus.janino:*</exclude>
+                                            <exclude>org.codehaus.jettison:jettison</exclude>
+                                            <exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
+                                            <exclude>org.glassfish.hk2*</exclude>
+                                            <exclude>org.glassfish.jersey*</exclude>
+                                            <exclude>org.javassist:javassist</exclude>
+                                            <exclude>org.json4s:json4s*</exclude>
+                                            <exclude>org.mortbay.jetty:jetty*</exclude>
+                                            <exclude>org.objenesis:objenesis</exclude>
+                                            <exclude>org.roaringbitmap:RoaringBitmap</exclude>
+                                            <exclude>org.scala-lang:*</exclude>
+                                            <exclude>org.slf4j:jul-to-slf4j</exclude>
+                                            <exclude>org.slf4j:jcl-over-slf4j</exclude>
+                                            <exclude>org.spark-project.spark:unused</exclude>
+                                            <exclude>org.xerial.snappy:snappy-java</exclude>
+                                            <exclude>oro:oro</exclude>
+                                            <exclude>xmlenc:xmlenc</exclude>
+                                            <exclude>org.gephi:*</exclude>
+                                            <exclude>org.jfree:*</exclude>
+                                            <exclude>com.itextpdf:*</exclude>
+                                            <exclude>org.apache.poi:*</exclude>
+                                            <exclude>org.apache.batik:*</exclude>
+                                        </excludes>
 
-									</artifactSet>
-									<filters>
-										<filter>
-											<artifact>*:*</artifact>
-											<excludes>
-												<!-- Avoid a Spark error: Invalid signature file digest for Manifest main attributes-->
-												<exclude>META-INF/*.SF</exclude>
-												<exclude>META-INF/*.DSA</exclude>
-												<exclude>META-INF/*.RSA</exclude>
-												<exclude>META-INF/maven/**</exclude>
-											</excludes>
-										</filter>
-										<filter>
-											<artifact>org.apache.jena:*</artifact>
-											<includes>
-												<include>**</include>
-											</includes>
-										</filter>
-										<filter>
-											<artifact>xerces:xercesImpl</artifact>
-											<includes>
-												<include>**</include>
-											</includes>
-										</filter>
-										<filter>
-											<artifact>org.aksw.jena-sparql-api:*</artifact>
-											<includes>
-												<include>**</include>
-											</includes>
-										</filter>
-									</filters>
-									<finalName>dist-${project.artifactId}-${project.version}</finalName>
-									<transformers>
-										<transformer
-												implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-										<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-											<mainClass>net.sansa_stack.rdf.spark.io.ParquetTransformer</mainClass>
-										</transformer>
-									</transformers>
-									<createDependencyReducedPom>false</createDependencyReducedPom>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+                                    </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <!-- Avoid a Spark error: Invalid signature file digest for Manifest main attributes-->
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                                <exclude>META-INF/maven/**</exclude>
+                                            </excludes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.apache.jena:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>xerces:xercesImpl</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                        <filter>
+                                            <artifact>org.aksw.jena-sparql-api:*</artifact>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                        </filter>
+                                    </filters>
+                                    <finalName>dist-${project.artifactId}-${project.version}</finalName>
+                                    <transformers>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                            <mainClass>net.sansa_stack.rdf.spark.io.ParquetTransformer</mainClass>
+                                        </transformer>
+                                    </transformers>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

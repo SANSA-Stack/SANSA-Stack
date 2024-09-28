@@ -6,9 +6,20 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.Quad;
 import org.apache.spark.rdd.RDD;
 
-public interface RdfSource {
+/**
+ * An RdfSource is a NodeTupleSource with tuple size either 3 or 4.
+ */
+public interface RdfSource
+    extends NodeTupleSource
+{
     /** Whether this source is based on a quad model */
-    boolean usesQuads();
+    default boolean usesQuads() {
+        int componentCount = getComponentCount();
+        return componentCount == 4;
+    }
+
+    /** Return the backing loader; null if unknown */
+    // RddRdfLoader<?> getLoader();
 
     RDD<Triple> asTriples();
     RDD<Quad> asQuads();
@@ -16,9 +27,4 @@ public interface RdfSource {
 
     /** A stream of datasets having one named graph each */
     RDD<DatasetOneNg> asDatasets();
-
-    /** At present this creates a model holding an RDF sample based on a file's starting bytes.
-     * May be changed to PrefixMap
-     */
-    Model peekDeclaredPrefixes();
 }

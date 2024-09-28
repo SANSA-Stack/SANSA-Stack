@@ -8,6 +8,35 @@ nav_order: 7
 
 The SANSA project features the `sansa` command line tool which provides several commands for working with RDF data.
 
+
+### Running from the JAR Bundle
+
+Unfortunately, a simple `java -jar sansa.jar` may not work because additional `--add-opens` declarations are needed.
+
+* `Java 11`: Sansa CLI seems to works without `--add-opens` declarations althought warnings are shown. Adding the declarations below is recommended.
+* `Java 17`: Sansa CLI won't work. The declarations must be added.
+
+```bash
+# Extra options for Java 11 and 17
+# Source: https://stackoverflow.com/questions/73465937/apache-spark-3-3-0-breaks-on-java-17-with-cannot-access-class-sun-nio-ch-direct
+SANSA_EXTRA_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+    --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+    --add-opens=java.base/java.io=ALL-UNNAMED \
+    --add-opens=java.base/java.net=ALL-UNNAMED \
+    --add-opens=java.base/java.nio=ALL-UNNAMED \
+    --add-opens=java.base/java.util=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+    --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+    --add-opens=java.base/sun.nio.cs=ALL-UNNAMED \
+    --add-opens=java.base/sun.security.action=ALL-UNNAMED \
+    --add-opens=java.base/sun.util.calendar=ALL-UNNAMED \
+    --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED"
+
+java $SANSA_EXTRA_OPTS -jar sansa.jar
+```
+
 ### General Spark Options
 
 Spark options can generally be provided with the `JAVA_OPTS` environment variable as shown in the example below:

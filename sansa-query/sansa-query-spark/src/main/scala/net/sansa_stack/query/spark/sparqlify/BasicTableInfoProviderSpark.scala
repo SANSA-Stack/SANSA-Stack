@@ -1,11 +1,10 @@
 package net.sansa_stack.query.spark.sparqlify
 
-import java.util.Collections
-
 import net.sansa_stack.rdf.spark.utils.SchemaUtils
 import org.aksw.sparqlify.config.v0_2.bridge.{BasicTableInfo, BasicTableInfoProvider}
 import org.apache.spark.sql.SparkSession
 
+import java.util.Collections
 import scala.collection.JavaConverters._
 
 class BasicTableInfoProviderSpark(val sparkSession: SparkSession)

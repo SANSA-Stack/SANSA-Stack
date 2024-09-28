@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.spark.io.rdfxml
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.apache.hadoop.mapreduce.{Job, TaskAttemptContext}
-import org.apache.jena.rdfxml.xmloutput.impl.Basic
+import org.apache.jena.rdfxml.xmloutput.impl.RDFXML_Basic
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.InternalRow
@@ -109,7 +109,7 @@ private[rdfxml] class RdfXmlOutputWriter(
   private val writer = CodecStreams.createOutputStreamWriter(context, new Path(path))
 
   // create the Generator without separator inserted between 2 records
-  private[this] val gen = new Basic()
+  private[this] val gen = new RDFXML_Basic()
 
   override def write(row: InternalRow): Unit = {
 //    gen.write(row)
@@ -120,4 +120,6 @@ private[rdfxml] class RdfXmlOutputWriter(
 //    gen.close()
     writer.close()
   }
+
+  override def path(): String = ???
 }

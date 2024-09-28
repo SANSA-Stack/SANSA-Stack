@@ -1,10 +1,7 @@
 package net.sansa_stack.query.spark.rdd.op
 
-import java.sql.Timestamp
-import java.util
-import java.util.Calendar
-
 import com.typesafe.scalalogging.LazyLogging
+import net.sansa_stack.query.spark.RddOpsImplicits
 import net.sansa_stack.query.spark.api.domain.ResultSetSpark
 import net.sansa_stack.rdf.spark.utils.{DataTypeUtils, SparkSessionUtils}
 import org.aksw.jena_sparql_api.rdf.collections.{NodeMapper, NodeMapperDelegating, NodeMapperFromRdfDatatype}
@@ -20,6 +17,10 @@ import org.apache.jena.vocabulary.XSD
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{DataType, DataTypes, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+
+import java.sql.Timestamp
+import java.util
+import java.util.Calendar
 
 /**
  * Mapper from SPARQL bindings to DataFrames
@@ -44,8 +45,6 @@ import org.apache.spark.sql.{DataFrame, Row}
  * FIXME Rename to ResultSetToFrameMapper?
  */
 object RddOfBindingsToDataFrameMapper extends LazyLogging {
-  import net.sansa_stack.query.spark._
-
   import collection.JavaConverters._
 
   /**
@@ -108,67 +107,6 @@ object RddOfBindingsToDataFrameMapper extends LazyLogging {
     result
   }
 
-  def sqlTimestampToCalendar(timestamp: java.sql.Timestamp): Calendar = {
-    val calendar = Calendar.getInstance
-    calendar.setTimeInMillis(timestamp.getTime)
-    calendar
-  }
-
-  def sqlDateToCalendar(timestamp: java.sql.Date): Calendar = {
-    val calendar = Calendar.getInstance
-    calendar.setTimeInMillis(timestamp.getTime)
-    calendar
-  }
-
-
-  /**
-   * Function that returns a registry of custom rdf datatype to Spark mappings.
-   *
-   * FIXME Convert this method into a proper registry:
-   *   A singleton instance that wraps the map and upon initialization adds the default registrations
-   *
-   * @return
-   */
-  def getNodeToSparkMapperRegistry(): java.util.Map[String, NodeToSparkMapper] = {
-    val registry = new java.util.HashMap[String, NodeToSparkMapper]()
-
-    val typeMapper = TypeMapper.getInstance()
-
-    // Mapping of xsd:date to DataTypes.DateType
-    {
-      val datatypeIri = XSD.date.getURI
-      val dataType = DataTypes.DateType
-      val rdfDatatype = typeMapper.getSafeTypeByName(datatypeIri)
-      val nodeMapper: NodeMapper[Object] = NodeMapperDelegating.create[Object](
-        classOf[java.sql.Date],
-        x => x.isLiteral && x.getLiteralDatatype != null && classOf[XSDDateTime].equals(x.getLiteralDatatype.getJavaClass),
-        x => NodeFactory.createLiteralByValue(sqlDateToCalendar(x.asInstanceOf[java.sql.Date]), rdfDatatype),
-        x => new java.sql.Date(x.getLiteralValue.asInstanceOf[XSDDateTime].asCalendar().getTimeInMillis)
-      )
-      val nodeToSparkMapper = NodeToSparkMapperImpl(dataType, nodeMapper)
-      registry.put(datatypeIri, nodeToSparkMapper)
-    }
-
-    // Mapping of xsd:dateTime and xsd:dateTimeStamp to DataTypes.TimestampType
-    {
-      for (datatypeIri <- Seq(XSD.dateTime.getURI, XSD.dateTimeStamp.getURI)) {
-        val dataType = DataTypes.TimestampType
-        val rdfDatatype = typeMapper.getSafeTypeByName(datatypeIri)
-
-        val nodeMapper: NodeMapper[Object] = NodeMapperDelegating.create[Object](
-          classOf[Timestamp],
-          x => x.isLiteral && x.getLiteralDatatype != null && classOf[XSDDateTime].equals(x.getLiteralDatatype.getJavaClass),
-          x => NodeFactory.createLiteralByValue(sqlTimestampToCalendar(x.asInstanceOf[Timestamp]), rdfDatatype),
-          x => new Timestamp(x.getLiteralValue.asInstanceOf[XSDDateTime].asCalendar().getTimeInMillis)
-        )
-        val nodeToSparkMapper = NodeToSparkMapperImpl(dataType, nodeMapper)
-        registry.put(datatypeIri, nodeToSparkMapper)
-      }
-    }
-
-    registry
-  }
-
   /**
    * Attemt to obtain a Spark [[DataType]] for the given datatype IRI w.r.t.
    * to the given [[TypeMapper]]. Raises an exception if no datatype could be
@@ -181,8 +119,7 @@ object RddOfBindingsToDataFrameMapper extends LazyLogging {
   def getNodeToSparkMapper(datatypeIri: String, typeMapper: TypeMapper): NodeToSparkMapper = {
     val effectiveDatatypeIri = getEffectiveDatatype(datatypeIri)
 
-    val registry = getNodeToSparkMapperRegistry()
-
+    val registry = TypeMapperRdfSpark.getNodeToSparkMapperRegistry()
     var result = registry.get(effectiveDatatypeIri)
 
     if (result == null) {
@@ -194,7 +131,7 @@ object RddOfBindingsToDataFrameMapper extends LazyLogging {
       } else {
         val dataType = DataTypeUtils.getSparkType(javaClass)
         val nodeMapper: NodeMapper[Object] = new NodeMapperFromRdfDatatype(rdfDatatype)
-        result = NodeToSparkMapperImpl(dataType, nodeMapper)
+        result = new NodeToSparkMapperImpl(dataType, nodeMapper)
       }
     }
     result

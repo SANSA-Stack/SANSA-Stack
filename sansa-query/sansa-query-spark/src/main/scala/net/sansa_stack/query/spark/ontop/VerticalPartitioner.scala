@@ -1,8 +1,5 @@
 package net.sansa_stack.query.spark.ontop
 
-import java.io.{File, FileOutputStream}
-import java.net.URI
-import java.nio.file.Paths
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner, RdfPartitionerComplex, TermType}
 import net.sansa_stack.rdf.common.partition.r2rml.R2rmlUtils
 import net.sansa_stack.rdf.common.partition.utils.SQLUtils
@@ -10,16 +7,19 @@ import net.sansa_stack.rdf.spark.partition.core.{BlankNodeStrategy, RdfPartition
 import org.aksw.commons.sql.codec.util.SqlCodecUtils
 import org.aksw.r2rml.jena.vocab.RR
 import org.apache.jena.rdf.model.ModelFactory
-import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.{RDF, XSD}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.functions.col
-import org.apache.spark.sql.internal.SQLConf.LegacyBehaviorPolicy
+import org.apache.spark.sql.internal.LegacyBehaviorPolicy
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession, SaveMode => TableSaveMode}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{HasDataPropertiesInSignature, HasObjectPropertiesInSignature, IRI}
+
+import java.io.{File, FileOutputStream}
+import java.net.URI
+import java.nio.file.Paths
 
 
 /**

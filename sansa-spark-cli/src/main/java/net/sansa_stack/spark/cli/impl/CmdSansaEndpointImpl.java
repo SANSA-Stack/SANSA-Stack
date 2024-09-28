@@ -7,11 +7,11 @@ import net.sansa_stack.query.spark.sparqlify.QueryEngineFactorySparqlify;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.FreshDatasetArgs;
 import net.sansa_stack.spark.cli.cmd.CmdSansaEndpoint.PreloadedDatasetArgs;
+import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceCollectionImpl;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
+import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
 import org.aksw.jenax.web.server.boot.FactoryBeanSparqlServer;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.jena.graph.Triple;
@@ -37,7 +37,7 @@ public class CmdSansaEndpointImpl {
 
   public static int run(CmdSansaEndpoint cmd) throws InterruptedException {
     
-    SparkSession sparkSession = CmdUtils.newDefaultSparkSessionBuilder()
+    SparkSession sparkSession = SansaCmdUtils.newDefaultSparkSessionBuilder()
             .appName("Sansa SPARQL Endpoint")
             .config("spark.kryo.registrator", String.join(", ", 
                     "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
@@ -70,7 +70,7 @@ public class CmdSansaEndpointImpl {
       } else {
         FreshDatasetArgs dataset = cmd.dataset.freshDatasetArgs;
 
-        RdfSourceFactory rdfSourceFactory = RdfSourceFactoryImpl.from(sparkSession);
+        RdfSourceFactory rdfSourceFactory = RdfSourceFactories.of(sparkSession);
 
         RdfSourceCollection sources = rdfSourceFactory.newRdfSourceCollection();
         for (String input : dataset.triplesFile) {

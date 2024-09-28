@@ -1,8 +1,8 @@
 package net.sansa_stack.query.spark
 
-import scala.collection.JavaConverters._
-
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
+import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTestSuite, SPARQLQueryEvaluationTestSuiteRunner}
 import org.apache.jena.graph.Triple
 import org.apache.jena.query.Query
 import org.apache.jena.rdf.model.Model
@@ -11,8 +11,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{ConfigMap, Suite}
 
-import net.sansa_stack.query.spark.api.domain.{QueryEngineFactory, QueryExecutionFactorySpark}
-import net.sansa_stack.query.tests.{SPARQLQueryEvaluationTestSuite, SPARQLQueryEvaluationTestSuiteRunner}
+import scala.collection.JavaConverters._
 
 /**
  * SPARQL test suite runner on Apache Spark.

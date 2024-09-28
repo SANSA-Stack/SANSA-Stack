@@ -7,29 +7,29 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-hadoop-jena</artifactId>
     <packaging>jar</packaging>
 
     <build>
-	    <plugins>
-		    <plugin>
-                    <groupId>net.alchim31.maven</groupId>
-		    <artifactId>scala-maven-plugin</artifactId>
-		    <executions>
-		                            <execution>
-						    <id>attach-javadocs</id>
-						    <phase>none</phase>
-<!--                           <goals>
-                                <goal>doc-jar</goal>
-</goals>-->
-		    </execution>
-	    </executions>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>none</phase>
+                        <!--                           <goals>
+                                                        <goal>doc-jar</goal>
+                        </goals>-->
+                    </execution>
+                </executions>
 
-	    </plugin>
-	    </plugins>
+            </plugin>
+        </plugins>
     </build>
 
     <!--
@@ -53,13 +53,13 @@
     -->
 
     <dependencies>
-	    <!-- If scala:doc-jar fails then enable this dependency to see the errors -->
-	    <!--
+        <!-- If scala:doc-jar fails then enable this dependency to see the errors -->
+        <!--
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
-	</dependency>
-	    -->
+    </dependency>
+        -->
 
 
         <dependency>
@@ -86,6 +86,11 @@
         <dependency>
             <groupId>org.aksw.commons</groupId>
             <artifactId>aksw-commons-collectors</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aksw.commons</groupId>
+            <artifactId>aksw-commons-io-utils</artifactId>
         </dependency>
 
 
@@ -137,6 +142,25 @@
             <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+                <dependency>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                    <scope>test</scope>
+                </dependency>
+        -->
 
         <!--
         <dependency>

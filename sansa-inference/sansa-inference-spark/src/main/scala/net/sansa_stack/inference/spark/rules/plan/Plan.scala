@@ -113,7 +113,7 @@ case class Plan(triplePatterns: Set[Triple], target: Triple, joins: mutable.Set[
           }
         }
       } else {
-        expressions += "'" + v.toString + "'"
+        expressions += "'" + v.toString() + "'"
       }
     }
 

@@ -5,7 +5,7 @@ import java.net.{URI, URL}
 import java.nio.file.{Path, Paths}
 import scala.collection.JavaConverters._
 import org.apache.jena.riot.RDFParserBuilder
-import org.apache.jena.ext.com.google.common.reflect.ClassPath
+import com.google.common.reflect.ClassPath
 import org.apache.jena.iri.{IRIFactory, ViolationCodes}
 import org.apache.jena.irix.IRIxResolver
 import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}

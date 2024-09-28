@@ -12,12 +12,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.system.StreamRDF;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,6 +27,8 @@ import java.util.Map;
 public class ConcurrentLoaderTurtleTestsFast
 //    extends RecordReaderRdfTestBase<Triple>
 {
+    private static final Logger logger = LoggerFactory.getLogger(ConcurrentLoaderTurtleTestsFast.class);
+
     /**
      * Test case parameters
      */
@@ -75,10 +78,10 @@ public class ConcurrentLoaderTurtleTestsFast
         try (RDFConnection conn = RDFConnection.connect(ds)) {
             StreamRDF sink = StreamRDFToUpdateRequest.createWithTrie(100, MoreExecutors.newDirectExecutorService(), conn::update);
 
-            AsyncRdfParserHadoop.parse(effFile, conf, sink);
+            AsyncRdfParserHadoop.parse(effFile, RDFFormat.TURTLE_BLOCKS, conf, sink);
         }
 
-        System.out.println("Dataset size: " + Iterators.size(ds.asDatasetGraph().find()));
+        logger.debug("Dataset size: " + Iterators.size(ds.asDatasetGraph().find()));
         // RDFDataMgr.write(System.out, ds, RDFFormat.TRIG_PRETTY);
     }
 

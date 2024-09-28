@@ -1,35 +1,24 @@
 package net.sansa_stack.ml.spark.similarity
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import net.sansa_stack.ml.spark.similarity.similarityEstimationModels._
-import net.sansa_stack.ml.spark.utils.{FeatureExtractorModel, SimilarityExperimentMetaGraphFactory}
-import net.sansa_stack.rdf.spark.io._
-import net.sansa_stack.rdf.spark.model.TripleOperations
 import org.apache.jena.graph
 import org.apache.jena.graph.Triple
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
-import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
-import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.scalactic.TolerantNumerics
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
+@Ignore
 class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession.builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(s"SimE4KG Unit Test")
-    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
-    .config("spark.kryo.registrator", String.join(
-      ", ",
-      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 

@@ -339,7 +339,7 @@ class RDFXMLSyntaxExpressionBuilder (val prefixes: Map[String, String]) extends 
            trimmedExpr = localPartPattern.replaceAllIn(trimmedExpr, m => s"${m.matched}>")
 
            // Expand prefix: "foo:car>" --> "http://foo.org/res#car>"
-           trimmedExpr = trimmedExpr.replace(p.toCharArray, v.toCharArray)
+           trimmedExpr = trimmedExpr.replace(p, v)
          }
        }
 
@@ -351,7 +351,7 @@ class RDFXMLSyntaxExpressionBuilder (val prefixes: Map[String, String]) extends 
          emptyPrefixPattern
            .findAllIn(trimmedExpr)
            .foreach(hit => {
-            val full = hit.replace(":".toCharArray, v.toCharArray)
+            val full = hit.replace(":", v)
             trimmedExpr = trimmedExpr.replace(hit, full + ">")
            })
        }

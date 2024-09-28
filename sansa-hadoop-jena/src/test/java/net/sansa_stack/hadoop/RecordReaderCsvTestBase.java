@@ -23,13 +23,24 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public abstract class RecordReaderCsvTestBase<T> {
+
+
+    /*
+    public static void main(String[] args) {
+        Stream<Integer> a = IntStream.range(0, 50).boxed().onClose(() -> System.out.println("Closed first stream"));
+        Stream<Integer> b = IntStream.range(50, 100).boxed().onClose(() -> System.out.println("Closed second stream"));
+        try (Stream<Integer> c = Stream.concat(a, b)) {
+            c.forEach(i -> System.out.println("Item: " + i));
+        }
+        // Result: Underlying streams are closed when the concatenated one is closed.
+    }
+     */
 
     private static final Logger logger = LoggerFactory.getLogger(RecordReaderCsvTestBase.class);
 
@@ -81,7 +92,7 @@ public abstract class RecordReaderCsvTestBase<T> {
         Path testPath = referencePath;
 
         List<List<String>> expected = parseConventional(referencePath);
-
+/*
         int m = Math.min(2, expected.size());
         for (int i = 0; i < m; ++i) {
             List<String> row = expected.get(i);
@@ -92,7 +103,7 @@ public abstract class RecordReaderCsvTestBase<T> {
                 System.out.println("Cell: " + row.get(j));
             }
         }
-
+*/
         long fileLengthTotal = Files.size(testPath);
 
 
@@ -111,14 +122,37 @@ public abstract class RecordReaderCsvTestBase<T> {
 
 
         Throwable[] error = new Throwable[]{null};
-        RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
-                .map(this::recordToList)
-                .doOnError(t -> error[0] = t)
-                .onErrorComplete()
-                .forEach(actual::add);
+        try (Stream<List<String>> stream = RecordReaderRdfTestBase.testSplit(job, inputFormat, testHadoopPath, fileLengthTotal, numSplits)
+                .map(this::recordToList)) {
+            // .doOnError(t -> error[0] = t)
+            // .onErrorComplete()
+                stream.forEach(actual::add);
+        }
 
         if (error[0] != null) {
             throw new RuntimeException(error[0]);
+        }
+
+        int expectedRowCount = expected.size();
+        int actualRowCount = actual.size();;
+        int maxRows = Math.max(expectedRowCount, actualRowCount);
+        for (int i = 0; i < maxRows; ++i) {
+            List<String> expectedRow = i < expectedRowCount ? expected.get(i) : Collections.emptyList();
+            List<String> actualRow = i < actualRowCount ? actual.get(i) : Collections.emptyList();
+            int expectedColCount = expectedRow.size();
+            int actualColCount = actualRow.size();
+            int maxCols = Math.max(expectedColCount, actualColCount);
+
+            for (int j = 0; j < maxCols; ++j) {
+                String expectedCell = j < expectedColCount ? expectedRow.get(j) : "(not present)";
+                String actualCell = j < actualColCount ? actualRow.get(j) : "(not present)";
+
+                if (!Objects.equals(expectedCell, actualCell)) {
+                    System.out.println(String.format("Cell at row=%d, col=%d:", i, j));
+                    System.out.println("  Expected: " + expectedCell);
+                    System.out.println("  Actual: " + actualCell);
+                }
+            }
         }
 
         // Compare first line

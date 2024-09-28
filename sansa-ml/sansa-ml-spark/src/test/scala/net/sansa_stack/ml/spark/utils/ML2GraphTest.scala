@@ -1,6 +1,7 @@
 package net.sansa_stack.ml.spark.utils
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import net.sansa_stack.ml.spark.featureExtraction.{SmartVectorAssembler, SparqlFrame}
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
@@ -13,16 +14,10 @@ import org.scalatest.FunSuite
 
 class ML2GraphTest extends FunSuite with SharedSparkContext{
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession.builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(s"SparqlFrame Transformer Unit Test")
-    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
-    .config("spark.kryo.registrator", String.join(
-      ", ",
-      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 

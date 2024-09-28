@@ -1,11 +1,7 @@
 package net.sansa_stack.query.spark.ontop.kryo;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /** A pool of objects that can be reused to avoid allocations. The pool is optionally thread safe and can be configured to use

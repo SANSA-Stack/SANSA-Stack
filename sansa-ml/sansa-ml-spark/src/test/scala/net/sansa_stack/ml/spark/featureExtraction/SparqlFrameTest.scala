@@ -1,12 +1,12 @@
 package net.sansa_stack.ml.spark.featureExtraction
 
 import com.holdenkarau.spark.testing.SharedSparkContext
+import net.sansa_stack.ml.spark.common.CommonKryoSetup
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.types.{DecimalType, IntegerType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Encoders, SparkSession}
 import org.scalatest.FunSuite
-
 import net.sansa_stack.query.spark.sparqlify.SparqlifyUtils3
 import net.sansa_stack.rdf.spark.partition.core.RdfPartitionUtilsSpark
 import org.apache.jena.graph.Triple
@@ -15,22 +15,15 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-
 import net.sansa_stack.query.spark.SPARQLEngine
 
 
 class SparqlFrameTest extends FunSuite with SharedSparkContext{
 
-  System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-  System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
+  CommonKryoSetup.initKryoViaSystemProperties();
 
-  lazy val spark = SparkSession.builder()
+  lazy val spark = CommonKryoSetup.configureKryo(SparkSession.builder())
     .appName(s"SparqlFrame Transformer Unit Test")
-    .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
-    .config("spark.kryo.registrator", String.join(
-      ", ",
-      "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator",
-      "net.sansa_stack.query.spark.sparqlify.KryoRegistratorSparqlify"))
     .config("spark.sql.crossJoin.enabled", true)
     .getOrCreate()
 

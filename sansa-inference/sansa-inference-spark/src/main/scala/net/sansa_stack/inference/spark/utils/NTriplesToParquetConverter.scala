@@ -19,7 +19,7 @@ class NTriplesToParquetConverter(val session: SparkSession) {
 
   import session.implicits._
 
-  private implicit def pathURIsConverter(uris: Seq[URI]): String = uris.map(p => p.toString).mkString(",")
+  private implicit def pathURIsConverter(uris: Seq[URI]): String = uris.map(p => p.toString()).mkString(",")
 
   def saveAsParquet(inputPath: URI, outputPath: URI): Unit = {
     saveAsParquet(Seq(inputPath), outputPath)
@@ -36,7 +36,7 @@ class NTriplesToParquetConverter(val session: SparkSession) {
     // write to disk in Parquet format
     tripleDS
 //      .repartition(tripleDS("s"))
-      .write.mode(SaveMode.Append).parquet(outputPath.toString)
+      .write.mode(SaveMode.Append).parquet(outputPath.toString())
   }
 }
 

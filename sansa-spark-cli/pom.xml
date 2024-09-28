@@ -7,7 +7,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-parent_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-spark-cli_2.12</artifactId>
@@ -34,15 +34,14 @@
     -->
 
     <dependencies>
-
         <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-cmds-picocli${scala.version.suffix}</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-models-csvw-picocli</artifactId>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
         </dependency>
 
         <dependency>
@@ -50,26 +49,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-utils</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.aksw.commons</groupId>
-            <artifactId>aksw-commons-io-utils</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

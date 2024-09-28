@@ -1,6 +1,7 @@
 package net.sansa_stack.rdf.spark.rdd.op
 
-import net.sansa_stack.rdf.spark.utils._
+import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
+import net.sansa_stack.rdf.spark.utils.{NodeUtils, SchemaUtils, SparkSessionUtils}
 import org.apache.jena.graph.{Graph, Node, Triple}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -77,7 +78,7 @@ object RddOfTriplesOps {
    * based on a specific function @func .
    *
    * @param triples RDD of triples.
-   * @param func a partial funtion.
+   * @param func    a partial funtion.
    * @return [[RDD[Triple]]] a subset of the given RDD.
    */
   def filterSubjects(triples: RDD[Triple], func: Node => Boolean): RDD[Triple] =
@@ -88,7 +89,7 @@ object RddOfTriplesOps {
    * based on a specific function @func .
    *
    * @param triples RDD of triples.
-   * @param func a partial funtion.
+   * @param func    a partial funtion.
    * @return [[RDD[Triple]]] a subset of the given RDD.
    */
   def filterPredicates(triples: RDD[Triple], func: Node => Boolean): RDD[Triple] =
@@ -105,7 +106,7 @@ object RddOfTriplesOps {
    * based on a specific function @func .
    *
    * @param triples RDD of triples.
-   * @param func a partial funtion.
+   * @param func    a partial funtion.
    * @return [[RDD[Triple]]] a subset of the given RDD.
    */
   def filterObjects(triples: RDD[Triple], func: Node => Boolean): RDD[Triple] =
@@ -114,17 +115,17 @@ object RddOfTriplesOps {
   /**
    * Returns an RDD of triples that match with the given input.
    *
-   * @param triples RDD of triples
-   * @param subject the subject
+   * @param triples   RDD of triples
+   * @param subject   the subject
    * @param predicate the predicate
-   * @param object the object
+   * @param object    the object
    * @return RDD of triples
    */
   def find(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): RDD[Triple] = {
     triples.filter(t =>
-                     (subject.isEmpty || t.getSubject.matches(subject.get)) &&
-                     (predicate.isEmpty || t.getPredicate.matches(predicate.get)) &&
-                     (`object`.isEmpty || t.getObject.matches(`object`.get)))
+      (subject.isEmpty || t.getSubject.matches(subject.get)) &&
+        (predicate.isEmpty || t.getPredicate.matches(predicate.get)) &&
+        (`object`.isEmpty || t.getObject.matches(`object`.get)))
   }
 
   /**
@@ -146,7 +147,7 @@ object RddOfTriplesOps {
    * Return the union all of RDF graphs.
    *
    * @param triples RDD of RDF graph
-   * @param others sequence of RDDs of other RDF graph
+   * @param others  sequence of RDDs of other RDF graph
    * @return graph (union of all)
    */
   def unionAll(triples: RDD[Triple], others: Seq[RDD[Triple]]): RDD[Triple] = {
@@ -158,12 +159,12 @@ object RddOfTriplesOps {
    * Determine whether this RDF graph contains any triples
    * with a given (subject, predicate, object) pattern.
    *
-   * @param triples RDD of triples
-   * @param subject the subject (None for any)
+   * @param triples   RDD of triples
+   * @param subject   the subject (None for any)
    * @param predicate the predicate (None for any)
-   * @param object the object (None for any)
+   * @param object    the object (None for any)
    * @return true if there exists within this RDF graph
-   * a triple with (S, P, O) pattern, false otherwise
+   *         a triple with (S, P, O) pattern, false otherwise
    */
   def contains(triples: RDD[Triple], subject: Option[Node] = None, predicate: Option[Node] = None, `object`: Option[Node] = None): Boolean = {
     find(triples, subject, predicate, `object`).count() > 0
@@ -173,7 +174,7 @@ object RddOfTriplesOps {
    * Determine if a triple is present in this RDF graph.
    *
    * @param triples RDD of triples
-   * @param triple the triple to be checked
+   * @param triple  the triple to be checked
    * @return true if the statement s is in this RDF graph, false otherwise
    */
   def contains(triples: RDD[Triple], triple: Triple): Boolean = {
@@ -207,7 +208,7 @@ object RddOfTriplesOps {
    * Add a statement to the current RDF graph.
    *
    * @param triples RDD of RDF graph
-   * @param triple the triple to be added.
+   * @param triple  the triple to be added.
    * @return new RDD of triples containing this statement.
    */
   def add(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
@@ -220,7 +221,7 @@ object RddOfTriplesOps {
    * Add a list of statements to the current RDF graph.
    *
    * @param triples RDD of RDF graph
-   * @param triple the list of triples to be added.
+   * @param triple  the list of triples to be added.
    * @return new RDD of triples containing this list of statements.
    */
   def addAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
@@ -235,7 +236,7 @@ object RddOfTriplesOps {
    * object as that supplied will be removed from the model.
    *
    * @param triples RDD of RDF graph
-   * @param triple the statement to be removed.
+   * @param triple  the statement to be removed.
    * @return new RDD of triples without this statement.
    */
   def remove(triples: RDD[Triple], triple: Triple): RDD[Triple] = {
@@ -250,7 +251,7 @@ object RddOfTriplesOps {
    * object as those supplied will be removed from the model.
    *
    * @param triples RDD of RDF graph
-   * @param triple the list of statements to be removed.
+   * @param triple  the list of statements to be removed.
    * @return new RDD of triples without these statements.
    */
   def removeAll(triples: RDD[Triple], triple: Seq[Triple]): RDD[Triple] = {
@@ -263,10 +264,9 @@ object RddOfTriplesOps {
    * Write N-Triples from a given RDD of triples
    *
    * @param triples RDD of RDF graph
-   * @param path path to the file containing N-Triples
+   * @param path    path to the file containing N-Triples
    */
   def saveAsNTriplesFile(triples: RDD[Triple], path: String): Unit = {
-    import net.sansa_stack.rdf.common.io.ntriples.JenaTripleToNTripleString
     triples
       .map(new JenaTripleToNTripleString()) // map to N-Triples string
       .saveAsTextFile(path)
@@ -278,7 +278,6 @@ object RddOfTriplesOps {
    *
    * @param outGraph the target graph
    * @param triples
-   *
    * @return the target graph
    */
   def toGraph(outGraph: Graph, triples: RDD[Triple]): Graph = {

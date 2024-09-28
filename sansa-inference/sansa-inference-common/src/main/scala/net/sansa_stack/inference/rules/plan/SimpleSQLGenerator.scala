@@ -61,7 +61,7 @@ class SimpleSQLGenerator(val sqlSchema: SQLSchema = SQLSchemaDefault) extends SQ
     val joins = var2TPs.flatMap{e =>
       val v = e._1
 
-      e._2.toList.sortBy(_.toString).combinations(2).map(c => new Join(c(0), c(1), v))
+      e._2.toList.sortBy(_.toString()).combinations(2).map(c => new Join(c(0), c(1), v))
     }.toSet
 
     joins
@@ -92,7 +92,7 @@ class SimpleSQLGenerator(val sqlSchema: SQLSchema = SQLSchemaDefault) extends SQ
           }
         }
       } else {
-        val expr = "'" + v.toString + "'"
+        val expr = "'" + v.toString() + "'"
         expressions += withAlias(expr, i)
       }
       i += 1

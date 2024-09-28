@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>sansa-rdf-parent_2.12</artifactId>
 		<groupId>net.sansa-stack</groupId>
-		<version>0.8.0-RC3-SNAPSHOT</version>
+		<version>0.9.6-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sansa-rdf-common_2.12</artifactId>
@@ -132,12 +132,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-plugin</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.aksw.r2rml</groupId>
+			<groupId>org.aksw.rmltk</groupId>
 			<artifactId>r2rml-jena-sql-transforms</artifactId>
 		</dependency>
 

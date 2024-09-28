@@ -26,7 +26,7 @@ abstract class RdfPartitionerBase(distinguishStringLiterals: Boolean = false,
   def getUriOrBNodeString(node: Node): String = {
     val termType = getRdfTermType(node)
     termType match {
-      case TermType.BLANK => node.getBlankNodeId.getLabelString
+      case TermType.BLANK => node.getBlankNodeLabel
       case TermType.IRI => node.getURI
       case _ => throw new RuntimeException("Neither Uri nor blank node: " + node)
     }

@@ -4,7 +4,7 @@
   <parent>
     <artifactId>sansa-inference-parent_2.12</artifactId>
     <groupId>net.sansa-stack</groupId>
-    <version>0.8.0-RC3-SNAPSHOT</version>
+    <version>0.9.6-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,7 +29,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
-      <artifactId>jena-tdb</artifactId>
+      <artifactId>jena-tdb1</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>

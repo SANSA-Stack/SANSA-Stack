@@ -5,7 +5,7 @@ import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 import org.apache.jena.graph.Node
-import org.apache.jena.vocabulary.{OWL, RDFS}
+import org.apache.jena.vocabulary.{OWL2, RDFS}
 import scalaj.http.Http
 
 import net.sansa_stack.rdf.common.qualityassessment.utils.DatasetUtils._
@@ -104,13 +104,13 @@ object NodeUtils extends Serializable {
     if (node.isLiteral) node.getLiteralLexicalForm else node.toString()
 
   def isLabeled(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.label)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(RDFS.label)
 
   def isRDFSClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(RDFS.Class)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(RDFS.Class)
 
   def isOWLClass(node: Node): Boolean =
-    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString).contains(OWL.Class)
+    (if (node.isLiteral) node.getLiteralLexicalForm else node.toString()).contains(OWL2.Class)
 
   def resourceTooLong(node: Node): Boolean =
     node.getURI.length() >= shortURIThreshold

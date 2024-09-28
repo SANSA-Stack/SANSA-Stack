@@ -52,7 +52,9 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
 //      println("Data:")
 //      data.write(System.out, "Turtle")
 
-      tests.sortBy(_.queryFile).foreach(testCase => {
+      tests.sortBy(_.queryFile)
+        // .filter(testCase => testCase.name == "issue15-q1")
+        .foreach(testCase => {
         // get the relevant data from the test case
         val queryFileURL = testCase.queryFile
         val resultFileURL = testCase.resultsFile
@@ -62,7 +64,7 @@ abstract class SPARQLQueryEvaluationTestSuiteRunner(val testSuite: SPARQLQueryEv
         test(s"testing $testName") {
           val queryString = readQueryString(queryFileURL)
           val query = QueryFactory.create(queryString)
-          println(s"SPARQL query:\n $query")
+          println(s"Test $testName: SPARQL query:\n $query")
 
           // run the SPARQL query
           val actualResult = runQuery(query, data)

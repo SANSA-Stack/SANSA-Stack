@@ -36,12 +36,12 @@ val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
 val resultSet = qef.createQueryExecution("SELECT ?o { ?s ?p ?o }")
   .execSelectSpark()
 
-val schemaMapping = RddOfBindingToDataFrameMapper
+val schemaMapping = RddOfBindingsToDataFrameMapper
   .configureSchemaMapper(resultSet)
   .setTypePromotionStrategy(TypePromoterImpl.create())
   .setVarToFallbackDatatype((v: Var) => null)
   .createSchemaMapping
- val df = RddOfBindingToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
+ val df = RddOfBindingsToDataFrameMapper.applySchemaMapping(resultSet.getBindings, schemaMapping)
 
 df.show(20)
 

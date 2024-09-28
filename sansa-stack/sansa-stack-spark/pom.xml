@@ -5,7 +5,7 @@
     <parent>
         <groupId>net.sansa-stack</groupId>
         <artifactId>sansa-stack_2.12</artifactId>
-        <version>0.8.0-RC3-SNAPSHOT</version>
+        <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>sansa-stack-spark_2.12</artifactId>
@@ -14,12 +14,10 @@
     <name>SANSA Stack - Spark</name>
 
     <dependencies>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
         </dependency>
-
 
         <!-- RDF Layer -->
         <dependency>
@@ -56,7 +54,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        
         <!-- Added cause if not there failing when play around with fat jar in databricks -->
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
@@ -92,8 +90,10 @@
                                     <goal>shade</goal>
                                 </goals>
                                 <configuration>
-                                    <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar</outputFile>
-<!--                                    <minimizeJar>true</minimizeJar>-->
+                                    <outputFile>
+                                        ${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar
+                                    </outputFile>
+                                    <!--                                    <minimizeJar>true</minimizeJar>-->
                                     <artifactSet>
                                         <excludes>
                                             <exclude>org.apache.spark:spark-core_${scala.binary.version}</exclude>
@@ -150,7 +150,7 @@
                                             <exclude>org.apache.directory.server:*</exclude>
                                             <exclude>org.apache.hadoop:*</exclude>
                                             <exclude>org.apache.htrace:htrace-core</exclude>
-<!--                                            <exclude>org.apache.httpcomponents:*</exclude>-->
+                                            <!--                                            <exclude>org.apache.httpcomponents:*</exclude>-->
                                             <exclude>org.apache.ivy:ivy</exclude>
                                             <exclude>org.apache.mesos:mesos</exclude>
                                             <exclude>org.apache.parquet:parquet*</exclude>
@@ -221,13 +221,15 @@
                                         <filter>
                                             <artifact>org.aksw.jena-sparql-api:*</artifact>
                                             <excludes>
-                                                <exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle</exclude>
+                                                <exclude>META-INF/services/org.apache.jena.sys.JenaSubsystemLifecycle
+                                                </exclude>
                                             </excludes>
                                         </filter>
                                     </filters>
-<!--                                    <finalName>${project.artifactId}.jar</finalName>-->
+                                    <!--                                    <finalName>${project.artifactId}.jar</finalName>-->
                                     <transformers>
-                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                     </transformers>
                                     <createDependencyReducedPom>false</createDependencyReducedPom>
                                 </configuration>
@@ -249,6 +251,51 @@
             <properties>
                 <spark.deps.scope>provided</spark.deps.scope>
             </properties>
+        </profile>
+
+        <profile>
+            <id>shade</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <outputFile>
+                                        ${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar
+                                    </outputFile>
+                                    <!--                                    <minimizeJar>true</minimizeJar>-->
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <!-- Avoid a Spark error: Invalid signature file digest for Manifest main attributes-->
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                                <exclude>META-INF/maven/**</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                    <!--                                    <finalName>${project.artifactId}.jar</finalName>-->
+                                    <transformers>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    </transformers>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
         </profile>
     </profiles>
 

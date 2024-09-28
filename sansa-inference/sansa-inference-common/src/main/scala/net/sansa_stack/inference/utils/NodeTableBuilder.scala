@@ -1,8 +1,8 @@
 package net.sansa_stack.inference.utils
 
 import org.apache.jena.graph.NodeFactory
-import org.apache.jena.tdb.base.file.Location
-import org.apache.jena.tdb.setup.DatasetBuilderStd
+import org.apache.jena.tdb1.base.file.Location
+import org.apache.jena.tdb1.setup.DatasetBuilderStd
 import tdb.cmdline.CmdTDB
 import tdb.xloader.CmdNodeTableBuilder
 

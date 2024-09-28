@@ -108,6 +108,11 @@ class NoErrorProfile implements ParserProfile {
 	}
 
 	@Override
+	public String getBaseURI() {
+		return null;
+	}
+
+	@Override
 	public PrefixMap getPrefixMap() {
 		return base.getPrefixMap();
 	}
