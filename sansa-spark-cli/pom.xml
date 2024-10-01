@@ -37,6 +37,19 @@
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-cmds-picocli${scala.version.suffix}</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql${scala.version.suffix}</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-spark-jakarta${scala.version.suffix}</artifactId>
+            <version>${project.version}</version>
+            <classifier>jakarta</classifier>
         </dependency>
 
         <dependency>
@@ -48,7 +61,16 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
+        <!--
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_2.12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-query-spark_2.12</artifactId>
+        </dependency>
+        -->
     </dependencies>
 
 </project>

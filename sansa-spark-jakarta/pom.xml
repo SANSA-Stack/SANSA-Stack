@@ -97,7 +97,7 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-sql_${scala.binary.version}</artifactId>
+                    <artifactId>spark-sql${scala.version.suffix}</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>javax.servlet</groupId>

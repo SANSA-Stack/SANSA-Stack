@@ -203,6 +203,10 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
+    public static boolean mayQueriesProduceQuads(Collection<Query> queries) {
+        return queries.stream().anyMatch(JavaRddOfBindingsOps::mayProduceQuads);
+    }
+
     public static boolean mayProduceQuads(Collection<SparqlStmt> stmts) {
         return stmts.stream().anyMatch(JavaRddOfBindingsOps::mayProduceQuads);
     }
@@ -213,10 +217,15 @@ public class JavaRddOfBindingsOps {
             result = true;
         } else if (stmt.isQuery()) {
             Query query = stmt.getQuery();
-            result = !(query.isConstructType() && query.isConstructQuad());
+            result = mayProduceQuads(query);
         } else {
             result = true; // Updates may affect quads - we don't know
         }
+        return result;
+    }
+
+    public static boolean mayProduceQuads(Query query) {
+        boolean result = !(query.isConstructType() && query.isConstructQuad());
         return result;
     }
 

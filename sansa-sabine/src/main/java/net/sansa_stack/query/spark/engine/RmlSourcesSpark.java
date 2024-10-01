@@ -26,8 +26,10 @@ import org.aksw.jenax.model.csvw.domain.api.Table;
 import org.aksw.jenax.model.d2rq.domain.api.D2rqDatabase;
 import org.aksw.r2rml.sql.transform.JSqlUtils;
 import org.aksw.rml.jena.service.D2rqHikariUtils;
+import org.aksw.rml.jena.service.InitRmlService;
 import org.aksw.rml.model.QlTerms;
 import org.aksw.rml.rso.model.SourceOutput;
+import org.aksw.rml.v2.io.RelativePathSource;
 import org.aksw.rmltk.model.backbone.rml.ILogicalSource;
 import org.aksw.rmltk.model.r2rml.LogicalTable;
 import org.apache.hadoop.io.LongWritable;
@@ -134,7 +136,6 @@ public class RmlSourcesSpark {
 
 
     public static JavaRDD<Binding> processSourceAsCsv(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var[] headerVars = null;
@@ -170,8 +171,16 @@ public class RmlSourcesSpark {
                 nullValues = nullSet.toArray(new String[0]);
             }
             sourceDoc = csvwtSource.getUrl();
+
+            // Try RML 2
+            if (sourceDoc == null) {
+                RelativePathSource rps = csvwtSource.as(RelativePathSource.class);
+                if (rps.getPath() != null) {
+                    sourceDoc = rps.getPath();
+                }
+            }
         }
-        Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
+        // Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
         UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
 

@@ -1,17 +1,17 @@
 package net.sansa_stack.spark.cli.util;
 
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table.Cell;
-import com.google.common.collect.Tables;
-import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
-import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
-import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
-import net.sansa_stack.spark.io.rdf.output.RddRowSetWriter;
-import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
-import net.sansa_stack.spark.io.rdf.output.RddWriterSettings;
-import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
@@ -39,37 +39,27 @@ import org.apache.spark.sql.SparkSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table.Cell;
+import com.google.common.collect.Tables;
+
+import net.sansa_stack.spark.cli.impl.CmdSansaTarqlImpl;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceCollection;
+import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
+import net.sansa_stack.spark.io.rdf.output.RddWriterSettings;
+import net.sansa_stack.spark.rdd.op.rdf.JavaRddOps;
+import net.sansa_stack.spark.util.SansaSessionUtils;
 
 /** Utility methods for implementing command line interface tooling based on Sansa */
 public class SansaCmdUtils {
     private static final Logger logger = LoggerFactory.getLogger(CmdSansaTarqlImpl.class);
 
-    public static final String KRYO_BUFFER_MAX_KEY = "spark.kryo.serializer.buffer.max";
-
+    /** Return a default spark session builder for sansa commands. */
     public static SparkSession.Builder newDefaultSparkSessionBuilder() {
-
-        SparkSession.Builder result = SparkSession.builder()
-                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("spark.kryo.registrator", String.join(", ",
-                        "net.sansa_stack.spark.io.rdf.kryo.JenaKryoRegistrator"));
-
-        String value; // for debugging / inspection
-        if ((value = System.getProperty("spark.master")) == null) {
-            String defaultMaster = "local[*]";
-            logger.info("'spark.master' not set - defaulting to: " + defaultMaster);
-            result = result.master(defaultMaster);
-        }
-
-        if ((value = System.getProperty(KRYO_BUFFER_MAX_KEY)) == null) {
-            result = result.config(KRYO_BUFFER_MAX_KEY, "2048"); // MB
-        }
-        return result;
+        return SansaSessionUtils.newDefaultSparkSessionBuilder();
     }
 
     public static RddRowSetWriterFactory configureRowSetWriter(RdfOutputConfig out) {

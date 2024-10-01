@@ -37,6 +37,9 @@ public class CmdSansaQuery
     @Option(names = {"--dag"}, arity = "0", description = "Add rdd.cache() nodes for certain common sub expressions in the sparql algebra. Experimental; usually makes things slower.")
     public boolean dagScheduling = false;
 
+    @Option(names = {"--mapping-directory"}, arity = "0", description = "Directory against which to resolve (RML) data source references.")
+    public String mappingDirectory = null;
+
     @CommandLine.Mixin
     public CmdMixinArq arqConfig = new CmdMixinArq();
 
