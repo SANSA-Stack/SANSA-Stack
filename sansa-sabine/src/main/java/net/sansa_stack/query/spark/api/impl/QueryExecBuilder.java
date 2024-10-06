@@ -6,9 +6,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
 import org.aksw.commons.collections.IterableUtils;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
-import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.aksw.jena_sparql_api.rx.script.SparqlScriptProcessor;
 import org.aksw.jena_sparql_api.sparql.ext.url.E_IriAsGiven;
 import org.aksw.jena_sparql_api.sparql.ext.url.F_BNodeAsGiven;
@@ -172,18 +173,31 @@ public class QueryExecBuilder
                 ? execCxtFactory
                 : ExecutionContextUtils::createExecCxtEmptyDsg;
 
-        ContextBuilder cxtBuilder = contextBuilder;
+
+        // ContextBuilder cxtBuilder = contextBuilder;
+        LifeCycle<Context> cxtLifeCycle = contextBuilder.build();
+
+        LifeCycle<ExecutionContext> execCxtLifeCycle = LifeCycleImpl.of(
+                () -> {
+                    Context cxt = cxtLifeCycle.newInstance();
+                    ExecutionContext execCxt = finalExecCxtCtor.apply(cxt);
+                    return execCxt;
+                },
+                execCxt -> cxtLifeCycle.closeInstance(execCxt.getContext()));
+
+        /*
         SerializableSupplier<ExecutionContext> execCxtSupplier = () -> {
             Context cxt = cxtBuilder.build();
             ExecutionContext execCxt = finalExecCxtCtor.apply(cxt);
             return execCxt;
         };
+         */
 
         RdfSource result;
         switch (queryType) {
             case CONSTRUCT: {
                 boolean useDag = dagScheduling;
-                JavaRDD<Quad> rdd = JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, queries, execCxtSupplier, useDag);
+                JavaRDD<Quad> rdd = JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, queries, execCxtLifeCycle, useDag);
                 // List<JavaRDD<Quad>> rdds = queries.stream().map(query -> JavaRddOfBindingsOps.execSparqlConstruct(initialRdd, query, null)).collect(Collectors.toList());
                 // JavaRDD<Quad> rdd = javaSparkContext.union(rdds.toArray(new JavaRDD[0]));
                 result = RdfSources.ofQuads(rdd);

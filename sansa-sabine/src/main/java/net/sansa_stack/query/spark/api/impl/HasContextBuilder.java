@@ -15,6 +15,11 @@ public interface HasContextBuilder<X extends HasContextBuilder<X>>
         return self();
     }
 
+    default X addContextCloser(SerializableConsumer<Context> cxtCloser) {
+        getContextBuilder().addContextCloser(cxtCloser);
+        return self();
+    }
+
     default X setBaseContext(SerializableSupplier<Context> baseContext) {
         getContextBuilder().setBaseContext(baseContext);
         return self();

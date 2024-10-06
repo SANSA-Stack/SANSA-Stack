@@ -8,10 +8,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import net.sansa_stack.hadoop.jena.locator.LocatorHdfs;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
 import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;
@@ -276,7 +276,7 @@ public class CmdSansaTarqlImpl {
         CmdMixinArq.configureGlobal(arqConfig);
         // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
         CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-        Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
+        LifeCycle<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtLifeCycle(arqConfig);
 
         // CLI dialect options take precedence
 //        DialectMutable csvCliOptions = cmd.csvOptions;

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.util.Context;
@@ -17,6 +19,8 @@ public class ContextBuilder
 
     protected Supplier<Context> baseContext;
     protected List<Consumer<Context>> contextMutators = new ArrayList<>();
+
+    protected List<Consumer<Context>> contextClosers = new ArrayList<>();
 
     public static ContextBuilder newBuilder() {
         return new ContextBuilder();
@@ -30,14 +34,26 @@ public class ContextBuilder
     public void addContextMutator(Consumer<Context> contextMutator) {
         this.contextMutators.add(contextMutator);
     }
+    public void addContextCloser(Consumer<Context> contextMutator) {
+        this.contextClosers.add(contextMutator);
+    }
 
-    public Context build() {
-        Context result = baseContext == null
-                ? ARQ.getContext().copy()
-                : baseContext.get();
-        for (Consumer<Context> mutator : contextMutators) {
-            mutator.accept(result);
-        }
-        return result;
+    public LifeCycle<Context> build() {
+        List<Consumer<Context>> finalContextMutators = new ArrayList<>(contextMutators);
+        List<Consumer<Context>> finalContextClosers = new ArrayList<>(contextClosers);
+
+        return LifeCycleImpl.of(() -> {
+            Context r = baseContext == null
+                    ? ARQ.getContext().copy()
+                    : baseContext.get();
+            for (Consumer<Context> mutator : finalContextMutators) {
+                mutator.accept(r);
+            }
+            return r;
+        }, cxt -> {
+            for (Consumer<Context> closer : finalContextClosers) {
+                closer.accept(cxt);
+            }
+        });
     }
 }

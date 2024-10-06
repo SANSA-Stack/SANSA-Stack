@@ -36,8 +36,16 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <artifactId>spark-sql${scala.version.suffix}</artifactId>
         </dependency>
+
+        <!--
+        <dependency>
+            <groupId>net.sansa-stack</groupId>
+            <artifactId>sansa-spark-jakarta${scala.version.suffix}</artifactId>
+            <classifier>jakarta</classifier>
+        </dependency>
+        -->
 
         <dependency>
             <groupId>info.picocli</groupId>

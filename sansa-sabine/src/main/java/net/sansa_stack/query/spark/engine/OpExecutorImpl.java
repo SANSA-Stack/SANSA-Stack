@@ -3,6 +3,7 @@ package net.sansa_stack.query.spark.engine;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfDatasetsOps;
@@ -42,14 +43,13 @@ import org.apache.spark.storage.StorageLevel;
 import scala.Tuple2;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class OpExecutorImpl
         implements OpExecutor {
     public static final Symbol SYM_RDD_OF_DATASET = Symbol.create("urn:rddOfDataset");
 
-    protected Supplier<ExecutionContext> execCxtSupplier;
+    protected LifeCycle<ExecutionContext> execCxtLifeCycle;
 
     /** Algebra expressions may use OpVar instances which then get resolved against this map. */
     protected Map<Var, Op> varToOp;
@@ -57,14 +57,14 @@ public class OpExecutorImpl
     protected int level = 0;
 
     /** FIXME ExecCxt is not serializable; we an only use a serializable lambda that produces a context in the workers */
-    public OpExecutorImpl(Supplier<ExecutionContext> execCxtSupplier) {
-        this(execCxtSupplier, new HashMap<>());
+    public OpExecutorImpl(LifeCycle<ExecutionContext> execCxtLifeCycle) {
+        this(execCxtLifeCycle, new HashMap<>());
     }
 
-    public OpExecutorImpl(Supplier<ExecutionContext> execCxtSupplier, Map<Var, Op> varToOp) {
+    public OpExecutorImpl(LifeCycle<ExecutionContext> execCxtLifeCycle, Map<Var, Op> varToOp) {
         super();
         this.varToOp = varToOp;
-        this.execCxtSupplier = execCxtSupplier;
+        this.execCxtLifeCycle = execCxtLifeCycle;
     }
 
     public JavaRDD<Binding> exec(Op op, JavaRDD<Binding> input) {
@@ -107,14 +107,14 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpGroup op, JavaRDD<Binding> rdd) {
-        return JavaRddOfBindingsOps.group(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getGroupVars(), op.getAggregators(), execCxtSupplier);
+        return JavaRddOfBindingsOps.group(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getGroupVars(), op.getAggregators(), execCxtLifeCycle);
 //    RddOfBindingOps.group(rdd, op.getGroupVars, op.getAggregators)
     }
 
     @Override
     public JavaRDD<Binding> execute(OpService op, JavaRDD<Binding> rdd) {
         JavaRDD<Binding> result = null;
-        ExecutionContext execCxt = execCxtSupplier.get();
+        ExecutionContext execCxt = execCxtLifeCycle.newInstance();
         Node serviceNode = op.getService();
         var success = false;
 
@@ -170,6 +170,10 @@ public class OpExecutorImpl
             }
         }
 
+        if (execCxt != null) {
+            execCxtLifeCycle.closeInstance(execCxt);
+        }
+
         if (!success) {
             throw new IllegalArgumentException("Execution with service " + serviceNode + " is not supported");
         }
@@ -194,7 +198,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpExtend op, JavaRDD<Binding> rdd) {
-        return JavaRddOfBindingsOps.extend(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getVarExprList(), execCxtSupplier);
+        return JavaRddOfBindingsOps.extend(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getVarExprList(), execCxtLifeCycle);
     }
 
     @Override
@@ -224,7 +228,7 @@ public class OpExecutorImpl
 
     @Override
     public JavaRDD<Binding> execute(OpFilter op, JavaRDD<Binding> rdd) {
-        return JavaRddOfBindingsOps.filter(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getExprs(), execCxtSupplier);
+        return JavaRddOfBindingsOps.filter(execToRdd(op.getSubOp(), rdd).toJavaRDD(), op.getExprs(), execCxtLifeCycle);
     }
 
     //  @Override public  JavaRDD<Binding> execute(OpSlice op, JavaRDD<Binding> rdd): JavaRDD<Binding> =
@@ -345,14 +349,16 @@ public class OpExecutorImpl
         if (isPatternFree) {
             // Just use flat map without going throw the whole spark machinery
             String rightSse = op.getRight().toString(); // Produces parsable SSE!
-            Supplier<ExecutionContext> execCxtSupp = execCxtSupplier; // Need to copy - otherwise spark will try to serialize OpExecutorImpl
+            // Supplier<ExecutionContext> execCxtSupp = execCxtSupplier; // Need to copy - otherwise spark will try to serialize OpExecutorImpl
             result = base.mapPartitions(it -> {
                 Op rightOp = SSE.parseOp(rightSse);
-                ExecutionContext execCxt = execCxtSupp.get();
-                return Iter.iter(it).flatMap(b -> {
-                    QueryIterator r = QC.execute(rightOp, b, execCxt);
-                    return r;
-                });
+                ExecutionContext execCxt = execCxtLifeCycle.newInstance();
+                return Iter.onClose(
+                        Iter.iter(it).flatMap(b -> {
+                            QueryIterator r = QC.execute(rightOp, b, execCxt);
+                            return r;
+                        }),
+                        () -> execCxtLifeCycle.closeInstance(execCxt));
             });
         } else {
             throw new UnsupportedOperationException("Lateral joins for non-pattern-free ops not yet implemented");

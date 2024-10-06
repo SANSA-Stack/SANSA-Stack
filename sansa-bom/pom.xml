@@ -9,8 +9,7 @@
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
 
-    <description>SANSA Parent project for managing common dependencies, plugins, meta-data, properties, etc.
-    </description>
+    <description>SANSA Parent project for managing common dependencies, plugins, meta-data, properties, etc.</description>
 
     <organization>
         <name>Smart Data Analytics (SDA) Research Group</name>
@@ -87,12 +86,19 @@
         <scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
 
         <flink.version>1.11.2</flink.version>
-        <spark.version>3.5.1</spark.version>
+        <spark.version>3.5.3</spark.version>
+	<!-- <spark.version>4.0.0-preview2</spark.version> -->
         <derby.version>10.15.2.0</derby.version>
         <!-- Spark Testing isn't always in sync, so we have to check for latest version and adapt here -->
         <spark.testing.version>3.0.1_1.0.0</spark.testing.version>
 
-        <hadoop.version>3.3.4</hadoop.version>
+        <!-- Javax -->
+        <!-- <jersey.version>2.35</jersey.version> -->
+        
+        <!-- Jakarta -->
+        <jersey.version>3.1.3</jersey.version>
+
+        <hadoop.version>3.4.0</hadoop.version>
         <!-- <hadoop.version>2.8.5</hadoop.version> -->
         <hadoop.common.version>${hadoop.version}</hadoop.common.version>
 
@@ -1225,7 +1231,7 @@
             <dependency>
                 <groupId>org.glassfish.jersey</groupId>
                 <artifactId>jersey-bom</artifactId>
-                <version>2.35</version>
+                <version>${jersey.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.aksw.commons.lambda.serializable.SerializableSupplier;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import org.aksw.jenax.arq.util.exec.query.ExecutionContextUtils;
@@ -241,18 +241,20 @@ public class SansaCmdUtils {
         return result;
     }
 
-    public static Supplier<ExecutionContext> createExecCxtSupplier(CmdMixinArq arqConfig) {
-        SerializableSupplier<ExecutionContext> execCxtSupplier = () -> {
-            Context baseCxt = ARQ.getContext().copy();
-            CmdMixinArq.configureCxt(baseCxt, arqConfig);
-            baseCxt.set(ArqSecurity.symAllowFileAccess, true);
+    public static LifeCycle<ExecutionContext> createExecCxtLifeCycle(CmdMixinArq arqConfig) {
+        LifeCycle<ExecutionContext> execCxtLifeCycle = LifeCycleImpl.of(
+                () -> {
+                    Context baseCxt = ARQ.getContext().copy();
+                    CmdMixinArq.configureCxt(baseCxt, arqConfig);
+                    baseCxt.set(ArqSecurity.symAllowFileAccess, true);
 
-            // Scripting can only be set via system property
-            // baseCxt.setTrue(ARQ.systemPropertyScripting)
+                    // Scripting can only be set via system property
+                    // baseCxt.setTrue(ARQ.systemPropertyScripting)
 
-            ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg(baseCxt);
-            return execCxt;
-        };
-        return execCxtSupplier;
+                    ExecutionContext execCxt = ExecutionContextUtils.createExecCxtEmptyDsg(baseCxt);
+                    return execCxt;
+                },
+                execCxt -> {});
+        return execCxtLifeCycle;
     }
 }

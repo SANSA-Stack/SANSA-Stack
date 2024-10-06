@@ -2,6 +2,7 @@ package net.sansa_stack.spark.cli.impl;
 
 import com.google.common.collect.Iterables;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
+import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
 import net.sansa_stack.spark.cli.util.RdfOutputConfig;
@@ -9,7 +10,6 @@ import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSource;
 import net.sansa_stack.spark.io.rdf.input.api.RdfSourceFactory;
 import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactories;
-import net.sansa_stack.spark.io.rdf.input.impl.RdfSourceFactoryImpl;
 import net.sansa_stack.spark.io.rdf.output.RddRdfWriterFactory;
 import net.sansa_stack.spark.io.rdf.output.RddRowSetWriterFactory;
 import net.sansa_stack.spark.rdd.op.rdf.JavaRddOfDatasetsOps;
@@ -33,10 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 interface QueryProcessor<T> {
-  void exec(JavaRDD<DatasetOneNg> inputRdd, Supplier<ExecutionContext> execCxtSupplier);
+  void exec(JavaRDD<DatasetOneNg> inputRdd, LifeCycle<ExecutionContext> execCxtLifeCycle);
 }
 
 
@@ -142,7 +141,7 @@ public class CmdSansaNgsQueryImpl {
     CmdMixinArq.configureGlobal(arqConfig);
     // TODO Jena ScriptFunction searches for JavaScript LibFile only searched in the global context
     CmdMixinArq.configureCxt(ARQ.getContext(), arqConfig);
-    Supplier<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtSupplier(arqConfig);
+    LifeCycle<ExecutionContext> execCxtSupplier = SansaCmdUtils.createExecCxtLifeCycle(arqConfig);
 
     queryProcessor.exec(rdd, execCxtSupplier);
    //  JavaResultSetSpark resultSetSpark = JavaRddOfBindingsOps.execSparqlSelect(rdd, query, execCxtSupplier);

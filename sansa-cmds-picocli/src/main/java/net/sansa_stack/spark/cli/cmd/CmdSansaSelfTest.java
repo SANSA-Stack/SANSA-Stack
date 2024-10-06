@@ -1,8 +1,8 @@
 package net.sansa_stack.spark.cli.cmd;
 
-
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
+import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
 import org.aksw.jenax.arq.util.quad.DatasetGraphUtils;
 import org.aksw.jenax.arq.util.security.ArqSecurity;
 import org.aksw.rml.jena.impl.RmlExec;
@@ -16,6 +16,7 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import net.sansa_stack.query.spark.api.impl.QueryExecBuilder;
 import picocli.CommandLine;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -54,18 +55,31 @@ public class CmdSansaSelfTest
                 .addQueries(queries);
 
             // String mappingDirectory = cmd.mappingDirectory;
-            String mappingDirectory = basePath.toUri().toString();
+            // String mappingDirectory = basePath.toUri().toString();
 
             QueryExecBuilder queryExecBuilder = QueryExecBuilder.newInstance()
                 // .setSparkSession(sparkSession)
                 .addQueries(queries)
                 .addContextMutator(cxt -> {
+                    ResourceMgr subResMgr = new ResourceMgr();
+                    Path mappingDirectory = null;
+                    try {
+                        mappingDirectory = ResourceMgr.toPath(subResMgr, GtfsMadridBenchResources.class, name);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     // CmdMixinArq.configureCxt(cxt, arqConfig);
                     cxt
                         // .set(JenaXSymbols.symResourceMgr, new ResourceMgr())
                         .set(ArqSecurity.symAllowFileAccess, true)
-                        .set(RmlSymbols.symMappingDirectory, mappingDirectory);
+                        .set(RmlSymbols.symMappingDirectory, mappingDirectory)
+                        .set(JenaXSymbols.symResourceMgr, subResMgr);
                     // .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
+                })
+                .addContextCloser(cxt ->  {
+                    ResourceMgr subResMgr = cxt.get(JenaXSymbols.symResourceMgr);
+                    subResMgr.close();
                 })
                 .setStandardIri(false)
                 .setDagScheduling(false)

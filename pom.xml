@@ -85,7 +85,9 @@
         <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
 
-	    <module>sansa-spark-jakarta</module>
+        <!--
+        <module>sansa-spark-jakarta</module>
+        -->
     </modules>
 
     <dependencies>

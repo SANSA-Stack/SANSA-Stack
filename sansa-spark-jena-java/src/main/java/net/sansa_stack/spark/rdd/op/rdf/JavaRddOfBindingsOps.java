@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
 import com.google.common.base.Preconditions;
+import org.aksw.commons.collections.utils.StreamUtils;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.util.function.TriConsumer;
 import org.aksw.commons.util.stream.StreamFunction;
@@ -274,11 +275,11 @@ public class JavaRddOfBindingsOps {
         return result;
     }
 
-    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query, Supplier<ExecutionContext> execCxtSupplier) {
-        return tarqlQuads(rdd, Collections.singleton(new SparqlStmtQuery(query)), false, execCxtSupplier);
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Query query, LifeCycle<ExecutionContext> execCxtLifeCycle) {
+        return tarqlQuads(rdd, Collections.singleton(new SparqlStmtQuery(query)), false, execCxtLifeCycle);
     }
 
-    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode, Supplier<ExecutionContext> execCxtSupplier) {
+    public static JavaRDD<Quad> tarqlQuads(JavaRDD<Binding> rdd, Collection<SparqlStmt> stmts, boolean accumulationMode, LifeCycle<ExecutionContext> execCxtLifeCycle) {
         JavaRDD<Quad> result;
 
         // If we are in constructMode and there are no update statements then use the fast track
@@ -295,7 +296,7 @@ public class JavaRddOfBindingsOps {
             result = JavaRddOps.mapPartitions(rdd, bindings -> {
                 // The SparqlStmt-to-Query conversion has to be done here because the latter is not serializable
                 List<Query> queries = stmts.stream().map(SparqlStmt::getQuery).collect(Collectors.toList());
-                StreamFunction<Binding, Quad> mapper = quadMapper(queries, execCxtSupplier);
+                StreamFunction<Binding, Quad> mapper = quadMapper(queries, execCxtLifeCycle);
                 return mapper.apply(bindings);
             });
         } else {
@@ -318,18 +319,17 @@ public class JavaRddOfBindingsOps {
             mappers.stream().flatMap(mapper -> mapper.apply(binding)));
     }
 
-    public static StreamFunction<Binding, Quad> quadMapper(Collection<Query> queries, Supplier<ExecutionContext> execCxtSupplier) {
-        ExecutionContext execCxt = execCxtSupplier.get();
+    public static StreamFunction<Binding, Quad> quadMapper(Collection<Query> queries, LifeCycle<ExecutionContext> execCxtLifeCycle) {
+        ExecutionContext execCxt = execCxtLifeCycle.newInstance();
         List<Function<Binding, Stream<Quad>>> mappers = queries.stream()
                 .map(q -> bindToExecCxt(execCxt, compileNodeTupleMapper(q, JavaRddOfBindingsOps::templateMapperQuads)))
                 .collect(Collectors.toList());
-
         // For every input binding apply all mappers
-        return upstream -> upstream.flatMap(binding ->
+        return upstream -> StreamUtils.appendAction(upstream.flatMap(binding ->
             mappers.stream().flatMap(mapper -> {
                 Stream<Quad> r = mapper.apply(binding);
                 return r;
-            }));
+            })), () -> execCxtLifeCycle.closeInstance(execCxt));
     }
 
     /** Apply default optimizations for algebra expressions meant for tarql

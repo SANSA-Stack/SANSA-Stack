@@ -16,6 +16,7 @@
     <profiles>
         <profile>
             <id>jakarta</id>
+		<activation><activeByDefault>true</activeByDefault></activation>
             <build>
                 <plugins>
                     <plugin>
@@ -32,6 +33,7 @@
                         <executions>
                             <execution>
                                 <id>shade-jar-with-dependencies</id>
+				<!-- <phase>compile</phase> -->
                                 <phase>package</phase>
                                 <goals>
                                     <goal>shade</goal>
