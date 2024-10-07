@@ -4,6 +4,7 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.irix.IRIx;
 import org.apache.jena.riot.system.ErrorHandler;
 import org.apache.jena.riot.system.FactoryRDF;
 import org.apache.jena.riot.system.ParserProfile;
@@ -50,6 +51,11 @@ class NoErrorProfile implements ParserProfile {
 	@Override
 	public Node createURI(String uriStr, long line, long col) {
 		return base.createURI(uriStr, line, col);
+	}
+
+	@Override
+	public Node createURI(IRIx irIx, long l, long l1) {
+		return createURI(irIx.str(), l, l1);
 	}
 
 	@Override

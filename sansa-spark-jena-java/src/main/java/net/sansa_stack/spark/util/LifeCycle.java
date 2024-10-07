@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.rdd.op.rdf;
+package net.sansa_stack.spark.util;
 
 public interface LifeCycle<T> {
     T newInstance();

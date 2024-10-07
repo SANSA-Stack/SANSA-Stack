@@ -2,8 +2,8 @@ package net.sansa_stack.query.spark.rdd.op;
 
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSparkImpl;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
+import net.sansa_stack.spark.util.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycleImpl;
 import net.sansa_stack.query.spark.engine.ExecutionDispatch;
 import net.sansa_stack.query.spark.engine.OpExecutor;
 import net.sansa_stack.query.spark.engine.OpExecutorImpl;
@@ -27,6 +27,7 @@ import org.aksw.jenax.arq.util.syntax.VarExprListUtils;
 import org.aksw.jenax.arq.util.template.TemplateLib2;
 import org.aksw.jenax.sparql.algebra.transform2.Evaluator;
 import org.aksw.jenax.sparql.algebra.transform2.OpCost;
+import org.aksw.rml.jena.service.InitRmlService;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -191,7 +192,15 @@ public class JavaRddOfBindingsOps {
         // Disjunction as the non-canonical union might be less supported by optimizers
         Op op3 = Transformer.transform(new TransformUnionToDisjunction(), op2);
 
-        OpCost opCost = Evaluator.evaluate(new JoinOrderOptimizer(Path::of), op3);
+        ExecutionContext execCxt = execCxtLifeCycle.newInstance();
+        OpCost opCost;
+        Path mappingDirectory = InitRmlService.getMappingDirectory(execCxt.getContext(), true);
+        try {
+            opCost = Evaluator.evaluate(new JoinOrderOptimizer(mappingDirectory::resolve), op3);
+        } finally {
+            execCxtLifeCycle.closeInstance(execCxt);
+        }
+
         Op baseOp = opCost.getOp();
 
         if (logger.isInfoEnabled()) {

@@ -55,6 +55,7 @@ import org.apache.spark.sql.types.StructType;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Statement;
@@ -91,7 +92,6 @@ public class RmlSourcesSpark {
     }
 
     public static JavaRDD<Binding> processSourceAsJson(JavaSparkContext sc, ILogicalSource logicalSource, Binding parentBinding, ExecutionContext execCxt) {
-        String source = logicalSource.getSourceAsString();
         SourceOutput output = logicalSource.as(SourceOutput.class);
 
         Var outVar = output.getOutputVar();
@@ -104,9 +104,27 @@ public class RmlSourcesSpark {
             }
         }
 
+        String sourceDoc;
+        RDFNode source = logicalSource.getSource();
+        if (source.isLiteral()) {
+            sourceDoc = logicalSource.getSourceAsString();
+        } else {
+            // Try RML 2
+            RelativePathSource rps = source.as(RelativePathSource.class);
+            // if (rps.getPath() != null) {
+            sourceDoc = rps.getPath();
+            // }
+        }
+
+        // Resolve the source path against the mapping directory from the context (if present)
+        Path mappingDirectory = InitRmlService.getMappingDirectory(execCxt.getContext(), false);
+        if (mappingDirectory != null) {
+            sourceDoc = mappingDirectory.resolve(sourceDoc).toString();
+        }
+
         // TODO Make configurable
         int probeCount = 10;
-        JavaRDD<Binding> result = JsonDataSources.createRddFromJson(sc, source, probeCount, outVar);
+        JavaRDD<Binding> result = JsonDataSources.createRddFromJson(sc, sourceDoc, probeCount, outVar);
 
         return result;
     }
@@ -183,6 +201,12 @@ public class RmlSourcesSpark {
         // Callable<InputStream> inSupp = () -> JenaUrlUtils.openInputStream(NodeValue.makeString(sourceDoc), execCxt);
 
         UnivocityCsvwConf csvConf = new UnivocityCsvwConf(effectiveDialect, nullValues);
+
+        // Resolve the source path against the mapping directory from the context (if present)
+        Path mappingDirectory = InitRmlService.getMappingDirectory(execCxt.getContext(), false);
+        if (mappingDirectory != null) {
+            sourceDoc = mappingDirectory.resolve(sourceDoc).toString();
+        }
 
         boolean jsonMode = finalHeaderVars == null;
         Function<String[][], Function<String[], Binding>> rowMapperFactory;

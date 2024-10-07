@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
+import net.sansa_stack.spark.util.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycleImpl;
 import org.aksw.commons.lambda.throwing.ThrowingFunction;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import org.aksw.jenax.arq.util.exec.query.ExecutionContextUtils;

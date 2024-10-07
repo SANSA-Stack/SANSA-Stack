@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycleImpl;
+import net.sansa_stack.spark.util.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycleImpl;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;
 import org.apache.jena.query.ARQ;
 import org.apache.jena.sparql.util.Context;

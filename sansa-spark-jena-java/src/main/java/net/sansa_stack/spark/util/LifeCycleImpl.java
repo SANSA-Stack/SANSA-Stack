@@ -1,4 +1,4 @@
-package net.sansa_stack.spark.rdd.op.rdf;
+package net.sansa_stack.spark.util;
 
 import org.aksw.commons.lambda.serializable.SerializableConsumer;
 import org.aksw.commons.lambda.serializable.SerializableSupplier;

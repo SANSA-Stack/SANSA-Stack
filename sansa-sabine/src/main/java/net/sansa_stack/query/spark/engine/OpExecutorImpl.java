@@ -3,7 +3,7 @@ package net.sansa_stack.query.spark.engine;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.maps.internal.ratelimiter.LongMath;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycle;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfBindingsOps;
 import net.sansa_stack.query.spark.rdd.op.RddOfDatasetsOps;
@@ -350,15 +350,16 @@ public class OpExecutorImpl
             // Just use flat map without going throw the whole spark machinery
             String rightSse = op.getRight().toString(); // Produces parsable SSE!
             // Supplier<ExecutionContext> execCxtSupp = execCxtSupplier; // Need to copy - otherwise spark will try to serialize OpExecutorImpl
+            LifeCycle<ExecutionContext> execCxtLifeCycle1 = execCxtLifeCycle;
             result = base.mapPartitions(it -> {
                 Op rightOp = SSE.parseOp(rightSse);
-                ExecutionContext execCxt = execCxtLifeCycle.newInstance();
+                ExecutionContext execCxt = execCxtLifeCycle1.newInstance();
                 return Iter.onClose(
                         Iter.iter(it).flatMap(b -> {
                             QueryIterator r = QC.execute(rightOp, b, execCxt);
                             return r;
                         }),
-                        () -> execCxtLifeCycle.closeInstance(execCxt));
+                        () -> execCxtLifeCycle1.closeInstance(execCxt));
             });
         } else {
             throw new UnsupportedOperationException("Lateral joins for non-pattern-free ops not yet implemented");

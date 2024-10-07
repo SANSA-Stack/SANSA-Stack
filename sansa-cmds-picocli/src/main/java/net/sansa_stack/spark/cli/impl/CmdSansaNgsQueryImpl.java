@@ -2,7 +2,7 @@ package net.sansa_stack.spark.cli.impl;
 
 import com.google.common.collect.Iterables;
 import net.sansa_stack.query.spark.api.domain.JavaResultSetSpark;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycle;
 import net.sansa_stack.query.spark.rdd.op.JavaRddOfBindingsOps;
 import net.sansa_stack.spark.cli.cmd.CmdSansaNgsQuery;
 import net.sansa_stack.spark.cli.util.RdfOutputConfig;

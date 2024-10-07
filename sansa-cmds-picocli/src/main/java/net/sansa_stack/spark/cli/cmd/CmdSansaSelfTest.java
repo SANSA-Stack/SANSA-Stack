@@ -1,5 +1,6 @@
 package net.sansa_stack.spark.cli.cmd;
 
+import org.aksw.commons.io.util.FileUtils;
 import org.aksw.commons.util.lifecycle.ResourceMgr;
 import org.aksw.jenax.arq.picocli.CmdMixinArq;
 import org.aksw.jenax.arq.util.exec.query.JenaXSymbols;
@@ -17,6 +18,7 @@ import net.sansa_stack.query.spark.api.impl.QueryExecBuilder;
 import picocli.CommandLine;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -32,67 +34,61 @@ public class CmdSansaSelfTest
     public Integer call() throws Exception {
         try (ResourceMgr resourceMgr = new ResourceMgr()) {
             String name = "/gtfs-madrid-bench/csv/1";
-            Path basePath = ResourceMgr.toPath(resourceMgr, GtfsMadridBenchResources.class, name);
-            Path mappingFile = basePath.resolve("mapping.csv.rml.ttl");
+            Path internalBasePath = ResourceMgr.toPath(resourceMgr, GtfsMadridBenchResources.class, name);
 
-            RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
-                    .addRmlFile(null, mappingFile)
-                    .setDenormalize(false)
-                    .setDistinct(true)
-                    ;
+            Path basePath = Files.createTempDirectory("sansa");
+            String basePathStr = basePath.toString();
+            try {
+                // IMPORTANT NOTE: Passing the java.nio.Path to hadoop turns out to be quite complicated.
+                // For this reason the class path resources for the self-test are unpacked to the local filesystem.
+                FileUtils.copyDirectory(internalBasePath, basePath);
 
-            List<Map.Entry<Query, String>> labeledQueries = builder.generate();
-            if (labeledQueries.size() != 86) {
-                throw new IllegalStateException("Assertion failed");
-                // Assert.assertEquals(86, labeledQueries.size());
-            }
+                Path mappingFile = basePath.resolve("mapping.csv.rml.ttl");
 
-            List<Query> queries = RmlWorkloadOptimizer.newInstance()
-                    .addSparql(labeledQueries.stream().map(Map.Entry::getKey).toList())
-                    .process();
+                RmlToSparqlRewriteBuilder builder = new RmlToSparqlRewriteBuilder()
+                        .addRmlFile(null, mappingFile)
+                        .setDenormalize(false)
+                        .setDistinct(true);
 
-            QueryExecBuilder.newInstance()
-                .addQueries(queries);
+                List<Map.Entry<Query, String>> labeledQueries = builder.generate();
+                if (labeledQueries.size() != 86) {
+                    throw new IllegalStateException("Assertion failed");
+                }
 
-            // String mappingDirectory = cmd.mappingDirectory;
-            // String mappingDirectory = basePath.toUri().toString();
+                List<Query> queries = RmlWorkloadOptimizer.newInstance()
+                        .addSparql(labeledQueries.stream().map(Map.Entry::getKey).toList())
+                        .process();
 
-            QueryExecBuilder queryExecBuilder = QueryExecBuilder.newInstance()
-                // .setSparkSession(sparkSession)
-                .addQueries(queries)
-                .addContextMutator(cxt -> {
-                    ResourceMgr subResMgr = new ResourceMgr();
-                    Path mappingDirectory = null;
-                    try {
-                        mappingDirectory = ResourceMgr.toPath(subResMgr, GtfsMadridBenchResources.class, name);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                QueryExecBuilder.newInstance()
+                    .addQueries(queries);
 
-                    // CmdMixinArq.configureCxt(cxt, arqConfig);
-                    cxt
-                        // .set(JenaXSymbols.symResourceMgr, new ResourceMgr())
-                        .set(ArqSecurity.symAllowFileAccess, true)
-                        .set(RmlSymbols.symMappingDirectory, mappingDirectory)
-                        .set(JenaXSymbols.symResourceMgr, subResMgr);
-                    // .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
-                })
-                .addContextCloser(cxt ->  {
-                    ResourceMgr subResMgr = cxt.get(JenaXSymbols.symResourceMgr);
-                    subResMgr.close();
-                })
-                .setStandardIri(false)
-                .setDagScheduling(false)
-                ;
-                // .addFiles(cmd.queryFiles);
+                QueryExecBuilder queryExecBuilder = QueryExecBuilder.newInstance()
+                    // .setSparkSession(sparkSession)
+                    .addQueries(queries)
+                    .addContextMutator(cxt -> {
+                        ResourceMgr subResMgr = new ResourceMgr();
+                        // CmdMixinArq.configureCxt(cxt, arqConfig);
+                        cxt
+                            // .set(JenaXSymbols.symResourceMgr, new ResourceMgr())
+                            .set(ArqSecurity.symAllowFileAccess, true)
+                            .set(RmlSymbols.symMappingDirectory, Path.of(basePathStr))
+                            .set(JenaXSymbols.symResourceMgr, subResMgr);
+                            // .set(RmlSymbols.symD2rqDatabaseResolver, d2rqResolver)
+                    })
+                    .addContextCloser(cxt -> {
+                        ResourceMgr subResMgr = cxt.get(JenaXSymbols.symResourceMgr);
+                        subResMgr.close();
+                    })
+                    .setStandardIri(false)
+                    .setDagScheduling(false);
+                    // .addFiles(cmd.queryFiles);
 
-            // RmlExec rmlExec = RmlExec.newBuilder().addQueries(queries).setRmlMappingDirectory(basePath).build();
-            // DatasetGraph datasetGraph = rmlExec.toDatasetGraph();
-            long tupleCount = queryExecBuilder.execToRdf().asQuads().count();
-            // long tupleCount = DatasetGraphUtils.tupleCount(datasetGraph);
-            if (tupleCount != 395953) {
-                throw new IllegalStateException("Assertion failed");
-                // Assert.assertEquals(395953, tupleCount);
+                long tupleCount = queryExecBuilder.execToRdf().asQuads().count();
+                if (tupleCount != 395953) {
+                    throw new IllegalStateException("Assertion failed");
+                }
+            } finally {
+                FileUtils.deleteRecursivelyIfExists(basePath);
             }
         }
         return 0;

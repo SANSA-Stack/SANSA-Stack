@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import net.sansa_stack.hadoop.jena.locator.LocatorHdfs;
-import net.sansa_stack.spark.rdd.op.rdf.LifeCycle;
+import net.sansa_stack.spark.util.LifeCycle;
 import net.sansa_stack.spark.cli.util.SansaCmdUtils;
 import org.aksw.commons.model.csvw.domain.api.Dialect;
 import org.aksw.commons.model.csvw.domain.api.DialectMutable;

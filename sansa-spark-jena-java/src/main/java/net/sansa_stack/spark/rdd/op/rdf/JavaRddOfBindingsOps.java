@@ -1,6 +1,7 @@
 package net.sansa_stack.spark.rdd.op.rdf;
 
 import com.google.common.base.Preconditions;
+import net.sansa_stack.spark.util.LifeCycle;
 import org.aksw.commons.collections.utils.StreamUtils;
 import org.aksw.commons.lambda.serializable.SerializableFunction;
 import org.aksw.commons.util.function.TriConsumer;
