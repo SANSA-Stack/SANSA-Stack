@@ -148,7 +148,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-test-resources_${scala.binary.version}</artifactId>
+            <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
 

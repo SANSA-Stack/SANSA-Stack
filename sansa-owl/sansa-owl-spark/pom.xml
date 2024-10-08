@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-common_${scala.binary.version}</artifactId>
+            <artifactId>sansa-owl-common_2.12</artifactId>
             <version>${project.version}</version>
         </dependency>
 

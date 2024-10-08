@@ -16,37 +16,37 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-cli_${scala.binary.version}</artifactId>
+            <artifactId>sansa-spark-cli_2.12</artifactId>
         </dependency>
 
         <!-- RDF Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-rdf-spark_2.12</artifactId>
         </dependency>
 
         <!-- OWL Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-owl-spark_2.12</artifactId>
         </dependency>
 
         <!-- Query Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-query-spark_2.12</artifactId>
         </dependency>
 
         <!-- Inference Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-inference-spark_2.12</artifactId>
         </dependency>
 
         <!-- ML Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-ml-spark_2.12</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.scopt</groupId>

@@ -28,7 +28,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
+            <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -97,7 +97,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-jena-java${scala.version.suffix}</artifactId>
+            <artifactId>sansa-spark-jena-java_2.12</artifactId>
         </dependency>
 
         <!-- Spark dependencies -->

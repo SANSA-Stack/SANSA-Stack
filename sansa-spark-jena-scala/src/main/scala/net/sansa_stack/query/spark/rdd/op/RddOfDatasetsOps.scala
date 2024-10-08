@@ -10,7 +10,7 @@ import org.apache.jena.sparql.exec.RowSet
 import org.apache.spark.rdd.RDD
 
 import java.util.Objects
-import scala.jdk.CollectionConverters.asScalaIteratorConverter
+import scala.jdk.CollectionConverters._
 
 /**
  * Operations for RDD[Dataset]

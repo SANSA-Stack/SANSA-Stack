@@ -37,9 +37,9 @@ class FileReader(path: String) extends StreamReader {
         val it = ssc.textFileStream(path).map(line =>
           RDFDataMgr.createIteratorTriples(new ByteArrayInputStream(line.getBytes), Lang.NTRIPLES, null).next())
 
-        it.foreachRDD(arr ++= _.collect())
+        it.foreachRDD(_.collect().foreach(arr.addOne))
 
-        Some(ssc.sparkContext.parallelize(arr))
+        Some(ssc.sparkContext.parallelize(arr.toList))
       }
 
       override def slideDuration = {

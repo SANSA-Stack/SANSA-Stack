@@ -81,7 +81,7 @@
         <!--        </dependency>-->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+            <artifactId>sansa-sabine_2.12</artifactId>
         </dependency>
 
         <dependency>

@@ -13,19 +13,19 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-spark-jena-java_${scala.binary.version}</artifactId>
+            <artifactId>sansa-spark-jena-java_2.12</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-common_${scala.binary.version}</artifactId>
+            <artifactId>sansa-rdf-common_2.12</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+            <artifactId>sansa-sabine_2.12</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
@@ -164,6 +164,12 @@
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scala.binary.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive${scala.version.suffix}</artifactId>
+            <scope>${spark.deps.scope}</scope>
         </dependency>
 
         <!--

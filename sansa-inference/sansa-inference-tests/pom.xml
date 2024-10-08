@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-inference-common_${scala.binary.version}</artifactId>
+            <artifactId>sansa-inference-common_2.12</artifactId>
             <version>${project.version}</version>
         </dependency>
 

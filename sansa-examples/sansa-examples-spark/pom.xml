@@ -56,13 +56,13 @@
 		<!-- SANSA RDF -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-rdf-spark_2.12</artifactId>
 		</dependency>
 
 		<!-- SANSA OWL -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-owl-spark_2.12</artifactId>
 			<!-- <exclusions> <exclusion> <groupId>org.mortbay.jetty</groupId> <artifactId>jetty</artifactId> 
 				</exclusion> <exclusion> <groupId>org.mortbay.jetty</groupId> <artifactId>jetty-util</artifactId> 
 				</exclusion> </exclusions> -->
@@ -71,25 +71,25 @@
 		<!-- SANSA Inference -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-inference-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-inference-spark_2.12</artifactId>
 		</dependency>
 
 		<!-- SANSA Querying -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-query-spark_2.12</artifactId>
 		</dependency>
 
 		<!-- SANSA Datalake -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-datalake-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-datalake-spark_2.12</artifactId>
 		</dependency>
 
 		<!-- SANSA ML -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sansa-ml-spark_${scala.binary.version}</artifactId>
+			<artifactId>sansa-ml-spark_2.12</artifactId>
 			<exclusions>
 				<exclusion>
 					<groupId>com.github.scopt</groupId>

@@ -16,26 +16,26 @@
         <!-- ML Common -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-ml-common_${scala.binary.version}</artifactId>
+            <artifactId>sansa-ml-common_2.12</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- SANSA RDF -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-rdf-spark_2.12</artifactId>
         </dependency>
 
         <!-- SANSA OWL -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-owl-spark_2.12</artifactId>
         </dependency>
 
         <!-- SANSA Query -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark_${scala.binary.version}</artifactId>
+            <artifactId>sansa-query-spark_2.12</artifactId>
         </dependency>
 
 

@@ -18,12 +18,12 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-sabine${scala.version.suffix}</artifactId>
+            <artifactId>sansa-sabine_2.12</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-tests${scala.version.suffix}</artifactId>
+            <artifactId>sansa-query-tests_2.12</artifactId>
             <scope>test</scope>
             <!--            <type>test-jar</type>-->
             <!--            <classifier>tests</classifier>-->
@@ -37,7 +37,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-test-resources${scala.version.suffix}</artifactId>
+            <artifactId>sansa-test-resources_2.12</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -120,12 +120,12 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-common${scala.version.suffix}</artifactId>
+            <artifactId>sansa-rdf-common_2.12</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-spark${scala.version.suffix}</artifactId>
+            <artifactId>sansa-rdf-spark_2.12</artifactId>
         </dependency>
 
         <!-- Spark dependencies -->
@@ -185,7 +185,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-datalake-spark${scala.version.suffix}</artifactId>
+            <artifactId>sansa-datalake-spark_2.12</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

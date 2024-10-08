@@ -81,7 +81,7 @@
         <module>sansa-integration-tests</module>
         <module>sansa-cmds-picocli</module>
         <module>sansa-spark-cli</module>
-        <module>sansa-bench-spark</module>
+        <!-- <module>sansa-bench-spark</module> -->
         <module>sansa-pkg-parent</module>
         <module>sansa-stack</module>
 

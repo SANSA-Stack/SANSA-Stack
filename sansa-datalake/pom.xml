@@ -44,21 +44,21 @@
 
 			<dependency>
 				<groupId>io.gatling</groupId>
-				<artifactId>jsonpath_${scala.binary.version}</artifactId>
-				<version>0.7.0</version>
+				<artifactId>gatling-jsonpath</artifactId>
+				<version>3.12.0</version>
 			</dependency>
 
 			<!-- Connectors -->
 			<dependency>
 				<groupId>com.datastax.spark</groupId>
 				<artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-				<version>3.0.0</version>
+				<version>3.5.1</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.mongodb.spark</groupId>
 				<artifactId>mongo-spark-connector_${scala.binary.version}</artifactId>
-				<version>3.0.0</version>
+				<version>10.4.0</version>
 			</dependency>
 
 			<!-- No couchbase Connector for Spark 3.0 yet, a PR is available but unmerged: https://github.com/couchbase/couchbase-spark-connector/pull/17 -->

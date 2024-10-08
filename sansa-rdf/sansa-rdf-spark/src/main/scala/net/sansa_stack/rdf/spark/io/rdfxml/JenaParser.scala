@@ -8,7 +8,7 @@ import org.apache.spark.sql.catalyst.util.BadRecordException
 import org.apache.spark.unsafe.types.UTF8String
 
 class JenaParser(val options: RdfXmlOptions) {
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   val parserBuilder: RDFParserBuilder = RDFParser.create().base(options.baseURI)
 
@@ -19,7 +19,7 @@ class JenaParser(val options: RdfXmlOptions) {
     try {
       val triples = new CollectorStreamRDF()
       createParser(parserBuilder, record).parse(triples)
-      triples.getTriples.asScala.map(convertTriple)
+      triples.getTriples.asScala.map(convertTriple).toList
     } catch {
       case e@(_: RuntimeException | _: RiotException) =>
         throw BadRecordException(() => recordLiteral(record), () => Array(), e)

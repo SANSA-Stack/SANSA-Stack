@@ -51,7 +51,7 @@
 
 		<dependency>
 			<groupId>io.gatling</groupId>
-			<artifactId>jsonpath_${scala.binary.version}</artifactId>
+			<artifactId>gatling-jsonpath</artifactId>
 		</dependency>
 
 		<dependency>

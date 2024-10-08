@@ -35,7 +35,7 @@
             </resources>
         </build>
     -->
-
+    <dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey</groupId>
@@ -44,10 +44,13 @@
             <type>pom</type>
             <scope>import</scope>
         </dependency>
+    </dependencies>
+    </dependencyManagement>
 
+    <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-cmds-picocli${scala.version.suffix}</artifactId>
+            <artifactId>sansa-cmds-picocli_2.12</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
@@ -78,7 +81,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark${scala.version.suffix}</artifactId>
+            <artifactId>sansa-query-spark_2.12</artifactId>
             <!-- Issue: sansa-spark-jakarta bundles shaded spark+hadoop (with javax replaced by jakarta), but hadoop also comes from other sources -->
             <exclusions>
                 <exclusion>
@@ -110,7 +113,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-spark-jakarta${scala.version.suffix}</artifactId>
+            <artifactId>sansa-spark-jakarta_2.12</artifactId>
             <version>${project.version}</version>
             <classifier>jakarta</classifier>
         </dependency>

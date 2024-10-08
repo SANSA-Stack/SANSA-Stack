@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class SansaIT {
     // When you want to change the container make sure to also  check the versions
     // using in the docker-compose.yml file under /src/main/resources/docker-compose.yml
-    public static String SPARK_SUBMIT_IMAGE = "bde2020/spark-master:3.1.1-hadoop3.2-java11";
+    public static String SPARK_SUBMIT_IMAGE = "bde2020/spark-master:3.5.3-hadoop3.3-java17";
 
     private static final Logger logger = LoggerFactory.getLogger(SansaIT.class);
 
@@ -137,7 +137,7 @@ public class SansaIT {
         // sparkMasterUrl = "spark://spark-master:" + sparkTestPort;
         //sparkMasterHost = "localhost";
         //sparkMasterUrl = "spark://" + sparkMasterHost + ":" + "7077";//sparkMasterPort;
-
+        sparkMasterUrl = "local[1]";
 
         environment =
                 new DockerComposeContainer(new File("src/test/resources/docker-compose.yml"))
