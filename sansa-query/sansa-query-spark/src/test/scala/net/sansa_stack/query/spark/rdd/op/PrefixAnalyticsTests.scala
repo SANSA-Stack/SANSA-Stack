@@ -8,11 +8,11 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.jena.sparql.exec.RowSetAdapter
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-import scala.jdk.CollectionConverters.asScalaIteratorConverter
+import scala.jdk.CollectionConverters._
 
-class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
+class PrefixAnalyticsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   override def conf(): SparkConf = {
     val conf = super.conf
@@ -28,7 +28,7 @@ class PrefixAnalyticsTests extends FunSuite with DataFrameSuiteBase {
 
     val model = RDFDataMgr.loadModel("rdf.nt")
     val bindings: Seq[Binding] = new RowSetAdapter(
-      QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toSeq
+      QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toList
 
     val rdd: RDD[Binding] = sc.parallelize(bindings)
     import net.sansa_stack.query.spark._

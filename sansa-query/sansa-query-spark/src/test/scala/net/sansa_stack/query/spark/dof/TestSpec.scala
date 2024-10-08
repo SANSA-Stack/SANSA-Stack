@@ -4,13 +4,14 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.query.spark.dof.sparql.{QueryExecutionFactory, Sparql}
 import net.sansa_stack.query.spark.dof.tensor.{TensorRush, TensorStore}
 import net.sansa_stack.query.spark.graph.jena.model.SparkExecutionModel
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.JavaConverters._
 import scala.collection.immutable.TreeMap
 import scala.io.Source
+import scala.jdk.CollectionConverters._
+import scala.collection.parallel.CollectionConverters._
 
-class TestSpec extends FunSuite with DataFrameSuiteBase {
+class TestSpec extends AnyFunSuite with DataFrameSuiteBase {
   val FROM_ID = 0
   val TO_ID = 26
   var FROM_TENSOR = 0

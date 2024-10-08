@@ -68,7 +68,7 @@ abstract class SPARQL11TestSuiteRunnerSpark
       // we cannot handle empty data
       if (!data.isEmpty) {
         // distribute on Spark
-        dataRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
+        dataRDD = spark.sparkContext.parallelize(data.getGraph.find().asScala.toList)
 
         // we create a Spark database here to keep the implicit partitioning separate
         spark.sql(s"CREATE DATABASE IF NOT EXISTS $db")
@@ -96,7 +96,7 @@ abstract class SPARQL11TestSuiteRunnerSpark
       val triples = qe.execConstruct()
       new SPARQLResult(triples)
     } else { // DESCRIBE todo
-      fail("unsupported query type: DESCRIBE")
+      (this: DataFrameSuiteBase).fail("unsupported query type: DESCRIBE")
       null
     }
     // clean up

@@ -976,6 +976,12 @@
                 <version>0.9.1</version>
             </dependency>
 
+<dependency>
+    <groupId>org.scala-lang.modules</groupId>
+    <artifactId>scala-parallel-collections${scala.version.suffix}</artifactId>
+    <version>1.0.4</version>
+</dependency>
+
             <dependency>
                 <groupId>org.scala-lang.modules</groupId>
                 <artifactId>scala-parser-combinators${scala.version.suffix}</artifactId>

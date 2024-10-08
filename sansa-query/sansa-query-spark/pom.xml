@@ -42,6 +42,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-parallel-collections_2.13</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>

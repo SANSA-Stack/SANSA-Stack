@@ -12,12 +12,12 @@ import org.apache.jena.sparql.expr._
 import org.apache.jena.sparql.expr.aggregate.AggCount
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import java.util
-import scala.jdk.CollectionConverters.asScalaIteratorConverter
+import scala.jdk.CollectionConverters._
 
-class RddOfBindingsOpsTests extends FunSuite with DataFrameSuiteBase {
+class RddOfBindingsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   // JenaSystem.init
 
@@ -34,7 +34,7 @@ class RddOfBindingsOpsTests extends FunSuite with DataFrameSuiteBase {
   def createTestRdd(): RDD[Binding] = {
     val model = RDFDataMgr.loadModel("rdf.nt")
     val bindings: Seq[Binding] = new RowSetAdapter(
-      QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toSeq
+      QueryExecutionFactory.create("SELECT * { ?s ?p ?o }", model).execSelect()).asScala.toList
 
     val rdd: RDD[Binding] = sc.parallelize(bindings)
     rdd

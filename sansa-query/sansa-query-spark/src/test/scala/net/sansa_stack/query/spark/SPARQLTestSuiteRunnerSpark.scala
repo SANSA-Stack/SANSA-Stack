@@ -75,7 +75,7 @@ abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSu
       spark.sql(s"DROP DATABASE IF EXISTS $db CASCADE")
 
       // distribute on Spark
-      triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().toList.asScala)
+      triplesRDD = spark.sparkContext.parallelize(data.getGraph.find().asScala.toList)
 
       // we create a Spark database here to keep the implicit partitioning separate
 
