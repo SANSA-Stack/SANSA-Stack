@@ -66,11 +66,13 @@
                 </executions>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
+<!--
                     <args>
                         <arg>-target:jvm-1.8</arg>
                         <arg>-Xmax-classfile-name</arg>
                         <arg>255</arg>
                     </args>
+-->
                 </configuration>
             </plugin>
 

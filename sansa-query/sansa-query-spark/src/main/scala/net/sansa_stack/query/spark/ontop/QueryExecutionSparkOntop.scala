@@ -20,7 +20,7 @@ class QueryExecutionSparkOntop(query: Query,
 
     val resultVars = query.getProjectVars.asScala
 
-    new ResultSetSparkImpl(resultVars, bindings)
+    new ResultSetSparkImpl(resultVars.toList, bindings)
   }
 
   override def executeCoreSelect(query: Query): ResultSetCloseable = {

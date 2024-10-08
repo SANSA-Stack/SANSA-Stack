@@ -202,6 +202,7 @@ object MatchSet {
         .filter(_.pattern.equals(pattern))
         .map(_.mapping).collect()
         .map(_.filterKeys(_.toString().startsWith("?")))
+        .map(_.toMap)
         .distinct
       if (mapping.isEmpty) {
         throw new UnknownError("No results were returned by the query")

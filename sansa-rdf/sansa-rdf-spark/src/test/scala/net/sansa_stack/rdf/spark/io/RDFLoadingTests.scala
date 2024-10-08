@@ -1,10 +1,5 @@
 package net.sansa_stack.rdf.spark.io
 
-import java.io.{ByteArrayInputStream, File, FileInputStream, FileOutputStream}
-import java.net.{URI, URL}
-import java.nio.file.{Files, Path}
-import java.util.zip.ZipInputStream
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.model._
 import net.sansa_stack.rdf.spark.utils.tags.ConformanceTestSuite
@@ -16,8 +11,12 @@ import org.apache.jena.sparql.graph.GraphFactory
 import org.apache.jena.sparql.serializer.SerializationContext
 import org.apache.jena.sparql.util.FmtUtils
 import org.apache.jena.vocabulary.RDF
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
+import java.io.{ByteArrayInputStream, File, FileInputStream, FileOutputStream}
+import java.net.{URI, URL}
+import java.nio.file.{Files, Path}
+import java.util.zip.ZipInputStream
 import scala.collection.JavaConverters._
 
 /**
@@ -26,7 +25,7 @@ import scala.collection.JavaConverters._
   * @author Lorenz Buehmann
   */
 class RDFLoadingTests
-  extends FunSuite
+  extends AnyFunSuite
     with DataFrameSuiteBase {
 
   val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
@@ -192,7 +191,7 @@ class RDFLoadingTests
             println(ntriplesString)
 
             targetModel.write(System.out, "N-Triples")
-            fail("parsed data from Dataframe not same as original data")
+            (this: DataFrameSuiteBase).fail("parsed data from Dataframe not same as original data")
           }
         } catch {
           case e: Exception => println(e.getMessage) // e.printStackTrace()

@@ -6,6 +6,8 @@ import org.apache.hadoop.mapred.JobConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import scala.collection.IterableOnce.iterableOnceExtensionMethods
+
 object OWLXMLSyntaxOWLExpressionsRDDBuilder {
 
   /**
@@ -38,7 +40,7 @@ class OWLXMLSyntaxExpressionBuilder(spark: SparkSession, filePath: String) exten
 
   // get pattern for begin and end tags for owl expressions to be specified for hadoop stream
   private val owlRecordPatterns: Map[String, Map[String, String]] = OWLXMLSyntaxParsing.OWLXMLSyntaxPattern
-    .filterKeys(_ != "versionPattern").filterKeys(_ != "prefixPattern")
+    .filterKeys(_ != "versionPattern").filterKeys(_ != "prefixPattern").toMap
 
   /**
     * definition to get owl expressions from hadoop stream as RDD[String]

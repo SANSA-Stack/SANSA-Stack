@@ -352,7 +352,7 @@ class OWLStats(spark: SparkSession) extends Serializable {
       negObjectAssrAxiomSubject, dataAssrAxiomSubject, negDataAssrAxiomSubject)
       .reduceByKey (_ + _)
 
-    val outDegree = out.mapValues(a => (a, 1))
+    val outDegree = out.mapValues(a => (a, 1.0))
                        .reduceByKey {
                           case ((sumL, countL), (sumR, countR)) => (sumL + sumR, countL + countR)
                         }.mapValues {
