@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-stack_2.12</artifactId>
+        <artifactId>sansa-stack_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-stack-spark_2.12</artifactId>
+    <artifactId>sansa-stack-spark_2.13</artifactId>
 
     <packaging>pom</packaging>
     <name>SANSA Stack - Spark</name>
@@ -16,25 +16,25 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-cli_2.12</artifactId>
+            <artifactId>sansa-spark-cli_2.13</artifactId>
         </dependency>
 
         <!-- RDF Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-spark_2.12</artifactId>
+            <artifactId>sansa-rdf-spark_2.13</artifactId>
         </dependency>
 
         <!-- OWL Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-owl-spark_2.12</artifactId>
+            <artifactId>sansa-owl-spark_2.13</artifactId>
         </dependency>
 
         <!-- Query Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-query-spark_2.12</artifactId>
+            <artifactId>sansa-query-spark_2.13</artifactId>
         </dependency>
 
         <!-- Inference Layer -->
@@ -46,7 +46,7 @@
         <!-- ML Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-ml-spark_2.12</artifactId>
+            <artifactId>sansa-ml-spark_2.13</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.scopt</groupId>

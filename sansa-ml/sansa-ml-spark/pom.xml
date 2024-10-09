@@ -4,11 +4,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-ml-parent_2.12</artifactId>
+        <artifactId>sansa-ml-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-ml-spark_2.12</artifactId>
+    <artifactId>sansa-ml-spark_2.13</artifactId>
     <name>ML API - Apache Spark</name>
     <description>RDF/OWL Machine Learning Library for Apache Spark</description>
 
@@ -16,26 +16,26 @@
         <!-- ML Common -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-ml-common_2.12</artifactId>
+            <artifactId>sansa-ml-common_2.13</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- SANSA RDF -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-spark_2.12</artifactId>
+            <artifactId>sansa-rdf-spark_2.13</artifactId>
         </dependency>
 
         <!-- SANSA OWL -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-spark_2.12</artifactId>
+            <artifactId>sansa-owl-spark_2.13</artifactId>
         </dependency>
 
         <!-- SANSA Query -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark_2.12</artifactId>
+            <artifactId>sansa-query-spark_2.13</artifactId>
         </dependency>
 
 

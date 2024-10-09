@@ -2,11 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-spark-jena-scala_2.12</artifactId>
+    <artifactId>sansa-spark-jena-scala_2.13</artifactId>
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-parent_2.12</artifactId>
+        <artifactId>sansa-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
@@ -28,7 +28,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-test-resources_2.12</artifactId>
+            <artifactId>sansa-test-resources_2.13</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -97,7 +97,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-spark-jena-java_2.12</artifactId>
+            <artifactId>sansa-spark-jena-java_2.13</artifactId>
         </dependency>
 
         <!-- Spark dependencies -->

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.sansa-stack</groupId>
-    <artifactId>sansa-bom_2.12</artifactId>
+    <artifactId>sansa-bom_2.13</artifactId>
     <version>0.9.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>SANSA - BOM</name>
@@ -777,25 +777,25 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-cmds-picocli_2.12</artifactId>
+                <artifactId>sansa-cmds-picocli_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-spark-jena-java_2.12</artifactId>
+                <artifactId>sansa-spark-jena-java_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-spark-jena-scala_2.12</artifactId>
+                <artifactId>sansa-spark-jena-scala_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-test-resources_2.12</artifactId>
+                <artifactId>sansa-test-resources_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -821,13 +821,13 @@
 
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-sabine_2.12</artifactId>
+                <artifactId>sansa-sabine_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-spark-cli_2.12</artifactId>
+                <artifactId>sansa-spark-cli_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -835,58 +835,58 @@
             <!-- RDF Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-common_2.12</artifactId>
+                <artifactId>sansa-rdf-common_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-spark_2.12</artifactId>
+                <artifactId>sansa-rdf-spark_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-rdf-flink_2.12</artifactId>
+                <artifactId>sansa-rdf-flink_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- OWL Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-owl-spark_2.12</artifactId>
+                <artifactId>sansa-owl-spark_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-owl-flink_2.12</artifactId>
+                <artifactId>sansa-owl-flink_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Query Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-spark_2.12</artifactId>
+                <artifactId>sansa-query-spark_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-tests_2.12</artifactId>
+                <artifactId>sansa-query-tests_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-query-flink_2.12</artifactId>
+                <artifactId>sansa-query-flink_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Datalake Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-datalake-spark_2.12</artifactId>
+                <artifactId>sansa-datalake-spark_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -912,12 +912,12 @@
             <!-- ML Layer -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-ml-spark_2.12</artifactId>
+                <artifactId>sansa-ml-spark_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>sansa-ml-flink_2.12</artifactId>
+                <artifactId>sansa-ml-flink_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1007,7 +1007,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.12.0</version>
+                <version>3.17.0</version>
             </dependency>
 
             <dependency>
@@ -2201,23 +2201,23 @@
             <!-- Packaging -->
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-pkg-uberjar-cli_2.12</artifactId>
+                <artifactId>sansa-pkg-uberjar-cli_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-pkg-docker-cli_2.12</artifactId>
+                <artifactId>sansa-pkg-docker-cli_2.13</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-pkg-deb-cli_2.12</artifactId>
+                <artifactId>sansa-pkg-deb-cli_2.13</artifactId>
                 <version>${project.version}</version>
 		</dependency>
 	<!--
             <dependency>
                 <groupId>net.sansa-stack</groupId>
-                <artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
+                <artifactId>sansa-pkg-rpm-cli_2.13</artifactId>
                 <version>${project.version}</version>
                 <type>rpm</type>
 		</dependency>

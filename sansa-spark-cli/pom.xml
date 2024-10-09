@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-parent_2.12</artifactId>
+        <artifactId>sansa-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-spark-cli_2.12</artifactId>
+    <artifactId>sansa-spark-cli_2.13</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -50,7 +50,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-cmds-picocli_2.12</artifactId>
+            <artifactId>sansa-cmds-picocli_2.13</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
@@ -81,7 +81,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark_2.12</artifactId>
+            <artifactId>sansa-query-spark_2.13</artifactId>
             <!-- Issue: sansa-spark-jakarta bundles shaded spark+hadoop (with javax replaced by jakarta), but hadoop also comes from other sources -->
             <exclusions>
                 <exclusion>
@@ -113,7 +113,7 @@
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-spark-jakarta_2.12</artifactId>
+            <artifactId>sansa-spark-jakarta_2.13</artifactId>
             <version>${project.version}</version>
             <classifier>jakarta</classifier>
         </dependency>
@@ -126,11 +126,11 @@
         <!--
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_2.12</artifactId>
+            <artifactId>spark-sql_2.13</artifactId>
         </dependency>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-query-spark_2.12</artifactId>
+            <artifactId>sansa-query-spark_2.13</artifactId>
         </dependency>
         -->
     </dependencies>

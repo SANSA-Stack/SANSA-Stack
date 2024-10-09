@@ -5,11 +5,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-owl-parent_2.12</artifactId>
+        <artifactId>sansa-owl-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-owl-spark_2.12</artifactId>
+    <artifactId>sansa-owl-spark_2.13</artifactId>
 
     <name>SANSA OWL layer - SPARK</name>
     <description>A library to read OWL files into Spark.</description>
@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-common_2.12</artifactId>
+            <artifactId>sansa-owl-common_2.13</artifactId>
             <version>${project.version}</version>
         </dependency>
 
