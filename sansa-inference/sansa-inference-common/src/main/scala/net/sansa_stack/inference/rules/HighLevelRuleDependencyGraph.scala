@@ -1,8 +1,8 @@
 package net.sansa_stack.inference.rules
 
-import scalax.collection.Graph
-import scalax.collection.GraphEdge.DiEdge
-import scalax.collection.edge.LDiEdge
+import scalax.collection.immutable.Graph
+import scalax.collection.edges.DiEdge
+import scalax.collection.edges.labeled.LDiEdge
 import scalax.collection.immutable.DefaultGraphImpl
 
 import org.apache.jena.reasoner.rulesys.Rule

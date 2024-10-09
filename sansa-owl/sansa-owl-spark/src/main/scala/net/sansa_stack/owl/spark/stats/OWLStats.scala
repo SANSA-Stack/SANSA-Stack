@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.compat.java8.StreamConverters._
 
 

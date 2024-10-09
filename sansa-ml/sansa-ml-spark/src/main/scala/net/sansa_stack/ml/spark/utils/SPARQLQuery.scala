@@ -156,7 +156,7 @@ object SPARQLQuery {
 
     val query: Query = parser.parse(new Query(), queryString)
 
-    val projectionVars: Seq[Var] = query.getProjectVars.asScala
+    val projectionVars: Seq[Var] = query.getProjectVars.asScala.toList
 
     projectionVars.size match {
       case 1 => new SPARQLQuery1(queryString, projectionVars.head)

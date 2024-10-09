@@ -232,6 +232,7 @@ object DistADUtil {
     input.flatten
       .groupBy { case (k, v)           => k }
       .mapValues { _.map { case (k, v) => v } }
+      .toMap
   }
 
   /** Writes list[String] to a file with given path. It handles HDFS and the normal file system

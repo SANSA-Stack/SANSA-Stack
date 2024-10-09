@@ -185,7 +185,7 @@ object SimilarityPipelineExperiment {
     /**
      * here we create the resulting experiment tracking dataframe
      */
-    val df: DataFrame = spark.createDataFrame(spark.sparkContext.parallelize(ex_results), schema).cache()
+    val df: DataFrame = spark.createDataFrame(spark.sparkContext.parallelize(ex_results.toList), schema).cache()
 
     /**
      * show the resulting dataframe of our overall experiment and store it
