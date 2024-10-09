@@ -17,7 +17,7 @@ import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.regression.RandomForestRegressor
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions._
+import org.apache.spark.sql.functions.{get => sparkGet, _}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
@@ -158,9 +158,9 @@ class SmartFeatureExtractor extends Transformer {
       var tmpDf: DataFrame = df
         .select(entityColumnNameString, featureColumn) // make two col df
         .select(col(entityColumnNameString), explode(col(featureColumn)).as(featureColumn)) // exlode to get access to all vals
-        .withColumn("value", split(col(featureColumn), "\\^\\^")(0)) // gather the values
-        .withColumn("litTypeUri", split(col(featureColumn), "\\^\\^")(1)) // get the litTypes by splitting the lit representation
-        .withColumn("litType", split(col("litTypeUri"), "\\#")(1)) // the datatype especially is often annotated after the hashtag
+        .withColumn("value", sparkGet(split(col(featureColumn), "\\^\\^"), lit(0))) // gather the values
+        .withColumn("litTypeUri", sparkGet(split(col(featureColumn), "\\^\\^"), lit(1))) // get the litTypes by splitting the lit representation
+        .withColumn("litType", sparkGet(split(col("litTypeUri"), "\\#"), lit(1))) // the datatype especially is often annotated after the hashtag
         .na.fill(value = "string", Seq("litType")) // fallback to string, this does not only apply to non annotated literals but also to URIs or blanks
         .groupBy(entityColumnNameString) // group again
         .pivot("litType") // now expand by lit type s.t. we have for each featrutre maybe multiple cols if they are corresponding to different lit types
@@ -192,7 +192,7 @@ class SmartFeatureExtractor extends Transformer {
         val newFC: String = if (currentFeatureCols.size == 1) featureColumn.split("/").last else featureColumn.split("/").last + "_" + castType // if (currentFeatureCols.size == 1) Array(featureColumn + _ + cn) else currentFeatureCols.map(_ + "_" + castType)
         // println("newFC", newFC)
         tmpDf = tmpDf
-          .withColumn(newFC, col(cn).cast("array<" + castType + ">")) // cast the respective cols to their identified feature cols
+          .withColumn(newFC, col(cn).try_cast("array<" + castType + ">")) // cast the respective cols to their identified feature cols
           .drop(cn) // drop the old col
 
         val maxNumberElements = tmpDf
@@ -208,7 +208,7 @@ class SmartFeatureExtractor extends Transformer {
         if (maxNumberElements == 1) {
           tmpDf = tmpDf
             .withColumnRenamed(newFC, "oldCol")
-            .withColumn(newFC, col("oldCol")(0))
+            .withColumn(newFC, sparkGet(col("oldCol"), lit(0)))
             .drop("oldCol")
             // .select(col(entityColumnNameString), explode(col(tmpDf.columns.last)).as(tmpDf.columns.last))
         }

@@ -51,6 +51,7 @@
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-cmds-picocli_2.13</artifactId>
+<!--
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
@@ -77,12 +78,14 @@
                     <artifactId>hadoop-client</artifactId>
                 </exclusion>
             </exclusions>
+-->
         </dependency>
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-query-spark_2.13</artifactId>
             <!-- Issue: sansa-spark-jakarta bundles shaded spark+hadoop (with javax replaced by jakarta), but hadoop also comes from other sources -->
+<!--
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
@@ -109,15 +112,17 @@
                     <artifactId>hadoop-client</artifactId>
                 </exclusion>
             </exclusions>
+-->
         </dependency>
 
+<!--
         <dependency>
             <groupId>net.sansa-stack</groupId>
             <artifactId>sansa-spark-jakarta_2.13</artifactId>
             <version>${project.version}</version>
             <classifier>jakarta</classifier>
         </dependency>
-
+-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
