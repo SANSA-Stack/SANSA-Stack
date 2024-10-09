@@ -103,12 +103,6 @@
         <dependency>
             <groupId>org.aksw.jenax</groupId>
             <artifactId>jenax-arq-plugins-bundle</artifactId>
-<exclusions>
-<exclusion>
-<groupId>org.aksw.jenax</groupId>
-<artifactId>jenax-arq-hdt</artifactId>
-</exclusion>
-</exclusions>
         </dependency>
 
         <!--

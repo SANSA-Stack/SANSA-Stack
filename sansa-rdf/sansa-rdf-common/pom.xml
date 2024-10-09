@@ -73,10 +73,12 @@
 		</dependency>
 -->
 
+<!--
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
 			<artifactId>jenax-arq-hdt</artifactId>
 		</dependency>
+-->
 
 		<dependency>
 			<groupId>org.aksw.jenax</groupId>
