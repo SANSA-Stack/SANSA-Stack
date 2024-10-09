@@ -2,30 +2,30 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sansa-rdf-spark_2.12</artifactId>
+    <artifactId>sansa-rdf-spark_2.13</artifactId>
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-rdf-parent_2.12</artifactId>
+        <artifactId>sansa-rdf-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-spark-jena-java_2.12</artifactId>
+            <artifactId>sansa-spark-jena-java_2.13</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-rdf-common_2.12</artifactId>
+            <artifactId>sansa-rdf-common_2.13</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-sabine_2.12</artifactId>
+            <artifactId>sansa-sabine_2.13</artifactId>
             <!-- <classifier>${scala.classifier}</classifier> -->
         </dependency>
 

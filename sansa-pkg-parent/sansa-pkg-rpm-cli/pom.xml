@@ -6,11 +6,11 @@
 
 	<parent>
   	    <groupId>net.sansa-stack</groupId>
-    	<artifactId>sansa-pkg-parent_2.12</artifactId>
+    	<artifactId>sansa-pkg-parent_2.13</artifactId>
 	    <version>0.9.6-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-pkg-rpm-cli_2.12</artifactId>
+	<artifactId>sansa-pkg-rpm-cli_2.13</artifactId>
 	<packaging>rpm</packaging>
 
 	<properties>
@@ -21,7 +21,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.sansa-stack</groupId>
-			<artifactId>sansa-spark-cli_2.12</artifactId>
+			<artifactId>sansa-spark-cli_2.13</artifactId>
 		</dependency>
 	</dependencies>
 

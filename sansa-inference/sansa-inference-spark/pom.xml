@@ -25,13 +25,13 @@
         <!-- SANSA OWL -->
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-owl-spark_2.12</artifactId>
+            <artifactId>sansa-owl-spark_2.13</artifactId>
         </dependency>
 
         <!-- RDF Layer -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>sansa-rdf-spark_2.12</artifactId>
+            <artifactId>sansa-rdf-spark_2.13</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>

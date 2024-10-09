@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-stack_2.12</artifactId>
+		<artifactId>sansa-stack_2.13</artifactId>
 		<version>0.8.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-stack-flink_2.12</artifactId>
+	<artifactId>sansa-stack-flink_2.13</artifactId>
 	<packaging>pom</packaging>
 	<name>SANSA-Stack Flink</name>
 

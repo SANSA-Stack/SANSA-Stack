@@ -5,11 +5,11 @@
 
 	<parent>
 		<groupId>net.sansa-stack</groupId>
-		<artifactId>sansa-ml-parent_2.12</artifactId>
+		<artifactId>sansa-ml-parent_2.13</artifactId>
 		<version>0.8.0-RC2-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>sansa-ml-flink_2.12</artifactId>
+	<artifactId>sansa-ml-flink_2.13</artifactId>
 
 	<name>ML API - Apache Flink</name>
 	<description>RDF/OWL Machine Learning Library for Apache Flink</description>

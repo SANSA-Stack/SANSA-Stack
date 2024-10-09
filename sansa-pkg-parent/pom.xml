@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-parent_2.12</artifactId>
+        <artifactId>sansa-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-pkg-parent_2.12</artifactId>
+    <artifactId>sansa-pkg-parent_2.13</artifactId>
     <packaging>pom</packaging>
 
     <modules>

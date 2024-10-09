@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>net.sansa-stack</groupId>
-        <artifactId>sansa-pkg-parent_2.12</artifactId>
+        <artifactId>sansa-pkg-parent_2.13</artifactId>
         <version>0.9.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>sansa-pkg-uberjar-cli_2.12</artifactId>
+    <artifactId>sansa-pkg-uberjar-cli_2.13</artifactId>
 
     <!-- scm section needs to be duplicated on child module for github-release-plugin;
         see https://github.com/jutzig/github-release-plugin/issues/14 -->
@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>net.sansa-stack</groupId>
-            <artifactId>sansa-spark-cli_2.12</artifactId>
+            <artifactId>sansa-spark-cli_2.13</artifactId>
         </dependency>
     </dependencies>
 
