@@ -1937,6 +1937,33 @@
                 </exclusions>
             </dependency>
 
+        <!-- Isolation Forest -->
+        <dependency>
+            <groupId>com.linkedin.isolation-forest</groupId>
+            <artifactId>isolation-forest_3.5.1_2.13</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>spark-gremlin</artifactId>
+            <version>3.7.2</version>
+            <exclusions>
+                <!-- Conflicts with netty from hadoop-yarn -->
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang.modules</groupId>
+                    <artifactId>scala-xml_2.12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
             <!-- Test -->
             <!-- <dependency> -->

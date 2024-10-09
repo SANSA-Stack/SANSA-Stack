@@ -114,8 +114,8 @@
         <!-- Isolation Forest -->
         <dependency>
             <groupId>com.linkedin.isolation-forest</groupId>
-            <artifactId>isolation-forest_3.0.0_2.12</artifactId>
-            <version>2.0.4</version>
+            <!-- <artifactId>isolation-forest_3.0.0_2.12</artifactId> -->
+            <artifactId>isolation-forest_3.5.1_2.13</artifactId>
         </dependency>
     </dependencies>
 
