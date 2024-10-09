@@ -353,9 +353,9 @@ class OWLStats(spark: SparkSession) extends Serializable {
       .reduceByKey (_ + _)
 
     val outDegree = out.mapValues(a => (a, 1.0))
-                       .reduceByKey {
+                       .reduceByKey { (a,b) => (a,b) match {
                           case ((sumL, countL), (sumR, countR)) => (sumL + sumR, countL + countR)
-                        }.mapValues {
+                        }}.mapValues {
                         case (sum, count) => sum / count.toDouble
                       }
 
@@ -517,9 +517,9 @@ class OWLStats(spark: SparkSession) extends Serializable {
       .reduceByKey(_ + _)
 
     val inDegree = in.mapValues(a => (a, 1))
-                     .reduceByKey {
+                     .reduceByKey { (a,b) => (a,b) match {
                         case ((sumL, countL), (sumR, countR)) => (sumL + sumR, countL + countR)
-                     }.mapValues {
+                     }}.mapValues {
                      case (sum, count) => sum / count.toDouble
                     }
 
@@ -1540,9 +1540,9 @@ class OWLStats(spark: SparkSession) extends Serializable {
                                      .map(a => (a.getProperty, a.getObject.getLiteral.toDouble))
 
     val average = dataPropAssrLiterals.mapValues(a => (a, 1))
-                                      .reduceByKey {
+                                      .reduceByKey { (a,b) => (a,b) match {
                                           case ((sumL, countL), (sumR, countR)) => (sumL + sumR, countL + countR)
-                                      }.mapValues {
+                                      }}.mapValues {
                                         case (sum, count) => sum / count
                                       }
     average
