@@ -4,7 +4,7 @@ import java.util
 
 import com.google.common.collect.ImmutableMap
 import net.sansa_stack.rdf.common.partition.core.{RdfPartitionStateDefault, RdfPartitioner}
-import org.aksw.jena_sparql_api.views.E_RdfTerm
+import org.aksw.jenax.arq.rdfterm.E_RdfTerm
 import org.aksw.jenax.arq.util.`var`.Vars
 import org.aksw.obda.domain.api.Constraint
 import org.aksw.obda.domain.impl.LogicalTableTableName
