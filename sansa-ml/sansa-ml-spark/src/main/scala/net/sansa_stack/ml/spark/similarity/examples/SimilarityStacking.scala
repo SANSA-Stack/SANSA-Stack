@@ -16,7 +16,7 @@ object SimilarityStacking {
   def main(args: Array[String]): Unit = {
 
     // setup spark session
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"MinMal Semantic Similarity Estimation Calls")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()

@@ -14,7 +14,7 @@ class TripleLayoutStringLangTests extends AnyFunSuite {
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Germany"),
     NodeFactory.createURI("http://dbpedia.org/ontology/populationTotal"),
-    NodeFactory.createLiteral("82175700", "en")) //, XSDDatatype.XSDdouble))
+    NodeFactory.createLiteral("82175700", "en")) // , XSDDatatype.XSDdouble))
 
   test("getting layout from triple should match") {
     val expectedLayout = new SchemaStringStringLang(triple.getSubject.getURI, triple.getObject.getLiteralLexicalForm, triple.getObject.getLiteralLanguage)

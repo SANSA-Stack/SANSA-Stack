@@ -123,8 +123,8 @@ class Planner(stars: mutable.HashMap[String, mutable.Set[(String, String)]] with
         case class ConfigObject(datasource: String, weight: Double)
 
         implicit val userReads: Reads[ConfigObject] = (
-            (__ \ 'datasource).read[String] and
-                (__ \ 'weight).read[Double]
+            (__ \ Symbol("datasource")).read[String] and
+                (__ \ Symbol("weight")).read[Double]
             )(ConfigObject)
 
         val weights = (Json.parse(configJSON) \ "weights").as[Seq[ConfigObject]]

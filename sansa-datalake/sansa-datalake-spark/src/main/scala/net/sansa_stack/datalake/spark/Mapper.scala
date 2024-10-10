@@ -63,9 +63,9 @@ class Mapper (mappingsFile: String) {
                 case class ConfigObject(source: String, options: Map[String, String], entity: String)
 
                 implicit val userReads: Reads[ConfigObject] = (
-                    (__ \ 'source).read[String] and
-                    (__ \ 'options).read[Map[String, String]] and
-                    (__ \ 'entity).read[String]
+                    (__ \ Symbol("source")).read[String] and
+                    (__ \ Symbol("options")).read[Map[String, String]] and
+                    (__ \ Symbol("entity")).read[String]
                 ) (ConfigObject)
 
                 val sources = (Json.parse(configJSON) \ "sources").as[Seq[ConfigObject]]

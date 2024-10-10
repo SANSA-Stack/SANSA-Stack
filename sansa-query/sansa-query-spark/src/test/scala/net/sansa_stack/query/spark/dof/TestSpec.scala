@@ -102,7 +102,7 @@ class TestSpec extends AnyFunSuite with DataFrameSuiteBase {
       val resource = getClass.getResource(queryBaseName + tensorId + "_" + queryId + ".txt")
 
       val source = Source.fromURL(resource)
-      val referenceResult = source.getLines.drop(1).toList.sortWith((x, y) => x < y)
+      val referenceResult = source.getLines().drop(1).toList.sortWith((x, y) => x < y)
       val rr = referenceResult.mkString("\n")
 
       val refRdd = spark.sparkContext.parallelize(referenceResult)
@@ -116,7 +116,7 @@ class TestSpec extends AnyFunSuite with DataFrameSuiteBase {
   }
 
   def getQueryBindings(lines: Iterator[String]): QuerySolution = {
-    var currentLine = lines.next
+    var currentLine = lines.next()
     if (currentLine == "NO ANSWERS.") {
       // No bindings.
       List()
@@ -125,7 +125,7 @@ class TestSpec extends AnyFunSuite with DataFrameSuiteBase {
       var solution = List[Bindings]()
       while (lines.hasNext) {
         var binding = TreeMap[String, String]()
-        currentLine = lines.next
+        currentLine = lines.next()
         val values = currentLine.split("\t").toIndexedSeq
         for (i <- variables.indices) {
           binding += variables(i) -> values(i)

@@ -29,7 +29,7 @@ class SmartVectorAssemblerTest extends AnyFunSuite with SharedSparkContext{
     dataset
   }
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")

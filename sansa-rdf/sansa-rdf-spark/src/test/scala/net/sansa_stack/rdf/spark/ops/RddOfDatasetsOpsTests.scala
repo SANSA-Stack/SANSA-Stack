@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 class RddOfDatasetsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

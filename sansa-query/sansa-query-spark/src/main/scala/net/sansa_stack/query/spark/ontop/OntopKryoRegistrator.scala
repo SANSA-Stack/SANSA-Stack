@@ -98,7 +98,7 @@ object OntopKryoRegistrator {
  * @author Lorenz Buehmann
  */
 class OntopKryoRegistrator extends KryoRegistrator {
-  override def registerClasses(kryo: Kryo) {
+  override def registerClasses(kryo: Kryo): Unit = {
     register(kryo)
   }
 }

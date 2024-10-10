@@ -88,7 +88,7 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
                 case "csv" => df = spark.read.options(options).csv(sourcePath)
                 case "parquet" => df = spark.read.options(options).parquet(sourcePath)
                 case "cassandra" =>
-                    df = spark.read.format("org.apache.spark.sql.cassandra").options(options).load
+                    df = spark.read.format("org.apache.spark.sql.cassandra").options(options).load()
                 // case "elasticsearch" => // Will be enabled again when a Scala 2.12 version is provided.
                 //    df = spark.read.format("org.elasticsearch.spark.sql").options(options).load
                 case "mongodb" =>
@@ -97,7 +97,7 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
                     val mongoConf = if (values.length == 4) makeMongoURI(values(0), values(1), values(2), values(3))
                                     else makeMongoURI(values(0), values(1), values(2), null)
                     val mongoOptions: ReadConfig = MongoConfig.readConfig(Map("uri" -> mongoConf, "partitioner" -> "MongoPaginateBySizePartitioner").asJava)
-                    df = spark.read.format("com.mongodb.spark.sql").options(mongoOptions.getOptions).load
+                    df = spark.read.format("com.mongodb.spark.sql").options(mongoOptions.getOptions).load()
                 case "jdbc" =>
                     df = spark.read.format("jdbc").options(options).load()
                 case "rdf" =>
@@ -404,7 +404,7 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
 
             val j = joinsMap.iterator
             while ({j.hasNext}) {
-                val entry = j.next
+                val entry = j.next()
 
                 val op1 = entry._1._1
                 val op2 = entry._1._2

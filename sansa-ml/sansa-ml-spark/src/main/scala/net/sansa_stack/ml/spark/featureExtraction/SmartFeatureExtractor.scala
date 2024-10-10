@@ -23,7 +23,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoder, SparkSession}
 
 class SmartFeatureExtractor extends Transformer {
   val spark = SparkSession
-    .builder
+    .builder()
     .getOrCreate()
 
   var entityColumnNameString = "s"

@@ -13,7 +13,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class RddOfBindingsToDataFrameMapperTests
   extends AnyFunSuite with DataFrameSuiteBase {
 
-    override def conf(): SparkConf = {
+    override def conf: SparkConf = {
       val conf = super.conf
       conf
         .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -40,7 +40,7 @@ class RddOfBindingsToDataFrameMapperTests
       var graphRdd: RDD[org.apache.jena.graph.Triple] = spark.sparkContext.parallelize(it)
 
 
-      val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+      val qef = graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify()
 
       val resultSet = qef.createQueryExecution("SELECT ?o { ?s ?p ?o }")
         .execSelectSpark()

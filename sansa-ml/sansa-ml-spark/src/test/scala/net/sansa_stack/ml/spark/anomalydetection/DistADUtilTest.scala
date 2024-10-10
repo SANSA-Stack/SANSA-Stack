@@ -21,7 +21,7 @@ class DistADUtilTest extends AnyFunSuite with SharedSparkContext {
   private val dataPath =
     this.getClass.getClassLoader.getResource("utils/test.ttl").getPath
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")

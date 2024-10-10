@@ -31,7 +31,7 @@ class SPARQLQueryTest extends AnyFunSuite with SharedSparkContext {
 
   private val ns = "http://sansa-stack.net/test_ont#"
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     JenaSystem.init()
   }

@@ -28,7 +28,7 @@ class OntopTests extends AnyFunSuite with DataFrameSuiteBase {
     qef = new QueryEngineFactoryOntop(spark).create(triples)
   }
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.sql.crossJoin.enabled", "true")
@@ -43,7 +43,7 @@ class OntopTests extends AnyFunSuite with DataFrameSuiteBase {
   queries.foreach(q => {
     test(s"Test Ontop with BSBM $q") {
       val src = Source.fromFile(getClass.getResource(s"/sansa-sparql-ts/bsbm/bsbm-$q.rq").getPath)
-      val queryString = src.getLines.mkString("\n")
+      val queryString = src.getLines().mkString("\n")
       src.close()
       val query = QueryFactory.create(queryString)
 

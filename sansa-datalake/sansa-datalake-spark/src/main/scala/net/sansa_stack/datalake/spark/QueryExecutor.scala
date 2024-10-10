@@ -50,8 +50,8 @@ trait QueryExecutor[T] { // T is a ParSet (Parallel dataSet)
     def limit(joinPS: Any, limitValue: Int) : T
 
     /* Show some results */
-    def show(PS: Any)
+    def show(PS: Any): Unit
 
     /* Compute the results */
-    def run(jDF: Any)
+    def run(jDF: Any): Unit
 }

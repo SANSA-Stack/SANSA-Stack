@@ -11,7 +11,7 @@ import org.apache.spark.sql.SparkSession
  */
 object ExternalSameAsLinks {
 
-  @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
+  @transient var spark: SparkSession = SparkSession.builder().getOrCreate()
 
   def assessExternalSameAsLinks(dataset: RDD[Triple]): Double = {
 

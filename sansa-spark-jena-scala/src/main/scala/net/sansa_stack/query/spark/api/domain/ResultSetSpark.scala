@@ -13,7 +13,7 @@ trait ResultSetSpark {
   def collectToTable(): Table = {
     import collection.JavaConverters._
     val result = TableFactory.create(getResultVars.toList.asJava)
-    getBindings.collect.foreach(b => result.addBinding(b))
+    getBindings.collect().foreach(b => result.addBinding(b))
     result
   }
 }

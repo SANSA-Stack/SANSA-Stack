@@ -10,7 +10,7 @@ import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
 class SimilarityExperimentMetaGraphFactory {
 
-  val spark = SparkSession.builder.getOrCreate()
+  val spark = SparkSession.builder().getOrCreate()
 
   def createRdfOutput(outputDataset: Dataset[_])
                      (modelInformationEstimatorName: String, modelInformationEstimatorType: String, modelInformationMeasurementType: String)

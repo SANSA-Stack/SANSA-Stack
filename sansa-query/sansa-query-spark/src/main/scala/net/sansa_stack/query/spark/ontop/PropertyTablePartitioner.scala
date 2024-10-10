@@ -82,7 +82,7 @@ object PropertyTablePartitioner {
   }
 
   private def run(config: Config): Unit = {
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
             .master("local")
       .appName("property table partitioner")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

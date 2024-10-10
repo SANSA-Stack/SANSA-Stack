@@ -27,7 +27,7 @@ object TryOutMmDistSim {
     // setup spark session
     // setup for IDE VM arguments:
     // -Dspark.master=local[*] -Dspark.driver.maxResultSize=4g -Dspark.executor.maxResultSize=4g -Dspark.driver.memory=4g -Dspark.executor.memory=4g -Dspark.memory.offHeap.size=4g -Dspark.memory.offHeap.enabled=true -Xms4g -Xmx4g
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(

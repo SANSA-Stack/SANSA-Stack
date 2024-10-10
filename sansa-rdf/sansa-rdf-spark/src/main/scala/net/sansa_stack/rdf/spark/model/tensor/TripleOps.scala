@@ -38,8 +38,8 @@ object TripleOps {
    * @retun unique IDs of all entities (subject, objects) in the graph
    */
   def entityIDs(triplesWithURIs: RDD[Triple]): RDD[(Node, Long)] = {
-    (triplesWithURIs.getSubjects ++ triplesWithURIs.getObjects)
-      .distinct
+    (triplesWithURIs.getSubjects() ++ triplesWithURIs.getObjects())
+      .distinct()
       .zipWithUniqueId()
   }
 

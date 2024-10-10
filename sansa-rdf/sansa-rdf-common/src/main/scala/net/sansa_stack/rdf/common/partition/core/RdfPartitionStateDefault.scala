@@ -6,3 +6,4 @@ case class RdfPartitionStateDefault(subjectType: Byte,
                                     datatype: String,
                                     langTagPresent: Boolean,
                                     languages: Set[String])
+

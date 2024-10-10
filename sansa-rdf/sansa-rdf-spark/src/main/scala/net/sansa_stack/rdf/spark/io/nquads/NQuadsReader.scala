@@ -213,7 +213,7 @@ object NQuadReader {
     // parser.parse returns Option[C]
     parser.parse(args, Config()) match {
       case Some(config) =>
-        val sparkSession = SparkSession.builder
+        val sparkSession = SparkSession.builder()
           //                .master("local")
           .appName("N-Quads reader")
           .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

@@ -90,7 +90,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
         if (node.isVariable) {
           val indexes = tensor.map(row => { val r = row(index); (r, r) })
           val values = getSpoField(method).reverserddStr.join(indexes).map(v => v._2._1)
-          mapV.update(node, values.distinct) // distinct() used because of problems with query #6,7 etc.
+          mapV.update(node, values.distinct()) // distinct() used because of problems with query #6,7 etc.
         }
     }
   }
@@ -177,7 +177,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
     result: Result[ResultRDD[String]],
     current: Result[ResultRDD[String]]): Result[ResultRDD[String]] = {
     if (result == null) return current
-    val temp = new Result(result.rdd.union(current.rdd).distinct, result.keys.toSet.union(current.keys.toSet).toList)
+    val temp = new Result(result.rdd.union(current.rdd).distinct(), result.keys.toSet.union(current.keys.toSet).toList)
     temp
   }
 
@@ -185,7 +185,7 @@ class RDDTensor(spark: SparkSession, reader: Reader)
 
   def output(result: Result[ResultRDD[String]], resultVars: List[Var]):
     Array[String] = result.rdd
-      .collect // collect only if test failed since it is a slow operation, the same as take, first, reduce
+      .collect() // collect only if test failed since it is a slow operation, the same as take, first, reduce
       .map(map => {
         resultVars.flatMap((v: Var) => {
           if (map.keySet.contains(v)) {

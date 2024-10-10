@@ -2264,7 +2264,7 @@ class UsedClassesCount (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vc = classes.map(t => "[ void:class " + "<" + t._1 + ">;   void:axioms " + t._2 + "; ], ")
 
     val c_action = new Array[String](1)
-    c_action(0) = "\nvoid:classes " + action().map(f => f._1).distinct(parallelism).count + ";"
+    c_action(0) = "\nvoid:classes " + action().map(f => f._1).distinct(parallelism).count() + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(c_action)
     if (classes.count() > 0) {
@@ -2335,7 +2335,7 @@ class UsedDataProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vdp = dataProperties.map(t => "[ void:dataProperty " + "<" + t._1 + ">;   void:axioms " + t._2 + "; ], ")
 
     val dp_action = new Array[String](1)
-    dp_action(0) = "\nvoid:dataProperties " + action().map(f => f._1).distinct(parallelism).count + ";"
+    dp_action(0) = "\nvoid:dataProperties " + action().map(f => f._1).distinct(parallelism).count() + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(dp_action)
     c.union(c_p).union(vdp)
@@ -2374,7 +2374,7 @@ class UsedObjectProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vop = objProperties.map(t => "[ void:objectProperty " + t._1 + ";   void:axioms " + t._2 + "; ], ")
 
     val op_action = new Array[String](1)
-    op_action(0) = "\nvoid:objectProperties " + action().map(f => f._1).distinct(parallelism).count + ";"
+    op_action(0) = "\nvoid:objectProperties " + action().map(f => f._1).distinct(parallelism).count() + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(op_action)
     c.union(c_p).union(vop)
@@ -2413,7 +2413,7 @@ class UsedAnnotationProperties (axioms: RDD[OWLAxiom], spark: SparkSession) {
     val vap = annProperties.map(t => "[ void:annotationProperty " +  t._1 + ";   void:axioms " + t._2 + "; ], ")
 
     val ap_action = new Array[String](1)
-    ap_action(0) = "\nvoid:annotationProperty " + action().map(f => f._1).distinct(parallelism).count + ";"
+    ap_action(0) = "\nvoid:annotationProperty " + action().map(f => f._1).distinct(parallelism).count() + ";"
     val c_p = spark.sparkContext.parallelize(axiomsString)
     val c = spark.sparkContext.parallelize(ap_action)
     c.union(c_p).union(vap)
@@ -2438,7 +2438,7 @@ object OWLStats {
         * 'Local' is a special value that runs Spark on one thread on the local machine, without connecting to a cluster.
         * An application name used to identify the application on the cluster manager's UI.
         */
-      @transient val spark = SparkSession.builder
+      @transient val spark = SparkSession.builder()
         .master("local[4]")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .appName("Distributed OWL Statistics")
@@ -2464,6 +2464,6 @@ object OWLStats {
 
       val stats = new OWLStats(spark).run(axioms)
 
-      spark.stop
+      spark.stop()
   }
 }

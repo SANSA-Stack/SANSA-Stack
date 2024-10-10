@@ -21,7 +21,7 @@ class RddOfBindingsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   // JenaSystem.init
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

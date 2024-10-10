@@ -38,7 +38,7 @@ class ML2Graph {
 
   def transform(df: Dataset[_]): RDD[Triple] = {
 
-    val spark = SparkSession.builder.getOrCreate()
+    val spark = SparkSession.builder().getOrCreate()
     implicit val rdfTripleEncoder: Encoder[Triple] = org.apache.spark.sql.Encoders.kryo[Triple]
 
     val b_valueColumn: Broadcast[String] = spark.sparkContext.broadcast(_valueColumn)

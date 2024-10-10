@@ -18,7 +18,7 @@ object FeatureTypeIdentifier {
     var currentTime: Long = System.nanoTime
     println("\nSETUP SPARK SESSION")
     // setup spark session
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(
@@ -207,7 +207,7 @@ object FeatureTypeIdentifier {
 
         val nullable: Boolean = if (minNumberOfElements == 0) true else false
         val datatype: DataType = twoColumnDf.select(currentFeatureColumnNameString).schema(0).dataType
-        val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct.count.toInt
+        val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct().count().toInt
         val isListOfEntries: Boolean = if (maxNumberOfElements > 1) true else false
         val availability: Double = collapsedTwoColumnDfwithSize.select("size").filter(col("size") > 0).count().toDouble / numberRows.toDouble
         /* val medianAlphaRatio: Double = datatype match {

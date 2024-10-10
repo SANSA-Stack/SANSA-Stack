@@ -22,7 +22,7 @@ object QueryParamFreeURIs {
       .distinct()
     entities.cache()
 
-    val allEntities = entities.count
+    val allEntities = entities.count()
     val queryParamFreeURIs = entities.filter(hasQueryString(_)).count().toDouble
 
     if (allEntities >= 0.0) queryParamFreeURIs / allEntities else 0

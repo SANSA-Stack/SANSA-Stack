@@ -26,7 +26,7 @@ class SimilarityUnitTest(ignored: String) extends AnyFunSuite with DataFrameSuit
   // for value comparison we want to allow some minor differences in number comparison
   val epsilon = 1e-4f
 
-  implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
+  implicit val doubleEq: org.scalactic.Equality[Double] = TolerantNumerics.tolerantDoubleEquality(epsilon)
 
   override def beforeAll(): Unit = {
     super.beforeAll()

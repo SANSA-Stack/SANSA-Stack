@@ -25,7 +25,7 @@ class RDFSerializationTests
     val expectedModel = RDFDataMgr.loadModel("rdf.nt")
     val triples = spark.rdf(expectedModel)
     triples.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    val actualModel = triples.toModel
+    val actualModel = triples.toModel()
 
     val isIsomorphic = actualModel.isIsomorphicWith(expectedModel)
     assert(isIsomorphic)

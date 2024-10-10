@@ -50,8 +50,8 @@ class OntopRowMapper(sessionId: String,
   val substitution = substitutionFactory.getSubstitution(sparqlVar2Term)
 
   import org.apache.spark.TaskContext
-  val ctx = Option(TaskContext.get)
-  val stageId = if (ctx.isDefined) ctx.get.stageId
+  val ctx = Option(TaskContext.get())
+  val stageId = if (ctx.isDefined) ctx.get.stageId()
   val partId = if (ctx.isDefined) ctx.get.partitionId()
   val taskId = if (ctx.isDefined) ctx.get.taskAttemptId()
   val hostname = if (ctx.isDefined) java.net.InetAddress.getLocalHost.getHostName

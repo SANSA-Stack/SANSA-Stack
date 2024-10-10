@@ -144,7 +144,7 @@ object FeatureExtractingSparqlGenerator {
 
         if (currentPaths.count() == 0) {
           // println(f"no remaining paths are available so: $traverse_direction is done")
-          break
+          break()
         }
 
         // if we traverse up we change column names s.t. last element added is always in column n0 s.t. join in traverse down is easier
@@ -276,7 +276,7 @@ object FeatureExtractingSparqlGenerator {
 
     val usedSeedsDf: DataFrame = seedsDf.limit(cutoff).toDF("n_0")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .getOrCreate()
     import spark.implicits._
 
@@ -371,7 +371,7 @@ object FeatureExtractingSparqlGenerator {
     // val hardCodedSeeds: List[String] = config.getStringList("hardCodedSeeds").asScala.toList
 
     // setup spark session
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"rdf2feature")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",

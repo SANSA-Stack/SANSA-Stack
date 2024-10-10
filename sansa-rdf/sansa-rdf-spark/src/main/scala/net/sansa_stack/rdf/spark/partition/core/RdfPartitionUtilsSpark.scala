@@ -23,7 +23,7 @@ object RdfPartitionUtilsSpark
                                                 partitioner: RdfPartitioner[S],
                                                 literalLanguageTagStrategy: LiteralLanguageTagStrategy.Value): Array[(S, RDD[Row])] = {
     logger.info("started vertical partitioning of the data ...")
-    var partitions = graphRdd.map(partitioner.fromTriple).distinct.collect
+    var partitions = graphRdd.map(partitioner.fromTriple).distinct().collect()
 
     if (literalLanguageTagStrategy == LiteralLanguageTagStrategy.SINGLE_COLUMN) {
       partitions = partitioner.aggregate(partitions).toArray

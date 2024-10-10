@@ -11,3 +11,4 @@ trait RdfPartition {
   def matches(triple: Triple): Boolean
 }
 */
+

@@ -178,7 +178,7 @@ object TripleOps {
     difference(triples, other).isEmpty
   }
 
-  @transient var spark: SparkSession = SparkSession.builder.getOrCreate()
+  @transient var spark: SparkSession = SparkSession.builder().getOrCreate()
 
   /**
    * Add a statement to the current RDF graph.

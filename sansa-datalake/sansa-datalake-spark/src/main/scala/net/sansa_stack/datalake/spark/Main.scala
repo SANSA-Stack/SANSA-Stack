@@ -16,7 +16,7 @@ object Main extends App {
     val configFile = args(2)
     val executorID = args(3)
 
-    val spark = SparkSession.builder.master(executorID).appName("SANSA-DataLake").getOrCreate
+    val spark = SparkSession.builder().master(executorID).appName("SANSA-DataLake").getOrCreate()
 
     val hadoopConfig = spark.conf
 

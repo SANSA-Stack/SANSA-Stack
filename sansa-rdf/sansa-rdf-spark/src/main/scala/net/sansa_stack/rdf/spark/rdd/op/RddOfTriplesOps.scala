@@ -281,7 +281,7 @@ object RddOfTriplesOps {
    * @return the target graph
    */
   def toGraph(outGraph: Graph, triples: RDD[Triple]): Graph = {
-    val col = triples.collect
+    val col = triples.collect()
     col.foreach(outGraph.add)
     outGraph
   }

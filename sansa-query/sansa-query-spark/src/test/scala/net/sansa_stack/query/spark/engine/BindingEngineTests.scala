@@ -27,7 +27,7 @@ class BindingEngineTests extends AnyFunSuite with DataFrameSuiteBase {
 
   // JenaSystem.init
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -88,7 +88,7 @@ class BindingEngineTests extends AnyFunSuite with DataFrameSuiteBase {
         | GROUP BY ?qec ORDER BY ?qec
         |""".stripMargin), null))
 
-    val actualRs = ResultSetFactory.makeRewindable(ResultSet.adapt(resultSetSpark.collectToTable.toRowSet))
+    val actualRs = ResultSetFactory.makeRewindable(ResultSet.adapt(resultSetSpark.collectToTable().toRowSet))
     println("Spark took " + sw2.getTime(TimeUnit.SECONDS))
 
     val isEqual = ResultSetCompare.equalsByValue(expectedRs, actualRs)

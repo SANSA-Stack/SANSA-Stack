@@ -29,7 +29,7 @@ object MainSansaBSBM {
 
     // File.createTempFile("spark-events")
 
-    val sparkSession = SparkSession.builder
+    val sparkSession = SparkSession.builder()
       .master("local")
       .appName("spark session example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

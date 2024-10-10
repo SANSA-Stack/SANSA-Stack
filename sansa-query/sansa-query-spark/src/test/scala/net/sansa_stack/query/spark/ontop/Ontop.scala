@@ -15,7 +15,7 @@ object Ontop {
     QueryFactory.create(args(1))
     QueryFactory.create(args(2))
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrationRequired", "true")
       // .config("spark.eventLog.enabled", "true")

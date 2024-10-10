@@ -262,7 +262,7 @@ class SparqlFrame extends Transformer{
 
         val nullable: Boolean = if (minNumberOfElements == 0) true else false
         val datatype: DataType = twoColumnDf.select(currentFeatureColumnNameString).schema(0).dataType
-        val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct.count.toInt
+        val numberDistinctValues: Int = twoColumnDf.select(currentFeatureColumnNameString).distinct().count().toInt
         val isListOfEntries: Boolean = if (maxNumberOfElements > 1) true else false
         val availability: Double = collapsedTwoColumnDfwithSize.select("size").filter(col("size") > 0).count().toDouble / numberRows.toDouble
         /* val medianAlphaRatio: Double = datatype match {
@@ -333,7 +333,7 @@ class SparqlFrame extends Transformer{
 
     val qef = _queryExcecutionEngine match {
       case SPARQLEngine.Sparqlify =>
-        graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify
+        graphRdd.verticalPartition(RdfPartitionerDefault).sparqlify()
       /* case SPARQLEngine.Ontop =>
          graphRdd.verticalPartition(new RdfPartitionerComplex(),
                                    explodeLanguageTags = true,

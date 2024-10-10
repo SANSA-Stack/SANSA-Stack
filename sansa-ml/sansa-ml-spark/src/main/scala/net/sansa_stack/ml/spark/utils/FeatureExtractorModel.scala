@@ -13,7 +13,7 @@ import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
  * This class creates from a dataset of triples a feature representing dataframe which is needed for steps like spark mllib countVect
  */
 class FeatureExtractorModel extends Transformer {
-  val spark = SparkSession.builder.getOrCreate()
+  val spark = SparkSession.builder().getOrCreate()
   private val _availableModes = Array("an", "in", "on", "ar", "ir", "or", "at", "ir", "ot", "as", "is", "os")
   private var _mode: String = "at"
   private var _outputCol: String = "extractedFeatures"

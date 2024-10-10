@@ -18,7 +18,7 @@ object SemanticRdfPartitionUtilsSpark extends Serializable {
     val symbol = Symbols.symbol
     // partition the data
     val partitionedData = triples
-      .distinct
+      .distinct()
       .filter(_.getSubject.getURI.nonEmpty) // ignore SUBJECT with empty URI
       .map(triple => {
         var filteredPredicate: Any = triple.getPredicate

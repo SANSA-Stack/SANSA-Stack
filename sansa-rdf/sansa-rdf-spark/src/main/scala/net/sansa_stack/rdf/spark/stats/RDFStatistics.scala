@@ -181,7 +181,7 @@ object RDFStatistics extends Serializable {
    */
   def SubclassUsage(triples: RDD[Triple]): Long = {
     triples.filter(triple => triple.predicateMatches(RDFS.subClassOf.asNode()))
-      .count
+      .count()
   }
 
   /**
@@ -191,7 +191,7 @@ object RDFStatistics extends Serializable {
    * @return the amount of triples of a given graph.
    */
   def Triples(triples: RDD[Triple]): Long =
-    triples.count
+    triples.count()
 
   /**
    * 15. Entities mentioned criterion
@@ -415,7 +415,7 @@ class Used_Classes(triples: RDD[Triple], spark: SparkSession) extends Serializab
       }
 
     val cl_a = new Array[String](1)
-    cl_a(0) = "\nvoid:classes " + Action().map(f => f._1).distinct().count + ";"
+    cl_a(0) = "\nvoid:classes " + Action().map(f => f._1).distinct().count() + ";"
     val c_p = spark.sparkContext.parallelize(triplesString)
     val c = spark.sparkContext.parallelize(cl_a)
     if (count > 0) {
@@ -500,7 +500,7 @@ class PropertyUsage(triples: RDD[Triple], spark: SparkSession) extends Serializa
       }
 
     val pl_a = new Array[String](1)
-    pl_a(0) = "\nvoid:properties " + Action().map(f => f._1).distinct().count + ";"
+    pl_a(0) = "\nvoid:properties " + Action().map(f => f._1).distinct().count() + ";"
     val c_p = spark.sparkContext.parallelize(triplesString)
     val p = spark.sparkContext.parallelize(pl_a)
     p.union(c_p).union(vp)

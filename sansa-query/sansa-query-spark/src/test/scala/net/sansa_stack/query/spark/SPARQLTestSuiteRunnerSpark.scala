@@ -30,7 +30,7 @@ abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSu
 
   @transient private var _spark: SparkSession = _
 
-  lazy val spark = SparkSession.builder.config(
+  lazy val spark = SparkSession.builder().config(
     conf
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -44,7 +44,7 @@ abstract class SPARQLTestSuiteRunnerSpark(testSuite: SPARQLQueryEvaluationTestSu
     conf.set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
-    _spark = SparkSession.builder.config(conf).master("local[1]").getOrCreate()
+    _spark = SparkSession.builder().config(conf).master("local[1]").getOrCreate()
 
     val toIgnore = configMap.get("ignore")
     if (toIgnore.nonEmpty) {

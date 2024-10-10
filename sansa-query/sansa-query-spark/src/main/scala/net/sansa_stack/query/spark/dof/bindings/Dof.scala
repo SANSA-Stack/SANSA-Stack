@@ -6,7 +6,7 @@ import org.apache.jena.graph.{Node, Triple}
 object Dof {
 
   def apply[R, N, T, A](bindings: Bindings[R, N, T, A], dofTriple: DofTriple): Unit =
-    Case(bindings, dofTriple).process
+    Case(bindings, dofTriple).process()
 
   def dof(node: Node): Int = if (node.isVariable) 1 else -1
 

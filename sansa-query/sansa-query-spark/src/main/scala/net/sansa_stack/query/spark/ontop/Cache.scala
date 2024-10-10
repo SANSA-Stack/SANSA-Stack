@@ -66,7 +66,7 @@ class Cache[K <: AnyRef, V <: AnyRef](initialCapacity: Int = DEFAULT_INITIAL_CAP
    * @param key
    * @param value
    */
-  def put(key: K, value: V) {
+  def put(key: K, value: V): Unit = {
     cache.put(key, value)
   }
 
@@ -75,14 +75,14 @@ class Cache[K <: AnyRef, V <: AnyRef](initialCapacity: Int = DEFAULT_INITIAL_CAP
    *
    * @param key
    */
-  def remove(key: K) {
+  def remove(key: K): Unit = {
     cache.invalidate(key)
   }
 
   /**
    * Remove all keys and values from the cache
    */
-  def clear() {
+  def clear(): Unit = {
     cache.invalidateAll()
   }
 

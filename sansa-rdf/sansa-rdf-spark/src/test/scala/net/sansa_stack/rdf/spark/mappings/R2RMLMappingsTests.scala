@@ -26,7 +26,7 @@ class R2RMLMappingsTests extends AnyFunSuite with DataFrameSuiteBase {
 
     println("Printing the first 10 instructions:")
     insertion.take(10).foreach(println)
-    val size = insertion.count
+    val size = insertion.count()
 
     assert(size == 100)
   }

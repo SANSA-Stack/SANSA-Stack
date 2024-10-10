@@ -4,7 +4,7 @@ import org.apache.spark.sql.SparkSession
 
 object Main extends App {
 
-  val spark = SparkSession.builder
+  val spark = SparkSession.builder()
     .appName(s"SANSA-Gremlinator")
     .master("local[*]")
     .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

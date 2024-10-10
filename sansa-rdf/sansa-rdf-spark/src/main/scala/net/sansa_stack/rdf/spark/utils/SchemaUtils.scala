@@ -9,7 +9,7 @@ object SchemaUtils {
   def flattenSchemaField(
     schema: StructType,
     qualifiedName: String,
-    fieldName: String, map: LinkedHashMap[String, String]) {
+    fieldName: String, map: LinkedHashMap[String, String]): Unit = {
     val field = schema.apply(fieldName)
     val dt = field.dataType
     dt match {

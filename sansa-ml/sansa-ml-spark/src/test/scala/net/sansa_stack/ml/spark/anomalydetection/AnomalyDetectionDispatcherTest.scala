@@ -28,7 +28,7 @@ class AnomalyDetectionDispatcherTest
   private val configFilePath =
     this.getClass.getClassLoader.getResource("DistAD/config.conf").getPath
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     super.beforeAll()
     JenaSystem.init()
     spark.sparkContext.setLogLevel("ERROR")

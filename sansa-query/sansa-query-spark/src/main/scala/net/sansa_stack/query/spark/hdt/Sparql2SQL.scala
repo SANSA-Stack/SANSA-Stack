@@ -263,7 +263,7 @@ object Sparql2SQL {
     * @return SQL query.
     */
   def getQuery(queryStr: String): String = {
-    SparqlOpVisitor.reset
+    SparqlOpVisitor.reset()
 
     val query = QueryFactory.create(queryStr)
     val op = Algebra.compile(query)

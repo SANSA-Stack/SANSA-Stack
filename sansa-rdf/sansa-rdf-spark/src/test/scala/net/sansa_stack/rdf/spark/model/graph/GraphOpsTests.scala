@@ -20,7 +20,7 @@ class GraphOpsTests extends AnyFunSuite with DataFrameSuiteBase {
   var graph: Graph[Node, Node] = _
   val numTriples = 10 // technically it should be 9 but Jena compares datatypes by object identity and serialization creates different objects
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.master", "local[1]")

@@ -14,7 +14,7 @@ import scala.jdk.CollectionConverters._
 
 class PrefixAnalyticsTests extends AnyFunSuite with DataFrameSuiteBase {
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

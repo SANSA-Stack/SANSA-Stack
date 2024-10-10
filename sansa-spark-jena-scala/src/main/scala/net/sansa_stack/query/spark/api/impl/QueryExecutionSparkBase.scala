@@ -42,7 +42,7 @@ abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionF
     execSelectSpark()
       .getBindings
       .mapPartitions((bindingIt: Iterator[Binding]) => TemplateLib.calcTriples(triples, bindingIt.asJava).asScala)
-      .distinct
+      .distinct()
   }
 
   override def execConstructQuadsSpark(): RDD[Quad] = {
@@ -52,6 +52,6 @@ abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionF
     execSelectSpark()
       .getBindings
       .mapPartitions((bindingIt: Iterator[Binding]) => TemplateLib.calcQuads(quads, bindingIt.asJava).asScala)
-      .distinct
+      .distinct()
   }
 }

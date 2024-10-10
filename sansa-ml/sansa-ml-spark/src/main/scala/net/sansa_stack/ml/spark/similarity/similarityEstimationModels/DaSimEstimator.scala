@@ -200,7 +200,7 @@ class DaSimEstimator {
    */
   def gatherSeeds(ds: Dataset[Triple], sparqlFilter: String = null, objectFilter: String = null, predicateFilter: String = null): DataFrame = {
 
-    val spark = SparkSession.builder.getOrCreate()
+    val spark = SparkSession.builder().getOrCreate()
 
     val seeds: DataFrame = {
     if (objectFilter!= null || predicateFilter!= null) {
@@ -235,7 +235,7 @@ class DaSimEstimator {
           .flatMap(t => Seq(t.getSubject, t.getObject))
           .filter(_.isURI)
           .map(_.toString())
-          .distinct
+          .distinct()
           .map(Row(_)),
         tmpSchema
       )
@@ -746,7 +746,7 @@ class DaSimEstimator {
       val av = extractedFeaturesDF
         .select(co)
         .filter(col(co).isNull)
-        .count
+        .count()
         .toDouble
       availabilityMap += (co + "_sim" -> (extractedFeaturesDfSize - av)/extractedFeaturesDfSize)
     }
@@ -879,7 +879,7 @@ class DaSimEstimator {
       // featureExtractionMethod: String = null
     ): RDD[Triple] = {
 
-    val spark = SparkSession.builder.getOrCreate()
+    val spark = SparkSession.builder().getOrCreate()
 
     // strings for URIs
     var _elementPropertyURIasString: String = "https://sansa-stack.net/sansaVocab/element"

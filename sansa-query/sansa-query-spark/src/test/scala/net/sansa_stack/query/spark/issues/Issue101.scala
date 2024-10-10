@@ -27,7 +27,7 @@ class Issue101
     with DataFrameSuiteBase
     with BeforeAndAfterAll {
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

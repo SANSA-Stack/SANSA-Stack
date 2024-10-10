@@ -26,7 +26,7 @@ object GraphOps {
    */
   def constructGraph(triples: RDD[Triple]): Graph[Node, Node] = {
     val rs = triples.map(triple => (triple.getSubject, triple.getPredicate, triple.getObject))
-    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
+    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct().zipWithUniqueId()
 
     val vertices: RDD[(VertexId, Node)] = indexedMap.map(x => (x._2, x._1))
 
@@ -70,7 +70,7 @@ object GraphOps {
    */
   def constructStringGraph(triples: RDD[Triple]): Graph[String, String] = {
     val rs = triples.map(triple => (NodeUtils.getNodeValue(triple.getSubject), NodeUtils.getNodeValue(triple.getPredicate), NodeUtils.getNodeValue(triple.getObject)))
-    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct.zipWithUniqueId()
+    val indexedMap = (rs.map(_._1) union rs.map(_._3)).distinct().zipWithUniqueId()
 
     val vertices: RDD[(VertexId, String)] = indexedMap.map(x => (x._2, x._1))
     val _nodeToId: RDD[(String, VertexId)] = indexedMap.map(x => (x._1, x._2))
@@ -298,8 +298,8 @@ object GraphOps {
   }
 
   def toGraphJson(graph: Graph[_, _]): String = {
-    val verts = graph.vertices.collect
-    val edges = graph.edges.collect
+    val verts = graph.vertices.collect()
+    val edges = graph.edges.collect()
 
     val nmap = verts.zipWithIndex.map(v => (v._1._1.toLong, v._2)).toMap
 

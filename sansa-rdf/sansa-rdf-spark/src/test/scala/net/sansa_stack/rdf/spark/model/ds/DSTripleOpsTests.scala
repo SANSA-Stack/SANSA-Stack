@@ -15,7 +15,7 @@ class DSTripleOpsTests extends AnyFunSuite with SharedSparkContext {
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
   System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
 
-  lazy val spark = SparkSession.builder.config(
+  lazy val spark = SparkSession.builder().config(
     conf
       .set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -34,7 +34,7 @@ class DSTripleOpsTests extends AnyFunSuite with SharedSparkContext {
     conf.set("spark.sql.crossJoin.enabled", "true")
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
-    _spark = SparkSession.builder.config(conf).master("local[1]").getOrCreate()
+    _spark = SparkSession.builder().config(conf).master("local[1]").getOrCreate()
 
     path = getClass.getResource("/loader/data.nt").getPath
 

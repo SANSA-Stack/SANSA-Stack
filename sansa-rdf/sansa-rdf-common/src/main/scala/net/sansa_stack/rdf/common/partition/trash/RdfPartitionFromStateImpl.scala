@@ -16,3 +16,4 @@ case class RdfPartitionFromStateImpl[S](state: S, partitioner: RdfPartitioner[S]
   def matches(t: Triple): Boolean = partitioner.matches(state, t)
 }
 */
+

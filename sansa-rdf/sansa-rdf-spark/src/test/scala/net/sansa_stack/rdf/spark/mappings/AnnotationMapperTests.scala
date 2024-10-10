@@ -18,7 +18,7 @@ class AnnotationMapperTests extends AnyFunSuite with DataFrameSuiteBase {
   import net.sansa_stack.rdf.spark.io._
   import net.sansa_stack.rdf.spark.ops._
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -130,7 +130,7 @@ class AnnotationMapperTests extends AnyFunSuite with DataFrameSuiteBase {
       .mapToNaturalResources()
 
     val output = transformer.apply(input)
-      .collect
+      .collect()
       .map(_.as(classOf[Cluster]))
 
     for(cluster <- output) {

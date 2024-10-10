@@ -21,7 +21,7 @@ class RDDTripleOpsTests extends AnyFunSuite with DataFrameSuiteBase {
   // also, the RDD is not a set of triples but just contains all parsed triples, i.e. duplicates have to be removed explicitly
   val numTriples = 10
 
-  override def conf(): SparkConf = {
+  override def conf: SparkConf = {
     val conf = super.conf
     conf
       .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -258,9 +258,9 @@ class RDDTripleOpsTests extends AnyFunSuite with DataFrameSuiteBase {
     val path = getClass.getResource("/rdf.nt").getPath
     val lang: Lang = Lang.NTRIPLES
 
-    val triples = spark.rdf(lang)(path).distinct
+    val triples = spark.rdf(lang)(path).distinct()
 
-    val other = spark.rdf(lang)(path).distinct
+    val other = spark.rdf(lang)(path).distinct()
 
     val containsAll = triples.containsAll(other)
 

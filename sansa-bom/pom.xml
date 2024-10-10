@@ -84,6 +84,7 @@
         <scala.binary.version>2.13</scala.binary.version>
         <scala.classifier>${scala.binary.version}</scala.classifier>
         <scala.version.suffix>_${scala.binary.version}</scala.version.suffix>
+	<semanticdb.version>4.10.1</semanticdb.version>
 
         <flink.version>1.11.2</flink.version>
         <spark.version>4.0.0-preview2</spark.version>
@@ -209,6 +210,18 @@
                     <configuration>
                         <forceAggregate>true</forceAggregate>
                         <aggregateDirectOnly>false</aggregateDirectOnly>
+			<args>
+			  <arg>-deprecation</arg>
+			  <arg>-explaintypes</arg>
+			  <arg>-quickfix:any</arg>
+			</args>
+			<compilerPlugins>
+			  <compilerPlugin>
+			    <groupId>org.scalameta</groupId>
+			    <artifactId>semanticdb-scalac_${scala.version}</artifactId>
+			    <version>${semanticdb.version}</version>
+			  </compilerPlugin>
+			</compilerPlugins>
                     </configuration>
                     <executions>
                         <execution>
@@ -710,15 +723,9 @@
                             <pluginExecutions>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            net.alchim31.maven
-                                        </groupId>
-                                        <artifactId>
-                                            scala-maven-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [3.3.1,)
-                                        </versionRange>
+                                        <groupId>net.alchim31.maven</groupId>
+                                        <artifactId>scala-maven-plugin</artifactId>
+                                        <versionRange>[3.3.1,)</versionRange>
                                         <goals>
                                             <goal>testCompile</goal>
                                             <goal>compile</goal>

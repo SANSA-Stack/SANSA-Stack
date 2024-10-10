@@ -177,7 +177,7 @@ object SimilarityPipelineExperiment {
     /**
      * start spark session
      */
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SimilarityPipelineExperiment")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
@@ -258,7 +258,7 @@ object SimilarityPipelineExperiment {
     /**
      * start spark session
      */
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SimilarityPipelineExperiment") // TODO where is this displayed?
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // TODO what is this for?
       .getOrCreate()

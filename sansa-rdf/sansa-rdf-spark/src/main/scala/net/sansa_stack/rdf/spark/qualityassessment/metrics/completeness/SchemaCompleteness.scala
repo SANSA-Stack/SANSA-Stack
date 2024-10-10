@@ -29,7 +29,7 @@ object SchemaCompleteness {
     val S = p2_o.map(_.getPredicate).distinct()
     val SC = dataset.map(_.getObject).distinct()
 
-    val S_intersection_SC = S.intersection(SC).distinct
+    val S_intersection_SC = S.intersection(SC).distinct()
 
     val SC_count = SC.count()
     val S_intersection_SC_count = S_intersection_SC.count()

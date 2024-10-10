@@ -33,7 +33,7 @@ class PartitionAlgoMetrics[VD: ClassTag, ED: ClassTag](
    *
    */
   def balance(): Double = {
-    val avgEdges = partitionedGraph.edges.count.toDouble / numPartitions
+    val avgEdges = partitionedGraph.edges.count().toDouble / numPartitions
     numMaxEdges.toDouble / avgEdges
   }
 
@@ -46,8 +46,8 @@ class PartitionAlgoMetrics[VD: ClassTag, ED: ClassTag](
   }
 
   private lazy val partitionedGraph = ps.partitionBy().cache()
-  private lazy val numDistinctEdges = ps.graph.edges.count
-  private lazy val numTotalEdges = partitionedGraph.edges.count
+  private lazy val numDistinctEdges = ps.graph.edges.count()
+  private lazy val numTotalEdges = partitionedGraph.edges.count()
   private lazy val numMergedEdges = partitionedGraph.edges.countByValue().count { case (_, num) => num == 1 }
   private lazy val numMaxEdges = partitionedGraph.edges.aggregate(0)((x, _) => x + 1, (x, y) => Math.max(x, y))
 }

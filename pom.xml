@@ -58,6 +58,7 @@
             <maven.compiler.target>1.8</maven.compiler.target>
         -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<scalafix.config.skip>false</scalafix.config.skip>
 
         <CodeCacheSize>1g</CodeCacheSize>
     </properties>
@@ -172,6 +173,16 @@
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
 
+	    <plugin>
+              <groupId>io.github.evis</groupId>
+              <artifactId>scalafix-maven-plugin_2.13</artifactId>
+              <version>0.1.10_0.11.0</version>
+	      <configuration>
+		<config>${scalafix.config.path}</config>
+		<skip>${scalafix.config.skip}</skip>
+	      </configuration>
+	    </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -268,6 +279,7 @@
             </activation>
             <properties>
                 <scalastyle.config.path>${project.basedir}/scalastyle-config.xml</scalastyle.config.path>
+                <scalafix.config.path>${project.basedir}/.scalafix.conf</scalafix.config.path>
             </properties>
         </profile>
 
@@ -275,22 +287,39 @@
             <id>child-dir</id>
             <activation>
                 <file>
-                    <exists>${project.basedir}/../lib</exists>
+                    <exists>${project.basedir}/../scalastyle-config.xml</exists>
                 </file>
             </activation>
             <properties>
                 <scalastyle.config.path>${project.basedir}/../scalastyle-config.xml</scalastyle.config.path>
+                <scalafix.config.path>${project.basedir}/../.scalafix.conf</scalafix.config.path>
             </properties>
         </profile>
 
         <profile>
             <id>child-child-dir</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <file>
+                    <exists>${project.basedir}/../../scalastyle-config.xml</exists>
+                </file>
             </activation>
             <properties>
                 <scalastyle.config.path>${project.basedir}/../../scalastyle-config.xml</scalastyle.config.path>
+                <scalafix.config.path>${project.basedir}/../../.scalafix.conf</scalafix.config.path>
             </properties>
         </profile>
+
+	<profile>
+	  <id>scalafix-for-scala-only</id>
+	  <activation>
+	    <file>
+	      <missing>${project.basedir}/src/main/scala</missing>
+	    </file>
+	  </activation>
+	  <properties>
+	    <scalafix.config.skip>true</scalafix.config.skip>
+	  </properties>
+	</profile>
+
     </profiles>
 </project>

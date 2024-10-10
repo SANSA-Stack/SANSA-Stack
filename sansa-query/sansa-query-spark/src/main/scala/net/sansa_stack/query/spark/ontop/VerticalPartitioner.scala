@@ -133,7 +133,7 @@ object VerticalPartitioner {
 
 
   private def showTables(databaseName: String): Unit = {
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       //      .master("local")
       .appName("vpartitioner")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
@@ -167,7 +167,7 @@ object VerticalPartitioner {
 
     import scala.collection.JavaConverters._
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       //      .master("local")
       .appName("vpartitioner")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")

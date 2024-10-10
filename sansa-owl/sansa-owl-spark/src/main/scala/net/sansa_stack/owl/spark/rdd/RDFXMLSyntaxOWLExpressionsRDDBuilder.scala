@@ -97,7 +97,7 @@ object RDFXMLSyntaxOWLExpressionsRDDBuilder {
     logger.info("|        RDF/XML Parser        |")
     logger.info("================================")
 
-    @transient val sparkSession = SparkSession.builder
+    @transient val sparkSession = SparkSession.builder()
       .master("local[*]")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .appName("RDF/XML Parser")
@@ -110,6 +110,6 @@ object RDFXMLSyntaxOWLExpressionsRDDBuilder {
     val rdd: OWLAxiomsRDD = RDFXMLBuilder.build(sparkSession, input)
     rdd.foreach(axiom => logger.info(axiom.toString))
 
-    sparkSession.stop
+    sparkSession.stop()
   }
 }

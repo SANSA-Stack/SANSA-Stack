@@ -21,7 +21,7 @@ object ShortURIs {
       .union(dataset.filter(_.getObject.isURI()).map(_.getObject))
       .distinct()
 
-    val allEntities = entities.count
+    val allEntities = entities.count()
     val shorestURIs = entities.filter(resourceTooLong(_)).count().toDouble
 
     if (allEntities >= 0.0) shorestURIs / allEntities else 0

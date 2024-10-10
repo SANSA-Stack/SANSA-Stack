@@ -22,7 +22,7 @@ object LabeledResources {
 
     val objects = dataset.filter(f =>
       f.getObject.isURI() && isInternal(f.getObject) &&
-        isLabeled(f.getPredicate)).count.toDouble
+        isLabeled(f.getPredicate)).count().toDouble
 
     val labeledResources = subjects + predicates + objects
 

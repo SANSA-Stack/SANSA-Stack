@@ -17,11 +17,11 @@ import scala.io.Source
  */
 class SparqlParser(path: String, op: Op) extends OpVisitorBase with Serializable {
 
-  def this(path: String) {
+  def this(path: String) = {
     this(path, Algebra.compile(QueryFactory.create(Source.fromFile(path).mkString)))
   }
 
-  def this(op: Op) {
+  def this(op: Op) = {
     this("", op)
   }
 
