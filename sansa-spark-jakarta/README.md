@@ -1,5 +1,8 @@
 ## sansa-spark-jakarta
 
+
+**Spark 4.0.0 is finally based on jakarta so this module is retired.**
+
 Use the profile `jakarta` to perform shading from `javax` to `jakarta`.
 
 `mvn -Pjakarta package`
