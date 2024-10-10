@@ -17,42 +17,42 @@ mcis: ## mvn skip clean install (minimal build of all modules) - Passing args:  
 
 
 rebuild-examples: ## rebuild and shade examples - they must be present for integration tests
-	$(MCIS) $(POM) -am -pl :sansa-examples-spark_2.12 $(ARGS)
-	mvn $(POM) -Pdist,spark-provided,relocate package -pl :sansa-examples-spark_2.12
+	$(MCIS) $(POM) -am -pl :sansa-examples-spark_2.13 $(ARGS)
+	mvn $(POM) -Pdist,spark-provided,relocate package -pl :sansa-examples-spark_2.13
 
 deploy-snapshot: ## deploy a snapshot of the modules up to ml
-	mvn $(POM) -DskipTests deploy -pl :sansa-ml-spark_2.12 -am
+	mvn $(POM) -DskipTests deploy -pl :sansa-ml-spark_2.13 -am
 
 shade-examples: ## only shade the examples - use after manual rebuilt of specific modules
-	mvn $(POM) -Pdist package -pl :sansa-examples-spark_2.12
+	mvn $(POM) -Pdist package -pl :sansa-examples-spark_2.13
 
 integration-tests: ## run the integration tests (you must run rebuild-examples first!)
-	mvn $(POM) -pl :sansa-integration-tests_2.12 failsafe:integration-test
+	mvn $(POM) -pl :sansa-integration-tests_2.13 failsafe:integration-test
 
 conformance-ontop: ## run conforance test suite against ontop
-	mvn $(POM) -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkOntop' 
+	mvn $(POM) -pl :sansa-query-spark_2.13 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkOntop' 
 
 conformance-sparqlify: ## run conforance test suite against sparqlify
-	mvn $(POM) -pl :sansa-query-spark_2.12 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
+	mvn $(POM) -pl :sansa-query-spark_2.13 test -Dsuites='net.sansa_stack.query.spark.compliance.SPARQL11TestSuiteRunnerSparkSparqlify' 
 
 .ONESHELL:
 dist: ## create the standalone jar-with-dependencies of sansa stack with documentation (javadoc/scaladoc)
-	$(MS) $(POM) package -Pdist -pl :sansa-stack-spark_2.12 -am $(ARGS)
+	$(MS) $(POM) package -Pdist -pl :sansa-stack-spark_2.13 -am $(ARGS)
 	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 distjar: ## create only the standalone jar-with-dependencies of sansa stack
-	$(MCCS) $(POM) package -Pdist -pl :sansa-stack-spark_2.12 -am $(ARGS)
+	$(MCCS) $(POM) package -Pdist -pl :sansa-stack-spark_2.13 -am $(ARGS)
 	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 #distjar-hadoop: ## create only the standalone jar-with-dependencies of sansa stack including hadoop
-#	$(MCCS) package -Pspark-provided,shade -pl :sansa-stack-spark_2.12 -am $(ARGS)
+#	$(MCCS) package -Pspark-provided,shade -pl :sansa-stack-spark_2.13 -am $(ARGS)
 #	file=`find '$(CWD)/sansa-stack/sansa-stack-spark/target' -name '*-jar-with-dependencies.jar'`
 #	printf '\nCreated package:\n\n%s\n\n' "$$file"
 
 deb-rebuild: ## rebuild the deb package (minimal build of only required modules)
-	$(MCIS) $(POM) -Pdeb -am -pl :sansa-pkg-deb-cli_2.12 $(ARGS)
+	$(MCIS) $(POM) -Pdeb -am -pl :sansa-pkg-deb-cli_2.13 $(ARGS)
 
 .ONESHELL:
 deb-reinstall: ## reinstall a previously built deb package
@@ -64,7 +64,7 @@ deb-rere: deb-rebuild deb-reinstall ## rebuild and reinstall deb
 
 
 rpm-rebuild: ## rebuild the rpm package (minimal build of only required modules
-	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.12 $(ARGS)
+	$(MCIS) -Prpm -am -pl :sansa-pkg-rpm-cli_2.13 $(ARGS)
 
 rpm-reinstall: ## reinstall a previously built rpm package
 	file=`find $(CWD)/sansa-pkg-parent/sansa-pkg-rpm-cli/target | grep '\.rpm$$'`

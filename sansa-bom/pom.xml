@@ -1955,6 +1955,10 @@
                     <artifactId>netty</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.apache.spark</groupId>
                     <artifactId>spark-core_2.12</artifactId>
                 </exclusion>
