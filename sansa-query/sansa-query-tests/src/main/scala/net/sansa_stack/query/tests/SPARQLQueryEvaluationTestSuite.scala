@@ -7,7 +7,7 @@ import org.apache.jena.query.{Query, QueryExecutionFactory, QueryFactory, Result
 import org.apache.jena.rdf.model.{Model, ModelFactory, RDFList}
 import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.util.SplitIRI
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.JavaConverters._
 
@@ -42,7 +42,7 @@ object SPARQLQueryEvaluationTestSuite {
  * @author Lorenz Buehmann
  */
 class SPARQLQueryEvaluationTestSuite(manifestPath: String, patternQuery: Query = SPARQLQueryEvaluationTestSuite.DEFAULT_QUERY)
-  extends FunSuite {
+  extends AnyFunSuite {
 
   // contains the list of ignored tests cases, must be overridden
   lazy val IGNORE: Set[String] = Set.empty[String]

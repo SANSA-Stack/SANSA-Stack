@@ -2,14 +2,14 @@ package net.sansa_stack.rdf.spark.io
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Tests for loading triples and quads from different syntax formats into an [[org.apache.spark.rdd.RDD]].
  *
  * @author Lorenz Buehmann
  */
-class RDFToRDDLoadingTests extends FunSuite with DataFrameSuiteBase {
+class RDFToRDDLoadingTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("loading N-Triples file into RDD should result in 10 triples") {
 

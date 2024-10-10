@@ -7,13 +7,14 @@ import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.query.{QueryFactory, ResultSetFactory}
 import org.apache.jena.riot.Lang
 import org.apache.spark.SparkConf
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.Ignore
 
 import java.io.{File, FileInputStream}
 import scala.io.Source
 
 @Ignore
-class OntopTests extends FunSuite with DataFrameSuiteBase {
+class OntopTests extends AnyFunSuite with DataFrameSuiteBase {
 
   var qef: QueryExecutionFactorySpark = _
 

@@ -3,9 +3,9 @@ package net.sansa_stack.rdf.flink.model
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
 import org.apache.jena.graph.{NodeFactory, Triple}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkDataSetTripleOpsTests extends FunSuite {
+class FlinkDataSetTripleOpsTests extends AnyFunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 

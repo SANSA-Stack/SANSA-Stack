@@ -5,9 +5,9 @@ import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.NodeFactory
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class RDFStatsTests extends FunSuite with DataFrameSuiteBase {
+class RDFStatsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.stats._
 

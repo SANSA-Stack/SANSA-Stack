@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.mappings._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class R2RMLMappingsTests extends FunSuite with DataFrameSuiteBase {
+class R2RMLMappingsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("creating the CREATE TABLE instructions from data: 25") {
     val path = getClass.getResource("/rdf.nt").getPath

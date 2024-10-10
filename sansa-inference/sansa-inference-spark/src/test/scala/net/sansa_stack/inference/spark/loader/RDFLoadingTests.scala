@@ -2,14 +2,14 @@ package net.sansa_stack.inference.spark.loader
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * Tests for loading triples from either N-Triples or Turtle files into a DataFrame.
   *
   * @author Lorenz Buehmann
   */
-class RDFLoadingTests extends FunSuite with DataFrameSuiteBase {
+class RDFLoadingTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
 

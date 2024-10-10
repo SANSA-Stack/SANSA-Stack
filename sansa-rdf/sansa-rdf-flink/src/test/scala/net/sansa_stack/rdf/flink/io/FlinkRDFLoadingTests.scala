@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.flink.io
 
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkRDFLoadingTests extends FunSuite {
+class FlinkRDFLoadingTests extends AnyFunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 

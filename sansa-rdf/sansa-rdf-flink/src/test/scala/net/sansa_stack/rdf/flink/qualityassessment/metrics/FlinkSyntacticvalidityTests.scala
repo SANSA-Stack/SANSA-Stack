@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.flink.qualityassessment.metrics
 
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkSyntacticvalidityTests extends FunSuite {
+class FlinkSyntacticvalidityTests extends AnyFunSuite {
 
   import net.sansa_stack.rdf.flink.qualityassessment._
 

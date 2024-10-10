@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.flink.partition
 
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkSparqlifyPartitionTests extends FunSuite {
+class FlinkSparqlifyPartitionTests extends AnyFunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 

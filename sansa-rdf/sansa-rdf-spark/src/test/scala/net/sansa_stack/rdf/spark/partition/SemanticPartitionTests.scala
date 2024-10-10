@@ -3,9 +3,9 @@ package net.sansa_stack.rdf.spark.partition
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class SemanticPartitionTests extends FunSuite with DataFrameSuiteBase {
+class SemanticPartitionTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.partition._
 

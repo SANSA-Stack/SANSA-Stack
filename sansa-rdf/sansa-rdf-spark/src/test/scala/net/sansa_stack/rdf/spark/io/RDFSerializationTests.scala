@@ -6,7 +6,7 @@ import org.apache.jena.rdf.model.Model
 import org.apache.jena.riot.RDFDataMgr
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.storage.StorageLevel
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Tests for whether serializer round trips work as expected
@@ -14,7 +14,7 @@ import org.scalatest.FunSuite
  * @author Claus Stadler
  */
 class RDFSerializationTests
-  extends FunSuite with DataFrameSuiteBase {
+  extends AnyFunSuite with DataFrameSuiteBase {
 
   val logger = com.typesafe.scalalogging.Logger(classOf[RDFLoadingTests].getName)
 

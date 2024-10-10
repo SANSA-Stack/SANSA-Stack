@@ -15,14 +15,15 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, ResultSetMgr}
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.Ignore
 
 import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.TimeUnit
 
 @Ignore // Doesn't always find the bz2 file the way its used heer
-class BindingEngineTests extends FunSuite with DataFrameSuiteBase {
+class BindingEngineTests extends AnyFunSuite with DataFrameSuiteBase {
 
   // JenaSystem.init
 

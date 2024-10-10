@@ -2,9 +2,10 @@ package net.sansa_stack.query.spark.playground
 
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{Row, SparkSession}
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest._
 
-class TestSparkSqlJoin extends FlatSpec {
+class TestSparkSqlJoin extends AnyFlatSpec {
 
   "SPARK SQL processor" should "be capable of handling transitive join conditions" in {
 

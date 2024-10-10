@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class InterlinkingTests extends FunSuite with DataFrameSuiteBase {
+class InterlinkingTests extends AnyFunSuite with DataFrameSuiteBase {
   test("assessing the external SameAs links should result in value 0.0") {
 
     val path = getClass.getResource("/rdf.nt").getPath

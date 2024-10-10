@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class ConcisenessTests extends FunSuite with DataFrameSuiteBase {
+class ConcisenessTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("assessing the extensional conciseness should result in value 0.37") {
 

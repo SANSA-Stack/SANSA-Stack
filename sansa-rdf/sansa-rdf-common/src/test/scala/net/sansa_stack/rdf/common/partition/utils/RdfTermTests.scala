@@ -2,12 +2,12 @@ package net.sansa_stack.rdf.common.partition.utils
 
 import net.sansa_stack.rdf.common.partition.utils.RdfTerm._
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author Gezim Sejdiu
  */
-class RdfTermTests extends FunSuite {
+class RdfTermTests extends AnyFunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Germany"),

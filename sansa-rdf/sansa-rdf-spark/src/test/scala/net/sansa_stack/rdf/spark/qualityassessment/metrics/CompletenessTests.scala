@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class CompletenessTests extends FunSuite with DataFrameSuiteBase {
+class CompletenessTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("assessing the interlinking completeness should result in value 0") {
 

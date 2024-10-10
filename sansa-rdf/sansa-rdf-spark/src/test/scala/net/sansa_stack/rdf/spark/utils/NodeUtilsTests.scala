@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.spark.utils
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class NodeUtilsTests extends FunSuite with DataFrameSuiteBase {
+class NodeUtilsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("getting the value of the node should match") {
 

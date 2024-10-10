@@ -5,10 +5,10 @@ import net.sansa_stack.owl.spark.owl
 import net.sansa_stack.owl.spark.owl._
 import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.apache.spark.sql.SparkSession
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
 
-class OWLStatsTests extends FunSuite with SharedSparkContext {
+class OWLStatsTests extends AnyFunSuite with SharedSparkContext {
 
   lazy val spark: SparkSession = SparkSession.builder().appName(sc.appName).master(sc.master)
     .config("spark.kryo.registrator",

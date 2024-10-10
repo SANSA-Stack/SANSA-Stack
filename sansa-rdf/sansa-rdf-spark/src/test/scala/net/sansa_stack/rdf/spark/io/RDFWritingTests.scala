@@ -4,14 +4,14 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.
   *
   * @author Lorenz Buehmann
   */
-class RDFWritingTests extends FunSuite with DataFrameSuiteBase {
+class RDFWritingTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("writing N-Triples file from DataFrame to disk should result in file with 10 triples") {
 

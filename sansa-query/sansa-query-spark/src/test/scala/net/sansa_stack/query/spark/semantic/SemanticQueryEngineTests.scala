@@ -6,9 +6,9 @@ import net.sansa_stack.rdf.spark.partition._
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class SemanticQueryEngineTests extends FunSuite with DataFrameSuiteBase {
+class SemanticQueryEngineTests extends AnyFunSuite with DataFrameSuiteBase {
 
   JenaSystem.init
 

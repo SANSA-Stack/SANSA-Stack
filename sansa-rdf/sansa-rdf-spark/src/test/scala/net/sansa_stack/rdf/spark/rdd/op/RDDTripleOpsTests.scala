@@ -8,9 +8,9 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.graphx.Graph
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class RDDTripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class RDDTripleOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 

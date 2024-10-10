@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class AvailabilityTests extends FunSuite with DataFrameSuiteBase {
+class AvailabilityTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("getting the dereferenceable URIs should result in ratio 0.0") {
 

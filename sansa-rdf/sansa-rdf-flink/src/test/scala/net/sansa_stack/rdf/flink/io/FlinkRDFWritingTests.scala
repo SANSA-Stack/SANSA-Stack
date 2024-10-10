@@ -3,9 +3,9 @@ package net.sansa_stack.rdf.flink.io
 import java.nio.file.Files
 
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkRDFWritingTests extends FunSuite {
+class FlinkRDFWritingTests extends AnyFunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
 

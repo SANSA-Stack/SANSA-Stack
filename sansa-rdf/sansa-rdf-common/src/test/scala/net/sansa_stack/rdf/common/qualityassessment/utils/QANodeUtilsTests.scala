@@ -1,9 +1,9 @@
 package net.sansa_stack.rdf.common.qualityassessment.utils
 
 import org.apache.jena.graph.{ NodeFactory, Triple}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class QANodeUtilsTests extends FunSuite {
+class QANodeUtilsTests extends AnyFunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),

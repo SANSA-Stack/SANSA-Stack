@@ -3,10 +3,10 @@ package net.sansa_stack.owl.spark.rdd
 import com.holdenkarau.spark.testing.SharedSparkContext
 import net.sansa_stack.owl.spark.owl._
 import org.apache.spark.sql.SparkSession
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends FunSuite with SharedSparkContext {
+class ManchesterSyntaxOWLExpressionsRDDBuilderTest extends AnyFunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
     .config(
       "spark.kryo.registrator",

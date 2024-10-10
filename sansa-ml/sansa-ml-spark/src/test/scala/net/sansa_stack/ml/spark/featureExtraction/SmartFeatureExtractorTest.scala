@@ -9,10 +9,10 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.types.{DecimalType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class SmartFeatureExtractorTest extends FunSuite with SharedSparkContext{
+class SmartFeatureExtractorTest extends AnyFunSuite with SharedSparkContext{
 
   CommonKryoSetup.initKryoViaSystemProperties();
 

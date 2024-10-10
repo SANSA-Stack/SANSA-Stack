@@ -10,10 +10,10 @@ import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
 import org.apache.jena.sparql.vocabulary.FOAF
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import spire.std.LevenshteinDistance
 
-class AnnotationMapperTests extends FunSuite with DataFrameSuiteBase {
+class AnnotationMapperTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
   import net.sansa_stack.rdf.spark.ops._

@@ -9,7 +9,7 @@ import org.apache.jena.riot.ReadAnything
 import org.apache.jena.riot.system.stream.StreamManager
 import org.apache.jena.riot.{Lang, RDFDataMgr, ReadAnything}
 import org.apache.jena.sparql.resultset.{ResultSetCompare, ResultsFormat, SPARQLResult}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import net.sansa_stack.query.tests.util._
 
 
@@ -23,7 +23,7 @@ import net.sansa_stack.query.tests.util._
  * @author Lorenz Buehmann
  */
 abstract class W3CConformanceSPARQLQueryEvaluationTestSuiteRunner(val sparqlVersion: SPARQL_VERSION.Value = SPARQL_VERSION.SPARQL_11)
-  extends FunSuite {
+  extends AnyFunSuite {
 
   // below vars hold the namespaces for different types of test cases
   // SPARQL 1.0

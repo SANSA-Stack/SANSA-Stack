@@ -9,9 +9,9 @@ import org.apache.jena.graph.Node
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.{Encoders, SparkSession}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FeatureExtractingSparqlGeneratorTest extends FunSuite with DataFrameSuiteBase{
+class FeatureExtractingSparqlGeneratorTest extends AnyFunSuite with DataFrameSuiteBase{
 
 
   CommonKryoSetup.initKryoViaSystemProperties();

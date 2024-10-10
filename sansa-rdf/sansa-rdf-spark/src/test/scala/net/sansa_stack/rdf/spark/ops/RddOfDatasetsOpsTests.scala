@@ -5,11 +5,11 @@ import org.apache.jena.graph.{Node, NodeFactory}
 import org.apache.jena.query.{DatasetFactory, QueryFactory, Syntax}
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.SparkConf
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.JavaConverters._
 
-class RddOfDatasetsOpsTests extends FunSuite with DataFrameSuiteBase {
+class RddOfDatasetsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   override def conf(): SparkConf = {
     val conf = super.conf

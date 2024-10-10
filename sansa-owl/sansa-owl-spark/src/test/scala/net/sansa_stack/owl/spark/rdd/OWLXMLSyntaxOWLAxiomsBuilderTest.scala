@@ -3,10 +3,10 @@
  import com.holdenkarau.spark.testing.SharedSparkContext
  import net.sansa_stack.owl.spark.owl._
  import org.apache.spark.sql.SparkSession
- import org.scalatest.FunSuite
+ import org.scalatest.funsuite.AnyFunSuite
  import org.semanticweb.owlapi.model._
 
- class OWLXMLSyntaxOWLAxiomsBuilderTest extends FunSuite with SharedSparkContext {
+ class OWLXMLSyntaxOWLAxiomsBuilderTest extends AnyFunSuite with SharedSparkContext {
 
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
     .config(

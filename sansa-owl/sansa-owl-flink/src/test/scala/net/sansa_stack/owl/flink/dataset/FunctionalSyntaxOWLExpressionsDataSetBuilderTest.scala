@@ -1,9 +1,9 @@
 package net.sansa_stack.owl.flink.dataset
 
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends FunSuite {
+class FunctionalSyntaxOWLExpressionsDataSetBuilderTest extends AnyFunSuite {
   import net.sansa_stack.owl.flink.owl._
   lazy val env = ExecutionEnvironment.getExecutionEnvironment
   var _dataSet: OWLExpressionsDataSet = null

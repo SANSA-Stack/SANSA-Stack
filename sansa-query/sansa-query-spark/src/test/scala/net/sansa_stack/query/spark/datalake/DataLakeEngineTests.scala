@@ -1,9 +1,9 @@
 package net.sansa_stack.query.spark.datalake
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class TestDataLakeEngine extends FunSuite with DataFrameSuiteBase {
+class TestDataLakeEngine extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.query.spark._
 

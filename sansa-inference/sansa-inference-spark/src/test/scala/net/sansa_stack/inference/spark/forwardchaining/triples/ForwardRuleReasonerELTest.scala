@@ -9,12 +9,12 @@ import org.apache.jena.riot.lang.CollectorStreamTriples
 import org.apache.jena.riot.{Lang, RDFParser}
 import org.apache.jena.vocabulary.{OWL2, RDFS}
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.JavaConverters._
 
 
-class ForwardRuleReasonerELTest extends FunSuite with SharedSparkContext {
+class ForwardRuleReasonerELTest extends AnyFunSuite with SharedSparkContext {
   private val rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
   private val rdfs = "http://www.w3.org/2000/01/rdf-schema#"
   private val owl = "http://www.w3.org/2002/07/owl#"

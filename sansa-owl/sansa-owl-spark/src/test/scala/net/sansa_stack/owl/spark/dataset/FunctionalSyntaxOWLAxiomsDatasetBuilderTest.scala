@@ -2,11 +2,11 @@ package net.sansa_stack.owl.spark.dataset
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.sql.SparkSession
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.model._
 
 
-class FunctionalSyntaxOWLAxiomsDatasetBuilderTest extends FunSuite with SharedSparkContext {
+class FunctionalSyntaxOWLAxiomsDatasetBuilderTest extends AnyFunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)
     .config(
       "spark.kryo.registrator",

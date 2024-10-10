@@ -9,10 +9,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.jena.graph.Triple
 import org.apache.spark.sql.functions.col
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class ML2GraphTest extends FunSuite with SharedSparkContext{
+class ML2GraphTest extends AnyFunSuite with SharedSparkContext{
 
   CommonKryoSetup.initKryoViaSystemProperties();
 

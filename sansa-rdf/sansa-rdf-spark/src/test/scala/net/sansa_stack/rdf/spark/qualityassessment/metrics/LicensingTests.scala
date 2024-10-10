@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class LicensingTests extends FunSuite with DataFrameSuiteBase {
+class LicensingTests extends AnyFunSuite with DataFrameSuiteBase {
 
   test("assessing the human readable license should result in value 0.0") {
 

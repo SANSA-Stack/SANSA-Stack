@@ -8,10 +8,10 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.sparql.core.Var
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 class RddOfBindingsToDataFrameMapperTests
-  extends FunSuite with DataFrameSuiteBase {
+  extends AnyFunSuite with DataFrameSuiteBase {
 
     override def conf(): SparkConf = {
       val conf = super.conf

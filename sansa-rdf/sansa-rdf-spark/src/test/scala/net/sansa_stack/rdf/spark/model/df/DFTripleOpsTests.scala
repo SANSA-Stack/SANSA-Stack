@@ -4,11 +4,11 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.graph.{NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.DataFrame
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import net.sansa_stack.rdf.spark.io._
 
-class DFTripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class DFTripleOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.model._
 

@@ -3,7 +3,7 @@ package net.sansa_stack.inference.spark.forwardchaining.axioms
 import com.holdenkarau.spark.testing.{DataFrameSuiteBase, SharedSparkContext}
 import net.sansa_stack.owl.spark.rdd.FunctionalSyntaxOWLAxiomsRDDBuilder
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.OWLAxiom
 
@@ -15,7 +15,7 @@ import scala.collection.JavaConverters._
   * 'RORS: Enhanced Rule-based OWL Reasoning on Spark' by Liu, Feng, Zhang,
   * Wang, Rao
   */
-class ForwardRuleReasonerOWLHorstTest extends FunSuite with SharedSparkContext with DataFrameSuiteBase {
+class ForwardRuleReasonerOWLHorstTest extends AnyFunSuite with SharedSparkContext with DataFrameSuiteBase {
   private val resourcePath = "/forward_chaining/axioms/"
   private val defaultPrefix = "http://ex.com/default#"
   private val df = OWLManager.getOWLDataFactory

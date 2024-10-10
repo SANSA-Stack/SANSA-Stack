@@ -5,12 +5,12 @@ import org.apache.jena.datatypes.xsd.impl.XSDDouble
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Dataset, SparkSession}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import net.sansa_stack.rdf.spark.io._
 
 
-class DSTripleOpsTests extends FunSuite with SharedSparkContext {
+class DSTripleOpsTests extends AnyFunSuite with SharedSparkContext {
 
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
   System.setProperty("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")

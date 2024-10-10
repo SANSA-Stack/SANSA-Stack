@@ -4,7 +4,7 @@ import java.util.stream.Collectors
 
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, _}
 import org.semanticweb.owlapi.vocab.XSDVocabulary
@@ -12,7 +12,7 @@ import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxio
 
 import scala.collection.JavaConverters._
 
-class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
+class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends AnyFunSuite {
   import net.sansa_stack.owl.flink.owl._
   lazy val env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
 

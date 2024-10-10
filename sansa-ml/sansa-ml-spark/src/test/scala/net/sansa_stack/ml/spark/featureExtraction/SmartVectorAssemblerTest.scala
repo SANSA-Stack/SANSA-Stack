@@ -7,10 +7,10 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.types.{DecimalType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class SmartVectorAssemblerTest extends FunSuite with SharedSparkContext{
+class SmartVectorAssemblerTest extends AnyFunSuite with SharedSparkContext{
 
   CommonKryoSetup.initKryoViaSystemProperties();
 

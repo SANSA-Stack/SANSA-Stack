@@ -3,10 +3,10 @@ package net.sansa_stack.rdf.flink.stats
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.{DataSet, ExecutionEnvironment}
 import org.apache.jena.graph.Triple
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{BeforeAndAfterAll, AnyFunSuite}
 
 class FlinkRDFStatsTests
-  extends FunSuite
+  extends AnyFunSuite
     with BeforeAndAfterAll {
 
   var env: ExecutionEnvironment = _

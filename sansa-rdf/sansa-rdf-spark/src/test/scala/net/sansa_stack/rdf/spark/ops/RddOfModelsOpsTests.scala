@@ -7,11 +7,11 @@ import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.JavaConverters._
 
-class RddOfModelsOpsTests extends FunSuite with DataFrameSuiteBase {
+class RddOfModelsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   override def conf(): SparkConf = {
     val conf = super.conf

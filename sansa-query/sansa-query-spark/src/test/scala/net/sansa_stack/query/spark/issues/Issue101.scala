@@ -12,7 +12,8 @@ import org.apache.jena.rdf.model.ModelFactory
 import org.apache.jena.sparql.resultset.ResultSetCompare
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.BeforeAndAfterAll
 
 import java.io.StringReader
 
@@ -22,7 +23,7 @@ import java.io.StringReader
  * @author Lorenz Buehmann
  */
 class Issue101
-  extends FunSuite
+  extends AnyFunSuite
     with DataFrameSuiteBase
     with BeforeAndAfterAll {
 

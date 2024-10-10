@@ -4,9 +4,9 @@ import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import net.sansa_stack.rdf.spark.io._
 import net.sansa_stack.rdf.spark.qualityassessment._
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class ReprconcisenessTests extends FunSuite with DataFrameSuiteBase {
+class ReprconcisenessTests extends AnyFunSuite with DataFrameSuiteBase {
   test("assessing the query param free URIs should result in value 0.0") {
 
     val path = getClass.getResource("/rdf.nt").getPath

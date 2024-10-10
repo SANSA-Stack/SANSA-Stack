@@ -11,13 +11,13 @@ import org.aksw.r2rml.jena.vocab.RR
 import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.rdf.model.{Model, ModelFactory}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFFormat}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
 /**
  * @author Gezim Sejdiu
  */
-class RdfPartitionerDefaultTests extends FunSuite {
+class RdfPartitionerDefaultTests extends AnyFunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Guy_de_Maupassant"),

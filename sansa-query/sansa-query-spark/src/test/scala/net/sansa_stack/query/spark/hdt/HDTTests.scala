@@ -6,10 +6,10 @@ import net.sansa_stack.rdf.spark.model._
 import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.spark.sql.DataFrame
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class HDTTests extends FunSuite with DataFrameSuiteBase {
+class HDTTests extends AnyFunSuite with DataFrameSuiteBase {
 
   JenaSystem.init
 

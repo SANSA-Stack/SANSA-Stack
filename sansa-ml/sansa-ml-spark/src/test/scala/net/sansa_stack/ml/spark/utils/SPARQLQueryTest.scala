@@ -7,10 +7,11 @@ import org.apache.jena.riot.Lang
 import org.apache.jena.sys.JenaSystem
 import org.apache.jena.vocabulary.RDF
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, SparkSession}
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.Ignore
 
 @Ignore /** FIXME Reenable test once ontop is upgraded to jena5 */
-class SPARQLQueryTest extends FunSuite with SharedSparkContext {
+class SPARQLQueryTest extends AnyFunSuite with SharedSparkContext {
 
   CommonKryoSetup.initKryoViaSystemProperties();
 

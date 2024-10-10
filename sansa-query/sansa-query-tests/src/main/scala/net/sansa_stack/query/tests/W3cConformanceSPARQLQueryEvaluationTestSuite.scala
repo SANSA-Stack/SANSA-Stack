@@ -12,7 +12,7 @@ import org.apache.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetForm
 import org.apache.jena.rdf.model.{ModelFactory, RDFList, Resource}
 import org.apache.jena.riot.{Lang, RDFDataMgr, RDFParserBuilder}
 import org.apache.jena.util.FileManager
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
 
@@ -20,7 +20,7 @@ import org.scalatest.FunSuite
  * @author Lorenz Buehmann
  */
 class W3cConformanceSPARQLQueryEvaluationTestSuite(val sparqlVersion: SPARQL_VERSION.Value)
-  extends FunSuite {
+  extends AnyFunSuite {
 
   protected val aggregatesManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#"
   protected val bindManifest = "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/bind/manifest#"

@@ -4,12 +4,12 @@ import net.sansa_stack.rdf.common.partition.layout.TripleLayoutLong._
 import net.sansa_stack.rdf.common.partition.schema.SchemaStringLong
 import org.apache.jena.datatypes.xsd.XSDDatatype
 import org.apache.jena.graph.{ Node, NodeFactory, Triple }
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author Gezim Sejdiu
  */
-class TripleLayoutLongTests extends FunSuite {
+class TripleLayoutLongTests extends AnyFunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Germany"),

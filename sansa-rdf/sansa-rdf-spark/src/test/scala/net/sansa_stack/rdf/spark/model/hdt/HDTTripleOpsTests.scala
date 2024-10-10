@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.spark.model.hdt
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.jena.riot.Lang
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class HDTTripleOpsTests extends FunSuite with DataFrameSuiteBase {
+class HDTTripleOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 
   import net.sansa_stack.rdf.spark.io._
   import net.sansa_stack.rdf.spark.model._

@@ -5,7 +5,7 @@ package net.sansa_stack.query.spark.sparqlify
 
 
 
-// class SparklifyQueryEngineTests extends FunSuite with DataFrameSuiteBase {
+// class SparklifyQueryEngineTests extends AnyFunSuite with DataFrameSuiteBase {
 //
 //  JenaSystem.init
 //

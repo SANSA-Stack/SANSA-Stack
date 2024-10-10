@@ -5,7 +5,8 @@ import com.esotericsoftware.kryo.serializers.JavaSerializer
 import com.esotericsoftware.kryo.{Kryo, KryoException}
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.SparkConf
-import org.scalatest.{BeforeAndAfterEach, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.BeforeAndAfterEach
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
@@ -20,7 +21,7 @@ import java.io._
  * @author Lorenz Buehmann
  */
 class SerializationTests
-  extends FunSuite
+  extends AnyFunSuite
     with SharedSparkContext
     with BeforeAndAfterEach {
 

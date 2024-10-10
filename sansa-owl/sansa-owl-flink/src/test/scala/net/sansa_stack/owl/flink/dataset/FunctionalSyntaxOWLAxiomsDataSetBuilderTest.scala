@@ -2,10 +2,10 @@ package net.sansa_stack.owl.flink.dataset
 
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.model.{OWLAsymmetricObjectPropertyAxiom, OWLDataPropertyAssertionAxiom, OWLDisjointObjectPropertiesAxiom, OWLEquivalentObjectPropertiesAxiom, OWLFunctionalObjectPropertyAxiom, OWLInverseFunctionalObjectPropertyAxiom, OWLInverseObjectPropertiesAxiom, OWLIrreflexiveObjectPropertyAxiom, OWLNegativeDataPropertyAssertionAxiom, OWLNegativeObjectPropertyAssertionAxiom, OWLObjectPropertyAssertionAxiom, OWLObjectPropertyDomainAxiom, OWLObjectPropertyRangeAxiom, OWLReflexiveObjectPropertyAxiom, OWLSubObjectPropertyOfAxiom, OWLSubPropertyChainOfAxiom, OWLSymmetricObjectPropertyAxiom, OWLTransitiveObjectPropertyAxiom, SWRLRule, _}
 
-class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends FunSuite {
+class FunctionalSyntaxOWLAxiomsDataSetBuilderTest extends AnyFunSuite {
   import net.sansa_stack.owl.flink.owl._
 
   val env = ExecutionEnvironment.getExecutionEnvironment

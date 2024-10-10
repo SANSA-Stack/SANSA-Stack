@@ -4,7 +4,7 @@ package net.sansa_stack.rdf.common.partition.model.sparqlify
  * @author Gezim Sejdiu
  */
 /*
-class SparqlifyUtils2Tests extends FunSuite {
+class SparqlifyUtils2Tests extends AnyFunSuite {
 
   val triple = Triple.create(
     NodeFactory.createURI("http://dbpedia.org/resource/Germany"),

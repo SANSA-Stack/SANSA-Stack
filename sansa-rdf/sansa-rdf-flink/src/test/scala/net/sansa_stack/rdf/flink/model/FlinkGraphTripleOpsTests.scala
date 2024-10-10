@@ -2,9 +2,9 @@ package net.sansa_stack.rdf.flink.model
 
 import net.sansa_stack.rdf.flink.io._
 import org.apache.flink.api.scala.ExecutionEnvironment
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class FlinkGraphTripleOpsTests extends FunSuite {
+class FlinkGraphTripleOpsTests extends AnyFunSuite {
 
   val env = ExecutionEnvironment.getExecutionEnvironment
   test("constructing the Graph from DataSet should match") {

@@ -10,10 +10,11 @@ import org.apache.jena.sys.JenaSystem
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.scalactic.TolerantNumerics
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.Ignore
 
 @Ignore
-class DaSimEstimatorTest extends FunSuite with SharedSparkContext {
+class DaSimEstimatorTest extends AnyFunSuite with SharedSparkContext {
 
   CommonKryoSetup.initKryoViaSystemProperties();
 

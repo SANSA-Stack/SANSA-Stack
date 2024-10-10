@@ -13,10 +13,10 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.{DataFrame, Dataset}
 import org.scalactic.TolerantNumerics
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 // Remove dummy argument to un-ignore!
-class SimilarityUnitTest(ignored: String) extends FunSuite with DataFrameSuiteBase {
+class SimilarityUnitTest(ignored: String) extends AnyFunSuite with DataFrameSuiteBase {
 
   // define inputpath if it is not parameter
   private val inputPath = this.getClass.getClassLoader.getResource("similarity/movie.nt").getPath

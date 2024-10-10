@@ -2,10 +2,10 @@ package net.sansa_stack.owl.spark.dataset
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.sql.SparkSession
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 
-class ManchesterSyntaxOWLExpressionsDatasetBuilderTest extends FunSuite with SharedSparkContext {
+class ManchesterSyntaxOWLExpressionsDatasetBuilderTest extends AnyFunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master).getOrCreate()
   var _dataset: OWLExpressionsDataset = null
   def dataset: OWLExpressionsDataset = {

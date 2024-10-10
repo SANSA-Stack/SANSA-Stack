@@ -1,6 +1,6 @@
 package net.sansa_stack.owl.common.parsing
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet, XSDVocabulary}
@@ -8,7 +8,7 @@ import uk.ac.manchester.cs.owl.owlapi._
 
 import scala.collection.JavaConverters.{asJavaCollectionConverter, _}
 
-class ManchesterParsingTest extends FunSuite {
+class ManchesterParsingTest extends AnyFunSuite {
   // scalastyle:off
   def p = ManchesterParser
   // scalastyle:on
