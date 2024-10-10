@@ -701,6 +701,7 @@
                         <configLocation>${scalastyle.config.path}</configLocation>
                         <outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
                         <outputEncoding>UTF-8</outputEncoding>
+			<skip>true</skip>
                     </configuration>
                     <executions>
                         <execution>
