@@ -23,7 +23,7 @@ object TestCases {
   // val logger = com.typesafe.scalalogging.Logger("TestCases")
 
   def loadTestCasesJar(directory: String, ids: Set[String] = Set.empty): Seq[TestCase] = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val suffix = ".metadata.properties"
     val classLoader = TestCase.getClass.getClassLoader

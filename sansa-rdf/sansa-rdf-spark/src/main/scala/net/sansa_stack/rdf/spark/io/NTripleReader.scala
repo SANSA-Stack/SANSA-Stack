@@ -150,7 +150,7 @@ object NTripleReader {
            checkRDFTerms: Boolean = false,
            errorLog: Logger = ErrorHandlerFactory.stdLogger): RDD[Triple] = {
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val rdd = loadLinesIntoRdd(session, path)
 

@@ -10,7 +10,7 @@ import org.semanticweb.owlapi.model.{OWLDataPropertyAssertionAxiom, _}
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class ManchesterSyntaxOWLAxiomsDataSetBuilderTest extends AnyFunSuite {
   import net.sansa_stack.owl.flink.owl._

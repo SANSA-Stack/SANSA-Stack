@@ -17,7 +17,7 @@ import org.apache.jena.graph.{Node, NodeFactory, Triple}
 import org.apache.jena.riot.system.{ErrorHandlerFactory, StreamRDFBase}
 import org.apache.jena.riot.{RDFLanguages, RDFParser, RiotException}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * A custom Hadoop input format that uses the Apache Jena RDF I/O technology (RIOT) to parse

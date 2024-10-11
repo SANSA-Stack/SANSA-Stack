@@ -12,7 +12,7 @@ import org.apache.jena.rdf.model.{Model, Property, ResourceFactory}
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.expr.ExprVar
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 import scala.reflect.runtime.universe.MethodSymbol
 
@@ -251,7 +251,7 @@ object R2rmlUtils {
    * @return the RDF partition states as [[TriplesMap]]
    */
   def streamTriplesMaps(model: Model): Iterator[TriplesMap] = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     R2rmlLib.streamTriplesMaps(model).iterator().asScala
   }
 

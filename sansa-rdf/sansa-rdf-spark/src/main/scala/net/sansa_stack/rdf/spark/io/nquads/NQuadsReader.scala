@@ -141,7 +141,7 @@ object NQuadReader {
         RIOT.getContext.copy,
         checkRDFTerms || strict, strict)
     }
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     // parse each partition
     rdd.mapPartitions(p => {

@@ -1,6 +1,6 @@
 package net.sansa_stack.rdf.common.qualityassessment.utils
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.typesafe.config.{ Config, ConfigFactory }
 
 /*

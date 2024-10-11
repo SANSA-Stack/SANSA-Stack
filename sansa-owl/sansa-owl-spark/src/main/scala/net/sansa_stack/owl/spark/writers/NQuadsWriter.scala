@@ -7,7 +7,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.NQuadsDocumentFormat
 import org.semanticweb.owlapi.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object NQuadsWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit = {

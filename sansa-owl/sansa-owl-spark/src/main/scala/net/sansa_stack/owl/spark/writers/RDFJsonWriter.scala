@@ -10,7 +10,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.RDFJsonDocumentFormat
 import org.semanticweb.owlapi.model.OWLAxiom
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 object RDFJsonWriter extends OWLWriterBase {

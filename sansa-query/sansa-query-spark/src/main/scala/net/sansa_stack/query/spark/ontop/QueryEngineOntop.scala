@@ -25,7 +25,7 @@ import org.apache.spark.sql.{DataFrame, Encoder, SparkSession}
 import org.semanticweb.owlapi.model.OWLOntology
 
 import java.util.Properties
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait SPARQL2SQLRewriter[T <: QueryRewrite] {
   def createSQLQuery(sparqlQuery: String): T

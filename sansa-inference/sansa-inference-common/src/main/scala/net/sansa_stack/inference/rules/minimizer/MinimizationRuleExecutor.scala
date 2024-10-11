@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.rules.minimizer
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.google.common.util.concurrent.AtomicLongMap
 

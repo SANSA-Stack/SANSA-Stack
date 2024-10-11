@@ -12,7 +12,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.scalatest.Suite
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * SPARQL 1.1 test suite runner on Apache Spark.

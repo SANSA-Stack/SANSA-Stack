@@ -10,7 +10,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SansaBenchRdfParse {
   def main(args: Array[String]): Unit = {

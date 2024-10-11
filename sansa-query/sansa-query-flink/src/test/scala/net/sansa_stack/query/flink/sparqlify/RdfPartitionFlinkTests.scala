@@ -18,7 +18,7 @@ import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.{Query, ResultSetFormatter}
 import org.scalatest._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class RdfPartitionFlinkTests extends FlatSpec {
 

@@ -3,7 +3,7 @@ import scala.collection.mutable.{ArrayBuffer, Buffer}
 
 import scalax.collection.Graph
 import scalax.collection.edge.LDiEdge
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 import scalax.collection.GraphTraversal.Parameters

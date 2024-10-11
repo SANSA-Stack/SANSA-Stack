@@ -8,7 +8,7 @@ import org.obolibrary.obo2owl.OWLAPIOwl2Obo
 import org.obolibrary.oboformat.writer.OBOFormatWriter
 import org.semanticweb.owlapi.apibinding.OWLManager
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object OBOWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

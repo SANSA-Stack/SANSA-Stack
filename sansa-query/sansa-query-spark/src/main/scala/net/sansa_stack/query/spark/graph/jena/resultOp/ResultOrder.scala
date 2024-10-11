@@ -6,7 +6,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpOrder
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect._
 
 /**

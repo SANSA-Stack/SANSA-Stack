@@ -7,7 +7,7 @@ import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.krss2.renderer.KRSSObjectRenderer
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object KRSSSyntaxWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

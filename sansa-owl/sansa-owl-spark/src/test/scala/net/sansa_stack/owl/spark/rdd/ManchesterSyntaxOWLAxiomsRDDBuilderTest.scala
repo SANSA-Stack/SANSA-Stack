@@ -12,7 +12,7 @@ import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.XSDVocabulary
 import uk.ac.manchester.cs.owl.owlapi.{OWLDatatypeImpl, OWLEquivalentClassesAxiomImpl}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class ManchesterSyntaxOWLAxiomsRDDBuilderTest extends AnyFunSuite with SharedSparkContext {
   lazy val spark = SparkSession.builder().appName(sc.appName).master(sc.master)

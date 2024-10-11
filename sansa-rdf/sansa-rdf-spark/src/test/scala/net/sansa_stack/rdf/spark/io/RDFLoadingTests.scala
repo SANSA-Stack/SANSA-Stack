@@ -17,7 +17,7 @@ import java.io.{ByteArrayInputStream, File, FileInputStream, FileOutputStream}
 import java.net.{URI, URL}
 import java.nio.file.{Files, Path}
 import java.util.zip.ZipInputStream
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Tests for loading triples from either N-Triples are Turtle files into a DataFrame.

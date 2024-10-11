@@ -9,7 +9,7 @@ import net.sansa_stack.query.spark.semantic.utils.Helpers._
 import net.sansa_stack.rdf.common.partition.utils.Symbols
 import org.apache.spark.rdd._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 

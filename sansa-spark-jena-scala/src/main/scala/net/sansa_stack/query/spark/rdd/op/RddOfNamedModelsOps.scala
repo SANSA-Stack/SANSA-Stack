@@ -100,7 +100,7 @@ object RddOfNamedModelsOps {
    * rddOfNamedModels.mapToDatasets.flotMapWithSparql
    */
   def flatMapWithSparql(rdd: RDD[(String, Model)], query: Query): RDD[(String, Model)] = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     // def flatMapQuery(query: Query): RDD[Dataset] =
     val queryBc = rdd.context.broadcast(query)

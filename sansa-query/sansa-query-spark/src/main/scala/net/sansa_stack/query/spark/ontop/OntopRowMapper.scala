@@ -13,7 +13,7 @@ import org.apache.spark.sql.types.StructField
 import org.semanticweb.owlapi.model.OWLOntology
 
 import java.util.Properties
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Mapper of Spark DataFrame rows to other entities, e.g. binding, triple, ...

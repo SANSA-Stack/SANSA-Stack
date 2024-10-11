@@ -8,7 +8,7 @@ import org.apache.jena.sparql.algebra.op.OpBGP
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Class for bgp match with target rdf graph.

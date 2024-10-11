@@ -216,7 +216,7 @@ object TripleOps {
   }
 
   @transient var env: ExecutionEnvironment = ExecutionEnvironment.getExecutionEnvironment
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   /**
    * Add a statement to the current RDF graph.

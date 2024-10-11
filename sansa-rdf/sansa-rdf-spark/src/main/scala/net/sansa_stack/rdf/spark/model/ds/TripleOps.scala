@@ -245,7 +245,7 @@ object TripleOps {
   def saveAsNTriplesFile(triples: Dataset[Triple], path: String): Unit = {
     import triples.sparkSession.implicits._
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     triples.mapPartitions(p => {
       // check if partition is empty
       if (p.hasNext) {

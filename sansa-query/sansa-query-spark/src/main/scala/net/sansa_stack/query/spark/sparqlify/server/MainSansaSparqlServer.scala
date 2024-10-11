@@ -14,7 +14,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SparkSession}
 
 import java.io.File
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /** Deprecated; use: net.sansa_stack.examples.spark.query.SPARQLEngineExample */
 @deprecated

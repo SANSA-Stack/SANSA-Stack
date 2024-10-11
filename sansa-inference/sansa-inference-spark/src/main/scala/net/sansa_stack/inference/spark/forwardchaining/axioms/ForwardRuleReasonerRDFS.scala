@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.spark.forwardchaining.axioms
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession

@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.io.RDFResource
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.rdf.turtle.renderer.TurtleRenderer
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 protected class SANSATurtleRenderer(
                                      ont: OWLOntology,

@@ -52,7 +52,7 @@ object MainSansaBSBM {
 
     val model = serializer.getModel()
 
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     val it = model.getGraph.find().asScala.toSeq
     // val it = RDFDataMgr.createIteratorTriples(IOUtils.toInputStream(triplesString, "UTF-8"), Lang.NTRIPLES, "http://example.org/").asScala.toSeq
 

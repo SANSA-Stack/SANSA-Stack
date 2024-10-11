@@ -1,6 +1,6 @@
 package net.sansa_stack.ml.spark.utils
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.Query

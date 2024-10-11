@@ -17,7 +17,7 @@ import org.apache.flink.types.Row
 import org.apache.jena.query.{Query, QueryExecution}
 import org.apache.jena.sparql.engine.binding.Binding
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Created by Simon Bin on 12/06/17.

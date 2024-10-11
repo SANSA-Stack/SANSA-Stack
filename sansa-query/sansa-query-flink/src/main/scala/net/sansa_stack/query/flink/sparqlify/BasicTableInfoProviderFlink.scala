@@ -5,7 +5,7 @@ import java.util.Collections
 import org.aksw.sparqlify.config.v0_2.bridge.{BasicTableInfo, BasicTableInfoProvider}
 import org.apache.flink.table.api.bridge.scala.BatchTableEnvironment
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Created by Simon Bin on 12/06/17.

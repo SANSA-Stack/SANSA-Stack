@@ -8,7 +8,7 @@ import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object QueryExecutionSpark {
 

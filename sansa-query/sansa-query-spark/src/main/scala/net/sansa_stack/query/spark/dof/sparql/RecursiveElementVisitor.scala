@@ -5,7 +5,7 @@ import net.sansa_stack.query.spark.dof.node.Pattern
 import net.sansa_stack.query.spark.dof.tensor.Tensor
 import org.apache.jena.sparql.syntax._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 class RecursiveElementVisitor[R, N: ClassTag, T, A](model: Tensor[R, N, T, A]) extends ElementVisitorBase {

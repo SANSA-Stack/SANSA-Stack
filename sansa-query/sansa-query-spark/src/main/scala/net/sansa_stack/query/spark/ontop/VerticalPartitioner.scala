@@ -165,7 +165,7 @@ object VerticalPartitioner {
 
     import net.sansa_stack.rdf.spark.io._
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val spark = SparkSession.builder()
       //      .master("local")

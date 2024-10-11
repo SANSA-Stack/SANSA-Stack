@@ -2,7 +2,7 @@ package net.sansa_stack.inference.rules.plan
 
 import java.util
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.apache.calcite.DataContext
 import org.apache.calcite.config.CalciteConnectionConfig

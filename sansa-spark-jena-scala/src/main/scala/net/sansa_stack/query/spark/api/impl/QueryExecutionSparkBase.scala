@@ -13,7 +13,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 import java.util
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 abstract class QueryExecutionSparkBase(query: Query, subFactory: QueryExecutionFactory, spark: SparkSession)
   extends QueryExecutionBaseSelect(query, subFactory)

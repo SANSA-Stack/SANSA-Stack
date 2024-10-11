@@ -6,7 +6,7 @@ import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpProject
 import org.apache.jena.sparql.core.Var
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Class that execute the operations of projecting the required variables.

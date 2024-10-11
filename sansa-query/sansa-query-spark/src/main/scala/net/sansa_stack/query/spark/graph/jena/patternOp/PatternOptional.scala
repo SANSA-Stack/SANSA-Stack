@@ -9,7 +9,7 @@ import org.apache.jena.sparql.algebra.op.OpLeftJoin
 import org.apache.spark.graphx.Graph
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /**
