@@ -7,7 +7,7 @@ import org.apache.jena.vocabulary.RDF
 import org.apache.spark.SparkConf
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class RddOfDatasetsOpsTests extends AnyFunSuite with DataFrameSuiteBase {
 

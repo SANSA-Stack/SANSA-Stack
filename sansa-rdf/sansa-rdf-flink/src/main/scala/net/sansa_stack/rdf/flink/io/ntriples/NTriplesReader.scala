@@ -19,7 +19,7 @@ import org.apache.jena.riot.lang.RiotParsers
 import org.apache.jena.riot.system._
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
 

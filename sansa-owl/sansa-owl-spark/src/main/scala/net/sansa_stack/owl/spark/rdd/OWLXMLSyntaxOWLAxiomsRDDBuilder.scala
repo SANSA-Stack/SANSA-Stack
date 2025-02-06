@@ -10,7 +10,7 @@ import org.apache.spark.storage.StorageLevel
 import org.semanticweb.owlapi.io.OWLParserException
 import org.semanticweb.owlapi.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * An implementation for building RDD[OWLAxioms] out from OWL/XML syntax format

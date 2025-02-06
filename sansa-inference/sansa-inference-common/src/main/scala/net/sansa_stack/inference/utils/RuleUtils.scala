@@ -8,7 +8,7 @@ import org.apache.jena.reasoner.TriplePattern
 import org.apache.jena.reasoner.rulesys.Rule
 import org.jgrapht.alg.cycle.TarjanSimpleCycles
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scalax.collection.edge.Implicits._
 import scalax.collection.edge.LDiEdge
 import scalax.collection.mutable.Graph

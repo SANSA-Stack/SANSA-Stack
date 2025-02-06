@@ -5,7 +5,7 @@ import org.apache.jena.graph.{Graph => JenaGraph, Node => JenaNode, Triple => Je
 import org.apache.jena.rdf.model.{Seq => _}
 import org.apache.jena.sparql.graph.GraphFactory
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class JenaOps extends RDFOps[Jena]  {
 

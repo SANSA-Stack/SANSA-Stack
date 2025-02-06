@@ -3,7 +3,7 @@ package net.sansa_stack.inference.flink
 import java.util
 import java.util.Comparator
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import com.google.common.collect.ComparisonChain
 import org.apache.flink.api.scala.{ExecutionEnvironment, _}

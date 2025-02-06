@@ -228,7 +228,7 @@ package object io {
         true
       }
 
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       // save only if there was no failure with the path before
       if (doSave) triples
         .mapPartitions(p => { // process each partition
@@ -289,7 +289,7 @@ package object io {
         true
       }
 
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       // save only if there was no failure with the path before
       if (doSave) quads
         .mapPartitions(p => { // process each partition
@@ -523,7 +523,7 @@ package object io {
      * @author Claus Stadler
      */
     def rdf(graph: Graph): RDD[Triple] = {
-      import collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       // val seq = graph.
       val it = graph.find
 

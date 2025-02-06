@@ -27,7 +27,7 @@ class RddOfBindingsToDataFrameMapperTests
       import net.sansa_stack.query.spark._
       import net.sansa_stack.rdf.spark.partition._
 
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
 
       val triplesString =
       """<urn:s1> <urn:p> "2021-02-25T16:30:12Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> .

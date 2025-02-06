@@ -9,7 +9,7 @@ import org.apache.jena.riot.{Lang, RDFDataMgr}
 import org.apache.jena.util.SplitIRI
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SPARQLQueryEvaluationTestSuite {
 

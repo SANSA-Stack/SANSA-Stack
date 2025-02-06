@@ -9,7 +9,7 @@ import net.sansa_stack.datalake.spark.utils.Helpers._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Json, Reads, __}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

@@ -6,7 +6,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.owlxml.renderer.{OWLXMLObjectRenderer, OWLXMLWriter => OWLAPIOWLXMLWriter}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object OWLXMLWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

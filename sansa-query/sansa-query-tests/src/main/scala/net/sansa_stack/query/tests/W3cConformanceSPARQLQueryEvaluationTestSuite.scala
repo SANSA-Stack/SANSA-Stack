@@ -3,7 +3,7 @@ package net.sansa_stack.query.tests
 import java.io.File
 import java.net.{URI, URL}
 import java.nio.file.{Path, Paths}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.apache.jena.riot.RDFParserBuilder
 import com.google.common.reflect.ClassPath
 import org.apache.jena.iri.{IRIFactory, ViolationCodes}

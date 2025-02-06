@@ -2,7 +2,7 @@ package net.sansa_stack.inference.spark.rules.plan
 
 import java.util
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 import org.apache.jena.graph.{Node, Triple}

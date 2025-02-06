@@ -7,7 +7,7 @@ import net.sansa_stack.datalake.spark.utils.Helpers
 import net.sansa_stack.datalake.spark.utils.Helpers._
 import org.apache.spark.sql.DataFrame
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 

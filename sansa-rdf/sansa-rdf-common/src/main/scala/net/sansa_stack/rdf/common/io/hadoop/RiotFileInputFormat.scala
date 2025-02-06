@@ -4,7 +4,7 @@ import java.io.{ Closeable, InputStream, IOException }
 import java.util.concurrent.{ SynchronousQueue, TimeUnit }
 import java.util.concurrent.atomic.AtomicLong
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import net.sansa_stack.rdf.common.annotation.Experimental
 import org.apache.hadoop.conf.Configuration

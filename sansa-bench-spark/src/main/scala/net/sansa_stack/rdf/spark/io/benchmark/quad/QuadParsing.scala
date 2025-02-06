@@ -12,7 +12,7 @@ import org.apache.hadoop.io.LongWritable
 import org.apache.jena.query.Dataset
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /**

@@ -7,7 +7,7 @@ import org.aksw.jenax.dataaccess.sparql.factory.execution.query.QueryExecutionFa
 import org.apache.jena.query.{Query, ResultSetCloseable}
 import org.apache.spark.sql.SparkSession
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class QueryExecutionSparkOntop(query: Query,
                                subFactory: QueryExecutionFactory,

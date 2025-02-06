@@ -19,7 +19,7 @@ class QueryExecutionSparkJavaWrapper(decoratee: JavaQueryExecutionSpark)
     val javaRs = decoratee.execSelectSparkJava
 
     new ResultSetSpark {
-      import collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       override def getResultVars: Seq[Var] = javaRs.getResultVars.asScala.toSeq
       override def getBindings: RDD[Binding] = javaRs.getRdd.rdd
     }

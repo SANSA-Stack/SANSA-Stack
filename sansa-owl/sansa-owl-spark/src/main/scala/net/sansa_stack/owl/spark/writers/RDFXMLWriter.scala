@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat
 import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.rdf.rdfxml.renderer.RDFXMLRenderer
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 protected class SANSARDFXMLRenderer(
                                      ont: OWLOntology,

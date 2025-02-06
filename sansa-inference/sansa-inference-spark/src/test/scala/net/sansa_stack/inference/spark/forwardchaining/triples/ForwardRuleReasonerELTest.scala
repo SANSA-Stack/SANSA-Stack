@@ -11,7 +11,7 @@ import org.apache.jena.vocabulary.{OWL2, RDFS}
 import org.apache.spark.rdd.RDD
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 class ForwardRuleReasonerELTest extends AnyFunSuite with SharedSparkContext {

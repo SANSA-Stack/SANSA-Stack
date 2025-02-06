@@ -5,7 +5,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpExtend
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 class ResultExtend(op: OpExtend) extends ResultOp {

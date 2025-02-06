@@ -5,7 +5,7 @@ import org.apache.jena.rdf.model.Resource
 
 object JenaDatasetOps {
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   /**
    * Natural resources of a dataset are all those IRIs that match the name of the enclosing

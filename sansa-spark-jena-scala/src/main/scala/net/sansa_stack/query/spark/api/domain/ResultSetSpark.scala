@@ -11,7 +11,7 @@ trait ResultSetSpark {
 
   /** Load the whole result set into a Jena table */
   def collectToTable(): Table = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     val result = TableFactory.create(getResultVars.toList.asJava)
     getBindings.collect().foreach(b => result.addBinding(b))
     result

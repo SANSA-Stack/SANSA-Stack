@@ -7,7 +7,7 @@ import org.apache.jena.graph.Node
 import org.apache.jena.sparql.algebra.op.OpFilter
 import org.apache.jena.sparql.expr.ExprList
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /**

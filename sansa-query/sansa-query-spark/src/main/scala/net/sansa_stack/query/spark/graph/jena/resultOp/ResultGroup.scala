@@ -7,7 +7,7 @@ import org.apache.jena.sparql.algebra.Op
 import org.apache.jena.sparql.algebra.op.OpGroup
 import org.apache.jena.sparql.expr.ExprAggregator
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * Class that execute SPARQL GROUP BY operation.

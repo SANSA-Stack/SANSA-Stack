@@ -7,7 +7,7 @@ import net.sansa_stack.owl.spark.rdd.OWLAxiomsRDD
 import org.semanticweb.owlapi.functional.renderer.FunctionalSyntaxObjectRenderer
 import org.semanticweb.owlapi.vocab.OWLXMLVocabulary
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object OWLFunctionalSyntaxWriter extends OWLWriterBase {
   override def save(filePath: String, owlAxioms: OWLAxiomsRDD): Unit =

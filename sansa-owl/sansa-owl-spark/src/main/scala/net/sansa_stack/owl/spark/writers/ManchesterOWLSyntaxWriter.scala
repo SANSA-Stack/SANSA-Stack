@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat
 import org.semanticweb.owlapi.manchestersyntax.renderer.{ManchesterOWLSyntaxFrameRenderer, ManchesterOWLSyntaxPrefixNameShortFormProvider}
 import org.semanticweb.owlapi.model.OWLOntology
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 protected class SANSAManchesterOWLSyntaxFrameRenderer(
                                                        ont: OWLOntology,

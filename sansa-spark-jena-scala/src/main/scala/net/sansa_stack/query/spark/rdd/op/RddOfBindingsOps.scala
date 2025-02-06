@@ -62,7 +62,7 @@ object RddOfBindingsOps {
   }
 
   def group(rdd: RDD[Binding], groupVars: VarExprList, aggregators: util.List[ExprAggregator]): RDD[Binding] = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
 
     //    val list = new util.ArrayList[Foo[_ >: AnyRef]]

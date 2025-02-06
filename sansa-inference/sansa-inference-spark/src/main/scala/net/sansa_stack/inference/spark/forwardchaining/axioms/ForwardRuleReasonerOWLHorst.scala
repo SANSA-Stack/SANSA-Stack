@@ -10,7 +10,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.model.AxiomType
 import org.semanticweb.owlapi.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * A forward chaining implementation for the OWL Horst entailment regime that works

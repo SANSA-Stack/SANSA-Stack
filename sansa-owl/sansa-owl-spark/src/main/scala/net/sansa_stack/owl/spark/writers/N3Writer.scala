@@ -8,7 +8,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.N3DocumentFormat
 import org.semanticweb.owlapi.model._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 object N3Writer extends OWLWriterBase {

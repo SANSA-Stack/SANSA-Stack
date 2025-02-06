@@ -22,7 +22,7 @@ import java.util.Locale
 
 import scala.io.Source
 import scala.util.Properties
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.Stack
 
 import sbt._

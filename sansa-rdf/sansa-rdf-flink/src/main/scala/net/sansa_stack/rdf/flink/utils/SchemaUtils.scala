@@ -3,7 +3,7 @@ package net.sansa_stack.rdf.flink.utils
 import org.apache.calcite.avatica.ColumnMetaData.StructType
 import org.apache.calcite.rex.RexInputRef
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable.LinkedHashMap
 
 object SchemaUtils {

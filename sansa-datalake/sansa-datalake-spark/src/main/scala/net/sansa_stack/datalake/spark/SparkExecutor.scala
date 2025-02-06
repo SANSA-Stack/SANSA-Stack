@@ -243,7 +243,7 @@ class SparkExecutor(spark: SparkSession, mappingsFile: String) extends QueryExec
     }
 
     def join(joins: ArrayListMultimap[String, (String, String)], prefixes: Map[String, String], star_df: Map[String, DataFrame]): DataFrame = {
-        import scala.collection.JavaConverters._
+        import scala.jdk.CollectionConverters._
         import scala.collection.mutable.ListBuffer
 
         var pendingJoins = mutable.Queue[(String, (String, String))]()

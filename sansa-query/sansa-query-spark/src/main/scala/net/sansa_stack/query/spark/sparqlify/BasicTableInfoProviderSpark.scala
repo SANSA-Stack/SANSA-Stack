@@ -5,7 +5,7 @@ import org.aksw.sparqlify.config.v0_2.bridge.{BasicTableInfo, BasicTableInfoProv
 import org.apache.spark.sql.SparkSession
 
 import java.util.Collections
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class BasicTableInfoProviderSpark(val sparkSession: SparkSession)
     extends BasicTableInfoProvider {

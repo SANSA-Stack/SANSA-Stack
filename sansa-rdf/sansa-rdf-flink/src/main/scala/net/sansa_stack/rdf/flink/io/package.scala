@@ -105,7 +105,7 @@ package object io {
       path: String,
       writeMode: FileSystem.WriteMode = FileSystem.WriteMode.NO_OVERWRITE): DataSink[String] = {
 
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
 
       ds
         .mapPartition(p => {
@@ -185,7 +185,7 @@ package object io {
       path: String,
       writeMode: FileSystem.WriteMode = FileSystem.WriteMode.NO_OVERWRITE): DataSink[String] = {
 
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
 
       ds
         .mapPartition(p => {
@@ -209,7 +209,7 @@ package object io {
    */
   implicit class RDFReader(env: ExecutionEnvironment) {
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     /**
      * Load RDF data into an [[org.apache.flink.api.scala.DataSet]][Triple]. Currently, N-Triples, N-Quads and Turtle syntax are supported.

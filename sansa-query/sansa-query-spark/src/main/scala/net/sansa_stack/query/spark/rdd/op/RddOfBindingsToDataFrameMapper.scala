@@ -45,7 +45,7 @@ import java.util.Calendar
  * FIXME Rename to ResultSetToFrameMapper?
  */
 object RddOfBindingsToDataFrameMapper extends LazyLogging {
-  import collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   /**
    * Analyze the given [[ResultSetSpark]] (scans the data!) and use

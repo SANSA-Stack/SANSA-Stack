@@ -1,6 +1,6 @@
 package net.sansa_stack.inference.flink.forwardchaining
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 import org.apache.flink.api.common.functions.{RichFilterFunction, RichFlatMapFunction}

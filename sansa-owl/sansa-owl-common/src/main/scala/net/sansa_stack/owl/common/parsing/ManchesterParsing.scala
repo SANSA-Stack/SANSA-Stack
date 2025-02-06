@@ -7,7 +7,7 @@ import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.vocab.{Namespaces, OWL2Datatype, OWLFacet}
 import uk.ac.manchester.cs.owl.owlapi._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /** Enum to match property characteristics */

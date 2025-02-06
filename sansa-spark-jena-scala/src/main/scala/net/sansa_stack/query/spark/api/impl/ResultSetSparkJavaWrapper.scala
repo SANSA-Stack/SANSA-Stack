@@ -5,7 +5,7 @@ import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
 import org.apache.spark.rdd.RDD
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class ResultSetSparkJavaWrapper(javaResultSetSpark: JavaResultSetSpark)
   extends ResultSetSpark {

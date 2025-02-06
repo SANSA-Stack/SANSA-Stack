@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import org.semanticweb.owlapi.formats.RDFJsonLDDocumentFormat
 import org.semanticweb.owlapi.model.OWLAxiom
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 object JsonLDWriter extends OWLWriterBase {

@@ -6,7 +6,7 @@ import org.apache.jena.sparql.algebra.op.OpBGP
 import org.apache.jena.sparql.algebra.walker.{ExprVisitorFunction, Walker}
 import org.apache.jena.sparql.expr._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 class ExprParser(expr: Expr) extends ExprVisitorFunction with Serializable {

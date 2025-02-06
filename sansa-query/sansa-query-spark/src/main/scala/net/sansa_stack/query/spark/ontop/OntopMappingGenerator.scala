@@ -8,7 +8,7 @@ import org.apache.jena.vocabulary.{RDF, XSD}
 import org.semanticweb.owlapi.model.OWLOntology
 import org.semanticweb.owlapi.model.parameters.Imports
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
  * @author Lorenz Buehmann
