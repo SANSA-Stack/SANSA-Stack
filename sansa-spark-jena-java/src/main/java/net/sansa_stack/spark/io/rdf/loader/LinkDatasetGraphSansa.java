@@ -142,6 +142,11 @@ public class LinkDatasetGraphSansa
     }
 
     @Override
+    public Graph get(String graphName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Graph get(Node node) {
         throw new UnsupportedOperationException();
     }

@@ -59,4 +59,9 @@ public class BindingOverSparkRow
         }
         return result;
     }
+
+    @Override
+    protected Binding detachWithNewParent(Binding newParent) {
+        return new BindingOverSparkRow(newParent, row, nodeMapper);
+    }
 }
