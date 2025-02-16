@@ -9,7 +9,7 @@ import org.apache.spark.sql.SparkSession
 
 object RDFQualityAssessment {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.out)
@@ -22,7 +22,7 @@ object RDFQualityAssessment {
 
     val rdf_quality_file = new File(input).getName
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"RDF Quality Assessment Example $rdf_quality_file")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()

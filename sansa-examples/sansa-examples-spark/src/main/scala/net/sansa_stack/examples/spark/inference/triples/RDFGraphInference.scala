@@ -1,3 +1,4 @@
+/*
 package net.sansa_stack.examples.spark.inference.triples
 
 import java.net.URI
@@ -118,3 +119,4 @@ object RDFGraphInference {
       else success)
   }
 }
+*/

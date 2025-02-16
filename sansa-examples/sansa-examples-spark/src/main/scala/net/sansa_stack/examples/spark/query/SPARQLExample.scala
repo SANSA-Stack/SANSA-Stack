@@ -21,7 +21,7 @@ object SPARQLExample {
 
   def main(args: Array[String]): Unit = {
     // SparkSession is needed
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SPARQL engine example")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(

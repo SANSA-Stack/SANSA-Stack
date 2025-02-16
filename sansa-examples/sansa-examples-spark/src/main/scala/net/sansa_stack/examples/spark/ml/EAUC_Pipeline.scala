@@ -14,7 +14,7 @@ import net.sansa_stack.query.spark.SPARQLEngine
 object EAUC_Pipeline {
   def main(args: Array[String]): Unit = {
     // setup spark session
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(

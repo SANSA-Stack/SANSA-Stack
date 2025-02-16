@@ -18,7 +18,7 @@ object LMDB_Pipeline {
     var currentTime: Long = System.nanoTime
     println("\nSETUP SPARK SESSION")
     // setup spark session
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") // we need Kryo serialization enabled with some custom serializers
       .config("spark.kryo.registrator", String.join(

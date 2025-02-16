@@ -31,7 +31,7 @@ object SPARQLEndpointExample {
 
   JenaSystem.init()
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.database, config.mappingsfile, config.queryEngine,
@@ -53,7 +53,7 @@ object SPARQLEndpointExample {
     println("|   SPARQL example                   |")
     println("======================================")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"SPARQL example ( $input )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(
@@ -118,7 +118,7 @@ object SPARQLEndpointExample {
       case _ => // should never happen
     }
 
-    spark.stop
+    spark.stop()
   }
 
   implicit val sparqlEngineRead: scopt.Read[SPARQLEngine.Value] = scopt.Read.reads(SPARQLEngine.withName)

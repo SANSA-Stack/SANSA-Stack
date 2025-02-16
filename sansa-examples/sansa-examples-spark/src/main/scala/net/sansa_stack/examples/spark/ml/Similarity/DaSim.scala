@@ -34,7 +34,7 @@ object DaSim {
 
     println("\nSETUP SPARK SESSION")
     val spark = {
-      SparkSession.builder
+      SparkSession.builder()
       .appName(s"SampleFeatureExtractionPipeline")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", String.join(", ",
@@ -198,7 +198,7 @@ object DaSim {
       simDF
         .rdd
         .flatMap(r => Seq(r(0).toString, r(1).toString))
-        .distinct
+        .distinct()
         .map(Row(_)),
       tmpSchema
     )
@@ -590,7 +590,7 @@ object DaSim {
     featureExtractionMethod: String
                           ): RDD[Triple] = {
 
-    val spark = SparkSession.builder.getOrCreate()
+    val spark = SparkSession.builder().getOrCreate()
 
     // strings for URIs
     var _elementPropertyURIasString: String = "sansa-stack/sansaVocab/element"

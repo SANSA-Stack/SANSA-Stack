@@ -29,7 +29,7 @@ object SparqlFrame_DBpedia_Evaluation {
     var currentTime: Long = System.nanoTime
 
     val spark = {
-      SparkSession.builder
+      SparkSession.builder()
         .appName(s"SampleFeatureExtractionPipeline")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .config("spark.kryo.registrator", String.join(", ",

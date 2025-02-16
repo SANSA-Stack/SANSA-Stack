@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 
 object TripleReader {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in)
@@ -18,7 +18,7 @@ object TripleReader {
 
   def run(input: String): Unit = {
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"Triple reader example  $input")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
@@ -34,7 +34,7 @@ object TripleReader {
 
     // triples.saveAsNTriplesFile(output)
 
-    spark.stop
+    spark.stop()
 
   }
 

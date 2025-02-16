@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
  */
 object DataLake {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.queryFile, config.mappingsFile, config.configFile)
@@ -23,7 +23,7 @@ object DataLake {
     println("|   DataLake (CSV) example           |")
     println("======================================")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"DataLake (CSV) example")
       .getOrCreate()
 
@@ -31,7 +31,7 @@ object DataLake {
     val result = DataLakeEngine.run(queryFile, mappingsFile, configFile, spark)
     result.show()
 
-    spark.stop
+    spark.stop()
 
   }
 

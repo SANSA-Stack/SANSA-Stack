@@ -78,7 +78,7 @@
         <module>sansa-owl</module>
         <!-- <module>sansa-inference</module> -->
         <module>sansa-ml</module>
-        <!-- <module>sansa-examples</module> -->
+        <module>sansa-examples</module>
         <module>sansa-integration-tests</module>
         <module>sansa-cmds-picocli</module>
         <module>sansa-spark-cli</module>

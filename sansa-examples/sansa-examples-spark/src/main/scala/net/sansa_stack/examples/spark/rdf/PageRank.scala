@@ -10,7 +10,7 @@ import org.apache.spark.sql.SparkSession
  */
 object PageRank {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in)
@@ -24,7 +24,7 @@ object PageRank {
     println("|   PageRank of resources example    |")
     println("======================================")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"PageRank of resources example ( $input )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       // .config("spark.kryo.registrator", "net.sansa_stack.rdf.spark.io.JenaKryoRegistrator")
@@ -42,7 +42,7 @@ object PageRank {
 
     report.take(50).foreach(println)
 
-    spark.stop
+    spark.stop()
 
   }
   case class Config(in: String = "")

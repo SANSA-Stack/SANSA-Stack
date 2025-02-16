@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 
 object TripleOps {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in)
@@ -19,7 +19,7 @@ object TripleOps {
 
   def run(input: String): Unit = {
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"Triple Ops example  $input")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
@@ -40,19 +40,19 @@ object TripleOps {
     // Triples filtered by object ( <http://dbpedia.org/resource/Henry_James> )
     println("All triples influenced by Henry_James:\n" + triples.find(None, None, Some(NodeFactory.createURI("http://dbpedia.org/resource/Henry_James"))).collect().mkString("\n"))
 
-    println("Number of triples: " + triples.distinct.count())
-    println("Number of subjects: " + triples.getSubjects.distinct.count())
-    println("Number of predicates: " + triples.getPredicates.distinct.count())
-    println("Number of objects: " + triples.getObjects.distinct.count())
+    println("Number of triples: " + triples.distinct().count())
+    println("Number of subjects: " + triples.getSubjects().distinct().count())
+    println("Number of predicates: " + triples.getPredicates().distinct().count())
+    println("Number of objects: " + triples.getObjects().distinct().count())
 
-    val subjects = triples.filterSubjects(_.isURI()).collect.mkString("\n")
+    val subjects = triples.filterSubjects(_.isURI()).collect().mkString("\n")
 
-    val predicates = triples.filterPredicates(_.isVariable()).collect.mkString("\n")
-    val objects = triples.filterObjects(_.isLiteral()).collect.mkString("\n")
+    val predicates = triples.filterPredicates(_.isVariable()).collect().mkString("\n")
+    val objects = triples.filterObjects(_.isLiteral()).collect().mkString("\n")
 
     // graph.getTriples.take(5).foreach(println(_))
 
-    spark.stop
+    spark.stop()
 
   }
   // the config object

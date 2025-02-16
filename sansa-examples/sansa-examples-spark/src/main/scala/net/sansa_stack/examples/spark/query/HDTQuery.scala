@@ -8,7 +8,7 @@ import org.apache.spark.sql.SparkSession
 
 object HDTQuery {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.query)
@@ -23,7 +23,7 @@ object HDTQuery {
     println("| SANSA - HDT example                     |")
     println("===========================================")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .appName("SANSA - HDT")
       .getOrCreate()

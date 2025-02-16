@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 
 object OWLReaderRDD {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.syntax)
@@ -21,7 +21,7 @@ object OWLReaderRDD {
     println("| RDD OWL reader example (" + syntax + " syntax)|")
     println("============================================")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"OWL reader example ( $input + )($syntax)")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")

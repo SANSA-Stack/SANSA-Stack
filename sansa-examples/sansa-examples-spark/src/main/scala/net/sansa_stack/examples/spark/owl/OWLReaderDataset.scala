@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 
 object OWLReaderDataset {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.syntax)
@@ -20,7 +20,7 @@ object OWLReaderDataset {
     println("| Dataset OWL reader example (" + syntax + " syntax)|")
     println(".============================================.")
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"Dataset OWL reader ( $input + )($syntax)")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.kryo.registrator", "net.sansa_stack.owl.spark.dataset.UnmodifiableCollectionKryoRegistrator")

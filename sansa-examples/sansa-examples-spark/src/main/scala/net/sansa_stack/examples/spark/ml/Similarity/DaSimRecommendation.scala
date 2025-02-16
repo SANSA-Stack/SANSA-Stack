@@ -16,7 +16,7 @@ object DaSimRecommendation {
     val inputPath = args(0)
 
     val spark = {
-      SparkSession.builder
+      SparkSession.builder()
         .appName(s"SampleFeatureExtractionPipeline")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .config("spark.kryo.registrator", String.join(", ",
@@ -67,7 +67,7 @@ object DaSimRecommendation {
     /** Merge KGs */
     println("Enriched KG")
     val enrichedKG = dataset.union(metagraph)
-    println("original kg size: " + dataset.collect.size + ", the semantified result has: " + metagraph.collect.size + ", and the merged KG has size of: " + enrichedKG.collect.size)
+    println("original kg size: " + dataset.collect().size + ", the semantified result has: " + metagraph.collect().size + ", and the merged KG has size of: " + enrichedKG.collect().size)
 
     enrichedKG.foreach(println(_))
 

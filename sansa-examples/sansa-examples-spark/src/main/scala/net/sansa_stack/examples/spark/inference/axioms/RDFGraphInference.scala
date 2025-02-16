@@ -1,3 +1,4 @@
+/*
 package net.sansa_stack.examples.spark.inference.axioms
 
 import net.sansa_stack.inference.rules.ReasoningProfile
@@ -74,3 +75,4 @@ object RDFGraphInference {
     help("help").text("prints this usage text")
   }
 }
+*/

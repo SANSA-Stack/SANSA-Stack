@@ -19,7 +19,7 @@ object Word2vec {
 
     println("\nSETUP SPARK SESSION")
     val spark = {
-      SparkSession.builder
+      SparkSession.builder()
         .appName(s"SampleFeatureExtractionPipeline")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .config("spark.kryo.registrator", String.join(", ",

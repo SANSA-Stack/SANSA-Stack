@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 
 object TripleWriter {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     parser.parse(args, Config()) match {
       case Some(config) =>
         run(config.in, config.out)
@@ -17,7 +17,7 @@ object TripleWriter {
 
   def run(input: String, output: String): Unit = {
 
-    val spark = SparkSession.builder
+    val spark = SparkSession.builder()
       .appName(s"Triple writer example ( $input )")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
@@ -31,7 +31,7 @@ object TripleWriter {
 
     triples.saveAsNTriplesFile(output)
 
-    spark.stop
+    spark.stop()
 
   }
 

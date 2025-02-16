@@ -27,7 +27,7 @@ object SmartFeatureExtractorEvaluation {
     var currentTime: Long = System.nanoTime
 
     val spark = {
-      SparkSession.builder
+      SparkSession.builder()
         .appName(s"SampleFeatureExtractionPipeline")
         .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         .config("spark.kryo.registrator", String.join(", ",
@@ -90,7 +90,7 @@ object SmartFeatureExtractorEvaluation {
             .flatMap(t => Seq(t.getSubject, t.getObject))
             .filter(_.isURI)
             .map(_.toString())
-            .distinct
+            .distinct()
             .map(Row(_)),
           tmpSchema
         )
