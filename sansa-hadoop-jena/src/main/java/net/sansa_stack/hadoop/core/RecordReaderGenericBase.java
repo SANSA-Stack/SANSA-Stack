@@ -791,7 +791,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             // Extract the byte channel on which the parser currently runs
             ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?> typedHeadEltChannel = (ReadableChannelWithValue<U[], ReadableChannelSwitchable<byte[]>, ?>) headEltBuffer.getDataSupplier();
             headByteChannel.close();
-            headByteChannel = (SeekableSourceOverSplit.Channel)typedHeadEltChannel.getValue().getDecoratee();
+            headByteChannel = (SeekableSourceOverSplit.Channel)typedHeadEltChannel.getValue().getDelegate();
             headEltChannel = typedHeadEltChannel;
             // headEltChannel = headEltBuffer.newReadableChannel()
             // BufferOverReadableChannel.debuffer(typedHeadEltChannel); // typedHeadEltChannel;
@@ -964,7 +964,7 @@ public abstract class RecordReaderGenericBase<U, G, A, T>
             Stream<T> buffered = ReadableChannels.newStream(borc.getBuffer().newReadableChannel());
             ReadableChannelWithValue<T[], ?, ReadableChannelOverIterator<T>> eltSource = (ReadableChannelWithValue<T[], ?, ReadableChannelOverIterator<T>>) borc.getDataSupplier();
 
-            Stream<T> unbuffered = eltSource.getDecoratee().toStream();
+            Stream<T> unbuffered = eltSource.getDelegate().toStream();
             return Stream.concat(buffered, unbuffered);
         } catch (Exception e) {
             throw new RuntimeException(e);
