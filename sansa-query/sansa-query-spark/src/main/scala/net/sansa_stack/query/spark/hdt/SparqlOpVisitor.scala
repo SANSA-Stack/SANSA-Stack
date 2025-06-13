@@ -108,9 +108,6 @@ object SparqlOpVisitor extends OpVisitor {
   override def visit(opUnion: OpUnion): Unit = {
   }
 
-  override def visit(opDiff: OpDiff): Unit = {
-  }
-
   override def visit(opMinus: OpMinus): Unit = {
   }
 
@@ -159,5 +156,11 @@ object SparqlOpVisitor extends OpVisitor {
   }
 
   override def visit(opUnfold: OpUnfold): Unit = {
+  }
+
+  override def visit(opSemiJoin: OpSemiJoin): Unit = {
+  }
+
+  override def visit(opAntiJoin: OpAntiJoin): Unit = {
   }
 }

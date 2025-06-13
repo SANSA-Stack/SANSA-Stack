@@ -69,6 +69,11 @@ class NoErrorProfile implements ParserProfile {
 	}
 
 	@Override
+	public Node createLangDirLiteral(String lexical, String langTag, String direction, long line, long col) {
+		return base.createLangDirLiteral(lexical, langTag, direction, line, col);
+	}
+
+	@Override
 	public Node createStringLiteral(String lexical, long line, long col) {
 		return base.createStringLiteral(lexical, line, col);
 	}
@@ -84,8 +89,18 @@ class NoErrorProfile implements ParserProfile {
 	}
 
 	@Override
+	public Node createTripleTerm(Node subject, Node predicate, Node object, long line, long col) {
+		return null;
+	}
+
+	@Override
 	public Node createTripleNode(Node subject, Node predicate, Node object, long line, long col) {
 		return base.createTripleNode(subject, predicate, object, line, col);
+	}
+
+	@Override
+	public Node createTripleTerm(Triple triple, long line, long col) {
+		return null;
 	}
 
 	@Override

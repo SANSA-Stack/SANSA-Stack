@@ -1,18 +1,18 @@
 package net.sansa_stack.ml.spark.utils
 
-import scala.jdk.CollectionConverters._
-
 import org.apache.jena.graph.{Node, Triple}
 import org.apache.jena.query.Query
 import org.apache.jena.sparql.core.Var
 import org.apache.jena.sparql.engine.binding.Binding
-import org.apache.jena.sparql.lang.ParserSPARQL11
+import org.apache.jena.sparql.lang.sparql_11.ParserSPARQL11
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
+
+import scala.jdk.CollectionConverters._
 
 /**
   * A SPARQL query transformer instance takes a SPARQL query string as

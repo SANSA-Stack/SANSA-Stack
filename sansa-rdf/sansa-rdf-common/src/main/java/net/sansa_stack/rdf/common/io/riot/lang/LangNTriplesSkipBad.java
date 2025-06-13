@@ -120,7 +120,7 @@ public final class LangNTriplesSkipBad implements Iterator<Triple>
 			    if (oToken.isEOF())
 				    exception(oToken, "Premature end of file: %s", oToken);
 				needSkip = true;
-			    checkRDFTerm(oToken);
+			    checkRDFTerm(null, oToken);
 				needSkip = false;
 
 			    // Check in createTriple - but this is cheap so do it anyway.

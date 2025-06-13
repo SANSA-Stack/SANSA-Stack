@@ -138,11 +138,6 @@ public class ExecutionDispatch
     }
 
     @Override
-    public void visit(OpDiff opDiff) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void visit(OpMinus opMinus) {
         throw new UnsupportedOperationException();
     }
@@ -204,6 +199,12 @@ public class ExecutionDispatch
 
     @Override
     public void visit(OpLateral opLateral) { stack.push(opExecutor.execute(opLateral, stack.pop())); }
+
+    @Override
+    public void visit(OpSemiJoin opSemiJoin) { throw new UnsupportedOperationException(); }
+
+    @Override
+    public void visit(OpAntiJoin opAntiJoin) { throw new UnsupportedOperationException(); }
 
     @Override
     public void visit(OpUnfold opUnfold) { throw new UnsupportedOperationException(); }

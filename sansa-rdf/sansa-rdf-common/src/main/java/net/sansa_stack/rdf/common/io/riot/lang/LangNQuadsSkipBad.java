@@ -138,7 +138,7 @@ public final class LangNQuadsSkipBad implements Iterator<Quad>
 				if ( oToken.getType() == TokenType.EOF )
 					exception(oToken, "Premature end of file: %s", oToken) ;
 				needSkip = true;
-				checkRDFTerm(oToken) ;
+				checkRDFTerm(null, oToken) ;
 				needSkip = false;
 
 				Token xToken = nextToken() ;    // Maybe DOT
