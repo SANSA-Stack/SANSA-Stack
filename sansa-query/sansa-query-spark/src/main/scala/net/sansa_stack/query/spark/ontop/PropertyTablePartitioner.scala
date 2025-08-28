@@ -172,8 +172,8 @@ object PropertyTablePartitioner {
 
       val pm = new PrefixMappingImpl()
       pm.setNsPrefix("dbo", "http://dbpedia.org/ontology/")
-      val ctx = new SerializationContext()
-      ctx.setPrefixMapping(pm)
+      val ctx = new SerializationContext(pm)
+      // ctx.setPrefixMapping(pm)
 
       // create the Dataframe schema
       val schema = (List(StructField("s", StringType, nullable = true)) ++

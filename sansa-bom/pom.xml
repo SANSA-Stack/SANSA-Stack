@@ -112,9 +112,9 @@
         <!-- <log4j.version>2.21.0</log4j.version> -->
 
         <!-- Our util projects (mainly maintained by Claus) -->
-        <aksw.commons.version>0.9.9-SNAPSHOT</aksw.commons.version>
-        <jena.version>5.5.0-SNAPSHOT</jena.version>
-        <jenax.version>5.5.0-1-SNAPSHOT</jenax.version>
+        <aksw.commons.version>0.9.11-SNAPSHOT</aksw.commons.version>
+        <jena.version>5.6.0-SNAPSHOT</jena.version>
+        <jenax.version>5.6.0-1-SNAPSHOT</jenax.version>
         <rmltk.version>5.2.0-1-SNAPSHOT</rmltk.version>
 
         <rdf4j.version>3.3.0</rdf4j.version>
@@ -1193,7 +1193,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.17.0</version>
+                <version>3.18.0</version>
             </dependency>
 
             <dependency>
