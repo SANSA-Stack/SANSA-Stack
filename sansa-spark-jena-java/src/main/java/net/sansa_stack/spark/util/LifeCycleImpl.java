@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 public class LifeCycleImpl<T>
     implements LifeCycle<T>, Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     protected Supplier<T> creator;
     protected Consumer<? super T> closer;
 
